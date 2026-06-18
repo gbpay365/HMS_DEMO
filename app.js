@@ -412,8 +412,10 @@ bootStep('middleware-base', 'ok');
 // creation may itself fail at boot, in which case we still want this
 // endpoint to respond.
 app.get('/__health', async (req, res) => {
+ const { HMS_BUILD } = require('./lib/resolveDbConfig');
  const out = {
   ok: true,
+  build: HMS_BUILD,
   node: process.version,
   pid: process.pid,
   uptime_s: Math.round(process.uptime()),
@@ -427,6 +429,8 @@ app.get('/__health', async (req, res) => {
    DB_NAME: DB_BOOT_CONFIG.database || '(missing)',
    DATABASE_URL_SET: process.env.DATABASE_URL ? '(set)' : '(missing)',
    PGHOST_SET: process.env.PGHOST ? '(set)' : '(missing)',
+   PGHOST_VALUE: process.env.PGHOST ? process.env.PGHOST.replace(/[^a-zA-Z0-9._-]/g, '') : '(missing)',
+   RAILWAY: _envLoad.onRailway ? 'yes' : 'no',
    PORT: process.env.PORT || '(default)',
    NODE_ENV: process.env.NODE_ENV || '(unset)',
   },
