@@ -2,7 +2,11 @@ const path = require('path');
 const fs = require('fs');
 const { loadEnv } = require('./lib/loadEnv');
 const _envLoad = loadEnv();
-if (_envLoad.loadedFrom === '.env.production') {
+if (_envLoad.onRailway) {
+ try {
+  console.log('[HMS] Railway runtime — DB config from service variables (not .env.production).');
+ } catch (_) {}
+} else if (_envLoad.loadedFrom === '.env.production') {
  try {
   console.warn('[HMS] No .env found — loaded .env.production. Upload .env (copy from .env.production) for production.');
  } catch (_) {}
@@ -515,7 +519,7 @@ app.get('/__boot', (req, res) => {
 let pool = null;
 try {
  pool = createDbPool();
- bootStep('db-pool', 'ok', pool.driver || 'mysql');
+ bootStep('db-pool', 'ok', `${pool.driver} → ${pool.config?.host}:${pool.config?.port} (${pool.config?.source || '?'})`);
  betterPayConfig.init(pool).catch((e) => console.warn('[BetterPay] init:', e.message));
 } catch (e) {
  bootStep('db-pool', 'fail', e);

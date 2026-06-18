@@ -2,6 +2,7 @@ license-generator/keys/
 license-generator/.env
 .env
 .env.production
+.env.railway.example
 node_modules
 docs/scripts/railway-sync.env
 scripts/railway-sync.env
