@@ -431,6 +431,8 @@ app.get('/__health', async (req, res) => {
    PGHOST_SET: process.env.PGHOST ? '(set)' : '(missing)',
    PGHOST_VALUE: process.env.PGHOST ? process.env.PGHOST.replace(/[^a-zA-Z0-9._-]/g, '') : '(missing)',
    RAILWAY: _envLoad.onRailway ? 'yes' : 'no',
+   CONFIG_VALID: DB_BOOT_CONFIG.valid !== false,
+   CONFIG_ERROR: DB_BOOT_CONFIG.valid === false ? DB_BOOT_CONFIG.error : null,
    PORT: process.env.PORT || '(default)',
    NODE_ENV: process.env.NODE_ENV || '(unset)',
   },
@@ -476,6 +478,9 @@ app.get('/__health', async (req, res) => {
   out.ok = false;
   out.db.error = e && e.message ? e.message : String(e);
   out.db.code = e && e.code ? e.code : null;
+  if (DB_BOOT_CONFIG.valid === false && DB_BOOT_CONFIG.error) {
+   out.db.config_error = DB_BOOT_CONFIG.error;
+  }
   if (
     DB_BOOT_CONFIG.driver === 'postgres' &&
     (out.db.code === 'ECONNREFUSED' || /ECONNREFUSED/i.test(out.db.error)) &&
@@ -519,6 +524,22 @@ app.get('/__boot', (req, res) => {
  res.set('Cache-Control', 'no-store').json(out);
 });
 
+app.get('/__env-debug', (req, res) => {
+ const keys = Object.keys(process.env)
+  .filter((k) => /^(DB_|PG|POSTGRES|DATABASE|HMS_DB|RAILWAY|NODE_ENV|PORT)/i.test(k))
+  .sort();
+ res.set('Cache-Control', 'no-store').json({
+  build: require('./lib/resolveDbConfig').HMS_BUILD,
+  railway: _envLoad.onRailway,
+  keys_present: keys,
+  hints: {
+   DATABASE_URL: process.env.DATABASE_URL ? 'set' : 'missing',
+   PGHOST: process.env.PGHOST ? 'set' : 'missing',
+   HMS_DB_DRIVER: process.env.HMS_DB_DRIVER || '(unset)',
+  },
+ });
+});
+
 // Database pool — MySQL (mysql2) or PostgreSQL (pg) via lib/dbPool.js
 let pool = null;
 try {
@@ -527,6 +548,7 @@ try {
  betterPayConfig.init(pool).catch((e) => console.warn('[BetterPay] init:', e.message));
 } catch (e) {
  bootStep('db-pool', 'fail', e);
+ console.error('[HMS] Database pool not created:', e.message || e);
 }
 
 /** Ensures tbl_patient_insurance exists and columns match INSERTs (MySQL 5.7+ / MariaDB: no IF NOT EXISTS on ADD COLUMN). */
