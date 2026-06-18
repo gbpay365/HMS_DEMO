@@ -415,13 +415,16 @@ app.get('/__health', async (req, res) => {
   uptime_s: Math.round(process.uptime()),
   env: {
    DB_DRIVER: pool && pool.driver ? pool.driver : DB_BOOT_CONFIG.driver,
+   DB_SOURCE: DB_BOOT_CONFIG.source || '(unknown)',
    DB_HOST: DB_BOOT_CONFIG.host || '(missing)',
    DB_PORT: String(DB_BOOT_CONFIG.port || ''),
    DB_USER: DB_BOOT_CONFIG.user ? '(set)' : '(missing)',
    DB_PASSWORD: DB_BOOT_CONFIG.password ? '(set)' : '(missing)',
    DB_NAME: DB_BOOT_CONFIG.database || '(missing)',
+   DATABASE_URL_SET: process.env.DATABASE_URL ? '(set)' : '(missing)',
+   PGHOST_SET: process.env.PGHOST ? '(set)' : '(missing)',
    PORT: process.env.PORT || '(default)',
-   NODE_ENV: process.env.NODE_ENV || '(unset)'
+   NODE_ENV: process.env.NODE_ENV || '(unset)',
   },
   boot: BOOT_TRACE.slice(-50),
   db: { reachable: false, error: null, version: null, appointment_columns: [] }
@@ -465,6 +468,18 @@ app.get('/__health', async (req, res) => {
   out.ok = false;
   out.db.error = e && e.message ? e.message : String(e);
   out.db.code = e && e.code ? e.code : null;
+  if (
+    DB_BOOT_CONFIG.driver === 'postgres' &&
+    (out.db.code === 'ECONNREFUSED' || /ECONNREFUSED/i.test(out.db.error)) &&
+    /localhost|127\.0\.0\.1|::1/i.test(DB_BOOT_CONFIG.host || '')
+  ) {
+   out.db.hint =
+    'Postgres is pointing at localhost. On Railway: link the Postgres service, set ' +
+    'DATABASE_URL=${{Postgres.DATABASE_URL}}, and delete DB_HOST / DB_PORT / DB_USER / DB_PASSWORD / DB_NAME from the web service.';
+  } else if (DB_BOOT_CONFIG.driver === 'postgres' && !process.env.DATABASE_URL && !process.env.PGHOST) {
+   out.db.hint =
+    'No DATABASE_URL or PGHOST on this service. Reference Postgres variables from the linked database service.';
+  }
  }
  res.set('Cache-Control', 'no-store');
  // Always HTTP 200 so hosting panels don't treat DB issues as "app failed to start".

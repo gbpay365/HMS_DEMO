@@ -4,22 +4,35 @@ This demo build supports **PostgreSQL** via `HMS_DB_DRIVER=postgres`.
 
 ## Railway variables (web service)
 
-Set on the **HMS app service** (reference Postgres plugin or paste values):
+**Link** the Postgres plugin to your web service, then set:
 
 ```
 HMS_DB_DRIVER=postgres
 DATABASE_URL=${{Postgres.DATABASE_URL}}
-# Or use the public proxy from your PC for migrations:
-# DATABASE_PUBLIC_URL=postgresql://postgres:PASSWORD@HOST:PORT/railway
-
+HMS_SKIP_SCHEMA_MIGRATIONS=1
 SESSION_SECRET=<long-random-string>
 NODE_ENV=production
-HMS_SKIP_SCHEMA_MIGRATIONS=1
 ```
 
-Railway injects `DATABASE_URL` automatically when you link the Postgres service.
+### Remove these (MySQL leftovers — they break Postgres)
 
-**Do not** set `DB_HOST=localhost` on Railway — that breaks the connection.
+Delete from the **web service** if present:
+
+- `DB_HOST` (especially `localhost`)
+- `DB_PORT`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_NAME`
+
+Railway injects `PGHOST`, `PGPASSWORD`, etc. on the **database** service; the web service only gets them when you reference `DATABASE_URL` or `${{Postgres.*}}` variables.
+
+### Verify variables
+
+After deploy, `/__health` should show:
+
+- `"DB_SOURCE": "DATABASE_URL"` or `"PGHOST"`
+- `"DB_HOST": "postgres.railway.internal"` (or your proxy host — **not** `localhost`)
+- `"DATABASE_URL_SET": "(set)"` or `"PGHOST_SET": "(set)"`
 
 ## Load data (one-time, from your PC)
 
