@@ -528,14 +528,24 @@ app.get('/__env-debug', (req, res) => {
  const keys = Object.keys(process.env)
   .filter((k) => /^(DB_|PG|POSTGRES|DATABASE|HMS_DB|RAILWAY|NODE_ENV|PORT)/i.test(k))
   .sort();
+ const pgKeys = ['DATABASE_URL', 'DATABASE_PUBLIC_URL', 'PGHOST', 'PGPORT', 'PGUSER', 'PGPASSWORD', 'POSTGRES_PASSWORD', 'PGDATABASE'];
+ const keyStatus = {};
+ for (const k of pgKeys) {
+  const v = process.env[k];
+  keyStatus[k] = v && String(v).trim() ? 'has_value' : (k in process.env ? 'empty' : 'absent');
+ }
  res.set('Cache-Control', 'no-store').json({
   build: require('./lib/resolveDbConfig').HMS_BUILD,
   railway: _envLoad.onRailway,
   keys_present: keys,
+  pg_key_status: keyStatus,
+  keys_with_values: keys.filter((k) => String(process.env[k] || '').trim()),
   hints: {
-   DATABASE_URL: process.env.DATABASE_URL ? 'set' : 'missing',
-   PGHOST: process.env.PGHOST ? 'set' : 'missing',
+   DATABASE_URL: process.env.DATABASE_URL && String(process.env.DATABASE_URL).trim() ? 'set' : 'empty_or_missing',
+   PGHOST: process.env.PGHOST && String(process.env.PGHOST).trim() ? 'set' : 'empty_or_missing',
+   POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD && String(process.env.POSTGRES_PASSWORD).trim() ? 'set' : 'empty_or_missing',
    HMS_DB_DRIVER: process.env.HMS_DB_DRIVER || '(unset)',
+   fix: 'Railway web service → Variables → delete empty DATABASE_URL/PGHOST → Add Reference → Postgres → DATABASE_URL',
   },
  });
 });
