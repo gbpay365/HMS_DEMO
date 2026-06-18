@@ -442,7 +442,11 @@ app.get('/__health', async (req, res) => {
  };
  try {
   if (typeof pool === 'undefined' || !pool) throw new Error('Database pool was not initialized at boot.');
-  const [[v]] = await pool.query('SELECT VERSION() AS v');
+  const probe = pool.query('SELECT VERSION() AS v');
+  const timeout = new Promise((_, reject) => {
+   setTimeout(() => reject(new Error('Database probe timed out after 10s')), 10000);
+  });
+  const [[v]] = await Promise.race([probe, timeout]);
   out.db.reachable = true;
   out.db.version = v && v.v;
   const [cols] = await pool.query(
@@ -555,7 +559,12 @@ app.get('/__env-debug', (req, res) => {
 let pool = null;
 try {
  pool = createDbPool();
- bootStep('db-pool', 'ok', `${pool.driver} → ${pool.config?.host}:${pool.config?.port} (${pool.config?.source || '?'})`);
+ bootStep('db-pool', 'ok', `${pool.driver} → ${pool.config?.host}:${pool.config?.port} ssl=${pool.config?.ssl === false ? 'off' : 'on'} (${pool.config?.source || '?'})`);
+ pool.query('SELECT 1 AS ok').then(() => {
+  bootStep('db-pool-probe', 'ok');
+ }).catch((e) => {
+  bootStep('db-pool-probe', 'fail', e);
+ });
  betterPayConfig.init(pool).catch((e) => console.warn('[BetterPay] init:', e.message));
 } catch (e) {
  bootStep('db-pool', 'fail', e);
