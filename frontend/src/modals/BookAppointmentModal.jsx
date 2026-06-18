@@ -29,7 +29,7 @@ export function BookAppointmentModal({ open, onClose, patients, doctors, departm
   const [paymentChecking, setPaymentChecking] = useState(false);
 
   const filteredDoctors = useMemo(
-    () => filterDoctorsByDepartment(doctors, department),
+    () => filterDoctorsForBookingDepartment(doctors, department),
     [doctors, department]
   );
 
