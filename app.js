@@ -433,6 +433,7 @@ app.get('/__health', async (req, res) => {
    RAILWAY: _envLoad.onRailway ? 'yes' : 'no',
    CONFIG_VALID: DB_BOOT_CONFIG.valid !== false,
    CONFIG_ERROR: DB_BOOT_CONFIG.valid === false ? DB_BOOT_CONFIG.error : null,
+   PG_SSL: DB_BOOT_CONFIG.ssl === false ? 'off' : DB_BOOT_CONFIG.ssl ? 'on' : 'off',
    PORT: process.env.PORT || '(default)',
    NODE_ENV: process.env.NODE_ENV || '(unset)',
   },
