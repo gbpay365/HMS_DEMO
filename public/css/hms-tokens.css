@@ -1,0 +1,224 @@
+/**
+ * HMS Design Tokens — single source of truth (Phase 0)
+ * Load before hms-premium-v3.css, hms-app-surface.css, and module overlays.
+ * React Tailwind (frontend/tailwind.config.js) mirrors these hex values.
+ *
+ * UI PRIMITIVES (Phase A — use on every new page):
+ *   Page shell:   .page-wrapper.hms-surface-module + body.hms-body--{module}
+ *   Hero:         .hms-surface-hero (+ .hms-surface-hero-icon / .hms-icon-chip)
+ *   Static KPI:   .hms-stat-grid > .hms-stat-card
+ *   Link KPI:     .hms-stat-grid > .hms-stat-link  (or partial hms-stat-link.ejs)
+ *   Section:      .hms-stat-section > .hms-stat-section__title
+ *   Panel:        .hms-surface-card
+ *   Menu tiles:   .hms-menu-tile-grid > .hms-surface-card.hms-menu-tile
+ *   Buttons:      .hms-btn .hms-btn-primary | .hms-btn-secondary
+ *   Inputs:       .hms-input.w-full
+ *   Flash:        .hms-flash .hms-flash--success | .hms-flash--error
+ */
+:root {
+  /* Brand — emerald clinical */
+  --hms-brand: #10b981;
+  --hms-brand-hover: #059669;
+  --hms-brand-dark: #047857;
+  --hms-brand-light: #d1fae5;
+  --hms-brand-soft: rgba(16, 185, 129, 0.12);
+  --hms-brand-glow: rgba(16, 185, 129, 0.28);
+
+  /* Semantic */
+  --hms-success: #10b981;
+  --hms-warning: #f59e0b;
+  --hms-danger: #ef4444;
+  --hms-info: #06b6d4;
+
+  /* Surfaces */
+  --hms-bg: #f8fafc;
+  --hms-card-bg: #ffffff;
+  --hms-glass-bg: rgba(255, 255, 255, 0.8);
+  --hms-glass-border: rgba(255, 255, 255, 0.3);
+
+  /* Surface mesh (page backgrounds) */
+  --hms-surface-bg: #f0f4f8;
+  --hms-surface-mesh-a: rgba(16, 185, 129, 0.07);
+  --hms-surface-mesh-b: rgba(14, 165, 233, 0.06);
+  --hms-surface-card: #ffffff;
+  --hms-surface-border: #e2e8f0;
+  --hms-surface-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+  --hms-surface-radius: 16px;
+
+  /* Typography */
+  --hms-ink: #1e293b;
+  --hms-ink-muted: #64748b;
+  --hms-text-main: var(--hms-ink);
+  --hms-text-secondary: #475569;
+  --hms-text-tertiary: #94a3b8;
+
+  /* Borders & elevation */
+  --hms-border: #e2e8f0;
+  --hms-border-v3: var(--hms-border);
+  --hms-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --hms-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --hms-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --hms-shadow-card: 0 4px 24px -4px rgb(15 23 42 / 0.08);
+  --hms-shadow-premium: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* Layout */
+  --hms-radius: 16px;
+  --hms-radius-v3: var(--hms-radius);
+  --hms-radius-sm: 10px;
+  --hms-radius-sm-v3: var(--hms-radius-sm);
+  --hms-root-scale: 120%;
+
+  /* Department accents */
+  --hms-dept-pharmacy: #10b981;
+  --hms-dept-laboratory: #8b5cf6;
+  --hms-dept-radiology: #0ea5e9;
+  --hms-dept-maternity: #ec4899;
+  --hms-dept-vaccination: #14b8a6;
+  --hms-dept-finance: #6366f1;
+
+  /* Odoo shell aliases (dept modules map --o-brand to dept accent) */
+  --o-brand: var(--hms-brand);
+  --o-brand-hover: var(--hms-brand-hover);
+  --o-brand-soft: var(--hms-brand-soft);
+  --o-bg: var(--hms-surface-bg);
+  --o-surface: var(--hms-card-bg);
+  --o-border: var(--hms-border);
+  --o-text: var(--hms-ink);
+  --o-muted: var(--hms-ink-muted);
+
+  /* Sidebar shell (header.ejs) */
+  --sb-width: 300px;
+  --sb-active-bg: var(--hms-brand-soft);
+  --sb-active-text: var(--hms-brand-hover);
+  --sb-active-border: var(--hms-brand);
+  --sb-user-bg: #f0fdf4;
+  --badge-bg: var(--hms-brand);
+  --badge-text: #fff;
+}
+
+/* Department body classes — tint mesh + Odoo brand */
+body.hms-body--pharmacy-odoo {
+  --o-brand: var(--hms-dept-pharmacy);
+  --o-brand-hover: #059669;
+  --o-brand-soft: rgba(16, 185, 129, 0.12);
+  --hms-surface-mesh-a: rgba(16, 185, 129, 0.09);
+}
+
+body.hms-body--laboratory-odoo,
+body.hms-body--lab-odoo {
+  --o-brand: var(--hms-dept-laboratory);
+  --o-brand-hover: #7c3aed;
+  --o-brand-soft: rgba(139, 92, 246, 0.12);
+  --hms-surface-mesh-a: rgba(139, 92, 246, 0.08);
+  --hms-surface-mesh-b: rgba(16, 185, 129, 0.05);
+}
+
+body.hms-body--radiology-odoo,
+body.hms-body--rad-odoo {
+  --o-brand: var(--hms-dept-radiology);
+  --o-brand-hover: #0284c7;
+  --o-brand-soft: rgba(14, 165, 233, 0.12);
+  --hms-surface-mesh-a: rgba(14, 165, 233, 0.08);
+  --hms-surface-mesh-b: rgba(16, 185, 129, 0.05);
+}
+
+body.hms-body--inventory {
+  --hms-surface-mesh-a: rgba(245, 158, 11, 0.08);
+  --hms-surface-mesh-b: rgba(14, 165, 233, 0.06);
+}
+
+body.hms-body--dashboard {
+  --hms-surface-mesh-a: rgba(16, 185, 129, 0.08);
+  --hms-surface-mesh-b: rgba(14, 165, 233, 0.07);
+}
+
+body.hms-body--hms-hub {
+  --hms-surface-mesh-a: rgba(16, 185, 129, 0.09);
+  --hms-surface-mesh-b: rgba(99, 102, 241, 0.06);
+}
+
+body.hms-body--maternity-odoo {
+  --o-brand: var(--hms-dept-maternity);
+  --o-brand-hover: #db2777;
+  --o-brand-soft: rgba(236, 72, 153, 0.12);
+  --hms-surface-mesh-a: rgba(236, 72, 153, 0.08);
+}
+
+body.hms-body--vaccination-odoo {
+  --o-brand: var(--hms-dept-vaccination);
+  --o-brand-hover: #0d9488;
+  --o-brand-soft: rgba(20, 184, 166, 0.12);
+  --hms-surface-mesh-a: rgba(20, 184, 166, 0.08);
+}
+
+body.hms-body--procurement,
+body.hms-body--assets {
+  --hms-surface-mesh-a: rgba(99, 102, 241, 0.07);
+  --hms-surface-mesh-b: rgba(16, 185, 129, 0.05);
+}
+
+body.hms-body--odoo {
+  --hms-brand: var(--hms-dept-pharmacy);
+  --hms-brand-hover: #059669;
+  --hms-brand-soft: rgba(16, 185, 129, 0.12);
+  --hms-bg: #f9fafb;
+}
+
+/* Director command center — dark ops dashboard (token-aligned) */
+body.hms-body--command,
+.hms-command-center {
+  --hms-cmd-bg: #0f1117;
+  --hms-cmd-surface: #181c27;
+  --hms-cmd-surface-alt: #1e2335;
+  --hms-cmd-border: rgba(255, 255, 255, 0.08);
+  --hms-cmd-border-mid: rgba(255, 255, 255, 0.14);
+  --hms-cmd-text: #e8ebf4;
+  --hms-cmd-text-muted: #7a82a0;
+  --hms-cmd-text-dim: #4a5168;
+  --hms-cmd-blue: #4e8cf5;
+  --hms-cmd-blue-soft: #1a3a7a;
+  --hms-cmd-green: #36c98e;
+  --hms-cmd-green-soft: #0d3d28;
+  --hms-cmd-amber: #f5a623;
+  --hms-cmd-amber-soft: #4a2e00;
+  --hms-cmd-red: #f05050;
+  --hms-cmd-red-soft: #4a1010;
+  --hms-cmd-purple: #a78bfa;
+  --hms-cmd-purple-soft: #2d1f5a;
+  --hms-cmd-radius: 16px;
+  color: var(--hms-cmd-text);
+  background: var(--hms-cmd-bg);
+}
+
+html.dark {
+  --hms-bg: #0b1120;
+  --hms-card-bg: #0f172a;
+  --hms-surface-bg: #0b1120;
+  --hms-surface-card: #0f172a;
+  --hms-surface-border: #1e293b;
+  --hms-border: #1e293b;
+  --hms-ink: #e2e8f0;
+  --hms-ink-muted: #94a3b8;
+  --hms-text-main: var(--hms-ink);
+  --hms-text-secondary: #cbd5e1;
+  --hms-text-tertiary: #64748b;
+  --hms-glass-bg: rgba(15, 23, 42, 0.92);
+  --hms-glass-border: rgba(30, 41, 59, 0.8);
+
+  --sb-bg: #0f172a;
+  --sb-border: #1e293b;
+  --sb-text: #cbd5e1;
+  --sb-muted: #64748b;
+  --sb-label: #4ade80;
+  --sb-hover-bg: #1e293b;
+  --sb-active-bg: rgba(74, 222, 128, 0.08);
+  --sb-active-text: #4ade80;
+  --sb-active-border: var(--hms-brand);
+  --sb-section-line: #1e293b;
+  --sb-user-bg: #0d1f12;
+  --sb-search-bg: #1e293b;
+  --sb-search-border: #334155;
+  --main-bg: #0b1120;
+  --topbar-bg: rgba(15, 23, 42, 0.95);
+  --topbar-border: #1e293b;
+}

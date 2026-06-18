@@ -1,0 +1,98 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+
+<div class="page-wrapper">
+ <div class="content">
+ <% if(locals.flash){ %>
+ <div class="hms-flash hms-flash--success border-0 shadow-sm mb-3" style="border-radius:12px;"><i class="fa fa-info-circle mr-2"></i><%= flash %></div>
+ <% } %>
+ <% if(locals.error){ %>
+ <div class="hms-flash hms-flash--error border-0 shadow-sm mb-3" style="border-radius:12px;"><i class="fa fa-exclamation-triangle mr-2"></i><%= error %></div>
+ <% } %>
+
+ <div class="row align-items-center mb-4">
+ <div class="col-sm-8">
+ <h4 class="page-title font-weight-bold text-dark"><%= _t('billing_receipts.title', { ns: 'legacy', defaultValue: 'Receipts & invoices' }) %></h4>
+ <p class="text-muted small mb-0"><%= _t('billing_receipts.subtitle', { ns: 'legacy', defaultValue: 'Fiscal documents issued from cashier, charges, consultations, pharmacy, lab, and related flows (tbl_billing_document). Mirrors legacy receipts-invoices.php.' }) %></p>
+ </div>
+ <div class="col-sm-4 text-right">
+ <a href="/billing" class="hms-btn hms-btn-secondary btn-sm font-weight-bold"><i class="fa fa-th-large mr-1"></i><%= _t('billing_receipts.billing_workspace', { ns: 'legacy', defaultValue: 'Billing workspace' }) %></a>
+ </div>
+ </div>
+
+ <% if (!tableOk) { %>
+ <div class="hms-flash hms-flash--error border-0 shadow-sm" style="border-radius:12px;">
+  <strong><%= _t('billing_receipts.not_ready_title', { ns: 'legacy', defaultValue: 'Receipt module not ready.' }) %></strong> <%= _t('billing_receipts.not_ready_body', { ns: 'legacy', defaultValue: 'Apply migration hms/database/migrations/011_receipt_invoice_module.sql (or ensure tbl_billing_document exists), then refresh.' }) %>
+ </div>
+ <% } else { %>
+
+ <div class="card border-0 shadow-sm mb-3" style="border-radius:12px;">
+ <div class="card-body py-3">
+ <form method="get" class="form-row align-items-end">
+ <div class="form-group col-md-4 mb-0">
+ <label class="small text-muted"><%= _t('billing_receipts.filter_type', { ns: 'legacy', defaultValue: 'Type' }) %></label>
+ <select name="t" class="hms-input w-full" onchange="this.form.submit()">
+ <option value="all"<%= fType === 'all' ? ' selected' : '' %>><%= _t('billing_receipts.type_all', { ns: 'legacy', defaultValue: 'All' }) %></option>
+ <option value="receipt"<%= fType === 'receipt' ? ' selected' : '' %>><%= _t('billing_receipts.type_receipt', { ns: 'legacy', defaultValue: 'Receipts' }) %></option>
+ <option value="invoice"<%= fType === 'invoice' ? ' selected' : '' %>><%= _t('billing_receipts.type_invoice', { ns: 'legacy', defaultValue: 'Invoices' }) %></option>
+ </select>
+ </div>
+ <div class="form-group col-md-6 mb-0">
+ <label class="small text-muted"><%= _t('billing_receipts.search_label', { ns: 'legacy', defaultValue: 'Search number / payer / company' }) %></label>
+ <input type="search" name="q" class="hms-input w-full" value="<%= (typeof qRaw !== 'undefined' && qRaw) ? qRaw : '' %>" placeholder="<%= _t('billing_receipts.search_ph', { ns: 'legacy', defaultValue: 'Doc # or name' }) %>">
+ </div>
+ <div class="form-group col-md-2 mb-0">
+ <button type="submit" class="hms-btn hms-btn-primary btn-block"><%= _t('billing_receipts.filter', { ns: 'legacy', defaultValue: 'Filter' }) %></button>
+ </div>
+ </form>
+ </div>
+ </div>
+
+ <div class="card border-0 shadow-sm" style="border-radius:12px;">
+ <div class="card-body p-0">
+ <div class="table-responsive">
+ <table class="table table-hover table-sm mb-0">
+ <thead class="thead-light">
+ <tr>
+ <th><%= _t('billing_receipts.col_number', { ns: 'legacy', defaultValue: 'Number' }) %></th>
+ <th><%= _t('billing_receipts.col_type', { ns: 'legacy', defaultValue: 'Type' }) %></th>
+ <th><%= _t('billing_receipts.col_party', { ns: 'legacy', defaultValue: 'Party' }) %></th>
+ <th><%= _t('billing_receipts.col_source', { ns: 'legacy', defaultValue: 'Source' }) %></th>
+ <th><%= _t('billing_receipts.col_payment', { ns: 'legacy', defaultValue: 'Payment' }) %></th>
+ <th class="text-right"><%= _t('billing_receipts.col_total', { ns: 'legacy', defaultValue: 'Total (XAF)' }) %></th>
+ <th><%= _t('billing_receipts.col_date', { ns: 'legacy', defaultValue: 'Date' }) %></th>
+ </tr>
+ </thead>
+ <tbody>
+ <% if (!rows || rows.length === 0) { %>
+ <tr><td colspan="7" class="text-center text-muted py-5"><%= _t('billing_receipts.empty', { ns: 'legacy', defaultValue: 'No documents yet. They are created when payments are recorded in cashier or related modules.' }) %></td></tr>
+ <% } else { rows.forEach(function(r){
+   var party = (r.doc_type === 'invoice')
+     ? (r.company_snapshot || '—')
+     : (r.payer_snapshot || [r.p_first_name, r.p_last_name].filter(Boolean).join(' ') || '—');
+   var src = (r.source_module || '') + (r.source_pk != null && r.source_pk !== '' ? ' #' + r.source_pk : '');
+   var pm = (r.payment_method && String(r.payment_method).trim()) ? r.payment_method : '—';
+   var dt = r.created_at ? (typeof fmtDateTime === 'function' ? fmtDateTime(r.created_at) : hmsFormatDateTime(r.created_at)) : '—';
+ %>
+ <tr>
+ <td class="text-nowrap font-weight-bold text-primary"><%= r.doc_number || '—' %></td>
+ <td><span class="badge badge-light border"><%= r.doc_type || '—' %></span></td>
+ <td><%= party %></td>
+ <td class="small text-muted"><%= src || '—' %></td>
+ <td class="small text-nowrap"><%= pm %></td>
+ <td class="text-right font-weight-bold"><%= Number(r.total_amount || 0).toLocaleString() %></td>
+ <td class="small text-nowrap text-muted"><%= dt %></td>
+ </tr>
+ <% }); } %>
+ </tbody>
+ </table>
+ </div>
+  <%- include('partials/pagination', { pager: locals.pager, pagerBase: '/billing/receipts', pagerQuery: locals.pagerQuery || {} }) %>
+ </div>
+ </div>
+
+ <% } %>
+</div>
+</div>
+
+<%- include('partials/footer') %>

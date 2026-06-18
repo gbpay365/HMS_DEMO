@@ -1,0 +1,16 @@
+<div id="hms-portal-booking-root"></div>
+<script id="hms-portal-booking-data" type="application/json"><%- JSON.stringify({
+  departments: typeof departments !== 'undefined' ? departments : [],
+  doctors: typeof doctors !== 'undefined' ? doctors : [],
+  specialisations: typeof specialisations !== 'undefined' ? specialisations : [],
+  reschedule: (typeof rescheduleAppt !== 'undefined' && rescheduleAppt) ? {
+    id: rescheduleAppt.id,
+    visit_type: rescheduleAppt.visit_type || 'in_person',
+    department: rescheduleAppt.department || rescheduleAppt.department_name || '',
+    doctor_id: rescheduleAppt.doctor_id || '',
+    appointment_type: rescheduleAppt.appointment_type || 'consultation',
+    date: rescheduleAppt.date ? String(rescheduleAppt.date).slice(0, 10) : '',
+    time: rescheduleAppt.slot_start || rescheduleAppt.time || '',
+    payment_code: rescheduleAppt.payment_code || ''
+  } : null
+}).replace(/</g, '\\u003c') %></script>

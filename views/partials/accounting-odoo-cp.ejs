@@ -1,0 +1,12 @@
+<% var _cpCls = typeof cpClass !== 'undefined' ? cpClass : ''; %>
+<div class="o_control_panel <%= _cpCls %>">
+  <div class="o_cp_left">
+    <h1 class="o_cp_title"><%= cpTitle %></h1>
+    <% if (typeof cpSubtitle !== 'undefined' && cpSubtitle) { %>
+    <p class="o_cp_subtitle"><%- cpSubtitle %></p>
+    <% } %>
+  </div>
+  <% if (typeof cpRight !== 'undefined' && cpRight) { %>
+  <div class="o_cp_right"><%- cpRight %></div>
+  <% } %>
+</div>

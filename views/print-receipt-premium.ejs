@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="<%= locals.lang || 'en' %>">
+<head>
+  <meta charset="utf-8">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/print-epson-lq.css?v=40" media="print">
+  <link rel="icon" type="image/png" href="/img/fransohh-logo.png">
+</head>
+<body>
+  <div id="hms-react-root" data-page="print-receipt-premium"></div>
+  <script id="hms-page-data" type="application/json"><%- JSON.stringify(locals.pageData || {}).replace(/</g, '\\u003c') %></script>
+  <%- include('partials/print-assets', { hmsPrintIncludeEpsonCss: false }) %>
+</body>
+</html>

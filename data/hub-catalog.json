@@ -1,0 +1,97 @@
+{
+  "tileColors": {
+    "brand": "#10b981",
+    "sky": "#0ea5e9",
+    "violet": "#8b5cf6",
+    "emerald": "#10b981",
+    "red": "#ef4444",
+    "amber": "#f59e0b",
+    "pink": "#ec4899",
+    "cyan": "#06b6d4",
+    "lime": "#84cc16",
+    "finance": "#6366f1",
+    "slate": "#64748b",
+    "indigo": "#6366f1"
+  },
+  "hubStats": [
+    { "code": "hub.stat.opd_open", "statKey": "opd_open", "i18nKey": "hub.stat_opd_open", "fallback": "OPD open today", "icon": "fa-list-alt", "colorToken": "amber", "href": "/opd-queue" },
+    { "code": "hub.stat.in_consult", "statKey": "in_consult", "i18nKey": "hub.stat_in_consult", "fallback": "In consultation", "icon": "fa-stethoscope", "colorToken": "emerald", "href": "/opd-queue" },
+    { "code": "hub.stat.appointments_today", "statKey": "appointments_today", "i18nKey": "hub.stat_appointments", "fallback": "Appointments", "icon": "fa-calendar", "colorToken": "sky", "href": "/appointments" },
+    { "code": "hub.stat.ipd_active", "statKey": "ipd_active", "i18nKey": "hub.stat_ipd_active", "fallback": "Active IPD", "icon": "fa-hospital-o", "colorToken": "violet", "href": "/ipd" },
+    { "code": "hub.stat.lab_open", "statKey": "lab_open", "i18nKey": "hub.stat_lab_open", "fallback": "Lab requests", "icon": "fa-flask", "colorToken": "violet", "href": "/lims" },
+    { "code": "hub.stat.rad_open", "statKey": "rad_open", "i18nKey": "hub.stat_rad_open", "fallback": "Radiology", "icon": "fa-film", "colorToken": "sky", "href": "/radiology" },
+    { "code": "hub.stat.pending_orders", "statKey": "pending_orders", "i18nKey": "hub.stat_pending_orders", "fallback": "Pending orders", "icon": "fa-clock-o", "colorToken": "amber", "href": "/opd-queue" },
+    { "code": "hub.stat.revenue_today", "statKey": "revenue_today", "i18nKey": "hub.stat_revenue_today", "fallback": "Revenue today (XAF)", "icon": "fa-money", "colorToken": "finance", "href": "/cashier", "format": "money" },
+    { "code": "hub.stat.patients_total", "statKey": "patients", "i18nKey": "hub.stat_patients", "fallback": "Patients (registry)", "icon": "fa-users", "colorToken": "brand", "href": "/patients" },
+    { "code": "hub.stat.doctors_active", "statKey": "doctors", "i18nKey": "hub.stat_doctors", "fallback": "Active doctors", "icon": "fa-user-md", "colorToken": "emerald", "href": "/doctors" }
+  ],
+  "hubModuleCards": [
+    { "code": "hub.card.patients", "href": "/patients", "icon": "fa-user", "i18nKey": "hub.card_patients", "descKey": "hub.card_patients_desc", "fallback": "Patients", "descFallback": "Register & chart", "colorToken": "brand" },
+    { "code": "hub.card.appointments", "href": "/appointments", "icon": "fa-calendar", "i18nKey": "hub.card_appointments", "descKey": "hub.card_appointments_desc", "fallback": "Appointments", "descFallback": "Book & confirm", "colorToken": "sky" },
+    { "code": "hub.card.opd_queue", "href": "/opd-queue", "icon": "fa-list-alt", "i18nKey": "hub.card_opd_queue", "descKey": "hub.card_opd_queue_desc", "fallback": "OPD queue", "descFallback": "Triage to consult", "colorToken": "amber" },
+    { "code": "hub.card.hospitalization", "href": "/ipd", "icon": "fa-hospital-o", "i18nKey": "hub.card_hospitalization", "descKey": "hub.card_hospitalization_desc", "fallback": "Hospitalization", "descFallback": "Wards & bill", "colorToken": "violet" },
+    { "code": "hub.card.laboratory", "href": "/lims", "icon": "fa-flask", "i18nKey": "hub.card_laboratory", "descKey": "hub.card_laboratory_desc", "fallback": "Laboratory", "descFallback": "Requests & samples", "colorToken": "violet" },
+    { "code": "hub.card.radiology", "href": "/radiology", "icon": "fa-film", "i18nKey": "hub.card_radiology", "descKey": "hub.card_radiology_desc", "fallback": "Radiology", "descFallback": "Imaging workflow", "colorToken": "sky" },
+    { "code": "hub.card.pharmacy", "href": "/pharmacy", "icon": "fa-medkit", "i18nKey": "hub.card_pharmacy", "descKey": "hub.card_pharmacy_desc", "fallback": "Pharmacy", "descFallback": "Dispense", "colorToken": "emerald" },
+    { "code": "hub.card.cashier", "href": "/cashier", "icon": "fa-money", "i18nKey": "hub.card_cashier", "descKey": "hub.card_cashier_desc", "fallback": "Cashier", "descFallback": "Tickets", "colorToken": "amber" },
+    { "code": "hub.card.maternity", "href": "/maternity", "icon": "fa-heart", "i18nKey": "hub.card_maternity", "descKey": "hub.card_maternity_desc", "fallback": "Maternity", "descFallback": "ANC & delivery", "colorToken": "pink" },
+    { "code": "hub.card.waiting_screen", "href": "/hms/waiting-screen", "icon": "fa-television", "i18nKey": "hub.card_waiting_screen", "descKey": "hub.card_waiting_screen_desc", "fallback": "Waiting screen TV", "descFallback": "Lobby display", "colorToken": "sky" },
+    { "code": "hub.card.appointment_slots", "href": "/hms/appointments/slots-config", "icon": "fa-clock-o", "i18nKey": "hub.card_appointment_slots", "descKey": "hub.card_appointment_slots_desc", "fallback": "Appointment slots", "descFallback": "Doctor hours", "colorToken": "sky" },
+    { "code": "hub.card.reports", "href": "/hms/reports", "icon": "fa-print", "i18nKey": "hub.card_reports", "descKey": "hub.card_reports_desc", "fallback": "Reports & print", "descFallback": "Invoices & Rx", "colorToken": "slate" }
+  ],
+  "dashboardSections": [
+    {
+      "id": "live",
+      "labelKey": "sections.live_ops",
+      "tiles": [
+        { "code": "dash.stat.opd_open", "href": "/opd-queue", "labelKey": "tiles.opd_open", "stat": "opd_open", "icon": "fa-list-alt", "colorToken": "amber" },
+        { "code": "dash.stat.revenue_today", "href": "/cashier", "labelKey": "tiles.revenue_today", "stat": "revenue_today", "icon": "fa-money", "colorToken": "finance", "format": "money" },
+        { "code": "dash.stat.lab_open", "href": "/lims", "labelKey": "tiles.lab_open", "stat": "lab_open", "icon": "fa-flask", "colorToken": "violet" },
+        { "code": "dash.stat.rad_open", "href": "/radiology", "labelKey": "tiles.rad_open", "stat": "rad_open", "icon": "fa-film", "colorToken": "sky" }
+      ]
+    },
+    {
+      "id": "clinical",
+      "labelKey": "sections.clinical",
+      "tiles": [
+        { "code": "dash.card.patients", "href": "/patients", "labelKey": "tiles.patients", "stat": "patients", "icon": "fa-users", "colorToken": "brand" },
+        { "code": "dash.card.appointments", "href": "/appointments", "labelKey": "tiles.appointments", "stat": "appointments", "icon": "fa-calendar", "colorToken": "sky" },
+        { "code": "dash.card.inpatients", "href": "/wards", "labelKey": "tiles.inpatients", "stat": "inpatients", "icon": "fa-hospital-o", "colorToken": "violet" },
+        { "code": "dash.card.doctors", "href": "/doctors", "labelKey": "tiles.doctors", "stat": "doctors", "icon": "fa-user-md", "colorToken": "emerald" },
+        { "code": "dash.card.emergencies", "href": "/emergency", "labelKey": "tiles.emergencies", "stat": "erCount", "icon": "fa-heartbeat", "colorToken": "red", "tone": "danger" },
+        { "code": "dash.card.opd_queue", "href": "/opd-queue", "labelKey": "tiles.opd_queue", "icon": "fa-list-alt", "colorToken": "amber", "valueless": true },
+        { "code": "dash.card.maternity", "href": "/maternity", "labelKey": "tiles.maternity", "icon": "fa-heart", "colorToken": "pink", "valueless": true },
+        { "code": "dash.card.radiology", "href": "/radiology", "labelKey": "tiles.radiology", "icon": "fa-film", "colorToken": "sky", "valueless": true }
+      ]
+    },
+    {
+      "id": "operations",
+      "labelKey": "sections.operations",
+      "tiles": [
+        { "code": "dash.card.laboratory", "href": "/laboratory", "labelKey": "tiles.laboratory", "icon": "fa-flask", "colorToken": "cyan", "valueless": true },
+        { "code": "dash.card.pharmacy", "href": "/pharmacy", "labelKey": "tiles.pharmacy", "icon": "fa-medkit", "colorToken": "emerald", "valueless": true }
+      ]
+    },
+    {
+      "id": "finance",
+      "labelKey": "sections.finance",
+      "tiles": [
+        { "code": "dash.card.cashier", "href": "/cashier", "labelKey": "tiles.cashier", "icon": "fa-money", "colorToken": "lime", "valueless": true }
+      ]
+    }
+  ],
+  "odooAppTiles": [
+    { "code": "dashboard", "href": "/dashboard", "icon": "fa-dashboard", "i18nKey": "hms_odoo_apps.dashboard", "fallback": "Dashboard", "colorToken": "sky", "perm": "dashboard" },
+    { "code": "hms", "href": "/hms", "icon": "fa-hospital-o", "i18nKey": "hms_nav.app_tile", "fallback": "HMS Clinical", "colorToken": "brand", "uiCode": "sb.hms_hub" },
+    { "code": "patients", "href": "/patients", "icon": "fa-user", "i18nKey": "hms_odoo_apps.patients", "fallback": "Patients", "colorToken": "brand", "perm": "patient" },
+    { "code": "appointments", "href": "/appointments", "icon": "fa-calendar", "i18nKey": "hms_odoo_apps.appointments", "fallback": "Appointments", "colorToken": "sky", "perm": "scheduling" },
+    { "code": "opd", "href": "/opd-queue", "icon": "fa-list-alt", "i18nKey": "hms_odoo_apps.opd", "fallback": "OPD", "colorToken": "amber", "perm": "opd" },
+    { "code": "maternity", "href": "/maternity", "icon": "fa-female", "i18nKey": "hms_odoo_apps.maternity", "fallback": "Maternity", "colorToken": "pink", "perm": "maternity" },
+    { "code": "emergency", "href": "/emergency", "icon": "fa-ambulance", "i18nKey": "hms_odoo_apps.emergency", "fallback": "Emergency", "colorToken": "red", "perm": "emergency" },
+    { "code": "inpatient", "href": "/wards", "icon": "fa-bed", "i18nKey": "hms_odoo_apps.inpatient", "fallback": "Inpatient", "colorToken": "indigo", "perm": "adt" },
+    { "code": "laboratory", "href": "/lims", "icon": "fa-flask", "i18nKey": "hms_odoo_apps.laboratory", "fallback": "Laboratory", "colorToken": "violet", "perm": "lab" },
+    { "code": "pharmacy", "href": "/pharmacy", "icon": "fa-medkit", "i18nKey": "hms_odoo_apps.pharmacy", "fallback": "Pharmacy", "colorToken": "emerald", "perm": "pharmacy" },
+    { "code": "radiology", "href": "/radiology", "icon": "fa-film", "i18nKey": "hms_odoo_apps.radiology", "fallback": "Radiology", "colorToken": "sky", "perm": "radiology" },
+    { "code": "cashier", "href": "/cashier", "icon": "fa-money", "i18nKey": "hms_odoo_apps.cashier", "fallback": "Cashier", "colorToken": "amber", "perm": "cashier" }
+  ]
+}

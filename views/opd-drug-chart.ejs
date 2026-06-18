@@ -1,0 +1,8 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--opd-med'; %>
+<%- include('partials/header') %>
+<%- include('partials/react-page-mount', {
+  reactPage: 'opd-med',
+  reactLoadingLabel: (typeof t === 'function' ? t('opd.treatment.loading', { ns: 'clinical' }) : 'Loading…'),
+  pageData: locals.pageData || {}
+}) %>
+<%- include('partials/footer') %>

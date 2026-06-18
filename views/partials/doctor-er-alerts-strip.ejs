@@ -1,0 +1,262 @@
+<% 
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _tc = function (key, fallback, opts) {
+  return _t(key, Object.assign({ ns: 'clinical', defaultValue: fallback }, opts || {}));
+};
+var _deaI18n = {
+  aeAlert: _tc('doctor_er_strip.ae_alert', 'A&E ALERT'),
+  stat: _tc('doctor_er_strip.stat', 'STAT'),
+  arrival: _tc('doctor_er_strip.arrival', 'EMERGENCY · NEW PATIENT ARRIVAL'),
+  awaiting: _tc('doctor_er_strip.awaiting', 'EMERGENCY · PATIENT NEEDS MEDICAL ASSISTANCE'),
+  location: _tc('doctor_er_strip.location', 'Location:'),
+  ward: _tc('doctor_er_strip.ward', 'Ward:'),
+  bed: _tc('doctor_er_strip.bed', 'Bed:'),
+  complaint: _tc('doctor_er_strip.complaint', 'Chief complaint:'),
+  acuity: _tc('doctor_er_strip.acuity', 'Acuity:'),
+  ticket: _tc('doctor_er_strip.ticket', 'Ticket:'),
+  openInbox: _tc('doctor_er_strip.open_inbox', 'Open inbox'),
+  openVisit: _tc('doctor_er_strip.open_visit', 'Open ER chart'),
+  dismiss: _tc('doctor_er_strip.dismiss', 'Dismiss for me'),
+  unassigned: _tc('doctor_er_strip.unassigned', 'Unassigned — any doctor'),
+  opdAlert: _tc('doctor_opd_inbox.opd_alert', 'OPD ALERT'),
+  opdMedGiven: _tc('doctor_opd_inbox.med_given', 'MEDICATION GIVEN'),
+  opdHeadline: _tc('doctor_opd_inbox.headline', 'OPD · DOSE ADMINISTERED'),
+  opdDrug: _tc('doctor_opd_inbox.drug', 'Drug:'),
+  opdNurse: _tc('doctor_opd_inbox.nurse', 'Nurse:'),
+  opdVisit: _tc('doctor_opd_inbox.visit', 'Visit:'),
+  openTreatment: _tc('doctor_opd_inbox.open_treatment', 'Open OPD treatment')
+};
+%>
+<div id="deaStripRoot" style="display:none;"></div>
+<div id="deaStripMount" class="dea-strip-mount"></div>
+<style>
+@keyframes deaErGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(220, 160, 160, 0.9), 0 0 26px 8px rgba(100, 0, 0, 0.55), 0 14px 40px rgba(20, 0, 0, 0.65);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(255, 200, 200, 0.85), 0 0 38px 14px rgba(139, 0, 0, 0.5), 0 18px 52px rgba(45, 0, 0, 0.75);
+    filter: brightness(1.06);
+  }
+}
+@keyframes deaErShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+@keyframes deaErIconBlink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.65; transform: scale(1.15); }
+}
+.dea-strip-mount { margin-bottom: 0; position: relative; z-index: 20; }
+.dea-banner {
+  border-radius: 14px;
+  margin-bottom: 16px;
+  overflow: visible;
+  color: #fff;
+  background: linear-gradient(165deg, #9f0712 0%, #7f0000 28%, #5a0404 58%, #2a0202 100%);
+  animation: deaErGlow 1.1s ease-in-out infinite;
+  border: 4px solid rgba(255, 200, 200, 0.92);
+  outline: 3px solid rgba(75, 0, 0, 0.95);
+  outline-offset: 2px;
+}
+.dea-banner-inner {
+  padding: 14px 18px 16px;
+  animation: deaErShake 2.5s ease-in-out infinite;
+}
+.dea-er-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.dea-er-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(15, 0, 0, 0.45);
+  border: 2px solid rgba(255, 190, 190, 0.88);
+  animation: deaErIconBlink 1.4s ease-in-out infinite;
+}
+.dea-er-headline {
+  margin: 0 0 8px 0;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  color: #ffe4e4;
+}
+.dea-patient-name {
+  font-size: 1.4rem;
+  font-weight: 900;
+  line-height: 1.25;
+  color: #fff5f5;
+  margin-bottom: 8px;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.65);
+}
+.dea-er-meta {
+  display: block;
+  font-weight: 700;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.98);
+}
+.dea-actions { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+.dea-actions a, .dea-actions button {
+  font-size: 0.75rem;
+  font-weight: 900;
+  border-radius: 999px;
+  padding: 5px 14px;
+  border: 2px solid rgba(255, 210, 210, 0.95);
+  background: rgba(20, 0, 0, 0.4);
+  color: #fff5f5;
+  cursor: pointer;
+}
+.dea-actions a:hover, .dea-actions button:hover {
+  background: #ffdede !important;
+  color: #3b0000 !important;
+  text-decoration: none;
+}
+.dea-banner-opd {
+  background: linear-gradient(165deg, #fbbf24 0%, #d97706 28%, #b45309 58%, #78350f 100%);
+  border: 4px solid rgba(255, 237, 170, 0.95);
+  outline: 3px solid rgba(120, 53, 15, 0.9);
+  animation: deaOpdGlow 1.1s ease-in-out infinite;
+}
+@keyframes deaOpdGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.85), 0 0 26px 8px rgba(180, 83, 9, 0.45), 0 14px 40px rgba(69, 26, 3, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(253, 224, 71, 0.8), 0 0 38px 14px rgba(217, 119, 6, 0.45), 0 18px 52px rgba(69, 26, 3, 0.65);
+  }
+}
+.dea-opd-headline { color: #fffbeb; }
+.dea-opd-patient { color: #fff; text-shadow: 0 3px 10px rgba(69, 26, 3, 0.45); }
+.dea-opd-meta { color: rgba(255, 251, 235, 0.98); }
+.dea-opd-badge {
+  border: 2px solid rgba(255, 237, 170, 0.9);
+  background: rgba(69, 26, 3, 0.35);
+  color: #fffbeb;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dea-banner, .dea-banner-inner, .dea-er-badge, .dea-banner-opd { animation: none !important; }
+}
+</style>
+<script type="application/json" id="deaStripI18n"><%- JSON.stringify(_deaI18n).replace(/</g, '\\u003c') %></script>
+<script>
+(function () {
+  var mount = document.getElementById('deaStripMount');
+  if (!mount) return;
+  var i18n = {};
+  try {
+    var el = document.getElementById('deaStripI18n');
+    if (el) i18n = JSON.parse(el.textContent || '{}');
+  } catch (e) { i18n = {}; }
+  function tr(k, fb) { return (i18n && i18n[k] != null) ? i18n[k] : fb; }
+  var inboxPath = '/portal/doctor/er-alerts';
+  var ACUITY = { 1: 'L1 Resuscitation', 2: 'L2 Emergent', 3: 'L3 Urgent', 4: 'L4 Less urgent', 5: 'L5 Non-urgent' };
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  }
+  function headline(a) {
+    return a.alert_type === 'patient_arrival'
+      ? tr('arrival', 'EMERGENCY · NEW PATIENT ARRIVAL')
+      : tr('awaiting', 'EMERGENCY · PATIENT NEEDS MEDICAL ASSISTANCE');
+  }
+  function render(items) {
+    mount.innerHTML = '';
+    if (!items || !items.length) { mount.style.display = 'none'; return; }
+    mount.style.display = 'block';
+    items.forEach(function (a) {
+      var el = document.createElement('div');
+      var isOpd = a.inbox_kind === 'opd';
+      el.className = isOpd ? 'dea-banner dea-banner-opd mb-2' : 'dea-banner mb-2';
+      if (isOpd) {
+        var treatmentHref = a.opd_visit_id ? ('/opd/treatment/' + a.opd_visit_id) : inboxPath;
+        el.innerHTML =
+          '<div class="dea-banner-inner">' +
+          '<div class="dea-er-bar">' +
+          '<span class="dea-er-badge dea-opd-badge"><i class="fa fa-medkit"></i> ' + esc(tr('opdAlert', 'OPD ALERT')) + '</span>' +
+          '<span class="dea-er-badge dea-opd-badge"><i class="fa fa-check-circle"></i> ' + esc(tr('opdMedGiven', 'MEDICATION GIVEN')) + '</span>' +
+          '</div>' +
+          '<h6 class="dea-er-headline dea-opd-headline"><i class="fa fa-bell"></i> ' + esc(tr('opdHeadline', 'OPD · DOSE ADMINISTERED')) + '</h6>' +
+          '<div class="dea-patient-name dea-opd-patient">' + esc(a.patient_display || '—') + '</div>' +
+          '<small class="dea-er-meta dea-opd-meta">' +
+          esc(tr('opdDrug', 'Drug:')) + ' ' + esc(a.drug_display || '—') +
+          (a.dose_display ? (' · ' + esc(a.dose_display)) : '') +
+          '<br>' + esc(tr('opdNurse', 'Nurse:')) + ' ' + esc(a.nurse_display || '—') +
+          '<br>' + esc(tr('opdVisit', 'Visit:')) + ' ' + esc(a.visit_department || 'OPD') +
+          (a.ticket_number ? (' · ' + esc(tr('ticket', 'Ticket:')) + ' ' + esc(a.ticket_number)) : '') +
+          '</small>' +
+          '<div class="dea-actions">' +
+          '<a href="' + treatmentHref + '"><i class="fa fa-stethoscope"></i> ' + esc(tr('openTreatment', 'Open OPD treatment')) + '</a>' +
+          '<a href="' + inboxPath + '"><i class="fa fa-inbox"></i> ' + esc(tr('openInbox', 'Open inbox')) + '</a>' +
+          '<button type="button" class="dea-dismiss" data-id="' + esc(a.id) + '" data-kind="opd"><i class="fa fa-check"></i> ' + esc(tr('dismiss', 'Dismiss for me')) + '</button>' +
+          '</div></div>';
+      } else {
+        var acuity = a.acuity_level ? (ACUITY[a.acuity_level] || ('Level ' + a.acuity_level)) : '—';
+        var visitHref = a.opd_visit_id ? ('/emergency/visit/' + a.opd_visit_id) : inboxPath;
+        el.innerHTML =
+          '<div class="dea-banner-inner">' +
+          '<div class="dea-er-bar">' +
+          '<span class="dea-er-badge"><i class="fa fa-exclamation-triangle"></i> ' + esc(tr('aeAlert', 'A&E ALERT')) + '</span>' +
+          '<span class="dea-er-badge"><i class="fa fa-ambulance"></i> ' + esc(tr('stat', 'STAT')) + '</span>' +
+          (a.target_doctor_id ? '' : '<span class="dea-er-badge"><i class="fa fa-user-md"></i> ' + esc(tr('unassigned', 'Unassigned')) + '</span>') +
+          '</div>' +
+          '<h6 class="dea-er-headline"><i class="fa fa-bolt"></i> ' + esc(headline(a)) + '</h6>' +
+          '<div class="dea-patient-name">' + esc(a.patient_display || '—') + '</div>' +
+          '<small class="dea-er-meta">' +
+          esc(tr('location', 'Location:')) + ' ' + esc(a.location_display || 'Emergency / A&E') +
+          ' · ' + esc(tr('ward', 'Ward:')) + ' ' + esc(a.ward_display || '—') +
+          ' · ' + esc(tr('bed', 'Bed:')) + ' ' + esc(a.bed_display || '—') +
+          '<br>' + esc(tr('complaint', 'Chief complaint:')) + ' ' + esc(a.chief_complaint || '—') +
+          ' · ' + esc(tr('acuity', 'Acuity:')) + ' ' + esc(acuity) +
+          (a.ticket_number ? (' · ' + esc(tr('ticket', 'Ticket:')) + ' ' + esc(a.ticket_number)) : '') +
+          '</small>' +
+          '<div class="dea-actions">' +
+          '<a href="' + visitHref + '"><i class="fa fa-stethoscope"></i> ' + esc(tr('openVisit', 'Open ER chart')) + '</a>' +
+          '<a href="' + inboxPath + '"><i class="fa fa-inbox"></i> ' + esc(tr('openInbox', 'Open inbox')) + '</a>' +
+          '<button type="button" class="dea-dismiss" data-id="' + esc(a.id) + '" data-kind="er"><i class="fa fa-check"></i> ' + esc(tr('dismiss', 'Dismiss for me')) + '</button>' +
+          '</div></div>';
+      }
+      mount.appendChild(el);
+    });
+    mount.querySelectorAll('.dea-dismiss').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-id');
+        var kind = btn.getAttribute('data-kind') || 'er';
+        var ackUrl = kind === 'opd'
+          ? ('/api/doctor-opd-med-alerts/' + encodeURIComponent(id) + '/ack')
+          : ('/api/doctor-er-alerts/' + encodeURIComponent(id) + '/ack');
+        fetch(ackUrl, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: '_format=json',
+          credentials: 'same-origin'
+        }).then(function () { load(); }).catch(function () { load(); });
+      });
+    });
+  }
+  function load() {
+    fetch('/api/doctor-er-alerts', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (j && j.ok && j.items) render(j.items); else render([]); })
+      .catch(function () { render([]); });
+  }
+  load();
+  setInterval(load, 15000);
+})();
+</script>

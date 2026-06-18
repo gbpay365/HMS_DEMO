@@ -1,0 +1,46 @@
+<link rel="stylesheet" href="/css/super-admin-deployment.css?v=2">
+<% if (typeof _sa !== 'function') {
+  var _sa = function(k, d, opts) {
+    if (typeof t !== 'function') return d || k;
+    var o = { ns: 'superAdmin', defaultValue: d || k };
+    if (opts) Object.assign(o, opts);
+    return t(k, o);
+  };
+} %>
+<% var _roleDisplay = function(code, title) {
+  if (typeof roleLabel === 'function') return roleLabel(code, title);
+  return title || code;
+}; %>
+
+<div class="card border-0 shadow-sm mb-4" style="border-radius:14px;overflow:hidden;">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center" style="border-bottom:2px solid #f1f5f9;">
+    <span class="font-weight-bold"><i class="fa fa-users mr-2 text-primary"></i><%= _sa('roles.title', 'Defined Roles') %></span>
+    <a href="/access-control#section-setup" class="btn btn-sm btn-outline-primary" style="border-radius:8px;"><%= _sa('roles.manage', 'Manage Roles') %></a>
+  </div>
+  <div class="card-body p-0">
+    <% if (!roles || !roles.length) { %>
+    <div class="text-center text-muted py-4 small"><%= _sa('roles.empty', 'No roles defined.') %></div>
+    <% } else { %>
+    <div class="sa-role-grid">
+      <% roles.forEach(function(r) {
+        var meta = r.tileMeta || { icon: 'fa-id-badge', color: '#64748b', badge: null };
+        var code = String(r.role);
+        var displayTitle = _roleDisplay(code, r.title);
+        var badge = meta.badge;
+        if (!badge && code === '99') badge = _sa('roles.badge_super', 'Super Admin');
+        if (!badge && code === '1') badge = _sa('roles.badge_system', 'System Admin');
+        var roleTitle = _sa('roles.role_title', 'Role {{code}} — {{title}}', { code: code, title: displayTitle });
+      %>
+      <div class="sa-role-tile" title="<%= roleTitle %>">
+        <span class="sa-role-code">#<%= code %></span>
+        <span class="sa-deploy-icon" style="background:<%= meta.color %>;"><i class="fa <%= meta.icon %>"></i></span>
+        <span class="sa-deploy-label"><%= displayTitle %></span>
+        <% if (badge) { %>
+        <span class="sa-role-badge"><%= badge %></span>
+        <% } %>
+      </div>
+      <% }); %>
+    </div>
+    <% } %>
+  </div>
+</div>

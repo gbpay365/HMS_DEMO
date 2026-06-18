@@ -1,0 +1,86 @@
+:root {
+  --vac-primary: var(--hms-dept-vaccination);
+  --vac-primary-dark: var(--hms-brand-dark);
+  --vac-bg: #ecfdf5;
+  --vac-due: var(--hms-warning);
+  --vac-overdue: var(--hms-danger);
+}
+
+.vac-header {
+  background: linear-gradient(135deg, var(--vac-primary-dark), var(--vac-primary));
+  color: #fff;
+  border-radius: 14px;
+  padding: 22px 28px;
+}
+
+.vac-stat {
+  background: #fff;
+  border: 1px solid var(--hms-surface-border);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+}
+
+.vac-stat .num {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.vac-stat .lbl {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.vac-card {
+  background: #fff;
+  border: 1px solid var(--hms-surface-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.vac-card-head {
+  background: var(--vac-bg);
+  border-bottom: 1px solid #d1fae5;
+  padding: 12px 16px;
+  font-weight: 700;
+  color: var(--vac-primary-dark);
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-pill.given { background: #d1fae5; color: #065f46; }
+.status-pill.scheduled { background: #dbeafe; color: #1e40af; }
+.status-pill.missed { background: #fee2e2; color: #991b1b; }
+.status-pill.due { background: #fef3c7; color: #92400e; }
+
+.vac-table th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  border-top: none;
+}
+
+.dose-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--vac-bg);
+  color: var(--vac-primary-dark);
+  font-weight: 800;
+  font-size: 0.8rem;
+}

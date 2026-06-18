@@ -1,0 +1,72 @@
+<%
+var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+var _navLabel = (typeof navLabel === 'function')
+  ? navLabel
+  : function (code, label) { return label || code; };
+var _finNav = locals.finNav || locals.finNavActive || '';
+var _path = String(locals.hmsPath || '').split('?')[0];
+var _nav = locals.accountingModuleNav;
+if (!_nav && locals.aclLayout && typeof locals.aclLayout.buildAccountingModuleNav === 'function') {
+  var _role = locals.previewRole || (locals.user && locals.user.role);
+  var _perms = locals.userPerms || [];
+  _nav = locals.aclLayout.buildAccountingModuleNav(_perms, _role, {
+    viewerRole: locals.user && locals.user.role,
+    applyRoleHide: true,
+  });
+}
+_nav = _nav || { primaryLinks: [], menus: [], shellBrand: null };
+var _FIN_MENU_ACTIVE_KEYS = {
+  'fin.nav.customers': ['billing', 'cashier', 'ar'],
+  'fin.nav.transactions': ['journal', 'expenses', 'banking', 'reconcile'],
+  'fin.nav.books': ['coa', 'gl', 'tb'],
+  'fin.nav.reporting': ['bs', 'cf', 'ap', 'reports'],
+  'fin.nav.configuration': ['settings', 'sync', 'diag', 'setup', 'tax_hub'],
+};
+function _linkActive(it) {
+  if (!it) return '';
+  if (it.code === 'fin.nav.dashboard' && _finNav === 'dashboard') return ' active';
+  if (it.code === 'fin.nav.payroll' && _finNav === 'payroll') return ' active';
+  var u = String(it.url || '').trim().split('?')[0];
+  if (u && _path && (_path === u || _path.indexOf(u + '/') === 0)) return ' active';
+  return '';
+}
+function _menuActive(menu) {
+  var code = menu.parent && menu.parent.code;
+  var groups = _FIN_MENU_ACTIVE_KEYS[code];
+  if (_finNav && groups && groups.indexOf(_finNav) >= 0) return ' active';
+  var urls = (menu.children || []).map(function (ch) { return ch.url; });
+  for (var i = 0; i < urls.length; i++) {
+    var url = String(urls[i] || '').trim().split('?')[0];
+    if (url && _path && (_path === url || _path.indexOf(url + '/') === 0)) return ' active';
+  }
+  return '';
+}
+var _shellBrand = _nav.shellBrand;
+var _onCashier = _path === '/cashier' || _path.indexOf('/cashier/') === 0;
+%>
+<header class="o_web_navbar">
+  <button type="button" class="o_nav_home" id="hmsOdooAppsBtn" title="<%= _t('nav.all_apps', { ns: 'financials', defaultValue: 'All applications' }) %>" aria-label="<%= _t('nav.apps', { ns: 'financials', defaultValue: 'Applications' }) %>"><i class="fa fa-th"></i></button>
+  <% if (_shellBrand) { %>
+  <a href="<%= _shellBrand.url || '/financials' %>" class="o_nav_module"><%= _onCashier ? _t('nav.cashier', { ns: 'financials', defaultValue: 'Cashier' }) : _navLabel(_shellBrand.code, _shellBrand.label) %></a>
+  <% } %>
+  <nav class="o_nav_menu" aria-label="<%= _t('nav.aria_label', { ns: 'financials', defaultValue: 'Accounting' }) %>">
+    <% if (locals.finCanWrite) { %>
+    <a href="/financials/journal-new" class="o_cp_new acc-nav-new-journal" title="<%= _t('nav.new_journal_title', { ns: 'financials', defaultValue: 'Manual GL journal entry' }) %>"><i class="fa fa-plus"></i> <%= _t('nav.new_journal_entry', { ns: 'financials', defaultValue: 'New journal entry' }) %></a>
+    <% } %>
+    <% (_nav.primaryLinks || []).forEach(function(it){ %>
+    <a href="<%= it.url %>" class="o_nav_link<%= _linkActive(it) %>"><%= _navLabel(it.code, it.label) %></a>
+    <% }); %>
+
+    <% (_nav.menus || []).forEach(function(menu){ %>
+    <div class="o_nav_dropdown<%= _menuActive(menu) %>">
+      <button type="button" class="o_nav_link o_nav_drop_btn"><%= _navLabel(menu.parent.code, menu.parent.label) %> <i class="fa fa-caret-down"></i></button>
+      <div class="o_nav_drop_panel">
+        <% (menu.children || []).forEach(function(ch){ %>
+        <a href="<%= ch.url %>"><%= _navLabel(ch.code, ch.label) %></a>
+        <% }); %>
+      </div>
+    </div>
+    <% }); %>
+  </nav>
+  <%- include('odoo-nav-user-menu') %>
+</header>

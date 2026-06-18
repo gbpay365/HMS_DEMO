@@ -1,0 +1,697 @@
+/**
+ * Pharmacy — Odoo 17 Invoicing / Products UI (kanban + list)
+ * Ref: great-ideas.odoo.com customer-products + BrowseInfo pharmacy module
+ */
+body.hms-body--pharmacy-odoo #hms-sidebar,
+body.hms-body--pharmacy-odoo .hms-topbar {
+  display: none !important;
+}
+
+body.hms-body--pharmacy-odoo .main-wrapper {
+  margin-left: 0 !important;
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+body.hms-body--pharmacy-odoo .page-wrapper,
+body.hms-body--pharmacy-odoo .page-wrapper > .content {
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+}
+
+.pharmacy-odoo-app {
+  --o-brand: #10b981;
+  --o-brand-hover: #5c3d54;
+  --o-border: #dee2e6;
+  --o-text: #212529;
+  --o-muted: #6c757d;
+  --o-surface: #ffffff;
+  --o-bg: #f8f9fa;
+  font-family: 'Inter', 'Roboto', 'Segoe UI', sans-serif;
+  color: var(--o-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Top navbar (Odoo horizontal menu) ── */
+.pharmacy-odoo-app .o_web_navbar {
+  display: flex;
+  align-items: center;
+  background: var(--o-surface);
+  border-bottom: 1px solid var(--o-border);
+  height: 46px;
+  min-height: 46px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  overflow: visible;
+}
+
+.pharmacy-odoo-app .o_nav_home {
+  width: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--o-muted);
+  border-right: 1px solid var(--o-border);
+  text-decoration: none;
+}
+
+.pharmacy-odoo-app .o_nav_home:hover {
+  background: var(--o-bg);
+  color: var(--o-text);
+}
+
+.pharmacy-odoo-app .o_nav_module {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--o-brand);
+  text-decoration: none;
+  border-right: 1px solid var(--o-border);
+}
+
+.pharmacy-odoo-app .o_nav_menu {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: 46px;
+  flex-wrap: nowrap;
+  overflow: visible;
+}
+
+.pharmacy-odoo-app .o_nav_link,
+.pharmacy-odoo-app .o_nav_drop_btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 46px;
+  min-height: 46px;
+  padding: 0 14px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--o-text);
+  text-decoration: none;
+  white-space: nowrap;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.pharmacy-odoo-app .o_nav_link:hover,
+.pharmacy-odoo-app .o_nav_link.active,
+.pharmacy-odoo-app .o_nav_dropdown.active > .o_nav_drop_btn,
+.pharmacy-odoo-app .o_nav_dropdown.active .o_nav_drop_btn {
+  background: var(--o-bg);
+  color: var(--o-brand);
+}
+
+.pharmacy-odoo-app .o_nav_dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  height: 46px;
+  flex-shrink: 0;
+}
+
+.pharmacy-odoo-app .o_nav_drop_btn i {
+  font-size: 0.65rem;
+  margin-left: 4px;
+}
+
+.pharmacy-odoo-app .o_nav_drop_panel {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 220px;
+  background: var(--o-surface);
+  border: 1px solid var(--o-border);
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  padding: 6px 0;
+  z-index: 1200;
+}
+
+.pharmacy-odoo-app .o_nav_dropdown:hover .o_nav_drop_panel,
+.pharmacy-odoo-app .o_nav_dropdown:focus-within .o_nav_drop_panel,
+.pharmacy-odoo-app .o_nav_dropdown.is-open .o_nav_drop_panel {
+  display: block;
+}
+
+.pharmacy-odoo-app .o_nav_drop_panel a {
+  display: block;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  color: var(--o-text);
+  text-decoration: none;
+}
+
+.pharmacy-odoo-app .o_nav_drop_panel a:hover {
+  background: var(--o-bg);
+  color: var(--o-brand);
+}
+
+.pharmacy-odoo-app .o_nav_drop_heading {
+  display: block;
+  padding: 8px 16px 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--o-muted);
+}
+
+.pharmacy-odoo-app .o_nav_badge {
+  background: #e11d48;
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: 4px;
+}
+
+.pharmacy-odoo-app .o_nav_right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.pharmacy-odoo-app .o_nav_right_link {
+  font-size: 0.82rem;
+  color: var(--o-muted);
+  text-decoration: none;
+}
+
+.pharmacy-odoo-app .o_nav_right_link:hover {
+  color: var(--o-text);
+}
+
+.pharmacy-odoo-app .o_nav_logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--o-border);
+  background: var(--o-bg);
+}
+
+.pharmacy-odoo-app .o_nav_logout:hover {
+  color: #dc2626;
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.pharmacy-odoo-app .o_nav_user {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--o-text);
+}
+
+/* ── Action manager ── */
+.pharmacy-odoo-app .o_action_manager {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--o-bg);
+}
+
+.pharmacy-odoo-app .o_flash {
+  margin: 8px 16px 0;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.pharmacy-odoo-app .o_flash_success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.pharmacy-odoo-app .o_flash_error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ── Control panel (Odoo style) ── */
+.pharmacy-odoo-app .o_control_panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 8px 16px;
+  background: var(--o-surface);
+  border-bottom: 1px solid var(--o-border);
+  flex-shrink: 0;
+}
+
+.pharmacy-odoo-app .o_cp_new {
+  background: var(--o-brand);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 7px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pharmacy-odoo-app .o_cp_new:hover {
+  background: var(--o-brand-hover);
+  color: #fff;
+}
+
+.pharmacy-odoo-app .o_cp_breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--o-text);
+}
+
+.pharmacy-odoo-app .o_cp_breadcrumb .fa-cog {
+  font-size: 0.85rem;
+  color: var(--o-muted);
+  cursor: pointer;
+}
+
+.pharmacy-odoo-app .o_cp_search_wrap {
+  flex: 1;
+  min-width: 200px;
+  max-width: 520px;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--o-border);
+  border-radius: 4px;
+  background: #fff;
+  padding: 0 8px;
+  margin: 0 auto;
+}
+
+.pharmacy-odoo-app .o_cp_search_chip {
+  background: #e9ecef;
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--o-text);
+  margin-right: 6px;
+  white-space: nowrap;
+}
+
+.pharmacy-odoo-app .o_cp_search_wrap input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 7px 4px;
+  font-size: 0.85rem;
+  min-width: 80px;
+}
+
+.pharmacy-odoo-app .o_cp_search_wrap .fa-search {
+  color: var(--o-muted);
+  font-size: 0.85rem;
+}
+
+.pharmacy-odoo-app .o_cp_pager {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--o-muted);
+}
+
+.pharmacy-odoo-app .o_cp_pager button {
+  border: none;
+  background: transparent;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: var(--o-muted);
+}
+
+.pharmacy-odoo-app .o_cp_pager button:hover {
+  color: var(--o-text);
+}
+
+.pharmacy-odoo-app .o_cp_view_switcher {
+  display: inline-flex;
+  border: 1px solid var(--o-border);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.pharmacy-odoo-app .o_cp_view_switcher button {
+  border: none;
+  background: transparent;
+  padding: 7px 11px;
+  color: var(--o-muted);
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.pharmacy-odoo-app .o_cp_view_switcher button.active {
+  background: #e9ecef;
+  color: var(--o-text);
+}
+
+.pharmacy-odoo-app .o_cp_extra {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.pharmacy-odoo-app .o_btn_link {
+  font-size: 0.82rem;
+  color: var(--o-brand);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* ── Content ── */
+.pharmacy-odoo-app .o_content {
+  flex: 1;
+  overflow: auto;
+}
+
+.pharmacy-odoo-app .o_view_panel {
+  display: none;
+}
+
+.pharmacy-odoo-app .o_view_panel.active {
+  display: block;
+}
+
+/* ── Product kanban (Odoo Products grid) ── */
+.pharmacy-odoo-app .o_product_kanban {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0;
+  padding: 8px;
+  background: var(--o-bg);
+}
+
+.pharmacy-odoo-app .o_product_card {
+  position: relative;
+  background: var(--o-surface);
+  border: 1px solid var(--o-border);
+  margin: -1px 0 0 -1px;
+  padding: 12px 12px 12px 10px;
+  min-height: 118px;
+  display: grid;
+  grid-template-columns: 1fr 64px;
+  grid-template-rows: auto auto 1fr;
+  gap: 2px 10px;
+  cursor: pointer;
+  position: relative;
+  transition: box-shadow 0.12s, z-index 0.12s;
+}
+
+.pharmacy-odoo-app .o_product_card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+
+.pharmacy-odoo-app .o_product_fav {
+  grid-column: 1;
+  color: #ced4da;
+  font-size: 0.9rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.pharmacy-odoo-app .o_product_fav.is-fav {
+  color: #f59e0b;
+}
+
+.pharmacy-odoo-app .o_product_name {
+  grid-column: 1;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--o-text);
+  line-height: 1.25;
+  margin-top: 2px;
+}
+
+.pharmacy-odoo-app .o_product_meta {
+  grid-column: 1;
+  font-size: 0.8rem;
+  color: var(--o-muted);
+  line-height: 1.45;
+}
+
+.pharmacy-odoo-app .o_product_meta strong {
+  color: var(--o-text);
+  font-weight: 500;
+}
+
+.pharmacy-odoo-app .o_product_thumb {
+  grid-column: 2;
+  grid-row: 1 / span 4;
+  width: 64px;
+  height: 64px;
+  align-self: start;
+  border-radius: 4px;
+  background: #f1f3f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+}
+
+.pharmacy-odoo-app .o_product_thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pharmacy-odoo-app .o_product_thumb i {
+  font-size: 1.75rem;
+  color: #adb5bd;
+}
+
+/* ── Odoo list view (Sales / Dispensing) ── */
+.pharmacy-odoo-app .o_list_renderer {
+  background: var(--o-surface);
+}
+
+.pharmacy-odoo-app .o_list_table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.pharmacy-odoo-app .o_list_table thead th {
+  background: var(--o-surface);
+  border-bottom: 2px solid var(--o-border);
+  padding: 10px 12px;
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: var(--o-muted);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.pharmacy-odoo-app .o_list_table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.pharmacy-odoo-app .o_list_table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.pharmacy-odoo-app .o_list_table tfoot td {
+  padding: 12px;
+  font-weight: 700;
+  border-top: 2px solid var(--o-border);
+  background: #fafafa;
+}
+
+.pharmacy-odoo-app .o_avatar_cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pharmacy-odoo-app .o_avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: #fbbf24;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pharmacy-odoo-app .o_status_pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.pharmacy-odoo-app .o_status_sales {
+  background: #198754;
+  color: #fff;
+}
+
+.pharmacy-odoo-app .o_status_pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.pharmacy-odoo-app .o_status_preparing {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.pharmacy-odoo-app .o_product_expiry {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  z-index: 2;
+}
+
+.pharmacy-odoo-app .o_product_expiry--expired {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.pharmacy-odoo-app .o_product_expiry--soon {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.pharmacy-odoo-app .pha-product-card {
+  cursor: pointer;
+}
+
+.pharmacy-odoo-app .o_list_empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--o-muted);
+}
+
+.pharmacy-odoo-app .o_list_empty i {
+  font-size: 2.5rem;
+  opacity: 0.25;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.pharmacy-odoo-app .d-none {
+  display: none !important;
+}
+
+/* Dashboard tiles */
+.pharmacy-odoo-app .o_dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  padding: 16px;
+}
+
+.pharmacy-odoo-app .o_stat_card {
+  background: var(--o-surface);
+  border: 1px solid var(--o-border);
+  border-radius: 6px;
+  padding: 16px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.pharmacy-odoo-app .o_stat_card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  text-decoration: none;
+  color: inherit;
+}
+
+.pharmacy-odoo-app .o_stat_value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--o-brand);
+}
+
+.pharmacy-odoo-app .o_stat_label {
+  font-size: 0.78rem;
+  color: var(--o-muted);
+  font-weight: 600;
+}
+
+.pharmacy-odoo-app .o_form_sheet {
+  background: var(--o-surface);
+  border: 1px solid var(--o-border);
+  border-radius: 6px;
+  margin: 16px;
+  padding: 20px;
+}
+
+.pharmacy-odoo-app .o_form_statusbar {
+  display: flex;
+  margin-bottom: 16px;
+  border: 1px solid var(--o-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.pharmacy-odoo-app .o_form_statusbar span {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #f3f4f6;
+  color: var(--o-muted);
+}
+
+.pharmacy-odoo-app .o_form_statusbar span.done {
+  background: var(--o-brand);
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .pharmacy-odoo-app .o_nav_menu {
+    display: none;
+  }
+  .pharmacy-odoo-app .o_product_kanban {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}

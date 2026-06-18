@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--emergency-kpi'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'emergency-kpi',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.emergency_kpi', { ns: 'common' }) : 'Loading…')
+}) %>
+
+<%- include('partials/footer') %>

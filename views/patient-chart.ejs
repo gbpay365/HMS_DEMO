@@ -1,0 +1,10 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--patient-chart'; %>
+<%- include('partials/header') %>
+<%- include('partials/react-page-mount', {
+  reactPage: 'patient-chart',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.patient_chart', { ns: 'common' }) : 'Loading…'),
+  pageData: locals.pageData || {}
+}) %>
+<script src="/js/hms-diagnostic-report-print.js?v=2"></script>
+<script src="/js/hms-diagnostic-report-handover.js?v=3"></script>
+<%- include('partials/footer') %>

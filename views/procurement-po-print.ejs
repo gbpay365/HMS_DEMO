@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="utf-8">
+ <title><%= po.po_number %> — Purchase order</title>
+ <style>
+  body { font-family: system-ui, sans-serif; color: #111; margin: 24px; }
+  h1 { font-size: 1.35rem; margin: 0 0 4px; }
+  .muted { color: #555; font-size: 0.9rem; }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+  th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; font-size: 0.9rem; }
+  th { background: #f8fafc; }
+  .text-right { text-align: right; }
+  .total { margin-top: 16px; font-size: 1.05rem; font-weight: 700; }
+  @media print { .no-print { display: none; } body { margin: 12px; } }
+ </style>
+</head>
+<body>
+ <div class="no-print" style="margin-bottom:16px;">
+  <button onclick="window.print()">Print / Save as PDF</button>
+  <a href="/procurement/purchase-orders/<%= po.id %>" style="margin-left:12px;">← Back to PO</a>
+ </div>
+ <h1>Purchase order <%= po.po_number %></h1>
+ <p class="muted">Status: <strong><%= po.status %></strong> · Supplier: <strong><%= po.supplier_name || po.vendor_name || '—' %></strong></p>
+ <% if (po.vendor_address) { %><p class="muted"><%= po.vendor_address %></p><% } %>
+ <% if (po.po_notes) { %><p class="muted">Notes: <%= po.po_notes %></p><% } %>
+ <% if (po.summary_description) { %><p class="muted"><strong>Scope:</strong> <%= po.summary_description %></p><% } %>
+ <table>
+  <thead>
+   <tr>
+    <th>#</th>
+    <th>Item / description</th>
+    <th class="text-right">Unit price (XAF)</th>
+    <th class="text-right">Qty</th>
+    <th class="text-right">Line total</th>
+   </tr>
+  </thead>
+  <tbody>
+   <% (lines || []).forEach(function(ln, idx) { %>
+   <tr>
+    <td><%= idx + 1 %></td>
+    <td><%= ln.item_name || ln.description || ('#' + (ln.inventory_item_id || '')) %></td>
+    <td class="text-right"><%= Number(ln.unit_price || 0).toLocaleString() %></td>
+    <td class="text-right"><%= typeof fmtPoQty === 'function' ? fmtPoQty(ln.quantity, ln.uom) : ln.quantity %></td>
+    <td class="text-right"><%= (Number(ln.quantity||0) * Number(ln.unit_price||0)).toLocaleString() %></td>
+   </tr>
+   <% }) %>
+  </tbody>
+ </table>
+ <p class="total">Grand total: <%= Number(po.total_amount || 0).toLocaleString() %> XAF</p>
+ <% if (autoPrint) { %><script>window.addEventListener('load', function(){ window.print(); });</script><% } %>
+</body>
+</html>

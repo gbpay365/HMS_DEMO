@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="<%= locals.lang || 'en' %>">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= title %></title>
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/font-awesome.min.css">
+<link rel="stylesheet" href="/css/hms-fonts-local.css">
+<link rel="stylesheet" href="/css/hms-tokens.css">
+<link rel="stylesheet" href="/css/hms-app-surface.css">
+<style>
+:root {
+  --pp-bg: var(--hms-surface-bg, #f0f4f8);
+  --pp-surface: var(--hms-surface-card, #ffffff);
+  --pp-card: var(--hms-surface-card, #ffffff);
+  --pp-border: var(--hms-surface-border, rgba(15, 23, 42, 0.08));
+  --pp-muted: var(--hms-ink-muted, #64748b);
+  --pp-text: var(--hms-ink, #0f172a);
+  --pp-accent: var(--hms-info, #0284c7);
+  --pp-accent2: #6366f1;
+  --pp-success: var(--hms-success, #059669);
+  --pp-warning: var(--hms-warning, #d97706);
+  --pp-danger: var(--hms-danger, #dc2626);
+  --pp-radius: var(--hms-surface-radius, 16px);
+  --pp-shadow: var(--hms-surface-shadow, 0 4px 24px rgba(15, 23, 42, 0.06));
+  --pp-shadow-lg: var(--hms-shadow-card, 0 16px 48px rgba(15, 23, 42, 0.08));
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--pp-bg);
+  color: var(--pp-text);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+.pp-bg-gradient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 90% 60% at 0% 0%, rgba(56, 189, 248, 0.14), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 100% 0%, rgba(129, 140, 248, 0.12), transparent 50%),
+    radial-gradient(ellipse 80% 40% at 50% 100%, rgba(52, 211, 153, 0.1), transparent 55%),
+    linear-gradient(180deg, #f8fbff 0%, #f0f6fc 100%);
+}
+.pp-bg-gradient::before,
+.pp-bg-gradient::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  animation: ppFloat 18s ease-in-out infinite;
+  opacity: 0.45;
+}
+.pp-bg-gradient::before {
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(125, 211, 252, 0.5), transparent 70%);
+  top: 15%; right: 8%;
+  animation-delay: -4s;
+}
+.pp-bg-gradient::after {
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(196, 181, 253, 0.45), transparent 70%);
+  bottom: 20%; left: 5%;
+  animation-delay: -9s;
+}
+@keyframes ppFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(12px, -18px) scale(1.05); }
+}
+.pp-wrap { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; padding: 0 20px 48px; }
+
+/* Nav */
+.pp-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--pp-border);
+  margin-bottom: 24px;
+  animation: ppSlideUp 0.6s ease both;
+}
+@keyframes ppSlideUp {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: none; }
+}
+.pp-logo {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -.02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--pp-text);
+}
+.pp-logo-icon {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.18);
+  border: 1px solid rgba(15, 23, 42, .08);
+  transition: transform 0.35s ease;
+}
+.pp-logo-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pp-logo:hover .pp-logo-icon { transform: rotate(-6deg) scale(1.05); }
+.pp-nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.pp-nav-actions span { color: var(--pp-muted); font-size: .88rem; }
+.pp-btn-out {
+  border: 1px solid var(--pp-border);
+  background: #fff;
+  color: var(--pp-text);
+  padding: 9px 18px;
+  border-radius: 999px;
+  font-size: .82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: box-shadow 0.25s, transform 0.2s, border-color 0.2s;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+.pp-btn-out:hover {
+  background: #fff;
+  color: var(--pp-accent);
+  border-color: rgba(2, 132, 199, 0.25);
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.12);
+  transform: translateY(-1px);
+}
+
+/* Hero */
+.pp-hero {
+  margin-bottom: 28px;
+  animation: ppSlideUp 0.65s ease 0.08s both;
+}
+.pp-hero h1 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.55rem, 4vw, 2.05rem);
+  letter-spacing: -.03em;
+  margin: 0 0 10px;
+  color: var(--pp-text);
+}
+.pp-hero p { margin: 0; color: var(--pp-muted); font-size: .94rem; max-width: 560px; }
+
+/* Alerts */
+.pp-alert {
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  font-size: .88rem;
+  border: 1px solid transparent;
+  animation: ppSlideUp 0.5s ease both;
+}
+.pp-alert-success { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+.pp-alert-danger  { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+
+/* Cards */
+.pp-card {
+  background: var(--pp-card);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  box-shadow: var(--pp-shadow);
+  overflow: hidden;
+  margin-bottom: 20px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.pp-card:hover {
+  box-shadow: var(--pp-shadow-lg);
+  transform: translateY(-2px);
+}
+.pp-card-h {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--pp-border);
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.9), #fff);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pp-card-h h2, .pp-card-h h3 {
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--pp-text);
+}
+.pp-card-h .pp-icon { color: var(--pp-accent); font-size: 1rem; }
+.pp-card-b { padding: 20px 22px; }
+
+/* Profile strip */
+.pp-profile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  align-items: flex-start;
+  padding: 26px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  margin-bottom: 26px;
+  box-shadow: var(--pp-shadow);
+  animation: ppSlideUp 0.7s ease 0.12s both;
+}
+.pp-avatar {
+  width: 92px; height: 92px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #38bdf8, #818cf8);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.85rem;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 10px 28px rgba(56, 189, 248, 0.35);
+  animation: ppPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+}
+@keyframes ppPop {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+.pp-profile-main { flex: 1; min-width: 200px; }
+.pp-profile-main h2 {
+  margin: 0 0 8px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.38rem;
+  font-weight: 700;
+  color: var(--pp-text);
+}
+.pp-profile-meta { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: .85rem; color: var(--pp-muted); }
+.pp-profile-meta strong { color: var(--pp-text); font-weight: 600; }
+.pp-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 600;
+  background: #f0f9ff;
+  color: #0369a1;
+  border: 1px solid rgba(2, 132, 199, 0.15);
+}
+.pp-chip.warn { background: #fffbeb; color: #b45309; border-color: rgba(217, 119, 6, 0.2); }
+
+/* Stat grid */
+.pp-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.pp-stat {
+  background: #fff;
+  border: 1px solid var(--pp-border);
+  border-radius: 16px;
+  padding: 18px 14px;
+  text-align: center;
+  box-shadow: var(--pp-shadow);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: ppStatIn 0.55s ease both;
+}
+.pp-stat:nth-child(1) { animation-delay: 0.05s; }
+.pp-stat:nth-child(2) { animation-delay: 0.1s; }
+.pp-stat:nth-child(3) { animation-delay: 0.15s; }
+.pp-stat:nth-child(4) { animation-delay: 0.2s; }
+.pp-stat:nth-child(5) { animation-delay: 0.25s; }
+@keyframes ppStatIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+.pp-stat:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--pp-shadow-lg);
+}
+.pp-stat .v { font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 700; color: var(--pp-accent); }
+.pp-stat .l { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--pp-muted); margin-top: 6px; }
+
+/* Tabs */
+.pp-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid var(--pp-border);
+  box-shadow: 0 2px 16px rgba(15, 23, 42, 0.04);
+  animation: ppSlideUp 0.6s ease 0.18s both;
+}
+.pp-tab {
+  flex: 1;
+  min-width: 100px;
+  text-align: center;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: var(--pp-muted);
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  font-family: inherit;
+}
+.pp-tab:hover { color: var(--pp-text); background: rgba(2, 132, 199, 0.06); transform: translateY(-1px); }
+.pp-tab.active {
+  background: linear-gradient(135deg, #e0f2fe, #eef2ff);
+  color: var(--pp-accent);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.15);
+}
+.pp-pane { display: none; animation: ppFade 0.35s ease; }
+.pp-pane.active { display: block; }
+@keyframes ppFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* Tables */
+.pp-table-wrap { overflow-x: auto; margin: 0 -4px; }
+.pp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+}
+.pp-table th {
+  text-align: left;
+  padding: 12px 14px;
+  color: var(--pp-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-size: .68rem;
+  border-bottom: 1px solid var(--pp-border);
+  white-space: nowrap;
+  background: #fafbfc;
+}
+.pp-table td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  vertical-align: top;
+  color: var(--pp-text);
+}
+.pp-table tr:last-child td { border-bottom: none; }
+
+.pp-badge {
+  display: inline-block;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 600;
+}
+.pp-badge-ok { background: #ecfdf5; color: #047857; }
+.pp-badge-warn { background: #fffbeb; color: #b45309; }
+.pp-badge-info { background: #f0f9ff; color: #0369a1; }
+.pp-badge-muted { background: #f1f5f9; color: #475569; }
+
+/* Forms */
+.pp-form label { display: block; font-size: .72rem; font-weight: 700; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .05em; }
+.pp-form .form-control {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  color: var(--pp-text);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: .9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.pp-form .form-control:focus {
+  border-color: var(--pp-accent);
+  box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12);
+  outline: none;
+}
+.pp-btn-primary {
+  background: linear-gradient(135deg, #0284c7, #6366f1);
+  border: none;
+  color: #fff;
+  padding: 13px 26px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: .9rem;
+  cursor: pointer;
+  transition: transform 0.18s, box-shadow 0.22s;
+  font-family: inherit;
+  box-shadow: 0 6px 22px rgba(2, 132, 199, 0.28);
+}
+.pp-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(99, 102, 241, 0.28);
+  color: #fff;
+}
+.pp-btn-ghost {
+  background: #fff;
+  border: 1px solid var(--pp-border);
+  color: var(--pp-text);
+  padding: 9px 16px;
+  border-radius: 12px;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.pp-btn-ghost:hover { box-shadow: var(--pp-shadow); border-color: rgba(2, 132, 199, 0.2); }
+
+/* Wallet QR */
+.pp-qr-box {
+  text-align: center;
+  padding: 22px;
+  background: linear-gradient(180deg, #f8fafc, #fff);
+  border-radius: 16px;
+  border: 2px dashed rgba(2, 132, 199, 0.2);
+}
+.pp-qr-box img { border-radius: 14px; background: #fff; padding: 10px; max-width: 100%; height: auto; box-shadow: var(--pp-shadow); }
+
+/* List items */
+.pp-list-item {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+.pp-list-item:last-child { border-bottom: none; padding-bottom: 0; }
+.pp-list-item:first-child { padding-top: 0; }
+.pp-list-title { font-weight: 600; color: var(--pp-text); margin-bottom: 4px; }
+.pp-list-sub { font-size: .8rem; color: var(--pp-muted); }
+
+/* Empty */
+.pp-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--pp-muted);
+  font-size: .88rem;
+}
+.pp-empty i { font-size: 2rem; opacity: .35; margin-bottom: 12px; display: block; color: var(--pp-accent); }
+
+/* Vitals grid */
+.pp-vitals {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+}
+.pp-vital {
+  background: linear-gradient(145deg, #f8fafc, #fff);
+  border: 1px solid var(--pp-border);
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+.pp-vital:hover { transform: scale(1.03); }
+.pp-vital .num { font-family: 'Outfit', sans-serif; font-size: 1.28rem; font-weight: 700; color: var(--pp-accent); }
+.pp-vital .lbl { font-size: .68rem; color: var(--pp-muted); text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
+
+/* —— Book appointment (professional) —— */
+.pp-book-hero {
+  border-radius: var(--pp-radius);
+  padding: 28px 28px 26px;
+  margin-bottom: 22px;
+  background: linear-gradient(125deg, #e0f2fe 0%, #eef2ff 45%, #fdf4ff 100%);
+  border: 1px solid rgba(2, 132, 199, 0.12);
+  box-shadow: var(--pp-shadow);
+  position: relative;
+  overflow: hidden;
+  animation: ppSlideUp 0.55s ease both;
+}
+.pp-book-hero::after {
+  content: '';
+  position: absolute;
+  top: -40%; right: -15%;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(255,255,255,0.85), transparent 65%);
+  pointer-events: none;
+  animation: ppFloat 14s ease-in-out infinite;
+}
+.pp-book-badge {
+  display: inline-block;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #0369a1;
+  background: rgba(255,255,255,0.75);
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255,255,255,0.9);
+}
+.pp-book-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.55rem;
+  font-weight: 800;
+  margin: 0 0 8px;
+  color: var(--pp-text);
+  letter-spacing: -.02em;
+}
+.pp-book-lead { margin: 0; color: #475569; font-size: .95rem; max-width: 520px; line-height: 1.55; }
+.pp-book-card {
+  border-radius: var(--pp-radius);
+  border: 1px solid var(--pp-border);
+  overflow: hidden;
+  animation: ppSlideUp 0.6s ease 0.08s both;
+}
+.pp-book-card:hover {
+  transform: none;
+  box-shadow: var(--pp-shadow-lg);
+}
+.pp-book-card .pp-card-b { padding: 0; }
+.pp-book-form { padding: 0; }
+.pp-book-accent-bar {
+  height: 5px;
+  background: linear-gradient(90deg, #0284c7, #6366f1, #c084fc);
+  background-size: 200% 100%;
+  animation: ppShimmer 8s ease infinite;
+}
+@keyframes ppShimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.pp-book-inner { padding: 26px 26px 28px; background: #fff; }
+.pp-book-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px 32px;
+}
+@media (max-width: 768px) {
+  .pp-book-grid { grid-template-columns: 1fr; gap: 22px; }
+}
+.pp-book-section-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--pp-text);
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pp-book-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 10px;
+  font-size: .82rem;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #0284c7, #6366f1);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+}
+.pp-book-hint {
+  font-size: .78rem;
+  color: var(--pp-muted);
+  margin-top: 6px;
+  line-height: 1.45;
+}
+.pp-book-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(15,23,42,0.08), transparent);
+  margin: 26px 0;
+}
+.pp-visit-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+@media (max-width: 768px) {
+  .pp-visit-options { grid-template-columns: 1fr; }
+}
+.pp-visit-option {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding: 16px 18px;
+  background: #fff;
+  border: 2px solid var(--pp-border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color .2s, box-shadow .2s, transform .12s, background .2s;
+  margin: 0;
+}
+.pp-visit-option:hover {
+  border-color: rgba(2, 132, 199, 0.45);
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.08);
+  transform: translateY(-1px);
+}
+.pp-visit-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.pp-visit-option--active {
+  border-color: #0284c7;
+  background: linear-gradient(180deg, rgba(2,132,199,0.06) 0%, rgba(99,102,241,0.05) 100%);
+  box-shadow: 0 8px 22px rgba(2, 132, 199, 0.14);
+}
+.pp-visit-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+.pp-visit-body { flex: 1; min-width: 0; }
+.pp-visit-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: .95rem;
+  color: var(--pp-text);
+  margin-bottom: 4px;
+}
+.pp-visit-sub {
+  font-size: .82rem;
+  color: var(--pp-muted);
+  line-height: 1.45;
+}
+.pp-visit-check {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #0284c7;
+  color: #fff;
+  font-size: .7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(.6);
+  transition: opacity .18s, transform .18s;
+}
+.pp-visit-option--active .pp-visit-check {
+  opacity: 1;
+  transform: scale(1);
+}
+.pp-visit-required-hint {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: rgba(2, 132, 199, 0.08);
+  border-left: 3px solid #0284c7;
+  border-radius: 8px;
+  font-size: .82rem;
+  color: #0c4a6e;
+}
+.pp-visit-required-hint.is-visible { display: block; }
+.pp-book-message-wrap { margin-top: 4px; }
+.pp-book-actions {
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid var(--pp-border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.pp-book-footnote {
+  margin: 0;
+  font-size: .84rem;
+  color: var(--pp-muted);
+  max-width: 420px;
+}
+.pp-book-submit {
+  min-width: 220px;
+  padding: 14px 28px !important;
+  border-radius: 14px !important;
+  font-size: .95rem !important;
+}
+.pp-book-submit i { margin-right: 8px; }
+
+@media print {
+  .pp-nav, .pp-tabs, .pp-btn-primary, .pp-btn-ghost, .pp-btn-out { display: none !important; }
+  body { background: #fff; color: #000; }
+  .pp-card, .pp-profile { box-shadow: none; border: 1px solid #ddd; }
+}
+
+@media (max-width: 576px) {
+  .pp-tabs { flex-direction: column; }
+  .pp-tab { width: 100%; }
+  .pp-book-actions { flex-direction: column; align-items: stretch; }
+  .pp-book-submit { width: 100%; min-width: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, .pp-bg-gradient::before, .pp-bg-gradient::after,
+  .pp-book-accent-bar {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+</style>
+</head>
+<body>
+<div class="pp-bg-gradient"></div>
+
+<% 
+  var _lang = locals.lang || 'en';
+  var _t = locals.t || function (k, o) { return (o && o.defaultValue) || k; };
+  function _tp(key, fallback, opts) {
+    var o = { ns: 'portal', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { o[pk] = opts[pk]; } }
+    return _t(key, o);
+  }
+  function ppAge(dob) {
+    if (!dob) return null;
+    var d = new Date(dob);
+    if (isNaN(d.getTime())) return null;
+    var diff = Date.now() - d.getTime();
+    var age = Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000));
+    return age >= 0 ? age : null;
+  }
+  function ppInitials(fn, ln) {
+    var a = (fn || '').trim().charAt(0);
+    var b = (ln || '').trim().charAt(0);
+    return ((a || '') + (b || '')).toUpperCase() || 'P';
+  }
+  function ppTrunc(s, n) {
+    if (!s) return '—';
+    s = String(s);
+    return s.length <= n ? s : s.slice(0, n) + '…';
+  }
+  // Patient view treats `portal_state` as the source of truth for portal-
+  // booked appointments. Falls back to the legacy numeric `status` column
+  // (mirrors views/appointments.ejs) only when portal_state is NULL.
+  function ppApptStatus(appt) {
+    var ps = appt && appt.portal_state ? String(appt.portal_state).toLowerCase() : null;
+    if (ps === 'confirmed') return { cls: 'pp-badge-ok',    label: _tp('appt_status.confirmed', 'Confirmed'), state: 'confirmed' };
+    if (ps === 'declined')  return { cls: 'pp-badge-muted', label: _tp('appt_status.declined', 'Declined'),  state: 'declined' };
+    if (ps === 'cancelled') return { cls: 'pp-badge-muted', label: _tp('appt_status.cancelled', 'Cancelled'), state: 'cancelled' };
+    if (ps === 'pending')   return { cls: 'pp-badge-warn',  label: _tp('appt_status.pending', 'Pending'),   state: 'pending' };
+    var st = appt && appt.status;
+    var n  = (st === null || st === undefined || st === '') ? null : Number(st);
+    if (n === 1) return { cls: 'pp-badge-ok',    label: _tp('appt_status.confirmed', 'Confirmed'), state: 'confirmed' };
+    if (n === 2) return { cls: 'pp-badge-info',  label: _tp('appt_status.completed', 'Completed'), state: 'completed' };
+    if (n === 0) return { cls: 'pp-badge-muted', label: _tp('appt_status.cancelled', 'Cancelled'), state: 'declined'  };
+    return { cls: 'pp-badge-warn', label: _tp('appt_status.pending', 'Pending'), state: 'pending' };
+  }
+  function ppProblemTitle(pr) {
+    return pr.problem_name || pr.name || pr.title || pr.description || pr.diagnosis || pr.icd_code || _tp('problem_default', 'Problem');
+  }
+  var ageYears = (patient.calculated_age_years !== undefined && patient.calculated_age_years !== null && patient.calculated_age_years !== '')
+    ? Number(patient.calculated_age_years)
+    : ppAge(patient.dob);
+  var initials = ppInitials(patient.first_name, patient.last_name);
+%>
+<!-- Hidden printable summary -->
+<div id="pp-print-root" style="display:none;">
+ <h2><%= _tp('print.summary_title', 'Medical summary — {{name}} (#P-{{id}})', { name: patient.first_name + ' ' + patient.last_name, id: patient.id }) %></h2>
+ <p><%= _tp('print.generated', 'Generated {{date}}', { date: new Date().toLocaleString(_lang === 'fr' ? 'fr-FR' : 'en-GB') }) %></p>
+ <p><% if (patient.age_only_registration) { %><strong><%= _tp('print.age', 'Age:') %></strong> <%= ageYears != null ? ageYears + ' ' + _tp('print.years_short', 'yrs') : '—' %><% } else { %><strong><%= _tp('print.dob', 'DOB:') %></strong> <%= patient.dob || '—' %> <% if (ageYears !== null) { %>(<%= ageYears %> <%= _tp('print.years_short', 'yrs') %>)<% } %><% } %> &nbsp; <strong><%= _tp('print.gender', 'Gender:') %></strong> <%= patient.gender || '—' %></p>
+ <p><strong><%= _tp('print.contact', 'Contact:') %></strong> <%= patient.phone || '—' %> · <%= patient.email || '—' %></p>
+ <% if (patient.address) { %><p><strong><%= _tp('print.address', 'Address:') %></strong> <%= patient.address %></p><% } %>
+ <% if (allergies && allergies.length) { %>
+ <h3><%= _tp('print.allergies', 'Allergies') %></h3><ul><% allergies.forEach(function(a){ %><li><%= a.substance %> — <%= a.reaction %> (<%= a.severity %>)</li><% }); %></ul>
+ <% } %>
+</div>
+
+<div class="pp-wrap">
+ <nav class="pp-nav">
+  <div class="pp-logo">
+   <span class="pp-logo-icon"><img src="/img/fransohh-logo.png" alt="ZAIZENS logo"/></span>
+   <span>ZAIZENS · <%= _tp('nav.brand', 'My Care Portal') %></span>
+  </div>
+  <div class="pp-nav-actions">
+   <span><i class="fa fa-user-circle-o"></i> <%= patient.first_name %> <%= patient.last_name %></span>
+   <a href="/portal/logout" class="pp-btn-out"><i class="fa fa-sign-out"></i> <%= _tp('nav.sign_out', 'Sign out') %></a>
+  </div>
+ </nav>
+
+ <% if (locals.flash) { %><div class="pp-alert pp-alert-success"><i class="fa fa-check-circle"></i> <%= locals.flash %></div><% } %>
+ <% if (locals.error) { %><div class="pp-alert pp-alert-danger"><i class="fa fa-exclamation-circle"></i> <%= locals.error %></div><% } %>
+
+ <header class="pp-hero">
+  <h1><%= _tp('hero.welcome', 'Welcome back, {{name}}', { name: patient.first_name }) %> <i class="fa fa-smile-o" aria-hidden="true"></i></h1>
+  <p><i class="fa fa-hospital-o" aria-hidden="true"></i> <%= _tp('hero.subtitle', 'Your health records, appointments, and prepaid wallet — all in one secure place. For emergencies, please call your clinic directly.') %></p>
+ </header>
+
+ <!-- Profile -->
+ <section class="pp-profile">
+  <div class="pp-avatar"><%= initials %></div>
+  <div class="pp-profile-main">
+   <h2><%= patient.first_name %> <%= patient.last_name %></h2>
+   <div class="pp-profile-meta">
+    <span><strong><%= _tp('profile.patient_id', 'Patient ID') %></strong> #P-<%= patient.id %></span>
+    <% if (ageYears !== null) { %><span><strong><%= _tp('profile.age', 'Age') %></strong> <%= ageYears %> <%= _tp('profile.years', 'years') %><% if (patient.age_only_registration) { %> <em class="text-muted"><%= _tp('profile.age_only_note', '(registered as age only)') %></em><% } %></span><% } %>
+    <span><strong><%= _tp('profile.gender', 'Gender') %></strong> <%= patient.gender || '—' %></span>
+    <% if (!patient.age_only_registration) { %><span><strong><%= _tp('profile.dob', 'DOB') %></strong> <%= patient.dob ? fmtDate(patient.dob) : '—' %></span><% } %>
+    <span><strong><%= _tp('profile.type', 'Type') %></strong> <%= patient.patient_type || '—' %></span>
+   </div>
+   <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;">
+    <span class="pp-chip"><i class="fa fa-phone"></i> <%= patient.phone || _tp('profile.no_phone', 'No phone') %></span>
+    <span class="pp-chip"><i class="fa fa-envelope-o"></i> <%= patient.email || _tp('profile.no_email', 'No email') %></span>
+    <% if (patient.cni_number) { %><span class="pp-chip"><i class="fa fa-id-card-o"></i> ID <%= patient.cni_number %></span><% } %>
+   </div>
+  </div>
+  <div style="min-width:200px;">
+   <% if (patient.address) { %>
+   <div style="font-size:.8rem;color:var(--pp-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;"><i class="fa fa-map-marker" aria-hidden="true"></i> <%= _tp('profile.address', 'Address') %></div>
+   <div style="font-size:.88rem;color:var(--pp-text);"><%= patient.address %></div>
+   <% } %>
+   <% if (patient.next_of_kin_name || patient.emergency_contact_name) { %>
+   <div style="margin-top:14px;font-size:.85rem;color:var(--pp-muted);">
+    <% if (patient.next_of_kin_name) { %><div><strong style="color:var(--pp-text);"><i class="fa fa-users" aria-hidden="true"></i> <%= _tp('profile.next_of_kin', 'Next of kin:') %></strong> <%= patient.next_of_kin_name %> <% if (patient.next_of_kin_phone) { %>(<%= patient.next_of_kin_phone %>)<% } %></div><% } %>
+    <% if (patient.emergency_contact_name) { %><div style="margin-top:4px;"><strong style="color:var(--pp-text);"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> <%= _tp('profile.emergency', 'Emergency:') %></strong> <%= patient.emergency_contact_name %> <% if (patient.emergency_contact_phone) { %>(<%= patient.emergency_contact_phone %>)<% } %></div><% } %>
+   </div>
+   <% } %>
+   <% if (locals.activeInsurance && activeInsurance) { %>
+   <div style="margin-top:14px;padding:12px;background:#ecfdf5;border-radius:12px;border:1px solid #a7f3d0;">
+    <div style="font-size:.72rem;text-transform:uppercase;color:#047857;font-weight:700;"><i class="fa fa-shield" aria-hidden="true"></i> <%= _tp('profile.primary_insurance', 'Primary insurance') %></div>
+    <div style="font-weight:600;margin-top:4px;"><%= activeInsurance.carrier_name || '—' %></div>
+    <% if (activeInsurance.policy_number) { %><div style="font-size:.82rem;color:var(--pp-muted);"><%= _tp('profile.policy', 'Policy {{number}}', { number: activeInsurance.policy_number }) %></div><% } %>
+   </div>
+   <% } %>
+  </div>
+ </section>
+
+ <!-- Quick stats -->
+ <div class="pp-stats">
+  <div class="pp-stat"><div class="v"><%= (appointments && appointments.length) ? appointments.length : 0 %></div><div class="l"><i class="fa fa-calendar" aria-hidden="true"></i> <%= _tp('stats.appointments', 'Appointments') %></div></div>
+  <div class="pp-stat"><div class="v"><%= (labResults && labResults.length) ? labResults.length : 0 %></div><div class="l"><i class="fa fa-flask" aria-hidden="true"></i> <%= _tp('stats.lab_tests', 'Lab tests') %></div></div>
+  <div class="pp-stat"><div class="v"><%= (radResults && radResults.length) ? radResults.length : 0 %></div><div class="l"><i class="fa fa-picture-o" aria-hidden="true"></i> <%= _tp('stats.imaging', 'Imaging') %></div></div>
+  <div class="pp-stat"><div class="v"><%= (consultations && consultations.length) ? consultations.length : 0 %></div><div class="l"><i class="fa fa-stethoscope" aria-hidden="true"></i> <%= _tp('stats.consultations', 'Consultations') %></div></div>
+  <div class="pp-stat"><div class="v"><%= wallet ? Number(wallet.balance||0).toLocaleString('fr-FR') : '0' %></div><div class="l"><i class="fa fa-money" aria-hidden="true"></i> <%= _tp('stats.wallet', 'Wallet (FCFA)') %></div></div>
+ </div>
+
+ <!-- Tabs -->
+ <div class="pp-tabs" role="tablist">
+  <button type="button" class="pp-tab active" data-pane="overview"><i class="fa fa-home" aria-hidden="true"></i> <%= _tp('tabs.overview', 'Overview') %></button>
+  <button type="button" class="pp-tab" data-pane="records"><i class="fa fa-folder-open-o" aria-hidden="true"></i> <%= _tp('tabs.records', 'Medical records') %></button>
+  <button type="button" class="pp-tab" data-pane="appointments"><i class="fa fa-calendar" aria-hidden="true"></i> <%= _tp('tabs.appointments', 'Appointments') %></button>
+  <button type="button" class="pp-tab" data-pane="wallet"><i class="fa fa-credit-card" aria-hidden="true"></i> <%= _tp('tabs.wallet', 'Wallet') %></button>
+ </div>
+
+ <!-- Overview -->
+ <div id="pane-overview" class="pp-pane active">
+  <div class="row">
+   <div class="col-lg-6">
+    <div class="pp-card">
+     <div class="pp-card-h"><h3><i class="fa fa-exclamation-triangle pp-icon" style="color:#f87171;"></i><%= _tp('overview.allergies', 'Allergies') %></h3></div>
+     <div class="pp-card-b">
+      <% if (!allergies || allergies.length === 0) { %>
+       <div class="pp-empty"><i class="fa fa-check-circle"></i><%= _tp('overview.no_allergies', 'No known allergies on file.') %></div>
+      <% } else { allergies.forEach(function(a){ %>
+       <div class="pp-list-item">
+        <div class="pp-list-title"><%= a.substance || _tp('misc.allergen_default', 'Allergen') %></div>
+        <div class="pp-list-sub"><%= a.reaction || '—' %> · <%= _tp('misc.severity', 'Severity') %>: <%= a.severity || '—' %></div>
+       </div>
+      <% }); } %>
+     </div>
+    </div>
+   </div>
+   <div class="col-lg-6">
+    <div class="pp-card">
+     <div class="pp-card-h"><h3><i class="fa fa-pills pp-icon"></i><%= _tp('overview.medications', 'Medications') %></h3></div>
+     <div class="pp-card-b">
+      <% if (!medications || medications.length === 0) { %>
+       <div class="pp-empty"><i class="fa fa-medkit"></i><%= _tp('overview.no_medications', 'No active medications listed.') %></div>
+      <% } else { medications.forEach(function(m){ %>
+       <div class="pp-list-item">
+        <div class="pp-list-title"><%= m.name || _tp('misc.medication_default', 'Medication') %> <span class="pp-badge pp-badge-muted"><%= m.status || 'active' %></span></div>
+        <div class="pp-list-sub"><%= m.dose || '—' %> · <%= m.route || '—' %></div>
+       </div>
+      <% }); } %>
+     </div>
+    </div>
+   </div>
+  </div>
+
+  <% if (problems && problems.length > 0) { %>
+  <div class="pp-card">
+   <div class="pp-card-h"><h3><i class="fa fa-list-alt pp-icon"></i><%= _tp('overview.problem_list', 'Problem list') %></h3></div>
+   <div class="pp-card-b">
+    <% problems.forEach(function(pr){ %>
+     <div class="pp-list-item">
+      <div class="pp-list-title"><%= ppProblemTitle(pr) %></div>
+      <div class="pp-list-sub"><%= pr.status ? (_tp('misc.status', 'Status') + ': ' + pr.status) : '' %> <%= pr.notes ? ppTrunc(pr.notes, 120) : '' %></div>
+     </div>
+    <% }); %>
+   </div>
+  </div>
+  <% } %>
+
+  <div class="pp-card">
+   <div class="pp-card-h">
+    <h3><i class="fa fa-heartbeat pp-icon" style="color:#f472b6;"></i><%= _tp('overview.vitals', 'Vitals') %></h3>
+    <% if (vitalsHistory && vitalsHistory.length > 1) { %><span class="pp-badge pp-badge-info"><%= _tp('misc.recent_readings', '{{count}} recent readings', { count: vitalsHistory.length }) %></span><% } %>
+   </div>
+   <div class="pp-card-b">
+    <% if (!vitals && (!vitalsHistory || vitalsHistory.length === 0)) { %>
+     <div class="pp-empty"><i class="fa fa-heart-o"></i><%= _tp('overview.no_vitals', 'No vitals recorded yet.') %></div>
+    <% } else { %>
+     <% var v0 = vitals || (vitalsHistory && vitalsHistory[0]); %>
+     <div class="pp-vitals">
+      <% if (v0.bp_sys != null || v0.bp_dia != null) { %><div class="pp-vital"><div class="num"><%= v0.bp_sys %>/<%= v0.bp_dia %></div><div class="lbl"><%= _tp('overview.bp', 'BP mmHg') %></div></div><% } %>
+      <% if (v0.heart_rate != null) { %><div class="pp-vital"><div class="num"><%= v0.heart_rate %></div><div class="lbl"><%= _tp('overview.heart_rate', 'Heart rate') %></div></div><% } %>
+      <% if (v0.temp_c != null) { %><div class="pp-vital"><div class="num"><%= v0.temp_c %>°</div><div class="lbl"><%= _tp('overview.temp', 'Temp °C') %></div></div><% } %>
+      <% if (v0.spo2 != null) { %><div class="pp-vital"><div class="num"><%= v0.spo2 %>%</div><div class="lbl"><%= _tp('overview.spo2', 'SpO₂') %></div></div><% } %>
+      <% if (v0.rr != null) { %><div class="pp-vital"><div class="num"><%= v0.rr %></div><div class="lbl"><%= _tp('overview.rr', 'RR /min') %></div></div><% } %>
+      <% if (v0.weight_kg != null) { %><div class="pp-vital"><div class="num"><%= v0.weight_kg %></div><div class="lbl"><%= _tp('overview.weight', 'Weight kg') %></div></div><% } %>
+     </div>
+     <% if (vitalsHistory && vitalsHistory.length > 1) { %>
+     <div style="margin-top:18px;font-size:.85rem;color:var(--pp-muted);"><%= _tp('overview.recent_history', 'Recent history') %></div>
+     <div class="pp-table-wrap" style="margin-top:8px;">
+      <table class="pp-table">
+       <thead><tr><th><%= _tp('overview.col_date', 'Date') %></th><th><%= _tp('overview.col_bp', 'BP') %></th><th><%= _tp('overview.col_hr', 'HR') %></th><th><%= _tp('overview.col_temp', 'Temp') %></th><th><%= _tp('overview.col_spo2', 'SpO₂') %></th></tr></thead>
+       <tbody>
+       <% vitalsHistory.slice(0,8).forEach(function(v){ %>
+        <tr>
+         <td><%= v.created_at ? new Date(v.created_at).toLocaleString() : '—' %></td>
+         <td><%= (v.bp_sys!=null||v.bp_dia!=null) ? (v.bp_sys+'/'+v.bp_dia) : '—' %></td>
+         <td><%= v.heart_rate != null ? v.heart_rate : '—' %></td>
+         <td><%= v.temp_c != null ? v.temp_c+'°C' : '—' %></td>
+         <td><%= v.spo2 != null ? v.spo2+'%' : '—' %></td>
+        </tr>
+       <% }); %>
+       </tbody>
+      </table>
+     </div>
+     <% } %>
+    <% } %>
+   </div>
+  </div>
+ </div>
+
+ <!-- Medical records -->
+ <div id="pane-records" class="pp-pane">
+  <div class="pp-card">
+   <div class="pp-card-h">
+    <h3><i class="fa fa-stethoscope pp-icon"></i><%= _tp('records.consultations', 'Consultations') %></h3>
+    <button type="button" class="pp-btn-ghost" onclick="window.print()"><i class="fa fa-print"></i> <%= _tp('misc.print_summary', 'Print summary') %></button>
+   </div>
+   <div class="pp-table-wrap pp-card-b">
+    <% if (!consultations || consultations.length === 0) { %>
+     <div class="pp-empty"><i class="fa fa-stethoscope"></i><%= _tp('records.no_consultations', 'No consultation records yet.') %></div>
+    <% } else { %>
+    <table class="pp-table">
+     <thead><tr><th><%= _tp('overview.col_date', 'Date') %></th><th><%= _tp('records.col_department', 'Department') %></th><th><%= _tp('records.col_clinician', 'Clinician') %></th><th><%= _tp('records.col_notes', 'Notes') %></th><th><%= _tp('records.col_status', 'Status') %></th></tr></thead>
+     <tbody>
+     <% consultations.forEach(function(c){ %>
+      <tr>
+       <td><%= c.created_at ? fmtDate(c.created_at) : '—' %></td>
+       <td><%= c.department_name || '—' %></td>
+       <td><%= c.doc_fn ? ('Dr. '+c.doc_fn+' '+c.doc_ln) : '—' %></td>
+       <td><%= c.treatment_note ? ppTrunc(c.treatment_note, 100) : (c.chief_complaint ? ppTrunc(c.chief_complaint,100) : '—') %></td>
+       <td><span class="pp-badge pp-badge-info"><%= c.queue_status || c.status || '—' %></span></td>
+      </tr>
+     <% }); %>
+     </tbody>
+    </table>
+    <% } %>
+   </div>
+  </div>
+
+  <div class="pp-card">
+   <div class="pp-card-h"><h3><i class="fa fa-flask pp-icon" style="color:#fbbf24;"></i><%= _tp('records.laboratory', 'Laboratory') %></h3></div>
+   <div class="pp-table-wrap pp-card-b">
+    <% if (!labResults || labResults.length === 0) { %>
+     <div class="pp-empty"><i class="fa fa-flask"></i><%= _tp('records.no_lab', 'No lab results yet.') %></div>
+    <% } else { %>
+    <table class="pp-table">
+     <thead><tr><th><%= _tp('records.col_test', 'Test') %></th><th><%= _tp('records.col_result', 'Result / notes') %></th><th><%= _tp('records.col_referred_by', 'Referred by') %></th><th><%= _tp('overview.col_date', 'Date') %></th><th><%= _tp('records.col_status', 'Status') %></th></tr></thead>
+     <tbody>
+     <% labResults.forEach(function(l){ %>
+      <tr>
+       <td><strong><%= l.test_name || '—' %></strong></td>
+       <td><%= l.result_text || l.notes || l.findings || '—' %></td>
+       <td><%= l.ref_fn ? ('Dr. '+l.ref_fn+' '+l.ref_ln) : '—' %></td>
+       <td><%= l.created_at ? fmtDate(l.created_at) : '—' %></td>
+       <td><span class="pp-badge <%= (l.status==='completed'||l.status==='final')?'pp-badge-ok':'pp-badge-warn' %>"><%= l.status || 'pending' %></span></td>
+      </tr>
+     <% }); %>
+     </tbody>
+    </table>
+    <% } %>
+   </div>
+  </div>
+
+  <div class="pp-card">
+   <div class="pp-card-h"><h3><i class="fa fa-picture-o pp-icon" style="color:#a78bfa;"></i><%= _tp('records.radiology', 'Radiology & imaging') %></h3></div>
+   <div class="pp-table-wrap pp-card-b">
+    <% if (!radResults || radResults.length === 0) { %>
+     <div class="pp-empty"><i class="fa fa-picture-o"></i><%= _tp('records.no_imaging', 'No imaging reports yet.') %></div>
+    <% } else { %>
+    <table class="pp-table">
+     <thead><tr><th><%= _tp('records.col_study', 'Study') %></th><th><%= _tp('records.col_findings', 'Findings') %></th><th><%= _tp('overview.col_date', 'Date') %></th><th><%= _tp('records.col_status', 'Status') %></th></tr></thead>
+     <tbody>
+     <% radResults.forEach(function(r){ %>
+      <tr>
+       <td><strong><%= r.test_name || r.scan_type || r.study_name || _tp('misc.study_default', 'Study') %></strong></td>
+       <td><%= r.findings || r.result_text || r.notes || '—' %></td>
+       <td><%= r.created_at ? fmtDate(r.created_at) : '—' %></td>
+       <td><span class="pp-badge <%= (r.status==='completed'||r.status==='final')?'pp-badge-ok':'pp-badge-warn' %>"><%= r.status || 'pending' %></span></td>
+      </tr>
+     <% }); %>
+     </tbody>
+    </table>
+    <% } %>
+   </div>
+  </div>
+
+  <div class="pp-card">
+   <div class="pp-card-h"><h3><i class="fa fa-medkit pp-icon" style="color:#34d399;"></i><%= _tp('records.prescriptions', 'Prescriptions') %></h3></div>
+   <div class="pp-table-wrap pp-card-b">
+    <% if (!prescriptions || prescriptions.length === 0) { %>
+     <div class="pp-empty"><i class="fa fa-medkit"></i><%= _tp('records.no_prescriptions', 'No prescriptions on file.') %></div>
+    <% } else { %>
+    <table class="pp-table">
+     <thead><tr><th><%= _tp('records.col_rx', 'Rx') %></th><th><%= _tp('records.col_details', 'Details') %></th><th><%= _tp('overview.col_date', 'Date') %></th><th><%= _tp('records.col_status', 'Status') %></th></tr></thead>
+     <tbody>
+     <% prescriptions.forEach(function(rx){ %>
+      <tr>
+       <td><strong>#RX-<%= rx.id %></strong></td>
+       <td><%= rx.title || rx.notes || rx.diagnosis || _tp('misc.prescription_default', 'Prescription') %></td>
+       <td><%= rx.created_at ? fmtDate(rx.created_at) : '—' %></td>
+       <td><span class="pp-badge pp-badge-info"><%= rx.status || 'active' %></span></td>
+      </tr>
+     <% }); %>
+     </tbody>
+    </table>
+    <% } %>
+   </div>
+  </div>
+ </div>
+
+ <!-- Appointments -->
+ <div id="pane-appointments" class="pp-pane">
+  <div class="pp-book-launch">
+   <div>
+    <h2><%= _tp('appointments.title', 'Online appointment booking') %></h2>
+    <p><%= _tp('appointments.subtitle', 'Select department, physician, and an available time slot. Your request is reviewed and confirmed by the clinic.') %></p>
+   </div>
+   <button type="button" class="pp-book-launch-btn" id="pp-open-booking">
+    <i class="fa fa-calendar-plus-o mr-1"></i> <%= _tp('appointments.book_btn', 'Book appointment') %>
+   </button>
+  </div>
+
+  <%- include('partials/portal-booking-wizard', { rescheduleAppt: typeof rescheduleAppt !== 'undefined' ? rescheduleAppt : null }) %>
+
+  <div class="pp-card">
+   <div class="pp-card-h"><h3><i class="fa fa-calendar pp-icon"></i> <%= _tp('misc.your_appointments', 'Your appointments') %></h3></div>
+   <div class="pp-table-wrap pp-card-b">
+    <% if (!appointments || appointments.length === 0) { %>
+     <div class="pp-empty"><i class="fa fa-calendar-o"></i><%= _tp('appointments.none', 'No appointments scheduled yet.') %></div>
+    <% } else { %>
+    <table class="pp-table">
+     <thead><tr><th><%= _tp('appointments.col_reference', 'Reference') %></th><th><%= _tp('appointments.col_visit', 'Visit') %></th><th><%= _tp('appointments.col_purpose', 'Purpose') %></th><th><%= _tp('appointments.col_department', 'Department') %></th><th><%= _tp('appointments.col_doctor', 'Doctor') %></th><th><%= _tp('appointments.col_date', 'Date') %></th><th><%= _tp('appointments.col_time', 'Time') %></th><th><%= _tp('records.col_status', 'Status') %></th><th><%= _tp('appointments.col_action', 'Action') %></th></tr></thead>
+     <tbody>
+     <% appointments.forEach(function(a){
+        var st = ppApptStatus(a);
+        var docLabel = a.doc_fn ? ('Dr. '+a.doc_fn+' '+a.doc_ln) : (a.doctor_name || a.doctor || '—');
+        var dept = a.department || a.department_name || '—';
+        var vt = String(a.visit_type || 'in_person').toLowerCase();
+        var typeLabel = vt === 'telemedicine'
+          ? '<span class="pp-badge pp-badge-info"><i class="fa fa-video-camera" aria-hidden="true"></i> ' + _tp('misc.telemedicine', 'Telemedicine') + '</span>'
+          : '<span class="pp-badge pp-badge-muted"><i class="fa fa-hospital-o" aria-hidden="true"></i> ' + _tp('misc.in_person', 'In-person') + '</span>';
+        var isConfirmed = (st.state === 'confirmed');
+        var isDeclined  = (st.state === 'declined' || st.state === 'cancelled');
+        var canModify = (st.state === 'pending' || st.state === 'confirmed');
+     %>
+      <tr>
+       <td><strong><%= a.appointment_id || ('#A-'+a.id) %></strong></td>
+       <td><%- typeLabel %>
+        <% if (vt === 'telemedicine' && a.payment_code) { %>
+         <div class="small font-monospace" style="margin-top:4px;color:var(--pp-muted);"><%= a.payment_code %></div>
+        <% } %>
+       </td>
+       <td class="small"><%= a.appointment_type ? String(a.appointment_type).replace(/_/g,' ') : '—' %></td>
+       <td><%= dept %></td>
+       <td><%= docLabel %></td>
+       <td><%= a.date ? fmtDate(a.date) : '—' %></td>
+       <td><%= a.time || '—' %></td>
+       <td><span class="pp-badge <%= st.cls %>"><%= st.label %></span></td>
+       <td>
+        <% if (isDeclined) { %>
+          <span class="pp-badge pp-badge-muted" title="<%= a.cancel_reason || _tp('misc.declined_by_clinic', 'Declined by clinic') %>"><i class="fa fa-times-circle"></i> <%= _tp('appt_status.declined', 'Declined') %></span>
+        <% } else if (canModify) { %>
+          <div class="d-flex flex-wrap" style="gap:4px;">
+           <a href="/portal/dashboard?tab=appointments&reschedule=<%= a.id %>" class="pp-btn-ghost btn-sm" style="font-size:.75rem;padding:4px 8px;">
+            <i class="fa fa-calendar"></i> <%= _tp('appointments.reschedule_btn', 'Reschedule') %>
+           </a>
+           <form method="post" action="/portal/appointments/<%= a.id %>/cancel" style="display:inline" onsubmit="return confirm('<%= _tp('appointments.cancel_confirm', 'Cancel this appointment request?').replace(/'/g, "\\'") %>');">
+            <button type="submit" class="pp-btn-ghost btn-sm text-danger" style="font-size:.75rem;padding:4px 8px;border:none;background:transparent;">
+             <i class="fa fa-times"></i> <%= _tp('appointments.cancel_btn', 'Cancel') %>
+            </button>
+           </form>
+           <% if (vt === 'telemedicine' && isConfirmed && a.meeting_room) { %>
+           <a href="/telemedicine/<%= a.id %>" target="_blank" class="pp-btn-primary btn-sm" style="font-size:.75rem;padding:4px 8px;">
+            <i class="fa fa-video-camera"></i> <%= _tp('misc.join', 'Join') %>
+           </a>
+           <% } %>
+          </div>
+        <% } else if (vt === 'telemedicine' && isConfirmed && a.meeting_room) { %>
+             <a href="/telemedicine/<%= a.id %>" target="_blank" class="pp-btn-primary" style="padding:6px 12px;font-size:.78rem;border-radius:8px;">
+              <i class="fa fa-video-camera"></i> <%= _tp('misc.join_call', 'Join call') %>
+             </a>
+        <% } else { %>
+             <span style="color:var(--pp-muted);font-size:.82rem;">—</span>
+        <% } %>
+       </td>
+      </tr>
+     <% }); %>
+     </tbody>
+    </table>
+    <% } %>
+   </div>
+  </div>
+ </div>
+
+ <!-- Wallet -->
+ <div id="pane-wallet" class="pp-pane">
+  <% if (wallet) { %>
+  <div class="pp-card">
+   <div class="pp-card-h"><h3><i class="fa fa-credit-card pp-icon" style="color:#34d399;"></i><%= _tp('wallet.title', 'Prepaid wallet') %></h3>
+    <span class="pp-badge <%= wallet.status==='active'?'pp-badge-ok':'pp-badge-warn' %>"><%= wallet.status || 'active' %></span>
+   </div>
+   <div class="pp-card-b">
+    <div style="font-family:'Outfit',sans-serif;font-size:2.25rem;font-weight:700;color:var(--pp-success);margin-bottom:8px;">
+     <%= Number(wallet.balance||0).toLocaleString('fr-FR') %> <span style="font-size:1rem;color:var(--pp-muted);font-weight:500;">FCFA</span>
+    </div>
+    <p style="color:var(--pp-muted);font-size:.88rem;margin-bottom:20px;"><%= _tp('wallet.balance_hint', 'Use your wallet balance for lab, pharmacy, and services at the hospital. Top up at reception or via approved channels.') %></p>
+    <% if (wallet.qr_token) { %>
+    <div class="pp-qr-box">
+     <img id="pp-wallet-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=<%= encodeURIComponent(wallet.qr_token) %>" alt="<%= _tp('wallet.qr_alt', 'Wallet QR code') %>">
+     <div style="margin-top:12px;font-size:.78rem;color:var(--pp-muted);word-break:break-all;"><%= _tp('wallet.qr_hint', 'Scan at cashier, lab, or pharmacy for quick payment.') %></div>
+     <button type="button" class="pp-btn-ghost mt-2" id="pp-download-qr"><i class="fa fa-download"></i> <%= _tp('misc.download_qr', 'Download QR image') %></button>
+    </div>
+    <% } %>
+   </div>
+  </div>
+
+  <div class="pp-card">
+   <div class="pp-card-h"><h3><i class="fa fa-list-ul pp-icon"></i><%= _tp('wallet.transactions', 'Recent transactions') %></h3></div>
+   <div class="pp-table-wrap pp-card-b">
+    <% if (!walletTxns || walletTxns.length === 0) { %>
+     <div class="pp-empty"><i class="fa fa-exchange"></i><%= _tp('wallet.no_transactions', 'No transactions yet.') %></div>
+    <% } else { %>
+    <table class="pp-table">
+     <thead><tr><th><%= _tp('overview.col_date', 'Date') %></th><th><%= _tp('wallet.col_type', 'Type') %></th><th><%= _tp('wallet.col_direction', 'Direction') %></th><th><%= _tp('wallet.col_amount', 'Amount') %></th><th><%= _tp('wallet.col_balance_after', 'Balance after') %></th><th><%= _tp('wallet.col_notes', 'Notes') %></th></tr></thead>
+     <tbody>
+     <% walletTxns.forEach(function(t){ %>
+      <tr>
+       <td><%= t.created_at ? new Date(t.created_at).toLocaleString() : '—' %></td>
+       <td><%= t.txn_type || '—' %></td>
+       <td><span class="pp-badge <%= t.direction==='cr'?'pp-badge-ok':'pp-badge-warn' %>"><%= t.direction === 'cr' ? _tp('wallet.credit', 'Credit') : _tp('wallet.debit', 'Debit') %></span></td>
+       <td><%= Number(t.amount||0).toLocaleString('fr-FR') %></td>
+       <td><%= t.balance_after != null ? Number(t.balance_after).toLocaleString('fr-FR') : '—' %></td>
+       <td><%= ppTrunc(t.notes || t.reference_id, 40) %></td>
+      </tr>
+     <% }); %>
+     </tbody>
+    </table>
+    <% } %>
+   </div>
+  </div>
+  <% } else { %>
+  <div class="pp-card">
+   <div class="pp-card-b">
+    <div class="pp-empty"><i class="fa fa-credit-card"></i><%= _tp('wallet.no_wallet', 'No prepaid wallet on file yet. Ask reception to activate GBPay wallet for your account.') %></div>
+   </div>
+  </div>
+  <% } %>
+ </div>
+
+ <p style="text-align:center;color:var(--pp-muted);font-size:.78rem;margin-top:32px;">
+  <i class="fa fa-lock" aria-hidden="true"></i> <%= _tp('footer.secure', 'Secure connection · Please keep your login private · {{year}} My Care Portal · Made with care for your health', { year: new Date().getFullYear() }) %>
+ </p>
+</div>
+
+<script src="/assets/js/jquery-3.6.0.min.js"></script>
+<script src="/assets/js/bootstrap.min.js"></script>
+<script>
+(function(){
+  var tabs = document.querySelectorAll('.pp-tab');
+  var panes = document.querySelectorAll('.pp-pane');
+  function showPane(id) {
+    var pane = document.getElementById('pane-' + id);
+    if (!pane) { id = 'overview'; pane = document.getElementById('pane-' + id); }
+    if (!pane) return;
+    panes.forEach(function(p){ p.classList.remove('active'); });
+    tabs.forEach(function(t){ t.classList.remove('active'); });
+    pane.classList.add('active');
+    tabs.forEach(function(t){ if (t.getAttribute('data-pane') === id) t.classList.add('active'); });
+    try { history.replaceState(null, '', '?tab=' + encodeURIComponent(id)); } catch(e) {}
+  }
+  var initialTab = <%- JSON.stringify(typeof tab !== 'undefined' ? tab : 'overview') %>;
+  tabs.forEach(function(btn){
+    btn.addEventListener('click', function(){ showPane(this.getAttribute('data-pane')); });
+  });
+  var match = /[?&]tab=([^&]+)/.exec(window.location.search);
+  if (match) showPane(decodeURIComponent(match[1]));
+  else showPane(initialTab);
+
+  var dl = document.getElementById('pp-download-qr');
+  if (dl) {
+    dl.addEventListener('click', function(){
+      var img = document.getElementById('pp-wallet-qr');
+      if (!img || !img.src) return;
+      var a = document.createElement('a');
+      a.href = img.src;
+      a.download = 'wallet-qr.png';
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+  }
+
+})();
+</script>
+<div id="hms-modal-root" class="hms-ui"></div>
+<div id="hms-notify-root" class="hms-ui"></div>
+<%- include('partials/portal-booking-mount', {
+  departments: typeof departments !== 'undefined' ? departments : [],
+  doctors: typeof doctors !== 'undefined' ? doctors : [],
+  specialisations: typeof specialisations !== 'undefined' ? specialisations : [],
+  rescheduleAppt: typeof rescheduleAppt !== 'undefined' ? rescheduleAppt : null
+}) %>
+<script id="hms-page-data" type="application/json"><%- JSON.stringify({ locale: locals.lang || 'en' }).replace(/</g, '\\u003c') %></script>
+<script src="/dist/hms-ui.js?v=<%= locals.hmsUiBundleVersion || 57 %>" defer onerror="window.__HMS_UI_LOAD_FAILED=1"></script>
+<% if (locals.hmsSessionIdle && locals.hmsSessionIdle.active) { %>
+<script>window.HMS_SESSION_IDLE = <%- JSON.stringify(locals.hmsSessionIdle) %>;</script>
+<script src="/js/hms-session-idle.js" defer></script>
+<% } %>
+</body>
+</html>

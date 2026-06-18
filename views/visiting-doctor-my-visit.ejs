@@ -1,0 +1,13 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--visiting-doctor-visit'; %>
+<%- include('partials/header') %>
+<%- include('partials/react-page-mount', {
+  reactPage: 'visiting-doctor-my-visit',
+  pageData: {
+    visit: visit || null,
+    username: username || '',
+    flash: flash || null,
+    error: error || null
+  },
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.default', { ns: 'common' }) : 'Loading…')
+}) %>
+<%- include('partials/footer') %>

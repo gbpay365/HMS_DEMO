@@ -1,0 +1,18 @@
+<%- include('partials/header') %>
+<%
+var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+var _radTitle = _t('radiology_workflow.title', { ns: 'legacy', defaultValue: 'Radiology Workflow' });
+var _radActions = '<a href="/radiology" class="o_btn_secondary">' + _t('radiology_workflow.requests_list', { ns: 'legacy', defaultValue: 'Requests list' }) + '</a><a href="/radiology/validate" class="o_btn_primary">' + _t('radiology_workflow.new_request', { ns: 'legacy', defaultValue: '+ New request' }) + '</a>';
+%>
+<%- include('partials/radiology-odoo-start', {
+  radOdooMenu: 'workflow',
+  radOdooTitle: _radTitle,
+  radOdooActions: _radActions
+}) %>
+<%- include('partials/react-page-mount', {
+  reactPage: 'radiology-workflow',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.radiology_workflow', { ns: 'common' }) : 'Loading radiology workflow…'),
+  pageData: locals.pageData || {}
+}) %>
+<%- include('partials/radiology-odoo-end') %>
+<%- include('partials/footer') %>

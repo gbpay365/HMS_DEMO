@@ -1,0 +1,302 @@
+<%
+if (typeof _ac !== 'function') {
+  var _ac = function (k, d, opts) {
+    if (typeof t !== 'function') return d || k;
+    var o = { ns: 'access', defaultValue: d || k };
+    if (opts) Object.assign(o, opts);
+    return t(k, o);
+  };
+}
+%>
+<!-- Copy permissions modal -->
+<div class="modal fade haa-modal" id="haaModalCopy" tabindex="-1" role="dialog" aria-labelledby="haaModalCopyTitle">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:14px;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title font-weight-bold" id="haaModalCopyTitle"><%= _ac('modals.copy_to_role', 'Copy permissions to {{role}}', { role: selRoleTitle }) %></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="<%= _ac('shared.cancel', 'Cancel') %>"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <label class="font-weight-bold small" for="haaCopyFrom"><%= _ac('legacy_page.copy_from_role', 'Copy from role') %></label>
+        <select id="haaCopyFrom" class="hms-input w-full">
+          <% (roles || []).forEach(function(rr) {
+            if (String(rr.role) === String(selRole)) return;
+          %>
+          <option value="<%= rr.role %>"><%= rr.title %> (#<%= rr.role %>)</option>
+          <% }); %>
+        </select>
+        <p class="small text-muted mt-2 mb-0"><%= _ac('modals.copy_replace_hint', 'Replaces this role\'s permission grants with the source role\'s grants.') %></p>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="hms-btn hms-btn-secondary" data-dismiss="modal"><%= _ac('shared.cancel', 'Cancel') %></button>
+        <button type="button" class="hms-btn hms-btn-primary font-weight-bold" id="haaCopyBtn"><%= _ac('modals.copy', 'Copy') %></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New / edit role modal -->
+<div class="modal fade haa-modal" id="haaModalRole" tabindex="-1" role="dialog" aria-labelledby="haaRoleModalTitle">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:14px;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title font-weight-bold" id="haaRoleModalTitle"><%= _ac('catalogue.new_role', 'New role') %></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="<%= _ac('shared.cancel', 'Cancel') %>"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="haaRoleId">
+        <div class="form-group">
+          <label class="font-weight-bold small" for="haaRoleTitle"><%= _ac('catalogue.role_title_label', 'Role title') %></label>
+          <input type="text" id="haaRoleTitle" class="hms-input w-full" placeholder="<%= _ac('legacy_page.role_title_ph', 'e.g. Clinical Director') %>">
+        </div>
+        <div class="form-group mb-0" id="haaRoleCloneWrap">
+          <label class="font-weight-bold small" for="haaRoleCloneFrom"><%= _ac('catalogue.clone_from', 'Clone from (optional)') %></label>
+          <select id="haaRoleCloneFrom" class="hms-input w-full">
+            <option value=""><%= _ac('catalogue.empty_role', '— Empty role —') %></option>
+            <% (roles || []).forEach(function(rr) { %>
+            <option value="<%= rr.role %>"><%= rr.title %> (#<%= rr.role %>)</option>
+            <% }); %>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="hms-btn hms-btn-secondary" data-dismiss="modal"><%= _ac('shared.cancel', 'Cancel') %></button>
+        <button type="button" class="hms-btn hms-btn-primary font-weight-bold" id="haaRoleSaveBtn"><%= _ac('shared.save', 'Save') %></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create / edit portal -->
+<div class="modal fade haa-modal" id="haaModalPortal" tabindex="-1" role="dialog" aria-labelledby="haaPortalModalTitle">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:14px;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title font-weight-bold" id="haaPortalModalTitle"><%= _ac('portal_catalog.create_title', 'Create portal') %></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="<%= _ac('shared.cancel', 'Cancel') %>"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="haaPortalMode" value="add">
+        <div class="row">
+          <div class="col-md-6 form-group">
+            <label class="font-weight-bold small" for="haaPortalCode"><%= _ac('portal_catalog.portal_code', 'Portal code') %></label>
+            <input type="text" id="haaPortalCode" class="hms-input w-full" placeholder="<%= _ac('portal_catalog.code_ph', 'director') %>" pattern="[a-z0-9_]+">
+            <small class="text-muted"><%= _ac('modals.portal_code_hint', 'Lowercase, numbers, underscore. URL: /portal/hub/') %><em>code</em></small>
+          </div>
+          <div class="col-md-6 form-group">
+            <label class="font-weight-bold small" for="haaPortalLabel"><%= _ac('portal_catalog.display_name', 'Display name') %></label>
+            <input type="text" id="haaPortalLabel" class="hms-input w-full" placeholder="<%= _ac('modals.portal_label_ph', 'Hospital Director') %>">
+          </div>
+          <div class="col-12 form-group">
+            <label class="font-weight-bold small" for="haaPortalHome"><%= _ac('portal_catalog.home_url', 'Home URL') %></label>
+            <input type="text" id="haaPortalHome" class="hms-input w-full" placeholder="/portal/hub/director">
+          </div>
+          <div class="col-12 form-group" id="haaPortalAssignWrap">
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input" id="haaPortalAssignRole" checked>
+              <label class="custom-control-label font-weight-bold small" for="haaPortalAssignRole"><%= _ac('portal_catalog.assign_role', 'Assign to current role ({{role}})', { role: selRoleTitle || selRole || _ac('modals.selected_role', 'selected role') }) %></label>
+            </div>
+            <div class="custom-control custom-checkbox ml-3">
+              <input type="checkbox" class="custom-control-input" id="haaPortalSetHome" checked>
+              <label class="custom-control-label small" for="haaPortalSetHome"><%= _ac('portal_catalog.set_home', 'Set as home portal for this role') %></label>
+            </div>
+          </div>
+          <div class="col-md-4 form-group">
+            <label class="font-weight-bold small" for="haaPortalIcon"><%= _ac('portal_catalog.icon', 'Icon (Font Awesome)') %></label>
+            <input type="text" id="haaPortalIcon" class="hms-input w-full" value="fa-user-md">
+          </div>
+          <div class="col-md-4 form-group">
+            <label class="font-weight-bold small" for="haaPortalColor"><%= _ac('portal_catalog.colour', 'Brand colour') %></label>
+            <input type="color" id="haaPortalColor" class="hms-input w-full" value="#714b67" style="min-height:42px;padding:4px;">
+          </div>
+          <div class="col-md-4 form-group">
+            <label class="font-weight-bold small" for="haaPortalSort"><%= _ac('portal_catalog.sort_order', 'Sort order') %></label>
+            <input type="number" id="haaPortalSort" class="hms-input w-full" value="50">
+          </div>
+          <div class="col-12 form-group" id="haaPortalTemplateWrap">
+            <label class="font-weight-bold small" for="haaPortalTemplate"><%= _ac('portal_catalog.starter_tiles', 'Starter tiles') %></label>
+            <select id="haaPortalTemplate" class="hms-input w-full">
+              <option value="executive"><%= _ac('portal_catalog.template_executive', 'Executive (director-style dashboard)') %></option>
+              <option value="clinical"><%= _ac('portal_catalog.template_clinical', 'Clinical') %></option>
+              <option value="minimal"><%= _ac('portal_catalog.template_minimal', 'Minimal') %></option>
+            </select>
+          </div>
+          <div class="col-12 form-group">
+            <label class="font-weight-bold small" for="haaPortalDesc"><%= _ac('portal_catalog.description', 'Description') %></label>
+            <textarea id="haaPortalDesc" class="hms-input w-full" rows="2" placeholder="<%= _ac('modals.portal_desc_ph', 'Optional description shown on the portal home page.') %>"></textarea>
+          </div>
+          <div class="col-12 form-group mb-0 d-none" id="haaPortalEnabledWrap">
+            <label class="font-weight-bold small" for="haaPortalEnabled"><%= _ac('shared.status', 'Status') %></label>
+            <select id="haaPortalEnabled" class="hms-input w-full">
+              <option value="1"><%= _ac('shared.active', 'Active') %></option>
+              <option value="0"><%= _ac('shared.disabled', 'Disabled') %></option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="hms-btn hms-btn-secondary" data-dismiss="modal"><%= _ac('shared.cancel', 'Cancel') %></button>
+        <button type="button" class="hms-btn hms-btn-primary font-weight-bold" id="haaPortalSaveBtn"><%= _ac('portal_catalog.save_portal', 'Save portal') %></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var selRole = '<%= selRole || "" %>';
+  var i18n = {
+    titleRequired: <%- JSON.stringify(_ac('shared.title_required', 'Title required')) %>,
+    failed: <%- JSON.stringify(_ac('shared.failed', 'Failed')) %>,
+    roleCreated: <%- JSON.stringify(_ac('modals.role_created', 'Role created')) %>,
+    editPortal: <%- JSON.stringify(_ac('portal_catalog.edit_title', 'Edit portal')) %>,
+    createPortal: <%- JSON.stringify(_ac('portal_catalog.create_title', 'Create portal')) %>,
+    portalDeleted: <%- JSON.stringify(_ac('modals.portal_deleted', 'Portal deleted')) %>,
+    portalCreated: <%- JSON.stringify(_ac('modals.portal_created', 'Portal created ({{count}} starter tiles)')) %>,
+    portalUpdated: <%- JSON.stringify(_ac('modals.portal_updated', 'Portal updated')) %>,
+    portalExistsSuffix: <%- JSON.stringify(_ac('modals.portal_exists_suffix', ' Open Role portals tab to assign it, or edit it in the catalogue.')) %>,
+    portalReadyMsg: <%- JSON.stringify(_ac('modals.portal_ready_msg', 'Portal ready. Confirm Access and Home below.')) %>
+  };
+  function tr(key, vars) {
+    var s = i18n[key] || '';
+    if (vars) Object.keys(vars).forEach(function (k) { s = s.split('{{' + k + '}}').join(vars[k]); });
+    return s;
+  }
+  document.getElementById('haaCopyBtn') && document.getElementById('haaCopyBtn').addEventListener('click', function () {
+    var from = document.getElementById('haaCopyFrom').value;
+    if (!from) return;
+    HaaAccess.copyRolePerms(selRole, from).then(function () {
+      $('#haaModalCopy').modal('hide');
+    });
+  });
+  document.getElementById('haaRoleSaveBtn') && document.getElementById('haaRoleSaveBtn').addEventListener('click', function () {
+    var title = document.getElementById('haaRoleTitle').value.trim();
+    if (!title) { HaaAccess.toastErr(tr('titleRequired')); return; }
+    var clone = document.getElementById('haaRoleCloneFrom').value;
+    HaaAccess.post('role_add', { title: title, clone_from: clone })
+      .then(function (j) {
+        if (!j.ok) throw new Error(j.error || tr('failed'));
+        HaaAccess.toastOk(tr('roleCreated'));
+        window.location.href = '/hms-admin/access?role=' + encodeURIComponent(j.role || '') + '&view=permissions';
+      })
+      .catch(function (e) { HaaAccess.toastErr(e.message); });
+  });
+
+  function slugifyPortalLabel(s) {
+    return String(s || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 40);
+  }
+
+  document.getElementById('haaPortalLabel') &&
+    document.getElementById('haaPortalLabel').addEventListener('blur', function () {
+      var codeEl = document.getElementById('haaPortalCode');
+      var homeEl = document.getElementById('haaPortalHome');
+      if (!codeEl || codeEl.disabled || codeEl.value.trim()) return;
+      var slug = slugifyPortalLabel(this.value);
+      if (slug) {
+        codeEl.value = slug;
+        if (homeEl && !homeEl.value.trim()) homeEl.value = '/portal/hub/' + slug;
+      }
+    });
+
+  document.querySelectorAll('.haa-portal-edit').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.getElementById('haaPortalMode').value = 'edit';
+      document.getElementById('haaPortalModalTitle').textContent = tr('editPortal');
+      document.getElementById('haaPortalCode').value = btn.dataset.code;
+      document.getElementById('haaPortalCode').disabled = true;
+      document.getElementById('haaPortalLabel').value = btn.dataset.label || '';
+      document.getElementById('haaPortalHome').value = btn.dataset.home || '';
+      document.getElementById('haaPortalIcon').value = btn.dataset.icon || 'fa-th-large';
+      document.getElementById('haaPortalColor').value = btn.dataset.color || '#714b67';
+      document.getElementById('haaPortalDesc').value = btn.dataset.desc || '';
+      document.getElementById('haaPortalSort').value = btn.dataset.sort || '50';
+      document.getElementById('haaPortalEnabled').value = btn.dataset.enabled || '1';
+      document.getElementById('haaPortalTemplateWrap').classList.add('d-none');
+      document.getElementById('haaPortalEnabledWrap').classList.remove('d-none');
+      $('#haaModalPortal').modal('show');
+    });
+  });
+
+  document.querySelectorAll('.haa-portal-delete').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      if (!confirm(<%- JSON.stringify(_ac('portal_catalog.confirm_delete', 'Delete portal "{{label}}"? This removes its dashboard tiles.')) %>.replace('{{label}}', btn.dataset.label)) return;
+      HaaAccess.post('portal_delete', { portal_code: btn.dataset.code })
+        .then(function (j) {
+          if (!j.ok) throw new Error(j.error || tr('failed'));
+          HaaAccess.toastOk(tr('portalDeleted'));
+          window.location.href = '/hms-admin/access?view=portal-catalog';
+        })
+        .catch(function (e) { HaaAccess.toastErr(e.message); });
+    });
+  });
+
+  $('#haaModalPortal').on('hidden.bs.modal', function () {
+    document.getElementById('haaPortalMode').value = 'add';
+    document.getElementById('haaPortalModalTitle').textContent = tr('createPortal');
+    document.getElementById('haaPortalCode').disabled = false;
+    document.getElementById('haaPortalCode').value = '';
+    document.getElementById('haaPortalLabel').value = '';
+    document.getElementById('haaPortalHome').value = '';
+    document.getElementById('haaPortalIcon').value = 'fa-user-md';
+    document.getElementById('haaPortalColor').value = '#714b67';
+    document.getElementById('haaPortalDesc').value = '';
+    document.getElementById('haaPortalTemplate').value = 'executive';
+    document.getElementById('haaPortalTemplateWrap').classList.remove('d-none');
+    document.getElementById('haaPortalEnabledWrap').classList.add('d-none');
+  });
+
+  document.getElementById('haaPortalSaveBtn') &&
+    document.getElementById('haaPortalSaveBtn').addEventListener('click', function () {
+      var mode = document.getElementById('haaPortalMode').value;
+      var payload = {
+        portal_code: document.getElementById('haaPortalCode').value.trim(),
+        label: document.getElementById('haaPortalLabel').value.trim(),
+        home_url: document.getElementById('haaPortalHome').value.trim(),
+        icon: document.getElementById('haaPortalIcon').value.trim(),
+        color: document.getElementById('haaPortalColor').value,
+        description: document.getElementById('haaPortalDesc').value.trim(),
+        sort_order: document.getElementById('haaPortalSort').value,
+      };
+      if (mode === 'add') {
+        payload.starter_template = document.getElementById('haaPortalTemplate').value;
+        if (document.getElementById('haaPortalAssignRole') && document.getElementById('haaPortalAssignRole').checked && selRole) {
+          payload.assign_role = selRole;
+          payload.set_home = document.getElementById('haaPortalSetHome') && document.getElementById('haaPortalSetHome').checked ? '1' : '0';
+        }
+        HaaAccess.post('portal_add', payload)
+          .then(function (j) {
+            if (!j.ok) {
+              if ((j.error || '').toLowerCase().indexOf('already exists') >= 0) {
+                HaaAccess.toastErr(j.error + tr('portalExistsSuffix'));
+                window.location.href =
+                  '/hms-admin/access?view=portals&role=' + encodeURIComponent(selRole || '100');
+                return;
+              }
+              throw new Error(j.error || tr('failed'));
+            }
+            HaaAccess.toastOk(tr('portalCreated', { count: j.tiles_seeded || 0 }));
+            window.location.href =
+              '/hms-admin/access?view=portals&role=' +
+              encodeURIComponent(selRole || j.assigned_role || '100') +
+              '&msg=' +
+              encodeURIComponent(tr('portalReadyMsg'));
+          })
+          .catch(function (e) { HaaAccess.toastErr(e.message); });
+      } else {
+        payload.enabled = document.getElementById('haaPortalEnabled').value;
+        HaaAccess.post('portal_edit', payload)
+          .then(function (j) {
+            if (!j.ok) throw new Error(j.error || tr('failed'));
+            HaaAccess.toastOk(tr('portalUpdated'));
+            window.location.reload();
+          })
+          .catch(function (e) { HaaAccess.toastErr(e.message); });
+      }
+    });
+})();
+</script>

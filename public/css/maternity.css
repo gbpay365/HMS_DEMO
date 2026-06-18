@@ -1,0 +1,81 @@
+:root {
+  --mat-primary: var(--hms-dept-maternity);
+  --mat-primary-dark: #db2777;
+  --mat-bg: #fdf2f8;
+  --mat-risk-high: var(--hms-danger);
+  --mat-risk-med: var(--hms-warning);
+  --mat-risk-low: var(--hms-success);
+}
+
+.mat-header {
+  background: linear-gradient(135deg, var(--mat-primary-dark), var(--mat-primary));
+  color: #fff;
+  border-radius: 14px;
+  padding: 22px 28px;
+}
+
+.mat-stat {
+  background: #fff;
+  border: 1px solid var(--hms-surface-border);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+}
+
+.mat-stat .num {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.mat-stat .lbl {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.risk-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.risk-pill.low { background: #dcfce7; color: var(--mat-risk-low); }
+.risk-pill.medium { background: #fef3c7; color: var(--mat-risk-med); }
+.risk-pill.high { background: #fee2e2; color: var(--mat-risk-high); }
+
+.mat-card {
+  background: #fff;
+  border: 1px solid var(--hms-surface-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.mat-card-head {
+  padding: 12px 16px;
+  background: var(--mat-bg);
+  border-bottom: 1px solid #fce7f3;
+  font-weight: 700;
+  color: var(--mat-primary-dark);
+}
+
+.mat-tabs .nav-link {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.mat-tabs .nav-link.active {
+  color: var(--mat-primary);
+  border-color: var(--mat-primary) var(--mat-primary) #fff;
+}
+
+.partograph-alert {
+  border-left: 4px solid var(--mat-risk-high);
+  background: #fff1f2;
+}

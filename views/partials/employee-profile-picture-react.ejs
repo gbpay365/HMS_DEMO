@@ -1,0 +1,13 @@
+<%
+  var _ep = locals.employeeProfile || {};
+  var _epPayload = {
+    formId: _ep.formId || 'hms-employee-form',
+    initialEmoji: _ep.initialEmoji || '',
+    initialGender: _ep.initialGender || 'Male',
+    initialPhotoPath: _ep.initialPhotoPath || '',
+    hiddenInputId: _ep.hiddenInputId || 'profile_emoji_hidden',
+    inputName: _ep.inputName || 'profile_emoji'
+  };
+%>
+<div id="hms-employee-profile-root" class="hms-ui"></div>
+<script id="hms-employee-profile-data" type="application/json"><%- JSON.stringify(_epPayload).replace(/</g, '\\u003c') %></script>

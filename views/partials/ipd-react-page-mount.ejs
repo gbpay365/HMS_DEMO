@@ -1,0 +1,17 @@
+<% var _pk = (locals.pageData && locals.pageData.pageKey) ? locals.pageData.pageKey : 'ipd'; locals.hmsSurfaceBodyClass = ' hms-body--ipd hms-body--ipd-' + String(_pk).replace(/_/g, '-'); %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<%- include('header') %>
+<%- include('react-page-mount', {
+  reactPage: 'ipd',
+  reactLoadingLabel: _t('loading.default', { ns: 'ipd', defaultValue: 'Loading IPD…' }),
+  pageData: locals.pageData || {}
+}) %>
+<% if (locals.includeIpdChargeModal && locals.admission) { %>
+<%- include('hms-add-charge-mount', {
+  chargeFormAction: '/ipd/add-charge',
+  chargeContextName: 'admission_id',
+  chargeContextValue: locals.admission.id,
+  chargeSubmitLabel: _t('charge_modal.submit', { ns: 'ipd', defaultValue: 'Add to running bill' })
+}) %>
+<% } %>
+<%- include('footer') %>

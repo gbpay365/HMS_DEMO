@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model tbl_patient {
+  id                      Int      @id @default(autoincrement())
+  first_name              String
+  last_name               String
+  email                   String?
+  phone                   String?
+  gender                  String?
+  dob                     String?
+  address                 String?   @db.Text
+  patient_type            String?
+  status                  Int?      @default(1)
+  created_at              DateTime? @default(now())
+  next_of_kin_name        String?
+  next_of_kin_phone       String?
+  next_of_kin_relationship String?
+}
+
+model tbl_employee {
+  id           Int      @id @default(autoincrement())
+  first_name   String
+  last_name    String
+  username     String   @unique
+  emailid      String?
+  phone        String?
+  role         Int
+  bio          String?  @db.Text
+  status       Int?     @default(1)
+  joining_date String?
+  photo_path   String?
+}

@@ -1,0 +1,357 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+
+<div class="page-wrapper">
+ <div class="content">
+  <div class="row align-items-center mb-4">
+   <div class="col-sm-8">
+    <h4 class="page-title font-weight-bold text-dark"><%= _t('patient_insurance.title', { ns: 'legacy', defaultValue: 'Insurance Management' }) %></h4>
+    <p class="text-muted small"><%= _t('patient_insurance.subtitle', { ns: 'legacy', defaultValue: 'Manage insurance policies and coverage for' }) %> <b><%= patient.first_name %> <%= patient.last_name %></b></p>
+   </div>
+   <div class="col-sm-4 text-right">
+    <a href="/patients" class="btn btn-light border"><i class="fa fa-arrow-left"></i> <%= _t('patient_insurance.back_directory', { ns: 'legacy', defaultValue: 'Back to Directory' }) %></a>
+   </div>
+  </div>
+
+  <div class="row">
+   <!-- Active Policies -->
+   <div class="col-lg-8">
+    <div class="card border-0 shadow-sm rounded-xl overflow-hidden mb-4">
+     <div class="card-header bg-white border-bottom p-3">
+      <h6 class="mb-0 font-weight-bold"><i class="fa fa-list mr-2 text-primary"></i><%= _t('patient_insurance.policies_heading', { ns: 'legacy', defaultValue: 'Insurance Policies' }) %></h6>
+     </div>
+     <div class="table-responsive">
+      <table class="table table-hover mb-0">
+       <thead class="bg-light small font-weight-bold">
+        <tr>
+         <th><%= _t('patient_insurance.col_carrier', { ns: 'legacy', defaultValue: 'Carrier' }) %></th>
+         <th><%= _t('patient_insurance.col_policy', { ns: 'legacy', defaultValue: 'Policy #' }) %></th>
+         <th><%= _t('patient_insurance.col_coverage', { ns: 'legacy', defaultValue: 'Coverage' }) %></th>
+         <th><%= _t('patient_insurance.col_priority', { ns: 'legacy', defaultValue: 'Priority' }) %></th>
+         <th><%= _t('patient_insurance.col_validity', { ns: 'legacy', defaultValue: 'Validity' }) %></th>
+         <th class="text-right"><%= _t('patient_insurance.col_action', { ns: 'legacy', defaultValue: 'Action' }) %></th>
+        </tr>
+       </thead>
+       <tbody>
+        <% if(policies.length === 0) { %>
+         <tr><td colspan="6" class="text-center py-4 text-muted"><%= _t('patient_insurance.no_policies', { ns: 'legacy', defaultValue: 'No insurance policies found for this patient.' }) %></td></tr>
+        <% } %>
+        <% policies.forEach(p => { %>
+         <tr>
+          <td>
+           <div class="font-weight-bold text-dark"><%= p.carrier_name %></div>
+           <div class="small text-muted">ID: <%= p.insurance_id_external || _t('patient_insurance.id_manual', { ns: 'legacy', defaultValue: 'Manual' }) %></div>
+          </td>
+          <td><code class="text-indigo"><%= p.policy_number || 'N/A' %></code></td>
+          <td>
+           <div class="badge badge-success-light p-2 font-weight-bold"><%= p.insurer_covered_percent %>%</div>
+           <div class="small text-muted"><%= _t('patient_insurance.insurer_share', { ns: 'legacy', defaultValue: 'Insurer Share' }) %></div>
+          </td>
+          <td>
+           <% if(p.is_primary) { %>
+            <span class="badge badge-primary"><%= _t('patient_insurance.primary', { ns: 'legacy', defaultValue: 'Primary' }) %></span>
+           <% } else { %>
+            <span class="badge badge-light border"><%= _t('patient_insurance.secondary', { ns: 'legacy', defaultValue: 'Secondary' }) %></span>
+           <% } %>
+          </td>
+          <td class="small">
+           <% if(p.effective_from) { %> <%= fmtDate(p.effective_from) %> <% } %>
+           <% if(p.effective_to) { %> - <%= fmtDate(p.effective_to) %> <% } %>
+          </td>
+          <td class="text-right">
+           <form id="removePolicy_<%= p.id %>" action="/patients/<%= patient.id %>/insurance/<%= p.id %>/remove" method="POST" style="display:none;"></form>
+           <button class="btn btn-outline-danger btn-sm border-0" onclick="confirmRemovePolicy(<%= p.id %>, '<%= p.carrier_name %>')"><i class="fa fa-trash"></i></button>
+          </td>
+         </tr>
+        <% }) %>
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+
+   <!-- Add Policy Sidebar -->
+   <div class="col-lg-4">
+    <div class="card border-0 shadow-sm rounded-xl mb-4" style="background:linear-gradient(135deg,#064e3b,#065f46); color:white;">
+     <div class="card-body">
+      <h6 class="font-weight-bold mb-3"><i class="fa fa-bolt mr-2"></i><%= _t('patient_insurance.auto_lookup', { ns: 'legacy', defaultValue: 'Auto Lookup (API)' }) %></h6>
+      <div class="form-group">
+       <label class="small font-weight-bold"><%= _t('patient_insurance.col_carrier', { ns: 'legacy', defaultValue: 'Carrier' }) %></label>
+       <select class="form-control form-control-sm border-0 shadow-sm" id="auto_ins_carrier">
+        <option value=""><%= _t('patient_insurance.select_carrier', { ns: 'legacy', defaultValue: '— Select Carrier —' }) %></option>
+        <% carriers.forEach(c => { %>
+         <option value="<%= c.id %>"><%= c.name %></option>
+        <% }) %>
+       </select>
+      </div>
+      <div class="form-group">
+       <label class="small font-weight-bold"><%= _t('patient_insurance.card_id', { ns: 'legacy', defaultValue: 'Insurance Card ID' }) %></label>
+       <div class="input-group input-group-sm">
+        <input type="text" id="auto_ins_id" class="form-control border-0 shadow-sm" placeholder="<%= _t('patient_insurance.id_ph', { ns: 'legacy', defaultValue: 'ID Number' }) %>">
+        <div class="input-group-append"><button type="button" class="btn btn-warning font-weight-bold" onclick="lookupInsuranceAPI()"><%= _t('patient_insurance.lookup', { ns: 'legacy', defaultValue: 'Lookup' }) %></button></div>
+       </div>
+      </div>
+      <div id="ins_lookup_result" class="small mt-2 p-2 bg-white text-dark rounded border-0" style="display:none; box-shadow:inset 0 2px 4px rgba(0,0,0,0.1);"></div>
+      <form id="saveLookupForm" action="/patients/<%= patient.id %>/insurance/save-lookup" method="POST" style="display:none;">
+       <input type="hidden" name="carrier_id" id="sl_carrier_id">
+       <input type="hidden" name="insurance_id_external" id="sl_ext_id">
+       <input type="hidden" name="policy_number" id="sl_policy">
+       <input type="hidden" name="insurer_covered_percent" id="sl_pct">
+       <input type="hidden" name="is_primary" value="1">
+       <input type="hidden" name="effective_from" id="sl_from">
+       <input type="hidden" name="api_source" id="sl_source">
+       <button type="submit" class="btn btn-block btn-light btn-sm mt-2 font-weight-bold text-success"><%= _t('patient_insurance.confirm_save', { ns: 'legacy', defaultValue: 'Confirm & Save Policy' }) %></button>
+      </form>
+     </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-xl">
+     <div class="card-header bg-white border-bottom p-3">
+      <h6 class="mb-0 font-weight-bold"><i class="fa fa-plus mr-2 text-indigo"></i><%= _t('patient_insurance.add_manual', { ns: 'legacy', defaultValue: 'Add Manual Policy' }) %></h6>
+     </div>
+     <div class="card-body">
+      <form action="/patients/<%= patient.id %>/insurance/add" method="POST">
+       <div class="form-group">
+        <label class="small font-weight-bold"><%= _t('patient_insurance.col_carrier', { ns: 'legacy', defaultValue: 'Carrier' }) %></label>
+        <select name="carrier_id" class="form-control form-control-sm" required>
+         <option value=""><%= _t('patient_insurance.select', { ns: 'legacy', defaultValue: '— Select —' }) %></option>
+         <% carriers.forEach(c => { %>
+          <option value="<%= c.id %>"><%= c.name %></option>
+         <% }) %>
+        </select>
+       </div>
+       <div class="form-group">
+        <label class="small font-weight-bold"><%= _t('patient_insurance.policy_membership', { ns: 'legacy', defaultValue: 'Policy / Membership #' }) %></label>
+        <input type="text" name="policy_number" class="form-control form-control-sm">
+       </div>
+       <div class="form-group">
+        <label class="small font-weight-bold d-block"><%= _t('patient_insurance.coverage_pct', { ns: 'legacy', defaultValue: 'Coverage (%)' }) %></label>
+        <div class="btn-group btn-group-toggle d-flex mb-2 flex-wrap" data-toggle="buttons" id="covPresetButtons">
+         <label class="btn btn-outline-primary btn-sm flex-fill"><input type="radio" name="cov_preset" value="70" autocomplete="off"> 70%</label>
+         <label class="btn btn-outline-primary btn-sm flex-fill"><input type="radio" name="cov_preset" value="80" autocomplete="off"> 80%</label>
+         <label class="btn btn-outline-primary btn-sm flex-fill"><input type="radio" name="cov_preset" value="90" autocomplete="off"> 90%</label>
+         <label class="btn btn-outline-primary btn-sm flex-fill"><input type="radio" name="cov_preset" value="100" autocomplete="off"> 100%</label>
+        </div>
+        <div class="small mb-2"><a href="#" id="linkCustomCov" class="text-primary font-weight-bold" style="display:none;"><%= _t('patient_insurance.custom_pct_link', { ns: 'legacy', defaultValue: 'Use custom percentage instead' }) %></a></div>
+        <div id="customPctWrap">
+         <input type="number" id="customPctInput" class="form-control form-control-sm" placeholder="<%= _t('patient_insurance.custom_pct_ph', { ns: 'legacy', defaultValue: 'Custom %' }) %>" min="0" max="100" step="1" inputmode="numeric" pattern="[0-9]*" title="<%= _t('patient_insurance.custom_pct_title', { ns: 'legacy', defaultValue: 'Whole number from 0 to 100' }) %>">
+        </div>
+        <input type="hidden" name="insurer_covered_percent" id="pctHiddenSubmit" value="">
+       </div>
+       <div class="custom-control custom-checkbox mb-3">
+        <input type="checkbox" class="custom-control-input" id="is_primary" name="is_primary" value="1" checked>
+        <label class="custom-control-label small font-weight-bold" for="is_primary"><%= _t('patient_insurance.set_primary', { ns: 'legacy', defaultValue: 'Set as Primary Policy' }) %></label>
+       </div>
+       <button type="submit" class="btn btn-primary btn-block font-weight-bold"><%= _t('patient_insurance.save_policy', { ns: 'legacy', defaultValue: 'Save Policy' }) %></button>
+      </form>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<script>
+window.__PATIENT_INS_I18N = <%- JSON.stringify({
+  removeTitle: _t('patient_insurance.js_remove_title', { ns: 'legacy', defaultValue: 'Remove Policy?' }),
+  removeBody: _t('patient_insurance.js_remove_body', { ns: 'legacy', defaultValue: 'Are you sure you want to remove the policy for {{carrier}}?' }),
+  removeConfirm: _t('patient_insurance.js_remove_confirm', { ns: 'legacy', defaultValue: 'Yes, Remove It' }),
+  covWarning: _t('patient_insurance.js_cov_warning', { ns: 'legacy', defaultValue: 'Choose a preset (70–100%) or enter a whole number from 0 to 100' }),
+  carrierRequired: _t('patient_insurance.js_carrier_required', { ns: 'legacy', defaultValue: 'Carrier and ID required' }),
+  checkingApi: _t('patient_insurance.js_checking_api', { ns: 'legacy', defaultValue: 'Checking carrier API...' }),
+  verifySuccess: _t('patient_insurance.js_verify_success', { ns: 'legacy', defaultValue: 'Verification Success' }),
+  carrier: _t('patient_insurance.js_carrier', { ns: 'legacy', defaultValue: 'Carrier:' }),
+  coverage: _t('patient_insurance.js_coverage', { ns: 'legacy', defaultValue: 'Coverage:' }),
+  policy: _t('patient_insurance.js_policy', { ns: 'legacy', defaultValue: 'Policy:' }),
+  lookupFailed: _t('patient_insurance.js_lookup_failed', { ns: 'legacy', defaultValue: 'Lookup Failed:' }),
+  policyVerified: _t('patient_insurance.js_policy_verified', { ns: 'legacy', defaultValue: 'Policy verified!' }),
+  verifyFailed: _t('patient_insurance.js_verify_failed', { ns: 'legacy', defaultValue: 'Verification failed' })
+}) %>;
+var PI_I18N = window.__PATIENT_INS_I18N || {};
+
+function confirmRemovePolicy(id, carrier) {
+  HMS.confirm(PI_I18N.removeTitle, PI_I18N.removeBody.replace('{{carrier}}', carrier), 'warning', PI_I18N.removeConfirm, '#dc3545')
+  .then((result) => {
+    if (result.isConfirmed) {
+      document.getElementById('removePolicy_' + id).submit();
+    }
+  });
+}
+
+(function initCoverageUi() {
+  var presetWrap = document.getElementById('covPresetButtons');
+  var presetRadios = document.querySelectorAll('input[name="cov_preset"]');
+  var customWrap = document.getElementById('customPctWrap');
+  var customInput = document.getElementById('customPctInput');
+  var pctHidden = document.getElementById('pctHiddenSubmit');
+  var linkCustom = document.getElementById('linkCustomCov');
+  var form = customInput && customInput.closest('form');
+
+  function syncPresetActiveClasses() {
+    document.querySelectorAll('#covPresetButtons label.btn').forEach(function (lb) {
+      var r = lb.querySelector('input[type="radio"]');
+      if (r) lb.classList.toggle('active', r.checked);
+    });
+  }
+
+  function showPresetMode(pct) {
+    if (!customWrap || !customInput || !pctHidden) return;
+    customWrap.style.display = 'none';
+    customInput.disabled = true;
+    customInput.removeAttribute('required');
+    customInput.removeAttribute('aria-required');
+    customInput.value = '';
+    pctHidden.value = String(pct);
+    syncPresetActiveClasses();
+    if (linkCustom) linkCustom.style.display = '';
+  }
+
+  function showCustomMode() {
+    if (!customWrap || !customInput || !pctHidden) return;
+    presetRadios.forEach(function (r) { r.checked = false; });
+    document.querySelectorAll('#covPresetButtons label.btn').forEach(function (lb) { lb.classList.remove('active'); });
+    customWrap.style.display = '';
+    customInput.disabled = false;
+    customInput.focus();
+    pctHidden.value = sanitizeCustomToIntString(customInput.value);
+    if (linkCustom) linkCustom.style.display = 'none';
+  }
+
+  function sanitizeCustomToIntString(s) {
+    var digits = String(s || '').replace(/\D/g, '');
+    if (digits === '') return '';
+    var n = parseInt(digits, 10);
+    if (n > 100) n = 100;
+    return String(n);
+  }
+
+  function applyCustomInputSanitize() {
+    if (!customInput) return;
+    var next = sanitizeCustomToIntString(customInput.value);
+    if (customInput.value !== next) customInput.value = next;
+    pctHidden.value = next;
+  }
+
+  function syncFromDom() {
+    var picked = null;
+    presetRadios.forEach(function (r) {
+      if (r.checked) picked = r.value;
+    });
+    if (picked != null) showPresetMode(picked);
+    else {
+      customWrap.style.display = '';
+      customInput.disabled = false;
+      applyCustomInputSanitize();
+      if (linkCustom) linkCustom.style.display = 'none';
+    }
+  }
+
+  presetRadios.forEach(function (rad) {
+    rad.addEventListener('change', function () {
+      if (this.checked) showPresetMode(this.value);
+    });
+  });
+
+  if (presetWrap) {
+    presetWrap.addEventListener('click', function () {
+      window.requestAnimationFrame(function () {
+        syncFromDom();
+      });
+    });
+  }
+
+  if (customInput) {
+    customInput.addEventListener('keydown', function (e) {
+      if (e.key === '.' || e.key === ',' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-') {
+        e.preventDefault();
+      }
+    });
+    customInput.addEventListener('input', applyCustomInputSanitize);
+    customInput.addEventListener('paste', function (e) {
+      e.preventDefault();
+      var t = (e.clipboardData || window.clipboardData).getData('text') || '';
+      customInput.value = sanitizeCustomToIntString(t);
+      pctHidden.value = customInput.value;
+    });
+  }
+
+  if (linkCustom) {
+    linkCustom.addEventListener('click', function (e) {
+      e.preventDefault();
+      showCustomMode();
+    });
+  }
+
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      var anyPreset = false;
+      presetRadios.forEach(function (r) { if (r.checked) anyPreset = true; });
+      var v;
+      if (anyPreset) {
+        v = parseInt(pctHidden.value, 10);
+      } else {
+        v = parseInt((customInput && customInput.value) ? sanitizeCustomToIntString(customInput.value) : pctHidden.value, 10);
+      }
+      if (isNaN(v) || v < 0 || v > 100) {
+        e.preventDefault();
+        HMS.toast.fire({ icon: 'warning', title: PI_I18N.covWarning });
+        return false;
+      }
+      pctHidden.value = String(v);
+    });
+  }
+
+  if (customInput && pctHidden) {
+    pctHidden.value = '';
+    syncFromDom();
+  }
+})();
+
+function lookupInsuranceAPI() {
+  const cid = document.getElementById('auto_ins_carrier').value;
+  const iid = document.getElementById('auto_ins_id').value;
+  const resDiv = document.getElementById('ins_lookup_result');
+  const saveForm = document.getElementById('saveLookupForm');
+
+  if(!cid || !iid) {
+    HMS.toast.fire({ icon: 'warning', title: PI_I18N.carrierRequired });
+    return;
+  }
+
+  resDiv.style.display = 'block';
+  saveForm.style.display = 'none';
+  resDiv.innerHTML = '<i class="fa fa-spinner fa-spin"></i> ' + PI_I18N.checkingApi;
+
+  fetch('/patients/<%= patient.id %>/insurance/lookup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ carrier_id: cid, insurance_id_external: iid })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if(data.ok) {
+      const r = data.result;
+      resDiv.innerHTML = `
+        <div class="font-weight-bold text-success mb-1"><i class="fa fa-check-circle"></i> ${PI_I18N.verifySuccess}</div>
+        <div>${PI_I18N.carrier} ${r.carrier_name}</div>
+        <div>${PI_I18N.coverage} <b>${r.insurer_covered_percent}%</b></div>
+        <div>${PI_I18N.policy} ${r.policy_number}</div>
+        <div class="small text-muted mt-1 font-italic">${r.message || ''}</div>
+      `;
+      document.getElementById('sl_carrier_id').value = data.carrier.id;
+      document.getElementById('sl_ext_id').value = r.insurance_id;
+      document.getElementById('sl_policy').value = r.policy_number;
+      document.getElementById('sl_pct').value = r.insurer_covered_percent;
+      document.getElementById('sl_from').value = r.effective_from || '';
+      document.getElementById('sl_source').value = r.carrier_code || 'api';
+      saveForm.style.display = 'block';
+      HMS.toast.fire({ icon: 'success', title: PI_I18N.policyVerified });
+    } else {
+      resDiv.innerHTML = `<div class="text-danger"><i class="fa fa-times-circle"></i> ${PI_I18N.lookupFailed} ${data.error}</div>`;
+      HMS.toast.fire({ icon: 'error', title: PI_I18N.verifyFailed });
+    }
+  });
+}
+</script>
+
+<%- include('partials/footer') %>

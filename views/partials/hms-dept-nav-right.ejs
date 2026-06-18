@@ -1,0 +1,29 @@
+<%- include('hms-perm-helpers') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _top = function (key, fallback, opts) {
+  return _t(key, Object.assign({ ns: 'ops', defaultValue: fallback }, opts || {}));
+};
+var _deptUser = (typeof deptNavUser !== 'undefined' && deptNavUser)
+  ? deptNavUser
+  : (locals.userDisplayName || (locals.user && locals.user.name) || _top('dept_nav.user_fallback', 'User'));
+var _signOutLabel = _top('dept_nav.sign_out', 'Sign out');
+var _logoutLabel = _top('dept_nav.logout', 'Logout');
+var _homeLabel = _top('dept_nav.home', 'My Home');
+%>
+<div class="o_nav_right">
+  <% if (canHospitalDashboard()) { %>
+  <a href="/dashboard" class="o_nav_right_link"><%= _homeLabel %></a>
+  <% } %>
+  <%- include('hms-lang-switcher', { langSwitcherOdoo: true }) %>
+  <span class="o_nav_user">
+    <%- include('hms-user-avatar', { avatarClass: 'hms-user-avatar hms-user-avatar--sm', userProfileEmoji: locals.userProfileEmoji }) %>
+    <%= _deptUser %>
+  </span>
+  <a href="/logout" class="o_nav_right_link o_nav_logout" title="<%= _signOutLabel %>">
+    <i class="fa fa-sign-out" aria-hidden="true"></i>
+    <span class="d-none d-md-inline"><%= _logoutLabel %></span>
+  </a>
+</div>

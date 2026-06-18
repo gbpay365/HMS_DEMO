@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--front-desk'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'front-desk',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.front_desk', { ns: 'common' }) : 'Loading…')
+}) %>
+
+<%- include('partials/footer') %>

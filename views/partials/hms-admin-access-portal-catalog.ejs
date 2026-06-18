@@ -1,0 +1,84 @@
+<%
+if (typeof _ac !== 'function') {
+  var _ac = function (k, d, opts) {
+    if (typeof t !== 'function') return d || k;
+    var o = { ns: 'access', defaultValue: d || k };
+    if (opts) Object.assign(o, opts);
+    return t(k, o);
+  };
+}
+%>
+<div class="haa-alert-bar mb-3">
+  <i class="fa fa-th-large mr-1"></i>
+  <%- _ac('portal_catalog.intro', '<strong>Portal catalogue</strong> defines staff landing pages (e.g. Hospital Director at <code>/portal/hub/director</code>). After creating a portal, assign it to roles under the <strong>Role portals</strong> tab and add tiles under <strong>Navigation</strong>.') %>
+</div>
+
+<div class="d-flex justify-content-between align-items-center flex-wrap mb-3" style="gap:10px;">
+  <h2 class="h6 font-weight-bold mb-0"><i class="fa fa-th-large mr-1 text-primary"></i><%= _ac('portal_catalog.all_portals', 'All portals') %></h2>
+  <button type="button" class="btn btn-sm font-weight-bold text-white" style="background:var(--haa-brand);border-radius:8px;" data-toggle="modal" data-target="#haaModalPortal">
+    <i class="fa fa-plus mr-1"></i><%= _ac('portal_catalog.create_portal', 'Create portal') %>
+  </button>
+</div>
+
+<div class="table-responsive bg-white border rounded shadow-sm">
+  <table class="table table-hover mb-0 haa-portal-table">
+    <thead class="thead-light">
+      <tr>
+        <th><%= _ac('portal_catalog.col_portal', 'Portal') %></th>
+        <th><%= _ac('shared.code', 'Code') %></th>
+        <th><%= _ac('portal_catalog.col_home_url', 'Home URL') %></th>
+        <th class="text-center"><%= _ac('shared.status', 'Status') %></th>
+        <th class="text-right"><%= _ac('shared.actions', 'Actions') %></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% (portalCatalog || portals || []).forEach(function(p) {
+        var code = p.code;
+        var isBuiltin = p.is_builtin === 1 || p.is_builtin === true;
+        var home = p.home_url || ('/portal/hub/' + code);
+      %>
+      <tr>
+        <td>
+          <span class="d-inline-flex align-items-center">
+            <span class="rounded d-inline-flex align-items-center justify-content-center mr-2" style="width:32px;height:32px;background:<%= p.color || '#714b67' %>22;color:<%= p.color || '#714b67' %>;">
+              <i class="fa <%= p.icon || 'fa-th-large' %>"></i>
+            </span>
+            <span>
+              <span class="font-weight-bold d-block"><%= p.label %></span>
+              <% if (p.description) { %><span class="small text-muted"><%= p.description %></span><% } %>
+            </span>
+          </span>
+        </td>
+        <td><code><%= code %></code><% if (isBuiltin) { %> <span class="badge badge-secondary"><%= _ac('shared.builtin', 'built-in') %></span><% } %></td>
+        <td class="small"><a href="<%= home %>" target="_blank" rel="noopener"><%= home %></a></td>
+        <td class="text-center">
+          <% if (p.enabled === 0) { %><span class="badge badge-warning"><%= _ac('shared.disabled', 'Disabled') %></span><% } else { %><span class="badge badge-success"><%= _ac('shared.active', 'Active') %></span><% } %>
+        </td>
+        <td class="text-right text-nowrap">
+          <a href="<%= home %>" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener" style="border-radius:6px;"><%= _ac('shared.open', 'Open') %></a>
+          <button type="button" class="btn btn-sm btn-outline-secondary haa-portal-edit" style="border-radius:6px;"
+            data-code="<%= code %>"
+            data-label="<%= p.label %>"
+            data-home="<%= home %>"
+            data-icon="<%= p.icon || 'fa-th-large' %>"
+            data-color="<%= p.color || '#714b67' %>"
+            data-desc="<%= p.description || '' %>"
+            data-enabled="<%= p.enabled === 0 ? '0' : '1' %>"
+            data-sort="<%= p.sort_order || 50 %>"
+            data-builtin="<%= isBuiltin ? '1' : '0' %>"><%= _ac('shared.edit', 'Edit') %></button>
+          <% if (!isBuiltin) { %>
+          <button type="button" class="btn btn-sm btn-outline-danger haa-portal-delete" style="border-radius:6px;" data-code="<%= code %>" data-label="<%= p.label %>"><%= _ac('shared.delete', 'Delete') %></button>
+          <% } %>
+        </td>
+      </tr>
+      <% }); %>
+      <% if (!(portalCatalog || portals || []).length) { %>
+      <tr><td colspan="5" class="text-center text-muted py-4"><%= _ac('portal_catalog.empty', 'No portals defined yet.') %></td></tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<div class="card border-0 shadow-sm mt-4 p-3 small text-muted" style="border-radius:10px;">
+  <%- _ac('portal_catalog.director_tip', '<strong>Hospital Director</strong> — use code <code>director</code>, template <em>Executive</em>, then assign portal to role <strong>Director (100)</strong> and set as <strong>Home</strong> on the Role portals tab.') %>
+</div>

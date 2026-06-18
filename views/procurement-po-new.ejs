@@ -1,0 +1,185 @@
+<%- include('partials/header') %>
+
+<div class="page-wrapper">
+ <div class="content">
+ <% if(locals.flash){ %><div class="hms-flash hms-flash--success border-0 shadow-sm mb-3"><%= flash %></div><% } %>
+ <% if(locals.error){ %><div class="hms-flash hms-flash--error border-0 shadow-sm mb-3"><%= error %></div><% } %>
+
+ <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+  <div>
+   <h4 class="page-title font-weight-bold text-dark mb-1">New Purchase Order</h4>
+   <p class="text-muted small mb-0">Create a lined PO, a summary PO (description + total), or import lines from CSV / Excel / PDF / Word.</p>
+  </div>
+  <a href="/procurement/purchase-orders" class="hms-btn hms-btn-secondary btn-sm rounded-pill"><i class="fa fa-arrow-left mr-1"></i>All POs</a>
+ </div>
+
+ <% if (fromPr && fromPr.pr) { %>
+ <div class="hms-flash hms-flash--success border-0 shadow-sm mb-3">
+  <i class="fa fa-link mr-1"></i> Converting purchase request <strong><%= fromPr.pr.pr_number %></strong> — <%= fromPr.pr.title %>
+ </div>
+ <% } %>
+
+ <form method="post" action="/procurement/purchase-orders" enctype="multipart/form-data" id="poCreateForm">
+  <% if (fromPr && fromPr.pr) { %>
+  <input type="hidden" name="purchase_request_id" value="<%= fromPr.pr.id %>">
+  <% } %>
+
+  <div class="card border-0 shadow-sm rounded-xl mb-3">
+   <div class="card-header bg-white font-weight-bold">Header</div>
+   <div class="card-body">
+    <div class="form-row">
+     <div class="form-group col-md-4">
+      <label class="small font-weight-bold">PO type</label>
+      <select name="po_mode" id="poMode" class="hms-input w-full">
+       <option value="lined">Line items</option>
+       <option value="summary">Summary only (description + total)</option>
+      </select>
+     </div>
+     <div class="form-group col-md-4">
+      <label class="small font-weight-bold">Vendor</label>
+      <select name="vendor_id" class="hms-input w-full" id="vendorSelect">
+       <option value="">— Select vendor —</option>
+       <% (vendors||[]).forEach(function(v){ %>
+       <option value="<%= v.id %>" data-name="<%= v.name %>" <%= fromPr && fromPr.pr && fromPr.pr.vendor_id == v.id ? 'selected' : '' %>><%= v.name %><% if(v.vendor_code){ %> (<%= v.vendor_code %>)<% } %></option>
+       <% }); %>
+      </select>
+     </div>
+     <div class="form-group col-md-4">
+      <label class="small font-weight-bold">Supplier name</label>
+      <input name="supplier_name" id="supplierName" class="hms-input w-full" placeholder="Vendor / supplier name" value="<%= fromPr && fromPr.pr ? (fromPr.pr.vendor_name || '') : '' %>">
+     </div>
+    </div>
+    <div class="form-group mb-0">
+     <label class="small font-weight-bold">Notes</label>
+     <input name="po_notes" class="hms-input w-full" placeholder="Internal notes">
+    </div>
+   </div>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-xl mb-3" id="summaryBlock" style="display:none;">
+   <div class="card-header bg-white font-weight-bold">Summary PO</div>
+   <div class="card-body">
+    <div class="form-group">
+     <label class="small font-weight-bold">Description</label>
+     <textarea name="summary_description" class="hms-input w-full" rows="4" placeholder="Describe goods/services covered by this PO (quotation ref, delivery terms, etc.)"><%= fromPr && fromPr.pr ? (fromPr.pr.summary_description || '') : '' %></textarea>
+    </div>
+    <div class="form-group mb-0 col-md-4 pl-0">
+     <label class="small font-weight-bold">Total amount (XAF)</label>
+     <input type="number" name="total_amount" class="hms-input w-full" min="0" step="1" value="<%= fromPr && fromPr.pr && fromPr.pr.estimated_total ? fromPr.pr.estimated_total : 0 %>">
+    </div>
+   </div>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-xl mb-3" id="linesBlock">
+   <div class="card-header bg-white font-weight-bold d-flex justify-content-between align-items-center">
+    <span>Line items</span>
+    <button type="button" class="btn btn-sm btn-outline-primary" id="addLineBtn"><i class="fa fa-plus mr-1"></i>Add line</button>
+   </div>
+   <div class="table-responsive">
+    <table class="table table-sm mb-0" id="poLinesTable">
+     <thead class="bg-light">
+      <tr>
+       <th>Description / Item</th>
+       <th style="width:130px;">Unit price</th>
+       <th style="width:180px;">Qty</th>
+       <th style="width:48px;"></th>
+      </tr>
+     </thead>
+     <tbody id="poLinesBody">
+      <% var seedLines = (fromPr && fromPr.lines && fromPr.lines.length) ? fromPr.lines : [{}]; %>
+      <% seedLines.forEach(function(ln, idx){ %>
+      <tr class="po-line-row">
+       <td>
+        <input name="line_description" class="hms-input w-full text-sm" placeholder="Item description" value="<%= ln.description || '' %>">
+        <select name="line_inventory_item_id" class="hms-input w-full text-sm mt-1">
+         <option value="">— Link inventory SKU (optional) —</option>
+         <% (inventoryItems||[]).forEach(function(it){ %>
+         <option value="<%= it.id %>" <%= ln.inventory_item_id == it.id ? 'selected' : '' %>><%= it.name %> (<%= it.sku %>)</option>
+         <% }); %>
+        </select>
+       </td>
+       <td><input type="number" name="line_unit_price" class="hms-input w-full text-sm" min="0" step="0.01" value="0"></td>
+       <td>
+        <% var seedQty = (ln.quantity != null && typeof fmtPoQty === 'function') ? fmtPoQty(ln.quantity, ln.uom) : (ln.quantity != null ? ln.quantity : '1 Pack'); %>
+        <input type="text" name="line_quantity" class="hms-input w-full text-sm" value="<%= seedQty %>" placeholder="e.g. 50 Cartons" list="poQtyUnitHints">
+       </td>
+       <td><% if(idx>0){ %><button type="button" class="btn btn-link btn-sm text-danger po-rm">×</button><% } %></td>
+      </tr>
+      <% }); %>
+     </tbody>
+    </table>
+    <datalist id="poQtyUnitHints">
+     <option value="50 Cartons"><option value="60 Packs"><option value="45 Ampoules"><option value="33 Sachets"><option value="1 Pack">
+    </datalist>
+    <p class="small text-muted px-3 pb-2 mb-0">Qty with unit — e.g. <strong>50 Cartons</strong>, <strong>60 Packs</strong>, <strong>45 Ampoules</strong>.</p>
+   </div>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-xl mb-3">
+   <div class="card-header bg-white font-weight-bold">Import / Attach file</div>
+   <div class="card-body">
+    <p class="small text-muted mb-2">Upload CSV, Excel (.xlsx), PDF, or Word (.docx) to auto-create line items. You can also attach quotations, BL, invoices later on the PO detail page.</p>
+    <div class="form-row align-items-end">
+     <div class="form-group col-md-5 mb-0">
+      <input type="file" name="import_file" class="hms-input w-full-file" accept=".csv,.xlsx,.xls,.pdf,.doc,.docx">
+     </div>
+     <div class="form-group col-md-3 mb-0">
+      <select name="doc_type" class="hms-input w-full text-sm">
+       <option value="import_source">Import source</option>
+       <option value="quotation">Quotation</option>
+       <option value="bl">Bill of lading</option>
+       <option value="invoice">Invoice</option>
+       <option value="other">Other</option>
+      </select>
+     </div>
+    </div>
+   </div>
+  </div>
+
+  <button type="submit" class="hms-btn-premium"><i class="fa fa-save mr-2"></i>Create draft PO</button>
+ </form>
+ </div>
+</div>
+
+<script>
+(function(){
+  var mode = document.getElementById('poMode');
+  var summaryBlock = document.getElementById('summaryBlock');
+  var linesBlock = document.getElementById('linesBlock');
+  function syncMode(){
+    var isSummary = mode.value === 'summary';
+    summaryBlock.style.display = isSummary ? 'block' : 'none';
+    linesBlock.style.display = isSummary ? 'none' : 'block';
+  }
+  mode.addEventListener('change', syncMode);
+  syncMode();
+
+  var vendorSelect = document.getElementById('vendorSelect');
+  var supplierName = document.getElementById('supplierName');
+  vendorSelect.addEventListener('change', function(){
+    var opt = vendorSelect.selectedOptions[0];
+    if (opt && opt.getAttribute('data-name')) supplierName.value = opt.getAttribute('data-name');
+  });
+
+  var body = document.getElementById('poLinesBody');
+  var tpl = body.querySelector('.po-line-row');
+  document.getElementById('addLineBtn').addEventListener('click', function(){
+    var row = tpl.cloneNode(true);
+    row.querySelectorAll('input').forEach(function(i){
+      if (i.name === 'line_quantity') i.value = '1 Pack';
+      else if (i.name === 'line_unit_price') i.value = '0';
+      else if (i.name === 'line_description') i.value = '';
+    });
+    var rm = document.createElement('button');
+    rm.type = 'button'; rm.className = 'btn btn-link btn-sm text-danger po-rm'; rm.textContent = '×';
+    rm.onclick = function(){ row.remove(); };
+    row.cells[3].appendChild(rm);
+    body.appendChild(row);
+  });
+  body.addEventListener('click', function(e){
+    if (e.target.classList.contains('po-rm')) e.target.closest('tr').remove();
+  });
+})();
+</script>
+
+<%- include('partials/footer') %>

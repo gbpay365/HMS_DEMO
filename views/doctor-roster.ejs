@@ -1,0 +1,259 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<link rel="stylesheet" href="/css/hms-roster-doctor.css?v=2">
+
+<div class="page-wrapper dr-roster-page">
+ <div class="content">
+ <% if (flash) { %>
+ <div class="hms-flash hms-flash--success alert-dismissible fade show" role="alert">
+ <%= flash %>
+ <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+ </div>
+ <% } %>
+ <% if (error) { %>
+ <div class="hms-flash hms-flash--error alert-dismissible fade show" role="alert">
+ <%= error %>
+ <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+ </div>
+ <% } %>
+
+ <div class="dr-hero d-flex flex-wrap justify-content-between align-items-start">
+ <div>
+ <h4 class="mb-1 font-weight-bold"><i class="fa fa-stethoscope mr-2"></i><%= _t('doctor_roster.title', { ns: 'legacy', defaultValue: 'Physician Duty Roster' }) %></h4>
+ <p class="mb-2 small opacity-90"><%= _t('doctor_roster.subtitle', { ns: 'legacy', defaultValue: 'On-call coverage for the medical team.' }) %></p>
+ <span class="dr-stat-pill"><i class="fa fa-check-circle"></i> <%= _t('doctor_roster.on_duty_count', { ns: 'legacy', defaultValue: '{{count}} on duty', count: period.onDuty }) %></span>
+ <span class="dr-stat-pill" style="background:var(--dr-night-soft);color:var(--dr-night);"><i class="fa fa-moon"></i> <%= _t('doctor_roster.on_call_count', { ns: 'legacy', defaultValue: '{{count}} on-call', count: period.night }) %></span>
+ </div>
+ <% if (isAdminOrSuper) { %>
+ <button class="btn btn-light btn-sm font-weight-bold rounded-pill px-3" data-toggle="modal" data-target="#copyRosterModal">
+ <i class="fa fa-copy mr-1"></i> <%= _t('doctor_roster.copy_duty', { ns: 'legacy', defaultValue: 'Copy duty day' }) %>
+ </button>
+ <% } %>
+ <a href="/doctor/schedule" class="btn btn-outline-light btn-sm font-weight-bold rounded-pill px-3 ml-2">
+ <i class="fa fa-calendar mr-1"></i> <%= _t('doctor_roster.my_schedule_hub', { ns: 'legacy', defaultValue: 'My schedule' }) %>
+ </a>
+ </div>
+
+ <div class="dr-toolbar d-flex flex-wrap align-items-center justify-content-between">
+ <div class="btn-group dr-view-tabs">
+ <a href="/doctor-roster?view=day&date=<%= date %>" class="btn btn-sm btn-outline-secondary <%= view === 'day' ? 'active' : '' %>"><%= _t('doctor_roster.view_day', { ns: 'legacy', defaultValue: 'Day' }) %></a>
+ <a href="/doctor-roster?view=week&date=<%= weekStart || date %>" class="btn btn-sm btn-outline-secondary <%= view === 'week' ? 'active' : '' %>"><%= _t('doctor_roster.view_week', { ns: 'legacy', defaultValue: 'Week' }) %></a>
+ <a href="/doctor-roster?view=month&date=<%= monthMeta.start %>" class="btn btn-sm btn-outline-secondary <%= view === 'month' ? 'active' : '' %>"><%= _t('doctor_roster.view_month', { ns: 'legacy', defaultValue: 'Month' }) %></a>
+ </div>
+
+ <div class="d-flex align-items-center flex-wrap mt-2 mt-md-0" style="gap:8px;">
+ <a href="/doctor-roster?view=<%= view %>&date=<%= prevNavDate %>" class="hms-btn hms-btn-secondary btn-sm"><i class="fa fa-chevron-left"></i></a>
+ <% if (view === 'month') { %>
+ <span class="font-weight-bold px-2"><%= monthMeta.label %></span>
+ <% } else if (view === 'week') { %>
+ <span class="font-weight-bold px-2 small"><%= _t('doctor_roster.week_of', { ns: 'legacy', defaultValue: 'Week of {{date}}', date: (typeof fmtDateShort === 'function' ? fmtDateShort(weekStart) : weekStart) }) %></span>
+ <% } else { %>
+ <form action="/doctor-roster" method="GET" class="d-flex align-items-center mb-0" style="gap:6px;">
+ <input type="hidden" name="view" value="day">
+ <input type="date" name="date" class="hms-input w-full text-sm" value="<%= date %>">
+ <button type="submit" class="hms-btn hms-btn-primary btn-sm"><%= _t('doctor_roster.load', { ns: 'legacy', defaultValue: 'Load' }) %></button>
+ </form>
+ <% } %>
+ <a href="/doctor-roster?view=<%= view %>&date=<%= nextNavDate %>" class="hms-btn hms-btn-secondary btn-sm"><i class="fa fa-chevron-right"></i></a>
+ <% if (view !== 'day') { %>
+ <a href="/doctor-roster?view=day" class="btn btn-sm btn-link"><%= _t('doctor_roster.today', { ns: 'legacy', defaultValue: 'Today' }) %></a>
+ <% } %>
+ </div>
+ </div>
+
+ <% if (view === 'day') { %>
+ <% if (canEditRoster) { %>
+ <form action="/doctor-roster/save" method="POST">
+ <input type="hidden" name="date" value="<%= date %>">
+ <input type="hidden" name="view" value="day">
+ <div class="row">
+ <% doctors.forEach(d => {
+    if (!canEditAll && staffEmpId && parseInt(d.id, 10) !== parseInt(staffEmpId, 10)) return;
+    const detail = (staffDayDetails && staffDayDetails[String(d.id)]) || { type: 'off', start_time: null, end_time: null, consultation_room_id: null, department: null };
+    const currentDuty = detail.type || (staffDayShift && staffDayShift[String(d.id)]) || 'off';
+    const defs = shiftDefaults || {};
+    const startVal = detail.start_time || (defs[currentDuty] && defs[currentDuty].start) || '';
+    const endVal = detail.end_time || (defs[currentDuty] && defs[currentDuty].end) || '';
+    const roomVal = detail.consultation_room_id || '';
+    const deptVal = detail.department || d.primary_department || '';
+ %>
+ <div class="col-md-6 col-lg-4 col-xl-3 mb-3">
+ <div class="dr-duty-card">
+ <div class="card-body p-3">
+ <div class="dr-avatar mx-auto">DR</div>
+ <h6 class="font-weight-bold mb-1 text-center">Dr. <%= d.first_name %> <%= d.last_name %></h6>
+ <p class="text-muted small mb-3 text-center"><%= d.primary_department || _t('doctor_roster.dept_clinical', { ns: 'legacy', defaultValue: 'Clinical' }) %></p>
+ <div class="dr-shift-toggle d-flex rounded p-1" style="background:#f1f5f9;">
+ <label class="flex-fill"><input type="radio" name="shifts[<%= d.id %>]" value="on_duty" <%= currentDuty === 'on_duty' ? 'checked' : '' %>><span><%= _t('doctor_roster.shift_on_duty', { ns: 'legacy', defaultValue: 'On duty' }) %></span></label>
+ <label class="flex-fill"><input type="radio" name="shifts[<%= d.id %>]" value="night" <%= currentDuty === 'night' ? 'checked' : '' %>><span><%= _t('doctor_roster.shift_on_call', { ns: 'legacy', defaultValue: 'On-Call' }) %></span></label>
+ <label class="flex-fill"><input type="radio" name="shifts[<%= d.id %>]" value="off" <%= currentDuty === 'off' ? 'checked' : '' %>><span><%= _t('doctor_roster.shift_off', { ns: 'legacy', defaultValue: 'Off' }) %></span></label>
+ </div>
+ <div class="dr-time-row mt-2 <%= currentDuty === 'off' ? 'd-none' : '' %>" data-dr-time="<%= d.id %>">
+  <div class="row no-gutters">
+   <div class="col-6 pr-1">
+    <label class="small font-weight-bold mb-0"><%= _t('doctor_roster.start_time', { ns: 'legacy', defaultValue: 'Start' }) %></label>
+    <input type="time" name="shift_start[<%= d.id %>]" class="hms-input w-full text-sm" value="<%= startVal %>">
+   </div>
+   <div class="col-6 pl-1">
+    <label class="small font-weight-bold mb-0"><%= _t('doctor_roster.end_time', { ns: 'legacy', defaultValue: 'End' }) %></label>
+    <input type="time" name="shift_end[<%= d.id %>]" class="hms-input w-full text-sm" value="<%= endVal %>">
+   </div>
+  </div>
+  <div class="mt-2">
+   <label class="small font-weight-bold mb-0"><%= _t('doctor_roster.consult_room', { ns: 'legacy', defaultValue: 'Consult room' }) %></label>
+   <select name="shift_room[<%= d.id %>]" class="hms-input w-full text-sm">
+    <option value=""><%= _t('doctor_roster.room_none', { ns: 'legacy', defaultValue: '— Not set —' }) %></option>
+    <% (consultationRooms || []).forEach(function(r) { %>
+    <option value="<%= r.id %>" <%= String(roomVal) === String(r.id) ? 'selected' : '' %>><%= r.name || r.code %></option>
+    <% }); %>
+   </select>
+  </div>
+  <div class="mt-2">
+   <label class="small font-weight-bold mb-0"><%= _t('doctor_roster.department', { ns: 'legacy', defaultValue: 'Department' }) %></label>
+   <input type="text" name="shift_dept[<%= d.id %>]" class="hms-input w-full text-sm" value="<%= deptVal %>" maxlength="120">
+  </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ <% }); %>
+ </div>
+ <div class="text-center mt-2">
+ <button type="submit" class="hms-btn hms-btn-primary btn-lg rounded-pill px-5 font-weight-bold shadow">
+ <i class="fa fa-save mr-2"></i><%= _t('doctor_roster.save_duty', { ns: 'legacy', defaultValue: 'Save duty for {{date}}', date: (typeof fmtDate === 'function' ? fmtDate(date) : date) }) %>
+ </button>
+ </div>
+ </form>
+ <script>
+ (function(){
+  document.querySelectorAll('.dr-shift-toggle input[type=radio]').forEach(function(r){
+   r.addEventListener('change', function(){
+    var card = r.closest('.dr-duty-card');
+    var row = card && card.querySelector('[data-dr-time]');
+    if (!row) return;
+    row.classList.toggle('d-none', r.value === 'off');
+   });
+  });
+ })();
+ </script>
+ <% } else { %>
+ <div class="row">
+ <% doctors.forEach(d => { %>
+ <% const currentDuty = (staffDayShift && staffDayShift[String(d.id)]) || 'off';
+    const dutyLabel = currentDuty === 'on_duty' ? _t('doctor_roster.shift_on_duty', { ns: 'legacy', defaultValue: 'On duty' }) : currentDuty === 'night' ? _t('doctor_roster.shift_on_call', { ns: 'legacy', defaultValue: 'On-Call' }) : _t('doctor_roster.shift_off_duty', { ns: 'legacy', defaultValue: 'Off duty' }); %>
+ <div class="col-md-6 col-lg-4 col-xl-3 mb-3">
+ <div class="dr-duty-card">
+ <div class="card-body text-center p-3">
+ <div class="dr-avatar">DR</div>
+ <h6 class="font-weight-bold mb-1">Dr. <%= d.first_name %> <%= d.last_name %></h6>
+ <p class="text-muted small mb-2"><%= d.primary_department || _t('doctor_roster.dept_clinical', { ns: 'legacy', defaultValue: 'Clinical' }) %></p>
+ <span class="dr-duty-pill <%= currentDuty %>"><i class="fa fa-circle" style="font-size:0.45rem;"></i> <%= dutyLabel %></span>
+ </div>
+ </div>
+ </div>
+ <% }); %>
+ </div>
+ <p class="text-muted small text-center mt-2"><i class="fa fa-info-circle mr-1"></i><%= _t('doctor_roster.view_only', { ns: 'legacy', defaultValue: 'View only — you need doctor duty edit permission to change the roster.' }) %></p>
+ <% } %>
+
+ <% } else if (view === 'week') { %>
+ <div class="card border-0 shadow-sm">
+ <div class="table-responsive">
+ <table class="table table-bordered dr-week-table mb-0 text-center">
+ <thead>
+ <tr>
+ <th class="text-left pl-3"><%= _t('doctor_roster.col_physician', { ns: 'legacy', defaultValue: 'Physician' }) %></th>
+ <% weekDays.forEach(wd => { %>
+ <th class="<%= wd.isToday ? 'table-primary' : '' %>">
+ <%= wd.weekday %><br><small class="text-muted"><%= wd.label %></small>
+ </th>
+ <% }); %>
+ </tr>
+ </thead>
+ <tbody>
+ <% staffWithWeek.forEach(sw => { %>
+ <tr>
+ <td class="text-left pl-3 font-weight-bold small">Dr. <%= sw.first_name %> <%= sw.last_name %></td>
+ <% sw.weekDays.forEach(wd => { %>
+ <td>
+ <% if (wd.shift === 'on_duty') { %>
+ <span class="badge dr-badge-od px-2">OD</span>
+ <% } else if (wd.shift === 'night') { %>
+ <span class="badge dr-badge-n px-2">OC</span>
+ <% } else { %>
+ <span class="text-muted small">off</span>
+ <% } %>
+ </td>
+ <% }); %>
+ </tr>
+ <% }); %>
+ </tbody>
+ </table>
+ </div>
+ </div>
+ <p class="text-muted small mt-2"><%= _t('doctor_roster.week_legend', { ns: 'legacy', defaultValue: 'OD = on duty · OC = on-call · Use Day view to edit.' }) %></p>
+
+ <% } else { %>
+ <div class="dr-month-grid mb-1">
+ <% var _dowKeys = ['dow_mon','dow_tue','dow_wed','dow_thu','dow_fri','dow_sat','dow_sun'];
+    _dowKeys.forEach(function(dk){ %>
+ <div class="dr-month-dow"><%= _t('doctor_roster.' + dk, { ns: 'legacy', defaultValue: dk }) %></div>
+ <% }); %>
+ </div>
+ <% monthWeeks.forEach(week => { %>
+ <div class="dr-month-grid mb-1">
+ <% week.forEach(cell => { %>
+ <div class="dr-month-cell <%= !cell.inMonth ? 'outside' : '' %> <%= cell.isToday ? 'today' : '' %> <%= cell.isWeekend ? 'weekend' : '' %>">
+ <a href="/doctor-roster?view=day&date=<%= cell.ymd %>" class="text-dark text-decoration-none">
+ <div class="day-num"><%= cell.dayNum %></div>
+ </a>
+ <% (cell.assignments || []).forEach(a => { %>
+ <span class="dr-month-chip <%= a.duty %>" title="<%= a.name %>"><%= a.short %> <%= a.name.split(' ')[0] %></span>
+ <% }); %>
+ </div>
+ <% }); %>
+ </div>
+ <% }); %>
+ <p class="text-muted small mt-2"><%= _t('doctor_roster.month_legend', { ns: 'legacy', defaultValue: 'Click a date for day detail. Green = on duty · indigo = on-call.' }) %></p>
+ <% } %>
+
+ </div>
+</div>
+
+<% if (isAdminOrSuper) { %>
+<div class="modal fade" id="copyRosterModal" tabindex="-1" role="dialog" aria-labelledby="copyRosterModalTitle">
+ <div class="modal-dialog modal-dialog-centered">
+ <div class="modal-content border-0 shadow" style="border-radius:14px;">
+ <form action="/doctor-roster/copy" method="POST">
+ <div class="modal-header border-0">
+ <h5 class="modal-title font-weight-bold" id="copyRosterModalTitle"><%= _t('doctor_roster.copy_title', { ns: 'legacy' }) %></h5>
+ <button type="button" class="close" data-dismiss="modal" aria-label="<%= _t('doctor_roster.close', { ns: 'legacy', defaultValue: 'Close' }) %>"><span aria-hidden="true">&times;</span></button>
+ </div>
+ <div class="modal-body">
+ <input type="hidden" name="view" value="<%= view %>">
+ <div class="form-group">
+ <label class="small font-weight-bold"><%= _t('doctor_roster.from_date', { ns: 'legacy' }) %></label>
+ <input type="date" name="from_date" class="hms-input w-full" required>
+ </div>
+ <div class="form-group mb-0">
+ <label class="small font-weight-bold"><%= _t('doctor_roster.to_date', { ns: 'legacy' }) %></label>
+ <input type="date" name="to_date" class="hms-input w-full" value="<%= date %>" required>
+ </div>
+ </div>
+ <div class="modal-footer border-0">
+ <button type="button" class="hms-btn hms-btn-secondary" data-dismiss="modal"><%= _t('doctor_roster.cancel', { ns: 'legacy' }) %></button>
+ <button type="submit" class="hms-btn hms-btn-primary"><%= _t('doctor_roster.copy_shifts', { ns: 'legacy' }) %></button>
+ </div>
+ </form>
+ </div>
+ </div>
+</div>
+<script>
+(function () {
+ var el = document.getElementById('copyRosterModal');
+ if (el && el.parentNode !== document.body) document.body.appendChild(el);
+})();
+</script>
+<% } %>
+
+<%- include('partials/footer') %>

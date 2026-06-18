@@ -1,0 +1,72 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<% var forecast = locals.forecast || (locals.pageData && locals.pageData.forecast) || { forecast_total: 0, deposit: 0, balance_due: 0, lines: [] }; %>
+<% var checklist = locals.checklist || (locals.pageData && locals.pageData.checklist) || { pct: 0, byType: { admission: [], pre_ward: [], pre_op: [] } }; %>
+<% var tab = locals.tab || (locals.pageData && locals.pageData.tab) || 'overview'; %>
+<% var employees = locals.employees || (locals.pageData && locals.pageData.employees) || []; %>
+<% var carePlans = locals.carePlans || (locals.pageData && locals.pageData.carePlans) || []; %>
+<% var surgeryTemplates = locals.surgeryTemplates || (locals.pageData && locals.pageData.surgeryTemplates) || []; %>
+<% var operationTheaters = locals.operationTheaters || (locals.pageData && locals.pageData.operationTheaters) || []; %>
+<% var surgeries = locals.surgeries || (locals.pageData && locals.pageData.surgeries) || []; %>
+<div class="page-wrapper"><div class="content">
+<div class="card border-0 shadow mb-3" style="background:linear-gradient(135deg,#1e40af,#0c8b8b);color:#fff;border-radius:14px;">
+<div class="card-body py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+ <div><a href="/ipd/hospitalizations" class="text-white-50 small"><%= _t('detail.breadcrumb_hospitalizations', { ns: 'ipd', defaultValue: 'Hospitalizations' }) %></a>
+ <h4 class="font-weight-bold mb-0 text-white"><%=adm.first_name%> <%=adm.last_name%></h4>
+ <span class="small" style="opacity:.85;"><%=adm.ward_name||_t('detail.pending_bed', { ns: 'ipd', defaultValue: 'Pending bed' })%> <%=adm.bed_label||''%> � <%=adm.ipd_status%></span></div>
+ <div class="text-right"><div class="h5 mb-0"><%=Number(forecast.forecast_total||0).toLocaleString()%> FCFA</div><div class="small" style="opacity:.8;"><%= _t('detail.invoice_forecast', { ns: 'ipd', defaultValue: 'Invoice forecast' }) %></div></div>
+</div></div>
+<ul class="nav nav-pills mb-3">
+ <li class="nav-item"><a class="nav-link <%=tab==='overview'?'active':''%>" href="?tab=overview"><%= _t('detail.tab_overview', { ns: 'ipd', defaultValue: 'Overview' }) %></a></li>
+ <li class="nav-item"><a class="nav-link <%=tab==='checklists'?'active':''%>" href="?tab=checklists"><%= _t('detail.tab_checklists', { ns: 'ipd', defaultValue: 'Checklists' }) %> (<%=checklist.pct%>%)</a></li>
+ <li class="nav-item"><a class="nav-link <%=tab==='surgery'?'active':''%>" href="?tab=surgery"><%= _t('detail.tab_surgery', { ns: 'ipd', defaultValue: 'Surgery' }) %></a></li>
+ <li class="nav-item"><a class="nav-link <%=tab==='forecast'?'active':''%>" href="?tab=forecast"><%= _t('detail.invoice_forecast', { ns: 'ipd', defaultValue: 'Invoice forecast' }) %></a></li>
+ <li class="nav-item"><a href="/ipd/running-bill/<%=adm.id%>" class="nav-link"><%= _t('pages.running_bill', { ns: 'ipd', defaultValue: 'Running bill' }) %></a></li>
+ <li class="nav-item"><a href="/ipd/medication" class="nav-link"><%= _t('detail.medication_hub', { ns: 'ipd', defaultValue: 'Medication hub' }) %></a></li>
+</ul>
+<% if(tab==='overview'){ %>
+<div class="card p-3 shadow-sm"><form method="POST" action="/ipd/hospitalization/<%=adm.id%>/update">
+<div class="row">
+<div class="col-md-6 mb-2"><label class="small font-weight-bold"><%= _t('detail.hospitalization_reason', { ns: 'ipd', defaultValue: 'Hospitalization reason' }) %></label><input name="hospitalization_reason" class="hms-input w-full text-sm hms-input" value="<%=adm.hospitalization_reason||''%>"></div>
+<div class="col-md-3 mb-2"><label class="small font-weight-bold"><%= _t('detail.relative_name', { ns: 'ipd', defaultValue: 'Relative name' }) %></label><input name="relative_name" class="hms-input w-full text-sm hms-input" value="<%=adm.relative_name||''%>"></div>
+<div class="col-md-3 mb-2"><label class="small font-weight-bold"><%= _t('detail.relative_phone', { ns: 'ipd', defaultValue: 'Relative phone' }) %></label><input name="relative_phone" class="hms-input w-full text-sm hms-input" value="<%=adm.relative_phone||''%>"></div>
+<div class="col-md-4 mb-2"><label class="small font-weight-bold"><%= _t('detail.primary_surgeon', { ns: 'ipd', defaultValue: 'Primary surgeon' }) %></label><select name="primary_surgeon_id" class="hms-input w-full text-sm hms-input"><option value=""><%= _t('detail.dash_option', { ns: 'ipd', defaultValue: '�' }) %></option><% employees.forEach(function(e){ %><option value="<%=e.id%>" <%=adm.primary_surgeon_id==e.id?'selected':''%>>Dr. <%=e.first_name%> <%=e.last_name%></option><% }); %></select></div>
+<div class="col-md-4 mb-2"><label class="small font-weight-bold"><%= _t('detail.primary_nurse', { ns: 'ipd', defaultValue: 'Primary nurse' }) %></label><select name="primary_nurse_id" class="hms-input w-full text-sm hms-input"><option value=""><%= _t('detail.dash_option', { ns: 'ipd', defaultValue: '�' }) %></option><% employees.forEach(function(e){ %><option value="<%=e.id%>" <%=adm.primary_nurse_id==e.id?'selected':''%>><%=e.first_name%> <%=e.last_name%></option><% }); %></select></div>
+<div class="col-md-4 mb-2"><label class="small font-weight-bold"><%= _t('detail.care_plan', { ns: 'ipd', defaultValue: 'Care plan' }) %></label><select name="care_plan_template_id" class="hms-input w-full text-sm hms-input"><option value=""><%= _t('detail.dash_option', { ns: 'ipd', defaultValue: '�' }) %></option><% carePlans.forEach(function(cp){ %><option value="<%=cp.id%>" <%=adm.care_plan_template_id==cp.id?'selected':''%>><%=cp.name%></option><% }); %></select></div>
+<div class="col-12 mb-2"><label class="small font-weight-bold"><%= _t('detail.legal_case_notes', { ns: 'ipd', defaultValue: 'Legal case notes' }) %></label><textarea name="legal_case_notes" class="hms-input w-full text-sm hms-input" rows="2"><%=adm.legal_case_notes||''%></textarea></div>
+</div><button class="hms-btn hms-btn-primary btn-sm"><%= _t('detail.save', { ns: 'ipd', defaultValue: 'Save' }) %></button></form></div>
+<%- include('partials/ipd-invoice-forecast-card', { forecast: forecast, admId: adm.id }) %>
+<% } else if(tab==='checklists'){ %>
+<%
+var checklistLabels = {
+  admission: _t('detail.checklist_admission', { ns: 'ipd', defaultValue: 'Admission' }),
+  pre_ward: _t('detail.checklist_pre_ward', { ns: 'ipd', defaultValue: 'Pre ward' }),
+  pre_op: _t('detail.checklist_pre_op', { ns: 'ipd', defaultValue: 'Pre op' })
+};
+%>
+<div class="card p-3 shadow-sm"><p class="small text-muted"><%= _t('detail.completion', { ns: 'ipd', defaultValue: 'Completion:' }) %> <strong><%=checklist.pct%>%</strong></p>
+<% ['admission','pre_ward','pre_op'].forEach(function(typ){ var items=checklist.byType[typ]||[]; if(!items.length) return; %>
+<h6 class="font-weight-bold text-uppercase small mt-2"><%=checklistLabels[typ]||typ.replace('_',' ')%></h6>
+<% items.forEach(function(it){ %>
+<form method="POST" action="/ipd/hospitalization/<%=adm.id%>/checklist" class="d-flex align-items-center mb-1">
+<input type="hidden" name="template_id" value="<%=it.template_id%>">
+<input type="hidden" name="done" value="<%=it.completed_at?0:1%>">
+<button type="submit" class="btn btn-sm <%=it.completed_at?'btn-success':'btn-outline-secondary'%> mr-2"><i class="fa fa-<%=it.completed_at?'check':'square-o'%>"></i></button>
+<span class="small"><%=it.label%></span></form>
+<% }); }); %></div>
+<% } else if(tab==='surgery'){ %>
+<div class="row"><div class="col-md-5"><form method="POST" action="/ipd/hospitalization/<%=adm.id%>/surgery" class="card p-3">
+<h6 class="font-weight-bold"><%= _t('detail.schedule_surgery', { ns: 'ipd', defaultValue: 'Schedule surgery' }) %></h6>
+<select name="template_id" class="hms-input w-full text-sm mb-2"><option value=""><%= _t('detail.custom', { ns: 'ipd', defaultValue: 'Custom' }) %></option><% surgeryTemplates.forEach(function(t){ %><option value="<%=t.id%>"><%=t.name%></option><% }); %></select>
+<input name="title" class="hms-input w-full text-sm mb-2" placeholder="<%= _t('detail.title_placeholder', { ns: 'ipd', defaultValue: 'Title' }) %>">
+<input name="charge_amount" type="number" class="hms-input w-full text-sm mb-2" placeholder="<%= _t('detail.charge_placeholder', { ns: 'ipd', defaultValue: 'Charge' }) %>">
+<select name="operation_theater_id" class="hms-input w-full text-sm mb-2"><option value=""><%= _t('detail.operation_theater', { ns: 'ipd', defaultValue: 'OT' }) %></option><% operationTheaters.forEach(function(ot){ %><option value="<%=ot.id%>"><%=ot.name%></option><% }); %></select>
+<button class="hms-btn hms-btn-primary btn-sm"><%= _t('detail.create', { ns: 'ipd', defaultValue: 'Create' }) %></button></form></div>
+<div class="col-md-7"><ul class="list-group"><% surgeries.forEach(function(s){ %>
+<li class="list-group-item d-flex justify-content-between"><span><%=s.title%> <span class="badge badge-light"><%=s.status%></span></span>
+<% if(s.status!=='completed'){ %><form method="POST" action="/ipd/surgery/<%=s.id%>/complete"><button class="btn btn-xs btn-success"><%= _t('detail.complete', { ns: 'ipd', defaultValue: 'Complete' }) %></button></form><% } %>
+</li><% }); %></ul></div></div>
+<% } else if(tab==='forecast'){ %>
+<%- include('partials/ipd-invoice-forecast-card', { forecast: forecast, admId: adm.id }) %>
+<% } %>
+</div></div><%- include('partials/footer') %>

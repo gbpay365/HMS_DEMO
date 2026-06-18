@@ -1,0 +1,80 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<div class="page-wrapper"><div class="content">
+
+<%if(locals.flash){%><div class="alert alert-success border-0 shadow-sm mb-3"><i class="fa fa-check-circle mr-2"></i><%=locals.flash%></div><%}%>
+<%if(locals.error){%><div class="alert alert-danger border-0 shadow-sm mb-3"><i class="fa fa-exclamation-circle mr-2"></i><%=locals.error%></div><%}%>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+ <div>
+  <h4 class="font-weight-bold text-dark mb-1"><i class="fa fa-file-text mr-2 text-warning"></i><%= _t('credit_receivables.title', { ns: 'legacy', defaultValue: 'Credit & Receivables' }) %></h4>
+  <p class="text-muted small mb-0"><%= _t('credit_receivables.subtitle', { ns: 'legacy', defaultValue: 'Manage outstanding patient credit balances, installment plans, and collections.' }) %></p>
+ </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+ <div class="col-md-4 mb-3">
+  <div class="card border-0 shadow-sm rounded-xl text-center p-3">
+   <div class="h2 font-weight-bold text-warning mb-1"><%= totals.active %></div>
+   <div class="small text-muted text-uppercase font-weight-bold" style="letter-spacing:.05em;"><%= _t('credit_receivables.stat_active', { ns: 'legacy', defaultValue: 'Active Accounts' }) %></div>
+  </div>
+ </div>
+ <div class="col-md-4 mb-3">
+  <div class="card border-0 shadow-sm rounded-xl text-center p-3">
+   <div class="h2 font-weight-bold text-danger mb-1"><%= totals.collections %></div>
+   <div class="small text-muted text-uppercase font-weight-bold" style="letter-spacing:.05em;"><%= _t('credit_receivables.stat_collections', { ns: 'legacy', defaultValue: 'In Collections' }) %></div>
+  </div>
+ </div>
+ <div class="col-md-4 mb-3">
+  <div class="card border-0 shadow-sm rounded-xl text-center p-3">
+   <div class="h2 font-weight-bold text-dark mb-1"><%= totals.total_outstanding.toLocaleString('fr-FR') %></div>
+   <div class="small text-muted text-uppercase font-weight-bold" style="letter-spacing:.05em;"><%= _t('credit_receivables.stat_outstanding', { ns: 'legacy', defaultValue: 'Total Outstanding (FCFA)' }) %></div>
+  </div>
+ </div>
+</div>
+
+<!-- Accounts Table -->
+<div class="card border-0 shadow-sm rounded-xl overflow-hidden">
+ <div class="card-header bg-white py-3">
+  <h6 class="font-weight-bold text-uppercase text-muted mb-0" style="font-size:.75rem;letter-spacing:.06em;"><%= _t('credit_receivables.accounts_title', { ns: 'legacy', defaultValue: 'Credit Accounts' }) %></h6>
+ </div>
+ <div class="table-responsive">
+  <table class="table table-hover mb-0">
+   <thead class="thead-light">
+    <tr><th><%= _t('credit_receivables.col_patient', { ns: 'legacy', defaultValue: 'Patient' }) %></th><th><%= _t('credit_receivables.col_status', { ns: 'legacy', defaultValue: 'Status' }) %></th><th class="text-right"><%= _t('credit_receivables.col_outstanding', { ns: 'legacy', defaultValue: 'Outstanding' }) %></th><th><%= _t('credit_receivables.col_aging', { ns: 'legacy', defaultValue: 'Aging (Days)' }) %></th><th class="text-right"><%= _t('credit_receivables.col_actions', { ns: 'legacy', defaultValue: 'Actions' }) %></th></tr>
+   </thead>
+   <tbody>
+   <% if (accounts.length === 0) { %>
+    <tr><td colspan="5" class="text-center text-muted py-4"><%= _t('credit_receivables.none', { ns: 'legacy', defaultValue: 'No credit accounts found.' }) %></td></tr>
+   <% } else { accounts.forEach(a => { %>
+    <tr>
+     <td>
+      <div class="font-weight-bold"><%= a.first_name %> <%= a.last_name %></div>
+      <div class="small text-muted"><%= a.phone||'—' %> &bull; #P-<%= a.patient_id %></div>
+     </td>
+     <td>
+      <span class="badge badge-<%= a.status==='active'?'warning':a.status==='collections'?'danger':'secondary' %>">
+       <%= a.status||'—' %>
+      </span>
+     </td>
+     <td class="text-right font-weight-bold <%= parseFloat(a.outstanding_balance||0)>0?'text-danger':'text-muted' %>">
+      <%= parseFloat(a.outstanding_balance||0).toLocaleString('fr-FR') %> FCFA
+     </td>
+     <td>
+      <span class="<%= parseInt(a.aging_days)>=60?'text-danger font-weight-bold':'text-muted' %>">
+       <%= _t('credit_receivables.days', { ns: 'legacy', defaultValue: '{{count}} days', count: a.aging_days||0 }) %>
+      </span>
+     </td>
+     <td class="text-right">
+      <a href="/credit-account/<%= a.id %>" class="btn btn-sm btn-outline-primary rounded-pill"><i class="fa fa-folder-open mr-1"></i><%= _t('credit_receivables.open', { ns: 'legacy', defaultValue: 'Open' }) %></a>
+     </td>
+    </tr>
+   <% }) } %>
+   </tbody>
+  </table>
+ </div>
+</div>
+
+</div></div>
+<%- include('partials/footer') %>

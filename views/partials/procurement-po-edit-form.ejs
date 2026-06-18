@@ -1,0 +1,105 @@
+<%
+var _pfx = (typeof poEditPrefix !== 'undefined' && poEditPrefix) ? poEditPrefix : '';
+var _poModeId = _pfx ? _pfx + 'PoMode' : 'poMode';
+var _summaryId = _pfx ? _pfx + 'SummaryBlock' : 'summaryBlock';
+var _linesId = _pfx ? _pfx + 'LinesBlock' : 'linesBlock';
+var _linesBodyId = _pfx ? _pfx + 'PoLinesBody' : 'poLinesBody';
+var _addLineId = _pfx ? _pfx + 'AddLineBtn' : 'addLineBtn';
+var _qtyHintsId = _pfx ? _pfx + 'PoQtyUnitHints' : 'poQtyUnitHints';
+var _needsReason = (typeof wasSent !== 'undefined' && wasSent);
+%>
+<% if (_needsReason) { %>
+<div class="hms-flash hms-flash--error border-0 shadow-sm mb-3">
+ <i class="fa fa-exclamation-triangle mr-1"></i>
+ <% if (String(po.status) === 'received') { %>
+ This PO is <strong>received</strong> and stock may already be updated. Saving recalls it to <strong>draft</strong> — enter a correction reason. Re-approve and receive again if needed. All changes are audited.
+ <% } else { %>
+ This PO was already <strong><%= po.status %></strong>. Saving changes will recall it to <strong>draft</strong> — enter a correction reason below. Re-approve and send again after editing. All changes are audited.
+ <% } %>
+</div>
+<% } %>
+
+<div class="card border-0 shadow-sm rounded-xl mb-3">
+ <div class="card-body">
+  <div class="form-row">
+   <div class="form-group col-md-3">
+    <label class="small font-weight-bold">PO type</label>
+    <select name="po_mode" id="<%= _poModeId %>" class="hms-input w-full">
+     <option value="lined" <%= (po.po_mode || 'lined') === 'lined' ? 'selected' : '' %>>Line items</option>
+     <option value="summary" <%= po.po_mode === 'summary' ? 'selected' : '' %>>Summary only</option>
+    </select>
+   </div>
+   <div class="form-group col-md-3">
+    <label class="small font-weight-bold">Vendor</label>
+    <select name="vendor_id" class="hms-input w-full">
+     <option value="">— Select —</option>
+     <% (vendors||[]).forEach(function(v){ %>
+     <option value="<%= v.id %>" <%= po.vendor_id == v.id ? 'selected' : '' %>><%= v.name %></option>
+     <% }); %>
+    </select>
+   </div>
+   <div class="form-group col-md-3">
+    <label class="small font-weight-bold">Supplier name</label>
+    <input name="supplier_name" class="hms-input w-full" value="<%= po.supplier_name || '' %>">
+   </div>
+   <div class="form-group col-md-3">
+    <label class="small font-weight-bold"><%= _needsReason ? 'Correction reason (audit)' : 'Edit note (audit)' %></label>
+    <input name="edit_note" class="hms-input w-full" placeholder="<%= _needsReason ? 'Why is this PO being changed?' : 'Reason for change' %>" <%= _needsReason ? 'required' : '' %>>
+   </div>
+  </div>
+  <div class="form-group mb-0">
+   <label class="small font-weight-bold">Notes</label>
+   <input name="po_notes" class="hms-input w-full" value="<%= po.po_notes || '' %>">
+  </div>
+ </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-xl mb-3" id="<%= _summaryId %>">
+ <div class="card-body">
+  <div class="form-group">
+   <label class="small font-weight-bold">Summary description</label>
+   <textarea name="summary_description" class="hms-input w-full" rows="3"><%= po.summary_description || '' %></textarea>
+  </div>
+  <div class="form-group mb-0 col-md-4 pl-0">
+   <label class="small font-weight-bold">Total (XAF)</label>
+   <input type="number" name="total_amount" class="hms-input w-full" min="0" step="1" value="<%= po.total_amount || 0 %>">
+  </div>
+ </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-xl mb-3" id="<%= _linesId %>">
+ <div class="card-header bg-white font-weight-bold d-flex justify-content-between">
+  <span>Lines</span>
+  <button type="button" class="hms-btn hms-btn-secondary text-sm" id="<%= _addLineId %>"><i class="fa fa-plus" aria-hidden="true"></i></button>
+ </div>
+ <div class="table-responsive">
+  <table class="table table-sm mb-0">
+   <thead class="bg-light"><tr><th>Description</th><th>Unit price</th><th>Qty</th><th></th></tr></thead>
+   <tbody id="<%= _linesBodyId %>">
+    <% var editLines = (lines && lines.length) ? lines : [{}]; %>
+    <% editLines.forEach(function(ln, idx){ %>
+    <tr class="po-line-row">
+     <td>
+      <input name="line_description" class="hms-input w-full text-sm" value="<%= ln.description || ln.item_name || '' %>">
+      <select name="line_inventory_item_id" class="hms-input w-full text-sm mt-1">
+       <option value="">— SKU optional —</option>
+       <% (inventoryItems||[]).forEach(function(it){ %>
+       <option value="<%= it.id %>" <%= ln.inventory_item_id == it.id ? 'selected' : '' %>><%= it.name %></option>
+       <% }); %>
+      </select>
+     </td>
+     <td><input type="number" name="line_unit_price" class="hms-input w-full text-sm" step="0.01" value="<%= ln.unit_price || 0 %>"></td>
+     <td>
+      <% var editQty = (typeof fmtPoQty === 'function') ? fmtPoQty(ln.quantity, ln.uom) : (ln.quantity || '1 Pack'); %>
+      <input type="text" name="line_quantity" class="hms-input w-full text-sm" value="<%= editQty %>" placeholder="e.g. 50 Cartons" list="<%= _qtyHintsId %>">
+     </td>
+     <td><% if(idx>0){ %><button type="button" class="btn btn-link text-danger btn-sm po-rm" aria-label="Remove line">×</button><% } %></td>
+    </tr>
+    <% }); %>
+   </tbody>
+  </table>
+  <datalist id="<%= _qtyHintsId %>">
+   <option value="50 Cartons"><option value="60 Packs"><option value="45 Ampoules"><option value="33 Sachets">
+  </datalist>
+ </div>
+</div>

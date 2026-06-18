@@ -1,0 +1,25 @@
+<% if (!locals.hmsSurfaceBodyClass) locals.hmsSurfaceBodyClass = ''; locals.hmsSurfaceBodyClass += ' hms-body--financials'; %>
+<%- include('header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<link rel="stylesheet" href="/css/financials.css">
+<link rel="stylesheet" href="/css/accounting-odoo.css">
+<%
+var _up = locals.userPerms || [];
+var _finRole = String((locals.user && locals.user.role) || '');
+function finHasP() {
+  if (_up.includes('*')) return true;
+  for (var i = 0; i < arguments.length; i++) {
+    if (_up.includes(arguments[i])) return true;
+  }
+  return false;
+}
+/* Same gate as routes/financialsJournal.js finWrite — post manual journals */
+locals.finCanWrite =
+  _finRole === '1' || _finRole === '99' ||
+  finHasP('financials.write', 'accounting.write', 'billing.write');
+locals.finNav = locals.finNavActive || locals.finNav || 'dashboard';
+%>
+<%- include('hms-module-odoo-start', { odooModule: 'accounting' }) %>
+<div class="page-wrapper fin-module fin-module--odoo"><div class="content">
+<div class="fin-main fin-main--odoo acc-odoo">
+<%- include('accounting-odoo-ohada-strip') %>

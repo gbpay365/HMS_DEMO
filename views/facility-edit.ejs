@@ -1,0 +1,74 @@
+<%- include('partials/header') %>
+<% var _sa = function(k, d, opts) {
+  if (typeof t !== 'function') return d || k;
+  var o = { ns: 'superAdmin', defaultValue: d || k };
+  if (opts) Object.assign(o, opts);
+  return t(k, o);
+}; %>
+<div class="page-wrapper"><div class="content hms-module">
+
+<% if(locals.flash){%><div class="hms-flash hms-flash--success border-0 shadow-sm mb-3 py-2"><i class="fa fa-check-circle mr-2"></i><%=locals.flash%></div><%}%>
+<% if(locals.error){%><div class="hms-flash hms-flash--error border-0 shadow-sm mb-3 py-2"><i class="fa fa-exclamation-circle mr-2"></i><%=locals.error%></div><%}%>
+
+<div class="d-flex align-items-center mb-4 flex-wrap" style="gap:12px;">
+  <a href="/super-admin" class="hms-btn hms-btn-secondary btn-sm"><i class="fa fa-arrow-left mr-1"></i><%= _sa('facility.back', 'Super Admin') %></a>
+  <div>
+    <h1 class="h4 font-weight-bold mb-0" style="color:#1b2559;">
+      <i class="fa fa-hospital-o mr-2" style="color:#1a6bd8;"></i><%= isNew ? _sa('facility.add_title', 'Add Hospital Site') : _sa('facility.manage_title', 'Manage Facility') %>
+      <% if (!isNew && facility) { %><span class="text-muted font-weight-normal">#<%= facility.id %></span><% } %>
+    </h1>
+    <p class="text-muted small mb-0"><%= isNew ? _sa('facility.add_subtitle', 'Register a new facility for multi-site operations.') : (facility.name || '') %></p>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-xl-8 col-lg-10">
+    <form method="post" action="<%= isNew ? '/facilities/add' : ('/facilities/' + facility.id + '/edit') %>" class="card border-0 shadow-sm" style="border-radius:14px;overflow:hidden;">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="font-weight-bold small" for="fac_code"><%= _sa('facility.site_code', 'Site code') %> <span class="text-danger">*</span></label>
+              <input id="fac_code" class="hms-input w-full" type="text" name="code" maxlength="32" value="<%= facility.code || '' %>" required <%= !isNew ? 'readonly' : '' %> style="<%= !isNew ? 'background:#f8fafc;' : '' %>">
+              <% if (!isNew) { %><small class="text-muted"><%= _sa('facility.code_locked', 'Code cannot be changed after creation.') %></small><% } %>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="form-group">
+              <label class="font-weight-bold small" for="fac_name"><%= _sa('facility.facility_name', 'Facility name') %> <span class="text-danger">*</span></label>
+              <input id="fac_name" class="hms-input w-full" type="text" name="name" maxlength="250" value="<%= facility.name || '' %>" required>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="form-group mb-2">
+              <label class="font-weight-bold small" for="fac_address"><%= _sa('facility.address', 'Address') %></label>
+              <textarea id="fac_address" class="hms-input w-full" name="address" rows="2"><%= facility.address || '' %></textarea>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="font-weight-bold small" for="fac_tz"><%= _sa('facility.timezone', 'Timezone') %></label>
+              <input id="fac_tz" class="hms-input w-full" type="text" name="timezone" maxlength="64" value="<%= facility.timezone || 'UTC' %>" placeholder="<%= _sa('facility.timezone_ph', 'e.g. Africa/Douala or UTC') %>">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="font-weight-bold small" for="fac_status"><%= _sa('facility.status', 'Status') %></label>
+              <select id="fac_status" class="hms-input w-full" name="status">
+                <option value="1" <%= (facility.status == null || facility.status === '' || Number(facility.status) === 1) ? 'selected' : '' %>><%= _sa('facility.status_active', 'Active') %></option>
+                <option value="0" <%= Number(facility.status) === 0 ? 'selected' : '' %>><%= _sa('facility.status_inactive', 'Inactive') %></option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-white d-flex justify-content-between align-items-center" style="border-top:2px solid #f1f5f9;">
+        <a href="/super-admin" class="hms-btn hms-btn-secondary"><%= _sa('facility.cancel', 'Cancel') %></a>
+        <button type="submit" class="hms-btn hms-btn-primary font-weight-bold"><i class="fa fa-save mr-1"></i><%= isNew ? _sa('facility.create_site', 'Create Site') : _sa('facility.save_changes', 'Save Changes') %></button>
+      </div>
+    </form>
+  </div>
+</div>
+
+</div></div>
+<%- include('partials/footer') %>

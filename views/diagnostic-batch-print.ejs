@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="<%= typeof locale !== 'undefined' ? locale : 'en' %>">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= typeof title !== 'undefined' ? title : 'Print results' %></title>
+  <link rel="stylesheet" href="/css/diagnostic-report-print.css?v=2">
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 24px; color: #334155; }
+    .dbp-empty { max-width: 420px; margin: 48px auto; text-align: center; }
+    .dbp-empty a { color: #0d9488; font-weight: 700; }
+    .dbp-loading { max-width: 420px; margin: 48px auto; text-align: center; color: #64748b; }
+    @media print {
+      .no-print, .dbp-loading { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+<% if (typeof batchData !== 'undefined' && batchData && batchData.canPrintAll && (batchData.reports || []).length) { %>
+<div class="dbp-loading no-print" id="dbp-loading">Preparing print layout…</div>
+<script>window.__DIAG_PRINT_BATCH = <%- JSON.stringify(batchData) %>;</script>
+<script src="/js/hms-diagnostic-report-print.js?v=3"></script>
+<script>
+(function () {
+  var batch = window.__DIAG_PRINT_BATCH;
+  var backUrl = <%- JSON.stringify(typeof backUrl !== 'undefined' ? backUrl : '/laboratory') %>;
+  function showError(msg) {
+    document.body.innerHTML =
+      '<div class="dbp-empty"><p>' + msg + '</p>' +
+      (backUrl ? '<p><a href="' + backUrl + '">← Back</a></p>' : '') +
+      '</div>';
+  }
+  if (!batch) {
+    showError('No batch data available.');
+    return;
+  }
+  if (!window.HmsDiagnosticReportPrint || !window.HmsDiagnosticReportPrint.renderBatchInline) {
+    showError('Print module failed to load. Refresh and try again.');
+    return;
+  }
+  var ok = window.HmsDiagnosticReportPrint.renderBatchInline(batch, { backUrl: backUrl, autoPrint: true });
+  if (!ok) {
+    showError('No printable reports in this package.');
+  }
+})();
+</script>
+<% } else { %>
+<div class="dbp-empty">
+  <p><%= typeof emptyMessage !== 'undefined' ? emptyMessage : 'No completed printable results yet.' %></p>
+  <% if (typeof backUrl !== 'undefined' && backUrl) { %>
+  <p><a href="<%= backUrl %>">← Back</a></p>
+  <% } %>
+</div>
+<% } %>
+</body>
+</html>

@@ -1,0 +1,62 @@
+{
+  "hospital": "Hôpital",
+  "title": "Tableau de bord",
+  "subtitle": "Vue opérationnelle — patients, rendez-vous et raccourcis par service.",
+  "open_shortcut": "Ouvrir →",
+  "new_patient": "+ Nouveau patient",
+  "sections": {
+    "clinical": "Clinique",
+    "operations": "Opérations",
+    "finance": "Finance",
+    "live_ops": "Opérations en direct"
+  },
+  "tiles": {
+    "patients": "Patients",
+    "appointments": "Rendez-vous",
+    "inpatients": "Hospitalisés",
+    "doctors": "Médecins",
+    "emergencies": "Urgences actives",
+    "opd_queue": "File d'attente",
+    "maternity": "Maternité",
+    "laboratory": "Laboratoire",
+    "pharmacy": "Pharmacie",
+    "cashier": "Caisse",
+    "radiology": "Radiologie",
+    "opd_open": "Consultations ouvertes",
+    "revenue_today": "Recettes du jour (XAF)",
+    "lab_open": "Demandes labo ouvertes",
+    "rad_open": "Radiologie ouverte"
+  },
+  "links": {
+    "lobby": "Écran d'accueil",
+    "hms_hub": "Centre HMS",
+    "reports": "Rapports",
+    "front_desk": "Accueil",
+    "wards": "Plan des lits"
+  },
+  "panels": {
+    "active_emergencies": "Urgences actives",
+    "recent_appointments": "Rendez-vous récents",
+    "no_appointments": "Aucun rendez-vous pour le moment.",
+    "new_patients": "Nouveaux patients",
+    "doctors_on_duty": "Médecins de garde",
+    "no_doctors": "Aucun médecin listé.",
+    "patient": "Patient",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "type": "Type",
+    "doctor": "Médecin",
+    "specialisation": "Spécialisation",
+    "status": "Statut",
+    "unknown": "Inconnu",
+    "no_patients": "Aucun patient pour le moment.",
+    "last_7_days": "7 derniers jours",
+    "registrations_7d": "Nouvelles inscriptions (7 jours)",
+    "inpatient": "Hospitalisé",
+    "outpatient": "Ambulatoire",
+    "view_all_doctors": "Voir tous les médecins",
+    "no_active_doctors": "Aucun médecin actif trouvé.",
+    "doctor_role": "Médecin",
+    "active": "Actif"
+  }
+}

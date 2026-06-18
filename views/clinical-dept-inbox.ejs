@@ -1,0 +1,8 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--clinical-dept-inbox'; %>
+<%- include('partials/header') %>
+<%- include('partials/react-page-mount', {
+  reactPage: locals.reactPage || 'lab-workflow',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.alerts', { ns: 'common' }) : 'Loading…'),
+  pageData: locals.pageData || {}
+}) %>
+<%- include('partials/footer') %>

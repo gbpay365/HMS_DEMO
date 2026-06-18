@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZAIZENS HMS — Comprehensive Deployment &amp; Database Migration Plan</title>
+  <link rel="stylesheet" href="ops-doc-styles.css" />
+  <style>
+    :root[data-edition="professional"] {
+      --accent: #0c8b8b;
+      --accent-light: #ccfbf1;
+    }
+    :root[data-edition="premium"] {
+      --accent: #c9a227;
+      --accent-light: #fef9e7;
+    }
+    h2 { border-left-color: var(--accent); }
+    .cover-badge { background: rgba(201, 162, 39, 0.22); }
+    .phase-banner {
+      background: linear-gradient(90deg, var(--surface) 0%, transparent 100%);
+      border-left: 4px solid var(--accent);
+      padding: 2.5mm 4mm;
+      margin: 4mm 0 3mm;
+      font-size: 9pt;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .matrix { font-size: 8.25pt; }
+    .matrix th { font-size: 8pt; }
+  </style>
+</head>
+<body data-edition="premium">
+  <section class="cover">
+    <div class="cover-top">
+      <div class="cover-brand">
+        <div><p class="vendor"><strong>ZAIZENS</strong> · Hospital Management System</p></div>
+        <div class="cover-badge">Premium · Professional Edition · PDF</div>
+      </div>
+      <h1>Comprehensive Deployment &amp; Database Migration Plan</h1>
+      <p class="subtitle">Development → production deploy server · Local MySQL → Railway cloud database · Verification, rollback, and disaster recovery</p>
+    </div>
+    <div class="cover-accent"></div>
+    <div class="cover-body">
+      <dl class="client-grid">
+        <div class="full"><dt>Document purpose</dt><dd>End-to-end operational guide for ZAIZENS HMS upgrades, external server deployment, and MySQL replication to Railway</dd></div>
+        <div><dt>Development root</dt><dd><code>C:\HMS_JS</code></dd></div>
+        <div><dt>Production install</dt><dd><code>C:\Program Files\ZAIZENS\HMS</code></dd></div>
+        <div><dt>Update package</dt><dd><code>C:\HMS_JS\Update</code></dd></div>
+        <div><dt>Database sync</dt><dd><code>docs/scripts/</code> · Railway MySQL</dd></div>
+      </dl>
+      <div class="cover-meta">
+        <span><strong>Version</strong><br/>3.0 — June 2026</span>
+        <span><strong>Audience</strong><br/>Implementation team · IT operations · Vendor</span>
+        <span><strong>Related guides</strong><br/>Local Deployment · MySQL→Railway · License Server Railway</span>
+        <span><strong>Classification</strong><br/>Confidential — client operations</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="doc-strip"><span><strong>ZAIZENS</strong> HMS</span><span>Deployment &amp; Migration Plan</span></div>
+  <main>
+    <div class="toc-block">
+      <h2>Table of contents</h2>
+      <ul class="toc-grid">
+        <li><a href="#overview"><span class="num">1</span> Executive overview</a></li>
+        <li><a href="#architecture"><span class="num">2</span> Architecture &amp; environments</a></li>
+        <li><a href="#predeploy"><span class="num">3</span> Pre-deployment checklist</a></li>
+        <li><a href="#build"><span class="num">4</span> Build update package (dev)</a></li>
+        <li><a href="#transfer"><span class="num">5</span> Transfer to deploy server</a></li>
+        <li><a href="#apply"><span class="num">6</span> Apply production update</a></li>
+        <li><a href="#mysql-railway"><span class="num">7</span> Local MySQL → Railway migration</a></li>
+        <li><a href="#bidirectional"><span class="num">8</span> Bidirectional &amp; scheduled sync</a></li>
+        <li><a href="#verify"><span class="num">9</span> Post-deploy verification</a></li>
+        <li><a href="#rollback"><span class="num">10</span> Rollback procedures</a></li>
+        <li><a href="#dr"><span class="num">11</span> Disaster recovery &amp; failover</a></li>
+        <li><a href="#security"><span class="num">12</span> Security &amp; NTFS hardening</a></li>
+        <li><a href="#troubleshoot"><span class="num">13</span> Troubleshooting</a></li>
+        <li><a href="#appendix"><span class="num">A</span> Scripts &amp; reference</a></li>
+      </ul>
+    </div>
+
+    <h2 id="overview">1. Executive overview</h2>
+    <div class="callout"><strong>Goal:</strong> Safely promote tested HMS application code from the development workspace to a hardened external Windows server, while maintaining a warm copy of the hospital database on Railway for disaster recovery and optional cloud workflows.</div>
+    <p>This plan covers three coordinated workstreams:</p>
+    <table>
+      <thead><tr><th>Workstream</th><th>Scope</th><th>Primary artifacts</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Application deploy</strong></td><td>Dev build → Update folder → production <code>Program Files</code> install</td><td><code>build-update-package.ps1</code>, <code>apply-deploy-update.ps1</code></td></tr>
+        <tr><td><strong>Database migration</strong></td><td>Local MySQL (XAMPP / Windows) → Railway MySQL</td><td><code>sync-mysql-to-railway.js</code>, <code>bidirectional-sync-local-railway.js</code></td></tr>
+        <tr><td><strong>Operations</strong></td><td>Backups, service install, NTFS hardening, restore</td><td><code>docs/scripts/04–12</code>, nightly backup task</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn"><strong>Single writer rule:</strong> Only one environment should accept clinical writes at a time. Scheduled sync is warm standby (local → Railway), not active-active. Use bidirectional sync only with explicit table scope and change-control.</div>
+
+    <h2 id="architecture">2. Architecture &amp; environments</h2>
+    <div class="diagram">┌─────────────────────────────────────────────────────────────────────────────┐
+│  DEVELOPMENT (C:\HMS_JS)                                                     │
+│  • Source code, npm build, route audits, smoke tests                         │
+│  • Local MySQL (XAMPP) — dev/test data                                       │
+│  • Output: dist\hms-deploy  →  copied to Update\                             │
+└───────────────────────────────┬─────────────────────────────────────────────┘
+                                │ USB / RDP / network share
+                                ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  PRODUCTION DEPLOY SERVER (C:\Program Files\ZAIZENS\HMS)                     │
+│  • Hardened NTFS · NSSM Windows service ZAIZENS-HMS                         │
+│  • Production .env (never overwritten from dev)                              │
+│  • uploads\ tmp\ patient files · DIPE exports · sessions                   │
+│  • Local MySQL (primary) — daily hospital operations                       │
+└───────────────────────────────┬─────────────────────────────────────────────┘
+                                │ scheduled sync (15–60 min RPO)
+                                ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  RAILWAY (DR / standby)                                                      │
+│  • MySQL plugin (public TCP proxy)                                           │
+│  • HMS Node service (HTTPS standby URL)                                      │
+│  • License server (optional separate Railway project)                        │
+└─────────────────────────────────────────────────────────────────────────────┘</div>
+
+    <h3>2.1 Environment matrix</h3>
+    <table class="matrix">
+      <thead><tr><th>Component</th><th>Development</th><th>Production server</th><th>Railway standby</th></tr></thead>
+      <tbody>
+        <tr><td>App root</td><td><code>C:\HMS_JS</code></td><td><code>C:\Program Files\ZAIZENS\HMS</code></td><td>Railway service root</td></tr>
+        <tr><td>Database</td><td>Local MySQL</td><td>Local MySQL (primary)</td><td>Railway MySQL</td></tr>
+        <tr><td><code>.env</code></td><td>Dev credentials</td><td>Production — preserved on deploy</td><td>Railway variables</td></tr>
+        <tr><td>UI bundles</td><td><code>public/dist/*.js</code></td><td>Deployed via Update</td><td>Same build as production</td></tr>
+        <tr><td>User URL</td><td><code>localhost:3000</code></td><td>Hospital LAN hostname</td><td>HTTPS Railway domain (DR)</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="predeploy">3. Pre-deployment checklist</h2>
+    <div class="phase-banner">Phase 0 — Before any production change</div>
+    <ul class="checklist">
+      <li>All changes tested on dev: login, OPD queue, billing, pharmacy, statutory reports</li>
+      <li>Route audit clean: <code>node scripts/audit-routes.js</code></li>
+      <li>Smoke routes pass: <code>node scripts/smoke-routes.js</code></li>
+      <li>UI rebuilt: <code>npm run build:ui</code> produces fresh <code>hms-ui.js</code> (~1.5–2.2 MB)</li>
+      <li>Production backup verified (DB dump + file backup within 24 h)</li>
+      <li>Deploy window communicated to clinical staff</li>
+      <li>Administrator PowerShell available on deploy server</li>
+      <li>Update folder copied and verified (see Section 5)</li>
+      <li>Railway sync env configured if DB migration is in scope</li>
+      <li>License keys and <code>LICENSE_SERVER_URL</code> unchanged unless planned</li>
+    </ul>
+
+    <h2 id="build">4. Build update package (development machine)</h2>
+    <div class="phase-banner">Phase 1 — Dev workspace</div>
+    <p>Run on <code>C:\HMS_JS</code> after merging and testing all changes:</p>
+    <pre>powershell -ExecutionPolicy Bypass -File C:\HMS_JS\scripts\build-update-package.ps1</pre>
+    <p>This script:</p>
+    <ol>
+      <li>Runs <code>npm run build:ui</code> (React bundles: <code>hms-ui.js</code>, <code>hms-login.js</code>, <code>hms-print.js</code>)</li>
+      <li>Runs <code>node scripts/build-deploy-package.js</code> → <code>dist\hms-deploy</code></li>
+      <li>Robocopies deploy output to <code>C:\HMS_JS\Update</code> (replaces previous Update folder)</li>
+      <li>Writes <code>UPDATE-README.txt</code> with timestamp and verify steps</li>
+    </ol>
+    <div class="callout"><strong>Critical:</strong> Deploying backend files without <code>public\dist\hms-ui.js</code> leaves users on an old UI. Always confirm bundle size and date before copying to production.</div>
+    <h3>4.1 Optional dev data export</h3>
+    <p>For catalog/pharmacy seed on production (only when intentional):</p>
+    <pre>node scripts/export-pharmacy-deploy-data.js
+# Produces Update\data\deploy-data-export.json</pre>
+    <p>Apply on server with <code>-ImportDeployData</code> flag (Section 6).</p>
+
+    <h2 id="transfer">5. Transfer to deploy server</h2>
+    <div class="phase-banner">Phase 2 — Physical or remote copy</div>
+    <p>Copy the <strong>entire</strong> <code>C:\HMS_JS\Update</code> folder to the deploy server (same path recommended):</p>
+    <ul>
+      <li>USB drive, RDP drag-and-drop, or network share</li>
+      <li>Include <code>scripts\apply-deploy-update.ps1</code>, all routes, lib, views, <code>public\dist\</code></li>
+    </ul>
+    <h3>5.1 Verify after copy</h3>
+    <ul class="checklist">
+      <li><code>C:\HMS_JS\Update\app.js</code> exists</li>
+      <li><code>C:\HMS_JS\Update\public\dist\hms-ui.js</code> exists (~1500–2200 KB)</li>
+      <li><code>C:\HMS_JS\Update\scripts\apply-deploy-update.ps1</code> present</li>
+      <li>New modules present (e.g. <code>routes\statutoryReports.js</code>, <code>lib\erOrderAutoCharge.js</code>)</li>
+      <li><code>MANUAL-COPY-README.txt</code> reviewed</li>
+    </ul>
+    <div class="callout danger"><strong>Never overwrite on deploy server:</strong> production <code>.env</code>, <code>uploads\</code>, <code>tmp\</code>, patient attachments, or DIPE export data.</div>
+
+    <h2 id="apply">6. Apply production update</h2>
+    <div class="phase-banner">Phase 3 — Deploy server (Administrator)</div>
+    <h3>6.1 Automated apply (recommended)</h3>
+    <pre>powershell -ExecutionPolicy Bypass -File C:\HMS_JS\Update\scripts\apply-deploy-update.ps1</pre>
+    <p>The script performs:</p>
+    <ol class="steps">
+      <li><strong>Stop HMS</strong> — NSSM service <code>ZAIZENS-HMS</code> or running <code>node.exe</code> processes</li>
+      <li><strong>Backup</strong> — robocopy to <code>deploy-backups\HMS-backup-YYYYMMDD-HHmm</code> (with <code>/B</code> for backup mode on hardened trees)</li>
+      <li><strong>ACL unlock</strong> — grants Administrators modify on install tree (required after NTFS hardening)</li>
+      <li><strong>Apply files</strong> — robocopy Update → <code>C:\Program Files\ZAIZENS\HMS</code>, excluding <code>.env</code></li>
+      <li><strong>Verify UI bundle</strong> — confirms <code>public\dist\hms-ui.js</code> present</li>
+      <li><strong>Optional data import</strong> — <code>-ImportDeployData</code> or <code>-PullPharmacyFromRailway</code></li>
+      <li><strong>Start HMS</strong> — NSSM start or background <code>node app.js</code></li>
+    </ol>
+    <h3>6.2 Script flags</h3>
+    <table>
+      <thead><tr><th>Flag</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>-SkipBackup</code></td><td>Skip pre-deploy robocopy backup (use only if recent backup exists)</td></tr>
+        <tr><td><code>-SkipServiceRestart</code></td><td>Do not stop/start service (manual control)</td></tr>
+        <tr><td><code>-ImportDeployData</code></td><td>Import dev catalog export from Update\data\</td></tr>
+        <tr><td><code>-PullPharmacyFromRailway</code></td><td>Pull pharmacy tables from Railway to local</td></tr>
+        <tr><td><code>-HmsRoot</code></td><td>Override install path (default: Program Files\ZAIZENS\HMS)</td></tr>
+        <tr><td><code>-UpdateSource</code></td><td>Override Update folder path</td></tr>
+      </tbody>
+    </table>
+    <h3>6.3 Manual robocopy (fallback)</h3>
+    <pre>nssm stop ZAIZENS-HMS
+robocopy "C:\Program Files\ZAIZENS\HMS" "D:\HMS-Data\deploy-backups\HMS-backup-YYYYMMDD" /E /B
+robocopy C:\HMS_JS\Update "C:\Program Files\ZAIZENS\HMS" /E /B /IS /IT /XF .env
+nssm start ZAIZENS-HMS</pre>
+    <h3>6.4 First-time production install</h3>
+    <p>If no existing install, use the implementation kit under <code>docs\scripts\</code>:</p>
+    <ol class="steps">
+      <li><code>04-setup-data-folders.ps1</code> — uploads, tmp, logs</li>
+      <li><code>05-install-env.ps1</code> — copy and edit <code>02-zaizens-demo.env</code></li>
+      <li><code>01-create-mysql-database.sql</code> — create schema</li>
+      <li><code>07-install-hms-service.ps1</code> — register NSSM service</li>
+      <li><code>06-apply-ntfs-hardening.ps1</code> — restrict filesystem ACLs</li>
+      <li><code>09-register-backup-task.ps1</code> — nightly backup schedule</li>
+    </ol>
+
+    <h2 id="mysql-railway">7. Local MySQL → Railway migration</h2>
+    <div class="phase-banner">Phase 4 — Database replication</div>
+    <p>Warm standby sync keeps Railway MySQL aligned with the on-premises primary for disaster recovery. This is <em>not</em> a one-time cutover unless you explicitly fail over (Section 11).</p>
+
+    <h3>7.1 Strategy summary</h3>
+    <table>
+      <thead><tr><th>Mode</th><th>Script</th><th>Use case</th></tr></thead>
+      <tbody>
+        <tr><td><strong>One-way full refresh</strong></td><td><code>scripts/sync-mysql-to-railway.js</code></td><td>Initial Railway seed, scheduled DR sync</td></tr>
+        <tr><td><strong>Table-scoped sync</strong></td><td><code>docs/scripts/sync-local-railway.js</code></td><td>Directional sync of named tables</td></tr>
+        <tr><td><strong>Replicate (local → Railway)</strong></td><td><code>docs/scripts/replicate-local-to-railway.js</code></td><td>Incremental table replication</td></tr>
+        <tr><td><strong>Bidirectional</strong></td><td><code>docs/scripts/bidirectional-sync-local-railway.js</code></td><td>Controlled two-way sync (advanced)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>7.2 Railway MySQL setup</h3>
+    <ol class="steps">
+      <li>Railway project → <strong>New</strong> → <strong>Database</strong> → <strong>MySQL</strong></li>
+      <li>Note variables: <code>MYSQLHOST</code>, <code>MYSQLPORT</code>, <code>MYSQLUSER</code>, <code>MYSQLPASSWORD</code>, <code>MYSQLDATABASE</code></li>
+      <li>Enable <strong>public networking</strong> on MySQL plugin (required for sync from hospital WAN)</li>
+      <li>Use strong passwords; restrict source IP if Railway plan supports allowlisting</li>
+    </ol>
+
+    <h3>7.3 Configure sync environment</h3>
+    <p>Copy example and edit (do not commit secrets):</p>
+    <pre>copy docs\scripts\railway-sync.env.example docs\scripts\railway-sync.env</pre>
+    <pre># Local primary (XAMPP or Windows MySQL)
+LOCAL_DB_HOST=localhost
+LOCAL_DB_PORT=3306
+LOCAL_DB_USER=root
+LOCAL_DB_PASSWORD=***
+LOCAL_DB_NAME=hms_demo
+XAMPP_MYSQL_BIN=C:\xampp\mysql\bin
+
+# Railway MySQL (from plugin)
+RAILWAY_MYSQL_HOST=crossover.proxy.rlwy.net
+RAILWAY_MYSQL_PORT=36338
+RAILWAY_MYSQL_USER=root
+RAILWAY_MYSQL_PASSWORD=***
+RAILWAY_MYSQL_DATABASE=railway
+
+SYNC_DUMP_PATH=C:\HMS-Backups\railway-sync\latest.sql</pre>
+    <p>Alternatively, place <code>db-sync.env</code> in repo root or <code>scripts\</code>. The sync core loads HMS <code>.env</code> DB_* when <code>LOCAL_DB_USE_HMS_ENV</code> is not disabled.</p>
+
+    <h3>7.4 Initial migration (full dump)</h3>
+    <pre>cd C:\HMS_JS
+powershell -ExecutionPolicy Bypass -File docs\scripts\run-railway-sync.ps1</pre>
+    <p>Or directly:</p>
+    <pre>node scripts/sync-mysql-to-railway.js</pre>
+    <p>Process:</p>
+    <ol>
+      <li><code>mysqldump --single-transaction</code> from local MySQL</li>
+      <li>Connect to Railway MySQL over TLS</li>
+      <li>Drop and re-import tables (full refresh)</li>
+      <li>Verify table counts and sample row checks</li>
+    </ol>
+    <div class="callout warn">Large databases (multi-GB) may take several minutes. Schedule during low activity. Railway HMS should remain in maintenance or unused until sync completes.</div>
+
+    <h3>7.5 Railway HMS standby app</h3>
+    <p>Deploy HMS as a Railway Node service linked to the same MySQL. Minimum environment:</p>
+    <table>
+      <thead><tr><th>Variable</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td><code>DB_HOST</code> / <code>DB_PORT</code></td><td>Railway MySQL host and port</td></tr>
+        <tr><td><code>DB_USER</code> / <code>DB_PASSWORD</code> / <code>DB_NAME</code></td><td>From MySQL plugin</td></tr>
+        <tr><td><code>SESSION_SECRET</code></td><td>Match local or accept re-login on failover</td></tr>
+        <tr><td><code>LICENSE_SERVER_URL</code></td><td>Vendor license server HTTPS URL</td></tr>
+        <tr><td><code>HMS_PUBLIC_URL</code></td><td>Railway HMS public URL (webhooks)</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="bidirectional">8. Bidirectional &amp; scheduled sync</h2>
+    <h3>8.1 Scheduled one-way sync (recommended DR)</h3>
+    <p>Register Windows Task Scheduler to run every 15–60 minutes:</p>
+    <pre>powershell -ExecutionPolicy Bypass -File docs\scripts\register-replicate-scheduled-task.ps1</pre>
+    <p>Logs: <code>C:\HMS-Backups\railway-sync\logs\</code> or <code>tmp\railway-sync-logs\</code></p>
+
+    <h3>8.2 Bidirectional sync (controlled)</h3>
+    <pre>powershell -ExecutionPolicy Bypass -File scripts\run-bidirectional-sync.ps1
+powershell -ExecutionPolicy Bypass -File scripts\run-bidirectional-sync.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File scripts\run-bidirectional-sync.ps1 -Tables tbl_service_catalog,tbl_inventory_item</pre>
+    <div class="callout danger"><strong>Split-brain risk:</strong> Bidirectional sync can overwrite production data. Use table filters, dry-run first, and change-control. Normal operations: local primary → Railway only.</div>
+
+    <h3>8.3 RPO / RTO targets</h3>
+    <table>
+      <thead><tr><th>Metric</th><th>Target</th><th>Monitor</th></tr></thead>
+      <tbody>
+        <tr><td>RPO</td><td>≤ sync interval (e.g. 15 min)</td><td>Last successful log timestamp</td></tr>
+        <tr><td>RTO</td><td>≤ 30 min user redirect</td><td>Quarterly DR drill</td></tr>
+        <tr><td>Sync success</td><td>Every scheduled run</td><td>Task Scheduler history</td></tr>
+        <tr><td>Railway health</td><td>Weekly</td><td><code>GET /__health</code> on standby URL</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="verify">9. Post-deploy verification</h2>
+    <div class="phase-banner">Phase 5 — Go-live checks</div>
+    <ul class="checklist">
+      <li>HMS service running: <code>nssm status ZAIZENS-HMS</code> or process on port 3000</li>
+      <li>Health endpoint: <code>GET /__health</code> — route mounts OK</li>
+      <li>Hard refresh browser: Ctrl+F5 (clear <code>hms-ui.js</code> cache)</li>
+      <li>Login as admin and ward user</li>
+      <li>OPD queue and consultation flow</li>
+      <li>Pharmacy → Products and Dispensing tabs</li>
+      <li>Statutory reports: <code>/tax/statutory-reports</code></li>
+      <li>Emergency: place order → charge on credit tab (ER auto-charge)</li>
+      <li>Print slip / receipt generation</li>
+      <li>License heartbeat (Solution Subscriptions UI)</li>
+      <li>If sync enabled: verify Railway row counts match local sample tables</li>
+    </ul>
+    <pre>node docs\scripts\12-run-diagnostic.ps1
+node scripts\smoke-routes.js</pre>
+
+    <h2 id="rollback">10. Rollback procedures</h2>
+    <h3>10.1 Application rollback</h3>
+    <ol class="steps">
+      <li>Stop HMS service</li>
+      <li>Restore from deploy backup: <code>deploy-backups\HMS-backup-*</code></li>
+      <pre>robocopy "D:\HMS-Data\deploy-backups\HMS-backup-YYYYMMDD-HHmm" "C:\Program Files\ZAIZENS\HMS" /E /B /IS /IT</pre>
+      <li>Confirm production <code>.env</code> intact</li>
+      <li>Start service; hard refresh clients</li>
+    </ol>
+    <h3>10.2 Database rollback</h3>
+    <pre>powershell -ExecutionPolicy Bypass -File docs\scripts\11-restore-database.ps1 -DumpFile "D:\HMS-Data\mysql-backups\hms_demo_YYYYMMDD.sql"</pre>
+    <p>Requires HMS stopped; restores from nightly mysqldump. Document any data entered after backup time as lost.</p>
+
+    <h2 id="dr">11. Disaster recovery &amp; failover</h2>
+    <div class="callout danger"><strong>Stop writes on primary first.</strong> If primary is dead, run final sync from readable backup media if possible, then activate Railway.</div>
+    <ol class="steps">
+      <li>Confirm primary failure (hardware, MySQL, network)</li>
+      <li>Final sync if local MySQL readable: <code>node scripts/sync-mysql-to-railway.js</code></li>
+      <li>Verify Railway DB — patient row counts vs last known good</li>
+      <li>Start Railway HMS; test <code>/__health</code></li>
+      <li>Redirect users: DNS, emergency URL broadcast, or proxy rules</li>
+      <li>Update <code>HMS_PUBLIC_URL</code> on license server for push webhooks</li>
+      <li>Document data loss window (time since last sync)</li>
+    </ol>
+    <h3>11.1 Fail-back to local</h3>
+    <ol>
+      <li>Repair local server; restore OS and MySQL from backup</li>
+      <li>Reverse sync: dump Railway → import local (swap LOCAL/RAILWAY in env), or restore local backup + manual gap fill</li>
+      <li>Full UAT on local before switching users back</li>
+      <li>Re-enable scheduled local → Railway sync</li>
+    </ol>
+
+    <h2 id="security">12. Security &amp; NTFS hardening</h2>
+    <p>Production installs under <code>Program Files</code> use restricted ACLs (<code>06-apply-ntfs-hardening.ps1</code>). Deploy scripts temporarily grant Administrators modify access during updates.</p>
+    <ul>
+      <li>Run deploy as <strong>Administrator</strong> — non-elevated runs produce ACL noise and partial copies</li>
+      <li>Never deploy private license signing keys to hospital servers</li>
+      <li>Keep <code>railway-sync.env</code> and MySQL credentials out of git</li>
+      <li>Do not expose XAMPP MySQL to <code>0.0.0.0</code> without firewall IP restrictions</li>
+      <li>Rotate MySQL passwords via <code>01b-rotate-to-hardened-password.sql</code> after initial install</li>
+    </ul>
+
+    <h2 id="troubleshoot">13. Troubleshooting</h2>
+    <table>
+      <thead><tr><th>Symptom</th><th>Cause / fix</th></tr></thead>
+      <tbody>
+        <tr><td>Thousands of "Access is denied" during deploy</td><td>NTFS hardening + non-elevated icacls; run PowerShell as Administrator; fixed icacls grant syntax in apply-deploy-update.ps1</td></tr>
+        <tr><td>Robocopy exit 9 on backup</td><td>Files locked by node.exe; script stops processes first; use <code>/B</code> backup mode; retry or <code>-SkipBackup</code> if recent backup exists</td></tr>
+        <tr><td>Old UI after deploy</td><td>Missing or stale <code>hms-ui.js</code>; rebuild Update package; hard refresh Ctrl+F5</td></tr>
+        <tr><td><code>ZAIZENS-HMS</code> service not found</td><td>Run <code>07-install-hms-service.ps1</code>; or start manually with <code>node app.js</code></td></tr>
+        <tr><td>Railway <code>ECONNREFUSED</code></td><td>Enable public networking; verify host/port/password</td></tr>
+        <tr><td><code>mysqldump</code> not found</td><td>Set <code>XAMPP_MYSQL_BIN</code> or install MySQL client</td></tr>
+        <tr><td>Import timeout on Railway</td><td>Run off-peak; increase Node memory; exclude log tables if needed</td></tr>
+        <tr><td>Schema errors on import</td><td>Ensure HMS versions match; script sanitizes MariaDB→MySQL8 defaults</td></tr>
+        <tr><td>404 on new routes</td><td>Run route audit; verify route file deployed; check <code>/__health</code> mount list</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="appendix">Appendix A — Scripts &amp; reference</h2>
+    <h3>A.1 Development &amp; deploy</h3>
+    <table>
+      <thead><tr><th>Script</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>scripts/build-update-package.ps1</code></td><td>Build Update folder from dev</td></tr>
+        <tr><td><code>scripts/apply-deploy-update.ps1</code></td><td>Apply Update on production server</td></tr>
+        <tr><td><code>Update/MANUAL-COPY-README.txt</code></td><td>Manual copy checklist</td></tr>
+        <tr><td><code>Update/DEPLOY-README.txt</code></td><td>First-time deploy notes</td></tr>
+      </tbody>
+    </table>
+    <h3>A.2 Database sync</h3>
+    <table>
+      <thead><tr><th>Script</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>scripts/sync-mysql-to-railway.js</code></td><td>Full local → Railway dump/import</td></tr>
+        <tr><td><code>docs/scripts/railway-sync-core.js</code></td><td>Shared sync utilities</td></tr>
+        <tr><td><code>docs/scripts/sync-local-railway.js</code></td><td>Directional table sync</td></tr>
+        <tr><td><code>docs/scripts/replicate-local-to-railway.js</code></td><td>Scheduled replication</td></tr>
+        <tr><td><code>docs/scripts/bidirectional-sync-local-railway.js</code></td><td>Two-way sync with filters</td></tr>
+        <tr><td><code>docs/scripts/run-railway-sync.ps1</code></td><td>Wrapper with env load</td></tr>
+        <tr><td><code>scripts/run-bidirectional-sync.ps1</code></td><td>Bidirectional wrapper</td></tr>
+      </tbody>
+    </table>
+    <h3>A.3 Implementation kit (<code>docs/scripts/</code>)</h3>
+    <pre>04-setup-data-folders.ps1      08-zaizens-hms-backup.ps1
+05-install-env.ps1              09-register-backup-task.ps1
+06-apply-ntfs-hardening.ps1     10-integrity-baseline.ps1
+06b-install-nssm.ps1            11-restore-database.ps1
+07-install-hms-service.ps1      12-run-diagnostic.ps1</pre>
+    <h3>A.4 Related PDF guides</h3>
+    <ul>
+      <li><code>docs/LOCAL-DEPLOYMENT-IMPLEMENTATION.pdf</code> — on-premises install &amp; security</li>
+      <li><code>docs/MYSQL-REPLICATION-LOCAL-TO-RAILWAY.pdf</code> — DR sync detail</li>
+      <li><code>docs/LICENSE-SERVER-RAILWAY-DEPLOYMENT.pdf</code> — vendor license server</li>
+      <li><code>docs/WINDOWS-LOCAL-BACKUP-DR.html</code> — backup strategy</li>
+    </ul>
+    <h3>A.5 Document control</h3>
+    <table>
+      <thead><tr><th>Version</th><th>Date</th><th>Changes</th></tr></thead>
+      <tbody>
+        <tr><td>3.0</td><td>June 2026</td><td>Unified deployment + MySQL→Railway migration plan; premium/professional layout; apply-deploy ACL fixes; bidirectional sync; statutory/ER upgrade notes</td></tr>
+      </tbody>
+    </table>
+    <p class="footer-note">© 2026 ZAIZENS · Comprehensive Deployment &amp; Database Migration Plan v3.0 · Confidential</p>
+  </main>
+</body>
+</html>

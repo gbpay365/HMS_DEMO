@@ -1,0 +1,56 @@
+<%
+var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+var _hubStats = (typeof hubCatalog !== 'undefined' && hubCatalog && hubCatalog.stats) ? hubCatalog.stats : [];
+var _hubCards = (typeof hubCatalog !== 'undefined' && hubCatalog && hubCatalog.modules) ? hubCatalog.modules : [];
+%>
+<section class="hms-stat-section">
+ <h2 class="hms-stat-section__title"><%= _t('hub.live_stats', { ns: 'legacy', defaultValue: 'Live statistics' }) %></h2>
+ <div class="hms-stat-grid">
+ <% _hubStats.forEach(function(s){
+   if (!uiVisible(s.code)) return;
+   var raw = (stats||{})[s.statKey];
+   var val = s.format === 'money' ? Number(raw||0).toLocaleString('fr-FR') : (raw||0);
+ %>
+  <%- include('hms-stat-link', { href: s.href, label: _t(s.i18nKey, { ns: 'legacy', defaultValue: s.fallback }), value: val, icon: s.icon, color: s.color }) %>
+ <% }); %>
+ </div>
+</section>
+
+<div class="row mb-4">
+ <div class="col-lg-<%= uiVisible('hub.panel.opd_today') ? '8' : '12' %>">
+  <h2 class="hms-stat-section__title mb-3"><%= _t('hub.clinical_modules', { ns: 'legacy', defaultValue: 'Clinical modules' }) %></h2>
+  <div class="hms-hub-module-grid">
+   <% _hubCards.forEach(function(m){
+     if (!uiVisible(m.code)) return;
+   %>
+   <a href="<%=m.href%>" class="hms-surface-card hms-hub-module-tile" style="--hms-tile-accent: <%= m.color %>;">
+    <i class="fa <%=m.icon%> hms-hub-module-tile__ico" aria-hidden="true"></i>
+    <strong><%= _t(m.i18nKey, { ns: 'legacy', defaultValue: m.fallback }) %></strong>
+    <div class="small"><%= _t(m.descKey, { ns: 'legacy', defaultValue: m.descFallback }) %></div>
+   </a>
+   <% }); %>
+  </div>
+ </div>
+ <% if(uiVisible('hub.panel.opd_today')){ %>
+ <div class="col-lg-4">
+  <h2 class="hms-stat-section__title mb-3"><%= _t('hub.today_opd', { ns: 'legacy', defaultValue: "Today's OPD" }) %></h2>
+  <div class="hms-surface-card">
+   <ul class="list-group list-group-flush">
+    <% if(!todayVisits || !todayVisits.length){ %><li class="list-group-item small text-muted"><%= _t('hub.no_visits_today', { ns: 'legacy', defaultValue: 'No visits today.' }) %></li><% } %>
+    <% (todayVisits || []).forEach(function(v){ %>
+    <li class="list-group-item py-2">
+     <div class="d-flex justify-content-between align-items-start">
+      <div>
+       <strong><%=v.first_name%> <%=v.last_name%></strong>
+       <div class="small text-muted"><%=v.ticket_number||('#'+v.id)%> · <%= _t('opd.status.' + (v.queue_status || ''), { ns: 'clinical', defaultValue: v.queue_status || '—' }) %></div>
+      </div>
+      <% if(uiVisible('hub.card.opd_queue')){ %><a href="/opd-queue?q=<%=v.id%>" class="hms-btn hms-btn-secondary hms-btn-sm"><%= _t('hub.open', { ns: 'legacy', defaultValue: 'Open' }) %></a><% } %>
+     </div>
+    </li>
+    <% }); %>
+   </ul>
+   <% if(uiVisible('hub.card.opd_queue')){ %><div class="card-footer bg-white border-0"><a href="/opd-queue" class="small font-weight-bold"><%= _t('hub.full_opd_queue', { ns: 'legacy', defaultValue: 'Full OPD queue' }) %></a></div><% } %>
+  </div>
+ </div>
+ <% } %>
+</div>

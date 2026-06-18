@@ -1,0 +1,11 @@
+<%- include('hms-perm-helpers') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _top !== 'function') {
+  var _top = function (key, fallback, opts) {
+    return _t(key, Object.assign({ ns: 'ops', defaultValue: fallback }, opts || {}));
+  };
+}
+%>

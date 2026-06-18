@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--billing'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-accounting-page-mount', {
+  reactPage: 'billing',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.billing', { ns: 'common' }) : 'Loading…')
+}) %>
+
+<%- include('partials/footer') %>

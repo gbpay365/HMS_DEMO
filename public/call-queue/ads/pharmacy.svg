@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" role="img" aria-label="Pharmacy">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#140c07"/>
+      <stop offset="1" stop-color="#b45309"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="700" fill="url(#bg)"/>
+  <g filter="url(#shadow)">
+    <rect x="120" y="110" width="960" height="480" rx="28" fill="#ffffff" opacity="0.94"/>
+  </g>
+  <g transform="translate(170,165)">
+    <rect x="0" y="0" width="52" height="52" rx="14" fill="#b45309" opacity="0.14"/>
+    <path d="M16 22h28v20H16z" fill="none" stroke="#b45309" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M22 22v20M38 22v20" stroke="#b45309" stroke-width="4" stroke-linecap="round"/>
+    <text x="70" y="22" font-family="Arial, sans-serif" font-size="30" font-weight="800" fill="#0f172a">Pharmacy</text>
+    <text x="70" y="50" font-family="Arial, sans-serif" font-size="16" font-weight="600" fill="#475569">Dispensing � counselling � essential medicines</text>
+  </g>
+
+  <g transform="translate(230,250)">
+    <!-- shelves -->
+    <rect x="0" y="40" width="520" height="320" rx="26" fill="#fffbeb" stroke="#fde68a" stroke-width="2"/>
+    <rect x="30" y="80" width="460" height="16" rx="8" fill="#f59e0b" opacity="0.22"/>
+    <rect x="30" y="160" width="460" height="16" rx="8" fill="#f59e0b" opacity="0.22"/>
+    <rect x="30" y="240" width="460" height="16" rx="8" fill="#f59e0b" opacity="0.22"/>
+    <g fill="#ffffff" stroke="#e2e8f0" stroke-width="2">
+      <rect x="50" y="98" width="64" height="48" rx="12"/>
+      <rect x="128" y="98" width="64" height="48" rx="12"/>
+      <rect x="206" y="98" width="64" height="48" rx="12"/>
+      <rect x="284" y="98" width="64" height="48" rx="12"/>
+      <rect x="362" y="98" width="64" height="48" rx="12"/>
+
+      <rect x="70" y="178" width="86" height="48" rx="12"/>
+      <rect x="170" y="178" width="86" height="48" rx="12"/>
+      <rect x="270" y="178" width="86" height="48" rx="12"/>
+      <rect x="370" y="178" width="86" height="48" rx="12"/>
+
+      <rect x="80" y="258" width="110" height="48" rx="12"/>
+      <rect x="210" y="258" width="110" height="48" rx="12"/>
+      <rect x="340" y="258" width="110" height="48" rx="12"/>
+    </g>
+
+    <!-- pharmacist (Black African) -->
+    <g transform="translate(640,30)">
+      <rect x="-10" y="300" width="300" height="22" rx="11" fill="#0f172a" opacity="0.10"/>
+      <circle cx="120" cy="78" r="46" fill="#6b3f2a"/>
+      <path d="M78 78c4-32 28-52 54-50 24 2 42 20 44 44-14-10-28-14-50-14-22 0-32 4-48 20z" fill="#0f172a"/>
+      <path d="M44 340c0-90 30-150 76-150s76 60 76 150v40H44v-40z" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+      <path d="M74 270c12-26 28-40 46-40s34 14 46 40v110H74V270z" fill="#b45309" opacity="0.14"/>
+      <!-- pill icon -->
+      <g transform="translate(200,250)">
+        <rect x="0" y="0" width="88" height="44" rx="22" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+        <path d="M44 4v36" stroke="#f59e0b" stroke-width="3" opacity="0.6"/>
+        <rect x="8" y="8" width="32" height="28" rx="14" fill="#fde68a"/>
+      </g>
+    </g>
+  </g>
+
+  <text x="600" y="650" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#cbd5e1" opacity="0.95">
+    Safe dispensing � Clear counselling � Essential medicines
+  </text>
+</svg>

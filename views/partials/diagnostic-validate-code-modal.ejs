@@ -1,0 +1,55 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+  var _dvcDept = (typeof validateModalDept !== 'undefined' && validateModalDept) ? validateModalDept : 'laboratory';
+  var _dvcLab = _dvcDept === 'laboratory';
+  var _dvcColor = _dvcLab ? '#7c3aed' : '#0891b2';
+  var _dvcPrefix = _dvcLab ? 'LAB' : 'RAD';
+  var _dvcDeptLabel = _dvcLab
+    ? _t('labWorkflow.dept_laboratory', { ns: 'clinical', defaultValue: 'Laboratory' })
+    : _t('labWorkflow.dept_radiology', { ns: 'clinical', defaultValue: 'Radiology' });
+  var _dvcModalId = _dvcLab ? 'labValidateCodeModal' : 'radValidateCodeModal';
+  var _dvcInputId = _dvcLab ? 'labValidateCodeInput' : 'radValidateCodeInput';
+  var _dvcBtnId = _dvcLab ? 'btnLabValidateCode' : 'btnRadValidateCode';
+  var _dvcErrId = _dvcLab ? 'labValidateCodeError' : 'radValidateCodeError';
+  var _dvcValidatePath = _dvcLab ? '/laboratory/validate' : '/radiology/validate';
+%>
+<div class="modal fade" id="<%= _dvcModalId %>" tabindex="-1" role="dialog" aria-hidden="true">
+ <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:520px;">
+  <div class="modal-content border-0 shadow-lg" style="border-radius:18px;overflow:hidden;">
+   <div class="modal-header border-0 text-white" style="background:linear-gradient(135deg,<%= _dvcColor %>,<%= _dvcColor %>cc);padding:1.35rem 1.6rem;">
+    <div>
+     <h5 class="modal-title font-weight-bold mb-0">
+      <i class="fa fa-qrcode mr-2"></i> <%= _t('labWorkflow.validate_title', { ns: 'clinical', defaultValue: '{{dept}} · Validate code', dept: _dvcDeptLabel }) %>
+     </h5>
+     <p class="mb-0 small opacity-75 mt-1"><%= _t('validate_modal.hint', { ns: 'clinical', defaultValue: 'Enter the service code from the patient\'s paid ticket before opening the workbench.' }) %></p>
+    </div>
+     <button type="button" class="close text-white" data-dismiss="modal" aria-label="<%= _t('common.close', { ns: 'financials', defaultValue: 'Close' }) %>" style="opacity:1;">
+     <span aria-hidden="true" style="font-size:1.4rem;">&times;</span>
+    </button>
+   </div>
+   <div class="modal-body" style="padding:1.6rem;background:#f8f9ff;">
+    <label class="font-weight-bold small text-muted text-uppercase mb-2 d-block" for="<%= _dvcInputId %>">
+     <i class="fa fa-ticket mr-1"></i> <%= _t('validate_modal.service_code', { ns: 'clinical', defaultValue: 'Service code' }) %> <span class="text-danger">*</span>
+    </label>
+    <div class="input-group">
+     <input type="text" id="<%= _dvcInputId %>" class="hms-input font-weight-bold"
+      style="font-family:ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;font-size:1.05rem;border-radius:10px 0 0 10px;"
+      placeholder="<%= _dvcPrefix %>-2026-000001" autocomplete="off">
+     <div class="input-group-append">
+      <button type="button" class="hms-btn hms-btn-primary font-weight-bold px-4" id="<%= _dvcBtnId %>" style="border-radius:0 10px 10px 0;background:<%= _dvcColor %>;border-color:<%= _dvcColor %>;">
+       <i class="fa fa-search mr-1" aria-hidden="true"></i> <%= _t('common.validate', { ns: 'clinical' }) %>
+      </button>
+     </div>
+    </div>
+    <small class="text-muted d-block mt-2"><%= _t('validate_modal.format_hint', { ns: 'clinical', defaultValue: 'Format: {{prefix}}-yyyy-NNNNNN · IPD/Emergency orders skip this step.', prefix: _dvcPrefix }) %></small>
+    <div id="<%= _dvcErrId %>" class="alert alert-danger border-0 mt-3 mb-0 d-none" style="border-radius:10px;font-size:.88rem;"></div>
+   </div>
+   <div class="modal-footer border-0 bg-light px-4 py-3 d-flex justify-content-between">
+    <a href="<%= _dvcValidatePath %>" class="btn btn-link btn-sm text-muted font-weight-bold px-0"><%= _t('validate_modal.open_full_page', { ns: 'clinical', defaultValue: 'Open full validate page' }) %></a>
+    <button type="button" class="hms-btn hms-btn-secondary" data-dismiss="modal"><%= _t('common.cancel', { ns: 'payroll' }) %></button>
+   </div>
+  </div>
+ </div>
+</div>

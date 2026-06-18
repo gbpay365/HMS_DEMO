@@ -1,0 +1,28 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<%- include('partials/laboratory-odoo-start', {
+  labOdooMenu: 'lims_config',
+  labOdooTitle: _t('lims_config.breadcrumb', { ns: 'legacy', defaultValue: 'Configuration' })
+}) %>
+<div class="o_content">
+<div class="hms-chip-row mb-3">
+<a href="?section=groups" class="hms-chip<%= section === 'groups' ? ' active' : '' %>"><%= _t('lims_config.tab_groups', { ns: 'legacy', defaultValue: 'Test groups' }) %></a>
+<a href="?section=centers" class="hms-chip<%= section === 'centers' ? ' active' : '' %>"><%= _t('lims_config.tab_centers', { ns: 'legacy', defaultValue: 'Collection centers' }) %></a>
+</div>
+<% if(section==='groups'){ %>
+<div class="row"><div class="col-md-5"><form method="POST" action="/lims/config/group" class="card p-3">
+<input name="code" class="hms-input w-full text-sm mb-2" placeholder="<%= _t('lims_config.code_ph', { ns: 'legacy', defaultValue: 'Code e.g. FBC' }) %>">
+<input name="name" class="hms-input w-full text-sm mb-2" placeholder="<%= _t('lims_config.group_name_ph', { ns: 'legacy', defaultValue: 'Group name' }) %>" required>
+<p class="small font-weight-bold"><%= _t('lims_config.tests_in_group', { ns: 'legacy', defaultValue: 'Tests in group:' }) %></p>
+<% catalog.forEach(function(c){ %><label class="d-block small"><input type="checkbox" name="catalog_id" value="<%=c.id%>"> <%=c.name%></label><% }); %>
+<button class="hms-btn hms-btn-primary btn-sm mt-2"><%= _t('lims_config.add_group', { ns: 'legacy', defaultValue: 'Add group' }) %></button></form></div>
+<div class="col-md-7"><ul class="list-group"><% groups.forEach(function(g){ %>
+<li class="list-group-item d-flex justify-content-between"><span><%=g.code||''%> <%=g.name%></span><span class="badge badge-light"><%= _t('lims_config.tests_count', { ns: 'legacy', count: g.line_count, defaultValue: g.line_count + ' tests' }) %></span></li>
+<% }); %></ul></div></div>
+<% } else { %>
+<form method="POST" action="/lims/config/center" class="card p-3 mb-3"><input name="name" class="hms-input w-full text-sm mb-2" placeholder="<%= _t('lims_config.center_name_ph', { ns: 'legacy', defaultValue: 'Center name' }) %>" required><button class="hms-btn hms-btn-primary hms-btn-sm"><%= _t('lims_config.add_center', { ns: 'legacy', defaultValue: 'Add center' }) %></button></form>
+<ul><% centers.forEach(function(c){ %><li><%=c.name%></li><% }); %></ul>
+<% } %>
+</div>
+<%- include('partials/laboratory-odoo-end') %>
+<%- include('partials/footer') %>

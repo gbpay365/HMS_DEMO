@@ -1,0 +1,359 @@
+/**
+ * Radiology · structured exam templates (scoped to #radTplRoot)
+ * Mirrors laboratory-templates.css for the same layout and interactions.
+ */
+#radTplRoot {
+  --lab-accent: #0891b2;
+  --lab-accent-2: #0e7490;
+  --lab-accent-soft: #ecfeff;
+  --lab-border: #e2e8f0;
+  --lab-muted: #64748b;
+  --lab-surface: #f8fafc;
+}
+
+#radTplRoot .labtpl-hero {
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0891b2, #6366f1);
+  color: #fff;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 8px 28px rgba(8, 145, 178, 0.22);
+}
+
+#radTplRoot .labtpl-hero h1 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem;
+  letter-spacing: -0.02em;
+}
+
+#radTplRoot .labtpl-hero p {
+  margin: 0;
+  font-size: 0.82rem;
+  opacity: 0.92;
+}
+
+#radTplRoot .labtpl-shell {
+  min-height: calc(100vh - 220px);
+}
+
+#radTplRoot .labtpl-patient-grid.locked input {
+  background: #f1f5f9 !important;
+  cursor: not-allowed;
+}
+
+#radTplRoot .labtpl-sidebar .card,
+#radTplRoot .labtpl-main .card {
+  border-radius: 14px;
+}
+
+#radTplRoot .labtpl-cat-scroll {
+  max-height: min(68vh, 640px);
+  overflow-y: auto;
+}
+
+#radTplRoot .labtpl-cat-group {
+  border-bottom: 1px solid var(--lab-border);
+}
+
+#radTplRoot .labtpl-cat-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  cursor: pointer;
+  user-select: none;
+  background: #fff;
+  transition: background 0.15s;
+}
+
+#radTplRoot .labtpl-cat-header:hover {
+  background: var(--lab-surface);
+}
+
+#radTplRoot .labtpl-cat-label {
+  flex: 1;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--lab-muted);
+}
+
+#radTplRoot .labtpl-cat-chevron {
+  font-size: 0.65rem;
+  color: var(--lab-muted);
+  transition: transform 0.2s;
+}
+
+#radTplRoot .labtpl-cat-group.open .labtpl-cat-chevron {
+  transform: rotate(90deg);
+}
+
+#radTplRoot .labtpl-test-list {
+  display: none;
+  background: #fafbfc;
+}
+
+#radTplRoot .labtpl-cat-group.open .labtpl-test-list {
+  display: block;
+}
+
+#radTplRoot .labtpl-test-item {
+  padding: 0.45rem 0.85rem 0.45rem 2.25rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: #334155;
+  border-left: 3px solid transparent;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+#radTplRoot .labtpl-test-item:hover {
+  background: #fff;
+}
+
+#radTplRoot .labtpl-test-item.active {
+  background: var(--lab-accent-soft);
+  border-left-color: var(--lab-accent);
+  color: #0e7490;
+  font-weight: 600;
+}
+
+#radTplRoot .labtpl-test-id {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--lab-muted);
+  font-family: ui-monospace, Menlo, monospace;
+  margin-top: 2px;
+}
+
+#radTplRoot .labtpl-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--lab-muted);
+}
+
+#radTplRoot .labtpl-empty-icon {
+  font-size: 2.5rem;
+  opacity: 0.35;
+  margin-bottom: 0.75rem;
+}
+
+#radTplRoot .labtpl-form-panel {
+  display: none;
+}
+
+#radTplRoot .labtpl-form-panel.visible {
+  display: block;
+}
+
+#radTplRoot .labtpl-form-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--lab-border);
+}
+
+#radTplRoot .labtpl-form-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+  border: 1px solid var(--lab-border);
+  background: #fff;
+}
+
+#radTplRoot .labtpl-form-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+#radTplRoot .labtpl-form-meta {
+  font-size: 0.78rem;
+  color: var(--lab-muted);
+}
+
+#radTplRoot .labtpl-form-actions {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+#radTplRoot .labtpl-patient-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+#radTplRoot .labtpl-field-scroll {
+  max-height: min(42vh, 420px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+#radTplRoot .labtpl-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.85rem;
+}
+
+#radTplRoot .labtpl-field-card {
+  background: var(--lab-surface);
+  border: 1px solid var(--lab-border);
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  position: relative;
+}
+
+#radTplRoot .labtpl-field-card.full-width {
+  grid-column: 1 / -1;
+}
+
+#radTplRoot .labtpl-field-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--lab-muted);
+  margin-bottom: 0.35rem;
+}
+
+#radTplRoot .labtpl-field-unit {
+  font-weight: 500;
+  color: #94a3b8;
+  margin-left: 0.25rem;
+}
+
+#radTplRoot .labtpl-ref-line {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+#radTplRoot .labtpl-flag-slot {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+#radTplRoot .labtpl-flag-slot .badge {
+  font-size: 0.65rem;
+}
+
+#radTplRoot .form-control.flag-high,
+#radTplRoot .form-control.flag-low,
+#radTplRoot .form-control.flag-ok {
+  border-width: 2px;
+}
+
+#radTplRoot .form-control.flag-high {
+  border-color: #f97316;
+}
+
+#radTplRoot .form-control.flag-low {
+  border-color: #3b82f6;
+}
+
+#radTplRoot .form-control.flag-ok {
+  border-color: #22c55e;
+}
+
+#radTplRoot .labtpl-conclusion {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--lab-border);
+}
+
+#radTplRoot .labtpl-conclusion label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--lab-muted);
+}
+
+#radTplPreviewModal .labtpl-report-row {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.85rem;
+}
+
+#radTplPreviewModal .labtpl-report-key {
+  width: 150px;
+  flex-shrink: 0;
+  color: var(--lab-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+#radTplPreviewModal .labtpl-report-val {
+  flex: 1;
+  color: #0f172a;
+}
+
+#radTplPreviewModal .labtpl-report-hdr {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--lab-accent);
+  margin: 0.75rem 0 0.35rem;
+}
+
+#radTplRoot .labtpl-attachments {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px dashed var(--lab-border);
+  background: var(--lab-surface);
+}
+
+#radTplRoot .diagtpl-attach-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+#radTplRoot .diagtpl-attach-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.5rem 0.65rem;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid var(--lab-border);
+}
+
+#radTplRoot .diagtpl-attach-item img {
+  max-height: 56px;
+  max-width: 96px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+#radTplRoot .diagtpl-attach-file {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+@media (max-width: 991px) {
+  #radTplRoot .labtpl-cat-scroll {
+    max-height: 280px;
+  }
+}

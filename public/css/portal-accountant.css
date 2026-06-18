@@ -1,0 +1,230 @@
+/* Accountant portal — scoped UI (portal-accountant.ejs) */
+.acc-portal {
+  --acc-navy: #0f172a;
+  --acc-blue: #1e3a8a;
+  --acc-teal: #0f766e;
+  --acc-gold: #d97706;
+  --acc-surface: #f8fafc;
+  --acc-border: #e2e8f0;
+  --acc-radius: 16px;
+  --acc-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
+}
+
+.acc-portal .acc-hero,
+.acc-portal .acc-hero.hms-page-hero {
+  background: linear-gradient(135deg, #10b981 0%, #0c8b8b 100%);
+  border-radius: var(--acc-radius);
+  color: #fff;
+  box-shadow: var(--acc-shadow);
+  overflow: hidden;
+  position: relative;
+}
+
+.acc-portal .acc-hero::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 320px;
+  height: 320px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.acc-portal .acc-kpi {
+  border-radius: 14px;
+  border: 1px solid var(--acc-border);
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  height: 100%;
+}
+
+.acc-portal .acc-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.acc-portal .acc-kpi-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--acc-navy);
+  line-height: 1.1;
+}
+
+.acc-portal .acc-kpi-label {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.acc-portal .acc-tiles-wrap .acc-tile {
+  border-radius: 14px;
+  border: 1px solid var(--acc-border);
+  background: #fff;
+  text-decoration: none !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  min-height: 108px;
+}
+
+.acc-portal .acc-tiles-wrap .acc-tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px rgba(30, 58, 138, 0.12);
+  border-color: #c7d2fe;
+}
+
+.acc-portal .acc-tiles-wrap .acc-tile-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+}
+
+.acc-portal .acc-tiles-wrap .acc-tile-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.25;
+}
+
+.acc-portal .acc-table-card {
+  border-radius: var(--acc-radius);
+  border: 1px solid var(--acc-border);
+  overflow: hidden;
+}
+
+.acc-portal .acc-table-card thead th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  border-top: none;
+  background: #f1f5f9;
+}
+
+.acc-portal .acc-table-card tbody tr {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.acc-portal .acc-table-card tbody tr:hover {
+  background: #f0f9ff;
+}
+
+.acc-portal .acc-workflow {
+  border-radius: var(--acc-radius);
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+  border: 1px solid var(--acc-border);
+}
+
+.acc-portal .acc-workflow-step {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px dashed var(--acc-border);
+}
+
+.acc-portal .acc-workflow-step:last-child {
+  border-bottom: none;
+}
+
+.acc-portal .acc-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--acc-blue), var(--acc-teal));
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Modals */
+.acc-modal .modal-content {
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.2);
+  overflow: hidden;
+}
+
+.acc-modal .modal-header {
+  background: linear-gradient(135deg, var(--acc-blue), var(--acc-teal));
+  color: #fff;
+  border: none;
+  padding: 1rem 1.25rem;
+}
+
+.acc-modal .modal-header .close {
+  color: #fff;
+  opacity: 0.9;
+  text-shadow: none;
+}
+
+.acc-modal .modal-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.acc-modal .modal-body {
+  padding: 1.25rem 1.5rem;
+}
+
+.acc-modal .modal-footer {
+  border-top: 1px solid var(--acc-border);
+  background: #f8fafc;
+  padding: 0.85rem 1.25rem;
+}
+
+.acc-modal .acc-detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.9rem;
+}
+
+.acc-modal .acc-detail-row:last-child {
+  border-bottom: none;
+}
+
+.acc-modal .acc-detail-label {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.acc-modal .acc-checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f8fafc;
+  margin-bottom: 8px;
+  border: 1px solid var(--acc-border);
+}
+
+.acc-modal .acc-checklist-item a {
+  font-weight: 700;
+}
+
+.acc-modal .acc-amount-hero {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--acc-blue);
+}
+
+@media (max-width: 767px) {
+  .acc-portal .acc-kpi-value {
+    font-size: 1.35rem;
+  }
+}

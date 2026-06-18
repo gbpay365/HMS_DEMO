@@ -1,0 +1,526 @@
+<%- include('partials/header') %>
+<link rel="stylesheet" href="/css/hms-management-reports.css?v=7">
+<link rel="stylesheet" href="/css/hms-management-reports-print.css?v=1" media="print">
+
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<%
+function mrValClass(v) {
+  var s = String(v || '');
+  if (s.indexOf('XAF') >= 0) return 'mr-val-money';
+  if (s.indexOf('%') >= 0) return 'mr-val-pct';
+  return 'mr-val-num';
+}
+function mrSectionTheme(key) {
+  var t = { daily: '#0891b2', weekly: '#7c3aed', monthly: '#1e40af', financial: '#059669' };
+  return t[key] || '#1e3a5f';
+}
+%>
+
+<% if (locals.flash) { %>
+<div class="alert alert-success border-0 shadow-sm mb-3 py-2 no-print"><i class="fa fa-check-circle mr-2"></i><%= locals.flash %></div>
+<% } %>
+<% if (locals.error) { %>
+<div class="alert alert-danger border-0 shadow-sm mb-3 py-2 no-print"><i class="fa fa-exclamation-circle mr-2"></i><%= locals.error %></div>
+<% } %>
+<% if (typeof liveLoadError !== 'undefined' && liveLoadError) { %>
+<div class="alert alert-warning border-0 shadow-sm mb-3 py-2 no-print"><i class="fa fa-warning mr-2"></i><%= _t('management_reports.live_load_error', { ns: 'legacy', defaultValue: 'Live figures could not be loaded:' }) %> <%= liveLoadError %></div>
+<% } %>
+
+<div class="page-wrapper mr-screen">
+<div class="content hms-module mr-content">
+
+<header class="mr-hero no-print">
+  <div class="mr-hero-inner">
+    <div class="mr-hero-text">
+      <nav class="mr-breadcrumb" aria-label="<%= _t('management_reports.breadcrumb_aria', { ns: 'legacy', defaultValue: 'Breadcrumb' }) %>">
+        <a href="/hms/reports"><i class="fa fa-arrow-left"></i> <%= _t('management_reports.reports_hub', { ns: 'legacy', defaultValue: 'Reports hub' }) %></a>
+        <span class="mr-bc-sep">/</span>
+        <span><%= _t('management_reports.management', { ns: 'legacy', defaultValue: 'Management' }) %></span>
+      </nav>
+      <h1 class="mr-page-title"><%= _t('management_reports.page_title', { ns: 'legacy', defaultValue: 'Live management reports' }) %></h1>
+      <p class="mr-page-sub"><%= orgName || _t('management_reports.hospital_default', { ns: 'legacy', defaultValue: 'Hospital' }) %><% if (entityName && entityName !== orgName) { %> · <%= entityName %><% } %></p>
+    </div>
+    <div class="mr-hero-actions">
+      <a href="/management-reports/print?scope=tab&amp;tab=<%= encodeURIComponent(activeTab) %>" class="mr-btn mr-btn-ghost" id="mrPrintTab" target="_blank" rel="noopener">
+        <i class="fa fa-file-text-o"></i><span><%= _t('management_reports.print_tab', { ns: 'legacy', defaultValue: 'Print tab' }) %></span>
+      </a>
+      <a href="/management-reports/print?scope=all" class="mr-btn mr-btn-ghost" target="_blank" rel="noopener">
+        <i class="fa fa-files-o"></i><span><%= _t('management_reports.full_pdf', { ns: 'legacy', defaultValue: 'Full PDF' }) %></span>
+      </a>
+      <a href="/management-reports<%= activeTab ? '?tab=' + encodeURIComponent(activeTab) : '' %>" class="mr-btn mr-btn-primary" id="mrRefreshBtn">
+        <i class="fa fa-refresh"></i><span><%= _t('management_reports.refresh', { ns: 'legacy', defaultValue: 'Refresh' }) %></span>
+      </a>
+    </div>
+  </div>
+  <div class="mr-hero-meta">
+    <div class="mr-meta-chip"><i class="fa fa-clock-o"></i> <%= typeof liveGeneratedAt !== 'undefined' && liveGeneratedAt ? liveGeneratedAt : _t('management_reports.just_now', { ns: 'legacy', defaultValue: 'Just now' }) %></div>
+    <% if (typeof reportRef !== 'undefined' && reportRef) { %>
+    <div class="mr-meta-chip mr-meta-mono"><i class="fa fa-hashtag"></i> <%= reportRef %></div>
+    <% } %>
+    <% if (hasFullAccess) { %><div class="mr-meta-chip mr-meta-accent"><i class="fa fa-shield"></i> <%= _t('management_reports.full_suite', { ns: 'legacy', defaultValue: 'Full suite' }) %></div><% } %>
+    <div class="mr-meta-chip"><i class="fa fa-th-large"></i> <%= sections.length %> <%= sections.length === 1 ? _t('management_reports.section_one', { ns: 'legacy', defaultValue: 'section' }) : _t('management_reports.section_many', { ns: 'legacy', defaultValue: 'sections' }) %></div>
+  </div>
+</header>
+
+<% if (!sections || !sections.length) { %>
+<div class="mr-empty-state no-print">
+  <div class="mr-empty-icon"><i class="fa fa-lock"></i></div>
+  <h2><%= _t('management_reports.no_reports_title', { ns: 'legacy', defaultValue: 'No reports assigned' }) %></h2>
+  <p><%= _t('management_reports.no_reports_body', { ns: 'legacy', defaultValue: 'Your role does not have any management report permissions. Contact an administrator.' }) %></p>
+  <a href="/hms-admin/access" class="mr-btn mr-btn-primary"><%= _t('management_reports.open_access', { ns: 'legacy', defaultValue: 'Open access control' }) %></a>
+</div>
+<% } else { %>
+
+<nav class="mr-tab-bar no-print" role="tablist" aria-label="<%= _t('management_reports.tab_aria', { ns: 'legacy', defaultValue: 'Report frequency' }) %>">
+  <% sections.forEach(function(s) {
+    var accent = s.accent || mrSectionTheme(s.key);
+    var soft = s.soft || '#f8fafc';
+  %>
+  <button type="button"
+    class="mr-tab-pill<%= activeTab === s.key ? ' is-active' : '' %>"
+    data-tab="<%= s.key %>"
+    data-accent="<%= accent %>"
+    data-soft="<%= soft %>"
+    style="<%= activeTab === s.key ? '--tab-accent:' + accent + ';--section-soft:' + soft + ';' : '' %>"
+    role="tab"
+    aria-selected="<%= activeTab === s.key ? 'true' : 'false' %>">
+    <span class="mr-tab-icon" style="--tab-accent:<%= accent %>"><i class="fa <%= s.icon %>"></i></span>
+    <span class="mr-tab-label"><%= s.label %></span>
+  </button>
+  <% }); %>
+</nav>
+
+<div class="mr-report-body">
+  <% sections.forEach(function(s) {
+    var accent = s.accent || mrSectionTheme(s.key);
+    var soft = s.soft || '#f8fafc';
+    var cardCount = (s.cards || []).length;
+    var isActive = activeTab === s.key;
+  %>
+  <section class="mr-section<%= isActive ? ' is-active' : '' %>"
+    id="mr-section-<%= s.key %>"
+    role="tabpanel"
+    style="--section-accent:<%= accent %>;--section-soft:<%= soft %>;">
+
+    <div class="mr-section-banner">
+      <div class="mr-section-banner-icon"><i class="fa <%= s.icon %>"></i></div>
+      <div class="mr-section-banner-text">
+        <h2><%= s.label %> <%= _t('management_reports.reports_suffix', { ns: 'legacy', defaultValue: 'reports' }) %></h2>
+        <p><%= s.subtitle %> · <strong><%= cardCount %></strong> <%= cardCount === 1 ? _t('management_reports.report_block_one', { ns: 'legacy', defaultValue: 'report block' }) : _t('management_reports.report_block_many', { ns: 'legacy', defaultValue: 'report blocks' }) %></p>
+      </div>
+      <a href="/management-reports/print?scope=tab&amp;tab=<%= encodeURIComponent(s.key) %>" class="mr-section-print no-print" target="_blank" rel="noopener" title="<%= _t('management_reports.print_section', { ns: 'legacy', defaultValue: 'Print this section' }) %>">
+        <i class="fa fa-print"></i>
+      </a>
+    </div>
+
+    <%
+    var sectionHighlights = [];
+    (s.cards || []).forEach(function(c) {
+      if (sectionHighlights.length >= 4) return;
+      if (c.live && c.live.metrics && c.live.metrics[0]) {
+        sectionHighlights.push({
+          source: c.title,
+          label: c.live.metrics[0].label,
+          value: c.live.metrics[0].value
+        });
+      }
+    });
+    if (s.key === 'financial' && sectionHighlights.length < 4) {
+      (s.financialRows || []).forEach(function(r) {
+        if (sectionHighlights.length >= 4) return;
+        if (r.live && r.live.metrics && r.live.metrics[0]) {
+          sectionHighlights.push({
+            source: r.title,
+            label: r.live.metrics[0].label,
+            value: r.live.metrics[0].value
+          });
+        }
+      });
+    }
+    %>
+    <% if (sectionHighlights.length) { %>
+    <div class="mr-section-highlights">
+      <% sectionHighlights.forEach(function(h) { %>
+      <div class="mr-highlight-chip">
+        <span class="mr-highlight-source"><%= h.source %></span>
+        <span class="mr-highlight-label"><%= h.label %></span>
+        <span class="mr-highlight-value <%= mrValClass(h.value) %>"><%= h.value %></span>
+      </div>
+      <% }); %>
+    </div>
+    <% } %>
+
+    <% if (s.cards && s.cards.length) { %>
+    <div class="mr-cards-grid">
+      <% s.cards.forEach(function(c) { %>
+      <article class="mr-report-card">
+        <header class="mr-card-head">
+          <span class="mr-card-icon" style="background:<%= c.iconBg %>;color:<%= c.iconColor %>;">
+            <i class="fa <%= c.icon %>"></i>
+          </span>
+          <h3 class="mr-card-title"><%= c.title %></h3>
+        </header>
+
+        <% if (c.live && c.live.metrics && c.live.metrics.length) { %>
+        <div class="mr-kpi-grid">
+          <% c.live.metrics.forEach(function(m, idx) { %>
+          <div class="mr-kpi-item<%= idx === 0 ? ' mr-kpi-featured' : '' %>">
+            <div class="mr-kpi-label"><%= m.label %></div>
+            <div class="mr-kpi-value <%= mrValClass(m.value) %>"><%= m.value %></div>
+            <% if (m.subtext) { %><div class="mr-kpi-trend"><%= m.subtext %></div><% } %>
+          </div>
+          <% }); %>
+        </div>
+        <% } else { %>
+        <div class="mr-card-empty">
+          <i class="fa fa-database"></i>
+          <span><%= _t('management_reports.no_live_figures', { ns: 'legacy', defaultValue: 'No live figures yet' }) %></span>
+        </div>
+        <% } %>
+
+        <footer class="mr-card-foot no-print">
+          <button type="button" class="mr-card-print-btn"
+            data-report="<%= c.id %>"
+            data-type="card"
+            data-title="<%= c.title %>"
+            data-default-period="<%= s.key === 'daily' ? 'day' : (s.key === 'weekly' ? 'week' : 'month') %>">
+            <i class="fa fa-print"></i> <%= _t('management_reports.print_report', { ns: 'legacy', defaultValue: 'Print report' }) %>
+          </button>
+        </footer>
+        <details class="mr-scope-fold no-print">
+          <summary><i class="fa fa-list-ul"></i> <%= _t('management_reports.scope_definitions', { ns: 'legacy', defaultValue: 'Scope & definitions' }) %></summary>
+          <ul class="mr-scope-list">
+            <% (c.items || []).forEach(function(item) { %><li><%= item %></li><% }); %>
+          </ul>
+        </details>
+      </article>
+      <% }); %>
+    </div>
+    <% } %>
+
+    <% if (s.key === 'financial') { %>
+    <% if (s.financialRows && s.financialRows.length) { %>
+    <div class="mr-panel">
+      <div class="mr-panel-hd">
+        <i class="fa fa-exchange"></i>
+        <span><%= _t('management_reports.financial_by_freq', { ns: 'legacy', defaultValue: 'Financial transactions by frequency' }) %></span>
+      </div>
+      <div class="mr-panel-body mr-table-wrap">
+        <table class="mr-data-table">
+          <thead>
+            <tr>
+              <th><%= _t('management_reports.col_report', { ns: 'legacy', defaultValue: 'Report' }) %></th>
+              <th><%= _t('management_reports.col_freq', { ns: 'legacy', defaultValue: 'Freq.' }) %></th>
+              <th><%= _t('management_reports.col_live', { ns: 'legacy', defaultValue: 'Live figures' }) %></th>
+              <th class="mr-col-scope"><%= _t('management_reports.col_scope', { ns: 'legacy', defaultValue: 'Scope' }) %></th>
+              <th class="mr-col-print no-print"><%= _t('management_reports.col_print', { ns: 'legacy', defaultValue: 'Print' }) %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% s.financialRows.forEach(function(r) { %>
+            <tr>
+              <td class="mr-td-title"><%= r.title %></td>
+              <td><span class="mr-freq mr-freq-<%= r.freq %>"><%= r.freq %></span></td>
+              <td class="mr-td-live">
+                <% if (r.live && r.live.metrics && r.live.metrics.length) { %>
+                <div class="mr-live-pills">
+                  <% r.live.metrics.forEach(function(m) { %>
+                  <span class="mr-live-pill"><span class="mr-live-pill-l"><%= m.label %></span><span class="mr-live-pill-v <%= mrValClass(m.value) %>"><%= m.value %></span></span>
+                  <% }); %>
+                </div>
+                <% } else { %><span class="text-muted">—</span><% } %>
+              </td>
+              <td class="mr-td-scope"><%= r.points %></td>
+              <td class="mr-td-print no-print">
+                <button type="button" class="mr-card-print-btn mr-card-print-btn-sm"
+                  data-report="<%= r.id %>"
+                  data-type="row"
+                  data-title="<%= r.title %>"
+                  data-default-period="<%= r.freq %>">
+                  <i class="fa fa-print"></i>
+                </button>
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <% } %>
+
+    <% if (s.financialUnits && s.financialUnits.length) { %>
+    <div class="mr-panel">
+      <div class="mr-panel-hd">
+        <i class="fa fa-sitemap"></i>
+        <span><%= _t('management_reports.sales_by_unit', { ns: 'legacy', defaultValue: 'Sales & purchases by unit' }) %></span>
+      </div>
+      <div class="mr-panel-body">
+        <div class="mr-units-grid">
+          <% s.financialUnits.forEach(function(u) { %>
+          <div class="mr-unit-card">
+            <div class="mr-unit-head">
+              <span class="mr-unit-icon"><i class="fa <%= u.icon %>"></i></span>
+              <span class="mr-unit-name"><%= u.name %></span>
+            </div>
+            <% if (u.live && u.live.metrics && u.live.metrics.length) { %>
+            <div class="mr-unit-metrics">
+              <% u.live.metrics.forEach(function(m) { %>
+              <div class="mr-unit-metric">
+                <span class="mr-unit-metric-l"><%= m.label %></span>
+                <span class="mr-unit-metric-v <%= mrValClass(m.value) %>"><%= m.value %></span>
+              </div>
+              <% }); %>
+            </div>
+            <% } %>
+            <div class="mr-unit-scope">
+              <div><strong><%= _t('management_reports.sales', { ns: 'legacy', defaultValue: 'Sales:' }) %></strong> <%= u.sales %></div>
+              <div><strong><%= _t('management_reports.purchases', { ns: 'legacy', defaultValue: 'Purchases:' }) %></strong> <%= u.purchases %></div>
+            </div>
+            <div class="mr-unit-foot no-print">
+              <button type="button" class="mr-card-print-btn mr-card-print-btn-sm"
+                data-report="<%= u.id %>"
+                data-type="unit"
+                data-title="<%= u.name %>"
+                data-default-period="week">
+                <i class="fa fa-print"></i> <%= _t('management_reports.print', { ns: 'legacy', defaultValue: 'Print' }) %>
+              </button>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+    <% } %>
+    <% } %>
+
+    <%
+    var mrDetailItems = [];
+    (s.cards || []).forEach(function(c) {
+      if (c.details && c.details.rows && c.details.rows.length) {
+        mrDetailItems.push({ parentTitle: c.title, detail: c.details });
+      }
+    });
+    (s.financialRows || []).forEach(function(r) {
+      if (r.details && r.details.rows && r.details.rows.length) {
+        mrDetailItems.push({ parentTitle: r.title, detail: r.details });
+      }
+    });
+    (s.financialUnits || []).forEach(function(u) {
+      if (u.details && u.details.rows && u.details.rows.length) {
+        mrDetailItems.push({ parentTitle: u.name, detail: u.details });
+      }
+    });
+    %>
+    <% if (mrDetailItems.length) { %>
+    <div class="mr-details-zone">
+      <header class="mr-details-zone-hd">
+        <h2><i class="fa fa-list-alt"></i> <%= _t('management_reports.line_detail', { ns: 'legacy', defaultValue: 'Line detail' }) %></h2>
+        <p><%= _t('management_reports.line_detail_hint', { ns: 'legacy', defaultValue: 'Individual records for the selected period — shown separately from the summary figures above.' }) %></p>
+      </header>
+      <% mrDetailItems.forEach(function(item) { %>
+      <%- include('partials/management-reports-details', { detail: item.detail, parentTitle: item.parentTitle }) %>
+      <% }); %>
+    </div>
+    <% } %>
+
+  </section>
+  <% }); %>
+</div>
+
+<footer class="mr-page-footer no-print">
+  <i class="fa fa-print"></i>
+  <%= _t('management_reports.footer_hint', { ns: 'legacy', defaultValue: 'Use Full PDF for letterhead and signatures. Permissions:' }) %>
+  <a href="/hms-admin/access"><%= _t('management_reports.access_workflow', { ns: 'legacy', defaultValue: 'Access & Workflow' }) %></a> → <%= _t('management_reports.management_reports_link', { ns: 'legacy', defaultValue: 'Management Reports' }) %>.
+</footer>
+<% } %>
+
+</div>
+</div>
+
+<div id="mrPrintModal" class="mr-print-modal no-print" hidden aria-hidden="true">
+  <div class="mr-print-modal-backdrop" data-mr-print-close></div>
+  <div class="mr-print-modal-dialog" role="dialog" aria-labelledby="mrPrintModalTitle">
+    <header class="mr-print-modal-hd">
+      <h3 id="mrPrintModalTitle"><%= _t('management_reports.modal_print_title', { ns: 'legacy', defaultValue: 'Print report' }) %></h3>
+      <button type="button" class="mr-print-modal-close" data-mr-print-close aria-label="<%= _t('portal_shared.close', { ns: 'legacy', defaultValue: 'Close' }) %>">&times;</button>
+    </header>
+    <form id="mrPrintForm" class="mr-print-modal-form" method="get" action="/management-reports/print" target="_blank">
+      <input type="hidden" name="report" id="mrPrintReportId">
+      <input type="hidden" name="type" id="mrPrintReportType">
+      <input type="hidden" name="details" id="mrPrintDetails" value="1">
+      <p class="mr-print-modal-report" id="mrPrintModalReportName"></p>
+      <label class="mr-print-field">
+        <span><%= _t('management_reports.period', { ns: 'legacy', defaultValue: 'Period' }) %></span>
+        <select name="period" id="mrPrintPeriod" required>
+          <option value="day"><%= _t('management_reports.period_day', { ns: 'legacy', defaultValue: 'Day' }) %></option>
+          <option value="week"><%= _t('management_reports.period_week', { ns: 'legacy', defaultValue: 'Week' }) %></option>
+          <option value="month"><%= _t('management_reports.period_month', { ns: 'legacy', defaultValue: 'Month' }) %></option>
+        </select>
+      </label>
+      <label class="mr-print-field" id="mrPrintFieldDay">
+        <span><%= _t('portal_shared.date', { ns: 'legacy', defaultValue: 'Date' }) %></span>
+        <input type="date" name="date" id="mrPrintDate" required>
+      </label>
+      <label class="mr-print-field" id="mrPrintFieldWeek" hidden>
+        <span><%= _t('management_reports.week', { ns: 'legacy', defaultValue: 'Week' }) %></span>
+        <input type="week" name="week" id="mrPrintWeek">
+      </label>
+      <label class="mr-print-field" id="mrPrintFieldMonth" hidden>
+        <span><%= _t('management_reports.month', { ns: 'legacy', defaultValue: 'Month' }) %></span>
+        <input type="month" name="month" id="mrPrintMonth">
+      </label>
+      <label class="mr-print-field mr-print-check">
+        <input type="checkbox" id="mrPrintIncludeDetails" checked>
+        <span><%= _t('management_reports.include_detail', { ns: 'legacy', defaultValue: 'Include line detail (patient names, amounts, services, etc.)' }) %></span>
+      </label>
+      <p class="mr-print-modal-hint"><%= _t('management_reports.print_hint', { ns: 'legacy', defaultValue: 'Opens a letterhead preview in a new tab. Use Print / Save as PDF there.' }) %></p>
+      <footer class="mr-print-modal-actions">
+        <button type="button" class="mr-btn mr-btn-ghost mr-btn-modal" data-mr-print-close><%= _t('employee_edit.cancel', { ns: 'legacy', defaultValue: 'Cancel' }) %></button>
+        <button type="submit" class="mr-btn mr-btn-primary mr-btn-modal"><i class="fa fa-print"></i> <%= _t('management_reports.open_preview', { ns: 'legacy', defaultValue: 'Open print preview' }) %></button>
+      </footer>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+(function () {
+  var tabs = document.querySelectorAll('.mr-tab-pill');
+  var sections = document.querySelectorAll('.mr-section');
+  var printTab = document.getElementById('mrPrintTab');
+
+  function activate(key) {
+    tabs.forEach(function (t) {
+      var on = t.getAttribute('data-tab') === key;
+      t.classList.toggle('is-active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      if (on) {
+        var a = t.getAttribute('data-accent') || '#1e3a5f';
+        var so = t.getAttribute('data-soft') || '#f8fafc';
+        t.style.cssText = '--tab-accent:' + a + ';--section-soft:' + so + ';';
+      } else {
+        t.style.cssText = '';
+      }
+    });
+    sections.forEach(function (s) {
+      s.classList.toggle('is-active', s.id === 'mr-section-' + key);
+    });
+    if (printTab) {
+      printTab.href = '/management-reports/print?scope=tab&tab=' + encodeURIComponent(key);
+    }
+    if (window.history && window.history.replaceState) {
+      var url = new URL(window.location.href);
+      url.searchParams.set('tab', key);
+      window.history.replaceState({}, '', url.pathname + url.search);
+    }
+  }
+
+  tabs.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      activate(btn.getAttribute('data-tab'));
+    });
+  });
+
+  var refreshBtn = document.getElementById('mrRefreshBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function () {
+      refreshBtn.classList.add('is-loading');
+      refreshBtn.setAttribute('aria-busy', 'true');
+    });
+  }
+
+  var modal = document.getElementById('mrPrintModal');
+  var form = document.getElementById('mrPrintForm');
+  var periodSel = document.getElementById('mrPrintPeriod');
+  var fieldDay = document.getElementById('mrPrintFieldDay');
+  var fieldWeek = document.getElementById('mrPrintFieldWeek');
+  var fieldMonth = document.getElementById('mrPrintFieldMonth');
+  var inputDate = document.getElementById('mrPrintDate');
+  var inputWeek = document.getElementById('mrPrintWeek');
+  var inputMonth = document.getElementById('mrPrintMonth');
+  var reportNameEl = document.getElementById('mrPrintModalReportName');
+
+  function todayIso() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function currentWeekIso() {
+    var d = new Date();
+    d.setHours(12, 0, 0, 0);
+    var day = d.getDay() || 7;
+    d.setDate(d.getDate() + 4 - day);
+    var yearStart = new Date(d.getFullYear(), 0, 1);
+    var week = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+    return d.getFullYear() + '-W' + String(week).padStart(2, '0');
+  }
+
+  function currentMonthIso() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  }
+
+  function syncPeriodFields() {
+    var p = periodSel.value;
+    fieldDay.hidden = p !== 'day';
+    fieldWeek.hidden = p !== 'week';
+    fieldMonth.hidden = p !== 'month';
+    inputDate.disabled = p !== 'day';
+    inputWeek.disabled = p !== 'week';
+    inputMonth.disabled = p !== 'month';
+    inputDate.required = p === 'day';
+    inputWeek.required = p === 'week';
+    inputMonth.required = p === 'month';
+    if (p === 'day' && !inputDate.value) inputDate.value = todayIso();
+    if (p === 'week' && !inputWeek.value) inputWeek.value = currentWeekIso();
+    if (p === 'month' && !inputMonth.value) inputMonth.value = currentMonthIso();
+  }
+
+  function openPrintModal(opts) {
+    document.getElementById('mrPrintReportId').value = opts.report;
+    document.getElementById('mrPrintReportType').value = opts.type;
+    reportNameEl.textContent = opts.title || opts.report;
+    periodSel.value = opts.defaultPeriod || 'day';
+    inputDate.value = todayIso();
+    inputWeek.value = currentWeekIso();
+    inputMonth.value = currentMonthIso();
+    syncPeriodFields();
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closePrintModal() {
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  if (periodSel) periodSel.addEventListener('change', syncPeriodFields);
+
+  document.querySelectorAll('[data-mr-print-close]').forEach(function (el) {
+    el.addEventListener('click', closePrintModal);
+  });
+
+  document.querySelectorAll('.mr-card-print-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      openPrintModal({
+        report: btn.getAttribute('data-report'),
+        type: btn.getAttribute('data-type'),
+        title: btn.getAttribute('data-title'),
+        defaultPeriod: btn.getAttribute('data-default-period') || 'day',
+      });
+    });
+  });
+
+  var detailsInput = document.getElementById('mrPrintDetails');
+  var detailsCheck = document.getElementById('mrPrintIncludeDetails');
+  if (form) {
+    form.addEventListener('submit', function () {
+      if (detailsInput && detailsCheck) {
+        detailsInput.value = detailsCheck.checked ? '1' : '0';
+      }
+      closePrintModal();
+    });
+  }
+})();
+</script>

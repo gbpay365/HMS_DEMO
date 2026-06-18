@@ -1,0 +1,45 @@
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<% if (detail && detail.rows && detail.rows.length) { %>
+<section class="mr-detail-section<%= typeof extraClass !== 'undefined' && extraClass ? ' ' + extraClass : '' %>">
+  <header class="mr-detail-hd">
+    <% if (typeof parentTitle !== 'undefined' && parentTitle) { %>
+    <div class="mr-detail-parent"><%= parentTitle %></div>
+    <% } %>
+    <h3 class="mr-detail-title"><%= detail.title %></h3>
+    <% if (detail.subtitle) { %><p class="mr-detail-sub"><%= detail.subtitle %></p><% } %>
+    <% if (detail.summary && detail.summary.length) { %>
+    <div class="mr-detail-summary">
+      <% detail.summary.forEach(function(s) { %>
+      <span class="mr-detail-sum-chip"><span class="mr-detail-sum-l"><%= s.label %></span> <strong><%= s.value %></strong></span>
+      <% }); %>
+    </div>
+    <% } %>
+  </header>
+  <div class="mr-detail-table-wrap">
+    <table class="mr-detail-table">
+      <thead>
+        <tr>
+          <% detail.columns.forEach(function(col) { %>
+          <th class="<%= col.cellClass || '' %>"<% if (col.align === 'right') { %> style="text-align:right"<% } %>><%= col.label %></th>
+          <% }); %>
+        </tr>
+      </thead>
+      <tbody>
+        <% detail.rows.forEach(function(row) { %>
+        <tr>
+          <% detail.columns.forEach(function(col) { %>
+          <td class="<%= col.cellClass || '' %>"<% if (col.align === 'right') { %> style="text-align:right"<% } %>><%= row[col.key] != null ? row[col.key] : '' %></td>
+          <% }); %>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% if (detail.truncated) { %>
+  <p class="mr-detail-truncated"><i class="fa fa-info-circle"></i> <%= _t('management_reports_detail.truncated', { ns: 'legacy', count: detail.rowCount, defaultValue: 'Showing the first ' + detail.rowCount + ' lines only. Use Billing for the full ledger.' }) %></p>
+  <% } %>
+  <% if (!detail.rows.length) { %>
+  <p class="mr-detail-empty"><%= _t('management_reports_detail.empty', { ns: 'legacy', defaultValue: 'No line items in this period.' }) %></p>
+  <% } %>
+</section>
+<% } %>

@@ -1,0 +1,30 @@
+<%
+// Injected on every res.render (see app.js); safe to re-include in any template.
+if (typeof fmtDate !== 'function') {
+  fmtDate =
+    typeof hmsFormatDate === 'function'
+      ? hmsFormatDate
+      : typeof locals.hmsFormatDate === 'function'
+        ? locals.hmsFormatDate
+        : function (v) {
+            if (v == null || v === '') return '—';
+            return String(v);
+          };
+}
+if (typeof fmtDateShort !== 'function') {
+  fmtDateShort =
+    typeof hmsFormatDateShort === 'function'
+      ? hmsFormatDateShort
+      : typeof locals.hmsFormatDateShort === 'function'
+        ? locals.hmsFormatDateShort
+        : fmtDate;
+}
+if (typeof fmtDateTime !== 'function') {
+  fmtDateTime =
+    typeof hmsFormatDateTime === 'function'
+      ? hmsFormatDateTime
+      : typeof locals.hmsFormatDateTime === 'function'
+        ? locals.hmsFormatDateTime
+        : fmtDate;
+}
+%>

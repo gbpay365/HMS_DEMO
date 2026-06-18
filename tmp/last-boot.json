@@ -1,0 +1,548 @@
+[
+  {
+    "t": "2026-06-18T13:35:01.718Z",
+    "step": "app-construct",
+    "status": "ok",
+    "detail": "node=v23.11.1 port=3004"
+  },
+  {
+    "t": "2026-06-18T13:35:01.736Z",
+    "step": "middleware-base",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:01.756Z",
+    "step": "mysql-pool",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:01.855Z",
+    "step": "session-store",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:02.799Z",
+    "step": "route-mount:visitingDoctor",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:02.835Z",
+    "step": "route-mount:emergency",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:02.865Z",
+    "step": "route-mount:ipdMed",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:02.907Z",
+    "step": "route-mount:opdMed",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:02.931Z",
+    "step": "route-mount:deathRegistry",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:02.966Z",
+    "step": "route-mount:ipdHospitalization",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:03.001Z",
+    "step": "route-mount:labLims",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:03.036Z",
+    "step": "route-mount:hmsClinical",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:03.104Z",
+    "step": "route-mount:portals",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:03.121Z",
+    "step": "route-mount:nursingSupply",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:03.151Z",
+    "step": "route-mount:patientPassport",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:03.165Z",
+    "step": "route-mount:doctorErAlerts",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:03.260Z",
+    "step": "route-mount:procurement",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:03.295Z",
+    "step": "route-mount:assetManagement",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:03.315Z",
+    "step": "route-mount:pharmacyModule",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:03.932Z",
+    "step": "route-mount:pharmacyReporting",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:03.960Z",
+    "step": "route-mount:staff",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:03.972Z",
+    "step": "route-mount:hmsLicense",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:03.992Z",
+    "step": "route-mount:hmsDirectorReports",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.013Z",
+    "step": "route-mount:hrPayroll",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.026Z",
+    "step": "route-mount:taxHub",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.045Z",
+    "step": "route-mount:statutoryReports",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.066Z",
+    "step": "route-mount:internalBusinessRules",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.095Z",
+    "step": "route-mount:financialsTrialBalance",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.107Z",
+    "step": "route-mount:financialsJournalLoader",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.126Z",
+    "step": "route-mount:financialsSyncGl",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.148Z",
+    "step": "route-mount:financialsGeneralLedger",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.167Z",
+    "step": "route-mount:financialsCashFlow",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.184Z",
+    "step": "route-mount:financialsAccountsReceivable",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.199Z",
+    "step": "route-mount:financialsAccountsPayable",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.215Z",
+    "step": "route-mount:financialsTreasury",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.234Z",
+    "step": "route-mount:financialsBankReconciliation",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.258Z",
+    "step": "route-mount:financialsStatementMonthly",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.286Z",
+    "step": "route-mount:financialsYearEnd",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.318Z",
+    "step": "route-mount:financialsChartOfAccounts",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.343Z",
+    "step": "route-mount:financialsJournalDiagnostics",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.375Z",
+    "step": "route-mount:financialsJournal",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.400Z",
+    "step": "route-mount:financialsExpenses",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.433Z",
+    "step": "route-mount:financialsPlatformOverview",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.491Z",
+    "step": "route-mount:hmsDocs",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.496Z",
+    "step": "route-mount:financialsStubs",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.524Z",
+    "step": "route-mount:paymentValidity",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.551Z",
+    "step": "route-mount:financialsHub",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.576Z",
+    "step": "route-mount:financialsSettings",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.619Z",
+    "step": "route-mount:maternity",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.640Z",
+    "step": "route-mount:vaccination",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.819Z",
+    "step": "route-mount:labApi",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.832Z",
+    "step": "route-mount:radApi",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:04.878Z",
+    "step": "module-export",
+    "status": "ok",
+    "detail": "module.exports = app"
+  },
+  {
+    "t": "2026-06-18T13:35:04.887Z",
+    "step": "listen",
+    "status": "ok",
+    "detail": "local listen (node app.js)"
+  },
+  {
+    "t": "2026-06-18T13:35:04.912Z",
+    "step": "listen",
+    "status": "ok",
+    "detail": "port=3004"
+  },
+  {
+    "t": "2026-06-18T13:35:05.812Z",
+    "step": "migrate:migratePatientInsuranceSchema",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:05.923Z",
+    "step": "migrate:ensureOpdOrderItemsSchema",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:05.934Z",
+    "step": "migrate:ensureServiceCatalogSchema",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:06.049Z",
+    "step": "migrate:ensureHrPayrollSchema",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:06.056Z",
+    "step": "migrate:ensureDirectorPLManualSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.111Z",
+    "step": "migrate:ensureEmployeeHrSchema",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:06.134Z",
+    "step": "migrate:ensureAclSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.400Z",
+    "step": "migrate:ensureVisitingDoctorSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.438Z",
+    "step": "migrate:ensureEmployeeClinicalLinksSchema",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:06.446Z",
+    "step": "migrate:ensureDeploymentSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.476Z",
+    "step": "migrate:ensureNavAccessSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.508Z",
+    "step": "migrate:ensurePortalSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.532Z",
+    "step": "migrate:ensureEmergencySchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.562Z",
+    "step": "migrate:ensureIpdMedSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.588Z",
+    "step": "migrate:ensureOpdMedSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.623Z",
+    "step": "migrate:ensureIpdHospitalizationSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.647Z",
+    "step": "migrate:ensureDeathRegistrySchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.679Z",
+    "step": "migrate:ensureLabLimsSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.706Z",
+    "step": "migrate:ensureDiagTemplateRefSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.786Z",
+    "step": "migrate:ensureHmsExtendedSchema",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:06.795Z",
+    "step": "migrate:ensurePatientAgeColumns",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.815Z",
+    "step": "migrate:ensurePatientCodeSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.853Z",
+    "step": "migrate:ensurePatientIdentitySchema",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:06.860Z",
+    "step": "migrate:ensureConsultationRoomsSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.907Z",
+    "step": "migrate:ensureNursingSupplyRequestSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.924Z",
+    "step": "migrate:ensureInventorySchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.949Z",
+    "step": "migrate:ensureAssetManagementSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.950Z",
+    "step": "migrate:ensureFinAccountSchema",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:06.959Z",
+    "step": "migrate:ensureMaternitySchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.973Z",
+    "step": "migrate:ensureVaccinationSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:06.997Z",
+    "step": "migrate:ensureRadiologySchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:07.025Z",
+    "step": "migrate:ensureOnlineBookingSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:07.048Z",
+    "step": "migrate:ensureLicenseSchema",
+    "status": "fail",
+    "detail": "Database \"hms_demo\" does not exist (Unknown database 'hms_demo')"
+  },
+  {
+    "t": "2026-06-18T13:35:07.074Z",
+    "step": "migrate:hmsLicense:refreshCache",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:07.098Z",
+    "step": "migrate:hmsLicense:remoteSync",
+    "status": "ok",
+    "detail": null
+  },
+  {
+    "t": "2026-06-18T13:35:07.133Z",
+    "step": "migrate:aclLayout:init",
+    "status": "ok",
+    "detail": null
+  }
+]

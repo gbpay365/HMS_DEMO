@@ -1,0 +1,24 @@
+<link rel="stylesheet" href="/css/portal-booking.css?v=2">
+<%
+var _t = locals.t || function (k, o) { return (o && o.defaultValue) || k; };
+function _tp(key, fallback, opts) {
+  var o = { ns: 'portal', defaultValue: fallback };
+  if (opts && typeof opts === 'object') { for (var pk in opts) { o[pk] = opts[pk]; } }
+  return _t(key, o);
+}
+%>
+
+<!-- Success modal after booking redirect -->
+<div class="modal fade" id="obkSuccessModal" tabindex="-1" role="dialog" aria-labelledby="obkSuccessTitle">
+ <div class="modal-dialog modal-dialog-centered modal-sm">
+  <div class="modal-content text-center p-4">
+   <div class="obk-success-icon"><i class="fa fa-check-circle" aria-hidden="true"></i></div>
+   <h5 class="font-weight-bold" id="obkSuccessTitle"><%= _tp('booking_wizard.success_title', 'Request submitted') %></h5>
+   <p class="text-muted small"><%= _tp('booking_wizard.success_ref', 'Reference:') %> <strong id="obk-success-ref"></strong></p>
+   <p class="small text-muted"><%= _tp('booking_wizard.success_hint', 'Our team will confirm your appointment during clinic hours. Track status below.') %></p>
+   <button type="button" class="hms-btn hms-btn-primary mt-2" data-dismiss="modal"><%= _tp('booking_wizard.done', 'Done') %></button>
+  </div>
+ </div>
+</div>
+
+<script src="/js/portal-booking.js?v=4"></script>

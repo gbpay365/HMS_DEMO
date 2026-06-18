@@ -1,0 +1,60 @@
+{
+  "name": "hms-node-v3",
+  "version": "1.0.0",
+  "description": "Hospital Management System - Node.js Edition",
+  "main": "passenger-entry.js",
+  "scripts": {
+    "start": "node app.js",
+    "start:passenger": "node passenger-entry.js",
+    "dev": "node --watch app.js",
+    "dev:nodemon": "nodemon app.js",
+    "diagnose": "node diagnostic2.js",
+    "diagnose:preflight": "node preflight.js",
+    "backfill:er-alerts": "node scripts/backfill-er-clinical-dept-alerts.js",
+    "test:rules": "node scripts/test-business-rules.js",
+    "dedupe:patients": "node scripts/dedupe-patients-by-name.js",
+    "import:staff-excel": "node scripts/import-staff-from-excel.js",
+    "import:staff-profile-photos": "node scripts/import-staff-profile-photos.js",
+    "build:ui": "npm install --prefix frontend --include=dev && npm run build --prefix frontend",
+    "build:deploy": "node scripts/build-deploy-package.js",
+    "build:deploy:protected": "node scripts/build-deploy-package.js --obfuscate",
+    "build:deployment-pdf": "node scripts/build-deployment-guide-pdf.js",
+    "build:ops-docs": "node scripts/build-ops-docs-pdf.js",
+    "vendor:offline": "node scripts/download-vendor-assets.js",
+    "dev:ui": "npm install --prefix frontend --include=dev && npm run dev --prefix frontend",
+    "check:ui-legacy": "node scripts/check-ejs-legacy-ui.mjs",
+    "check:ui-legacy:strict": "node scripts/check-ejs-legacy-ui.mjs --strict",
+    "check:bootstrap-modals": "node scripts/check-bootstrap-modals.mjs",
+    "check:bootstrap-modals:strict": "node scripts/check-bootstrap-modals.mjs --strict",
+    "check:mirror-drift": "node scripts/check-mirror-drift.mjs",
+    "migrate:ui-legacy": "node scripts/migrate-ejs-legacy-ui.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.3.1",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-mysql-session": "^3.0.0",
+    "express-session": "^1.17.3",
+    "i18next": "^26.3.0",
+    "i18next-fs-backend": "^2.6.6",
+    "mammoth": "^1.12.0",
+    "morgan": "^1.10.0",
+    "multer": "^2.1.1",
+    "mysql2": "^3.6.1",
+    "nodemailer": "^6.10.1",
+    "pdf-parse": "^1.1.4",
+    "pg": "^8.20.0",
+    "tesseract.js": "^5.1.1",
+    "ws": "^8.18.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^4.2.2",
+    "nodemon": "^3.0.1"
+  }
+}

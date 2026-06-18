@@ -1,0 +1,197 @@
+<!-- ── Appointments hub: Pending requests + Confirmed schedule ────────────── -->
+<div class="card border-0 shadow-sm mb-4" id="docApptsCard" style="border-radius:14px;">
+ <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap" style="border-bottom:2px solid #e2e8f0;gap:8px;">
+  <span class="font-weight-bold"><i class="fa fa-calendar-check-o mr-1 text-primary"></i>My Appointments</span>
+  <ul class="nav nav-pills nav-sm" id="docApptTabs" role="tablist" style="gap:6px;">
+   <li class="nav-item"><a class="nav-link active py-1 px-3" data-toggle="pill" href="#docTab-pending" role="tab" style="border-radius:8px;font-size:.82rem;">Pending <span class="badge badge-warning ml-1"><%= (typeof pendingAppts !== 'undefined' && pendingAppts) ? pendingAppts.length : 0 %></span></a></li>
+   <li class="nav-item"><a class="nav-link py-1 px-3" data-toggle="pill" href="#docTab-confirmed" role="tab" style="border-radius:8px;font-size:.82rem;">Confirmed <span class="badge badge-success ml-1"><%= (typeof confirmedAppts !== 'undefined' && confirmedAppts) ? confirmedAppts.length : 0 %></span></a></li>
+  </ul>
+ </div>
+ <div class="card-body p-0">
+  <div class="tab-content">
+   <!-- Pending -->
+   <div class="tab-pane fade show active" id="docTab-pending" role="tabpanel">
+    <div class="table-responsive">
+     <table class="table table-hover mb-0 align-middle">
+      <thead class="thead-light"><tr>
+       <th>Ref</th><th>Patient</th><th>Type</th><th>Department</th><th>Date</th><th>Time</th><th>Reason</th><th class="text-right">Actions</th>
+      </tr></thead>
+      <tbody>
+       <% if (typeof pendingAppts === 'undefined' || !pendingAppts || pendingAppts.length === 0) { %>
+        <tr><td colspan="8" class="text-center text-muted py-4"><i class="fa fa-inbox mr-1 text-muted"></i>No pending appointment requests right now.</td></tr>
+       <% } else { pendingAppts.forEach(function(a){
+            var vt = String(a.visit_type || 'in_person').toLowerCase();
+            var typeBadge = vt === 'telemedicine'
+              ? '<span class="badge badge-info"><i class="fa fa-video-camera mr-1"></i>Telemedicine</span>'
+              : '<span class="badge badge-light border"><i class="fa fa-hospital-o mr-1"></i>In-person</span>';
+            var msg = (a.message || '').toString();
+            if (msg.length > 60) msg = msg.slice(0, 60) + '…';
+       %>
+        <tr>
+         <td class="font-weight-bold text-primary small"><%= a.appointment_id || ('#A-' + a.id) %></td>
+         <td class="font-weight-bold"><%= a.patient_name || '—' %></td>
+         <td><%- typeBadge %></td>
+         <td class="small text-muted"><%= a.department || '—' %></td>
+         <td class="small"><%= a.date ? new Date(a.date).toLocaleDateString('en-GB') : '—' %></td>
+         <td class="small text-muted"><%= a.time || '—' %></td>
+         <td class="small text-muted" style="max-width:240px;"><%= msg || '—' %></td>
+         <td class="text-right" style="white-space:nowrap;">
+          <form action="/appointments/<%= a.id %>/confirm" method="POST" class="d-inline">
+           <button type="submit" class="btn btn-xs btn-success font-weight-bold" style="font-size:.72rem;padding:3px 9px;border-radius:6px;">
+            <i class="fa fa-check mr-1"></i>Confirm
+           </button>
+          </form>
+          <button type="button" class="btn btn-xs btn-outline-danger font-weight-bold ml-1"
+                  data-toggle="modal" data-target="#declineApptModal"
+                  data-appt-id="<%= a.id %>" data-appt-ref="<%= a.appointment_id || ('#A-' + a.id) %>"
+                  style="font-size:.72rem;padding:3px 9px;border-radius:6px;">
+            <i class="fa fa-times mr-1"></i>Decline
+          </button>
+         </td>
+        </tr>
+       <% }); } %>
+      </tbody>
+     </table>
+    </div>
+   </div>
+
+   <!-- Confirmed -->
+   <div class="tab-pane fade" id="docTab-confirmed" role="tabpanel">
+    <div class="table-responsive">
+     <table class="table table-hover mb-0 align-middle">
+      <thead class="thead-light"><tr>
+       <th>Ref</th><th>Patient</th><th>Type</th><th>Department</th><th>Date</th><th>Time</th><th>Confirmed</th><th class="text-right">Action</th>
+      </tr></thead>
+      <tbody>
+       <% if (typeof confirmedAppts === 'undefined' || !confirmedAppts || confirmedAppts.length === 0) { %>
+        <tr><td colspan="8" class="text-center text-muted py-4"><i class="fa fa-calendar-o mr-1 text-muted"></i>No confirmed appointments yet.</td></tr>
+       <% } else { confirmedAppts.forEach(function(a){
+            var vt = String(a.visit_type || 'in_person').toLowerCase();
+            var typeBadge = vt === 'telemedicine'
+              ? '<span class="badge badge-info"><i class="fa fa-video-camera mr-1"></i>Telemedicine</span>'
+              : '<span class="badge badge-light border"><i class="fa fa-hospital-o mr-1"></i>In-person</span>';
+       %>
+        <tr>
+         <td class="font-weight-bold text-primary small"><%= a.appointment_id || ('#A-' + a.id) %></td>
+         <td class="font-weight-bold"><%= a.patient_name || '—' %></td>
+         <td><%- typeBadge %></td>
+         <td class="small text-muted"><%= a.department || '—' %></td>
+         <td class="small"><%= a.date ? new Date(a.date).toLocaleDateString('en-GB') : '—' %></td>
+         <td class="small text-muted"><%= a.time || '—' %></td>
+         <td class="small text-muted"><%= a.confirmed_at ? new Date(a.confirmed_at).toLocaleString('en-GB') : '—' %></td>
+         <td class="text-right" style="white-space:nowrap;">
+          <% if (vt === 'telemedicine' && a.meeting_room) { %>
+           <a href="/telemedicine/<%= a.id %>" target="_blank" class="btn btn-xs btn-primary font-weight-bold" style="font-size:.72rem;padding:3px 9px;border-radius:6px;">
+            <i class="fa fa-video-camera mr-1"></i>Start consultation
+           </a>
+          <% } else { %>
+           <a href="/patient-chart/<%= a.patient_id %>" class="btn btn-xs btn-outline-primary" style="font-size:.72rem;padding:3px 9px;border-radius:6px;">
+            <i class="fa fa-folder-open-o mr-1"></i>Open chart
+           </a>
+          <% } %>
+         </td>
+        </tr>
+       <% }); } %>
+      </tbody>
+     </table>
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- Decline appointment modal -->
+<div class="modal fade" id="declineApptModal" tabindex="-1" role="dialog">
+ <div class="modal-dialog modal-dialog-centered" role="document">
+  <div class="modal-content border-0 shadow-lg" style="border-radius:14px;">
+   <form id="declineApptForm" method="POST" action="">
+    <div class="modal-header">
+     <h5 class="modal-title font-weight-bold"><i class="fa fa-times-circle text-danger mr-2"></i>Decline appointment</h5>
+     <button type="button" class="close" data-dismiss="modal">&times;</button>
+    </div>
+    <div class="modal-body">
+     <p class="small text-muted mb-3">Optionally let the patient know why this request can't be accepted. They'll see the appointment marked as <strong>Declined</strong> in their portal.</p>
+     <div class="form-group mb-0">
+      <label class="small font-weight-bold">Reason (optional)</label>
+      <textarea class="form-control" name="reason" rows="3" placeholder="e.g. Out of office that day, please rebook for next week"></textarea>
+     </div>
+    </div>
+    <div class="modal-footer">
+     <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+     <button type="submit" class="btn btn-danger font-weight-bold"><i class="fa fa-times mr-1"></i>Decline appointment</button>
+    </div>
+   </form>
+  </div>
+ </div>
+</div>
+<script>
+(function(){
+  var modal = document.getElementById('declineApptModal');
+  if (!modal) return;
+  var form = document.getElementById('declineApptForm');
+  modal.addEventListener('show.bs.modal', function(ev){});
+  // Bootstrap 4 jQuery hook for `data-` attribute population
+  if (window.jQuery) {
+    jQuery(modal).on('show.bs.modal', function(ev){
+      var btn = ev.relatedTarget;
+      if (!btn) return;
+      var aid = btn.getAttribute('data-appt-id');
+      var ref = btn.getAttribute('data-appt-ref') || '';
+      form.action = '/appointments/' + aid + '/decline';
+      var title = modal.querySelector('.modal-title');
+      if (title && ref) title.innerHTML = '<i class="fa fa-times-circle text-danger mr-2"></i>Decline appointment <span class="text-muted small ml-1">' + ref + '</span>';
+    });
+  }
+  // Auto-open Confirmed tab when ?tab=appointments&filter=confirmed
+  try {
+    var sp = new URLSearchParams(window.location.search);
+    if (sp.get('filter') === 'confirmed' && window.jQuery) {
+      jQuery('#docApptTabs a[href="#docTab-confirmed"]').tab('show');
+    }
+    if (sp.get('tab') === 'appointments') {
+      var card = document.getElementById('docApptsCard');
+      if (card) card.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  } catch(e) {}
+})();
+</script>
+
+<!-- Schedule + Recent Consultations -->
+<div class="row">
+  <div class="col-lg-6 mb-4">
+ <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
+ <div class="card-header bg-white d-flex justify-content-between align-items-center py-3" style="border-bottom:2px solid #e2e8f0;">
+ <span class="font-weight-bold"><i class="fa fa-calendar mr-1 text-primary"></i>My Schedule Today</span>
+ <a href="/appointments" class="btn btn-sm btn-outline-primary" style="border-radius:8px;">All</a>
+ </div>
+ <div class="card-body p-0"><div class="table-responsive">
+ <table class="table table-hover mb-0">
+ <thead class="thead-light"><tr><th>Patient</th><th>Time</th><th>Department</th><th class="text-right">Action</th></tr></thead>
+ <tbody>
+ <% if(!todayAppts||todayAppts.length===0){ %><tr><td colspan="4" class="text-center text-muted py-4">No appointments today.</td></tr>
+ <% } else { todayAppts.forEach(function(r){
+      var vt = String(r.visit_type || 'in_person').toLowerCase();
+ %>
+   <tr>
+    <td class="font-weight-bold"><%=r.patient_name||'—'%></td>
+    <td class="small text-muted"><%=r.time||'—'%></td>
+    <td class="small text-muted">
+      <%=r.department||'—'%>
+      <% if (vt === 'telemedicine') { %><span class="badge badge-info ml-1"><i class="fa fa-video-camera"></i></span><% } %>
+    </td>
+    <td class="text-right" style="white-space:nowrap;">
+      <% if (vt === 'telemedicine' && r.meeting_room) { %>
+        <a href="/telemedicine/<%= r.id %>" target="_blank" class="btn btn-xs btn-primary" style="font-size:.7rem;padding:2px 7px;border-radius:6px;">
+          <i class="fa fa-video-camera mr-1"></i>Join
+        </a>
+      <% } else { %>
+        <span class="text-muted small">—</span>
+      <% } %>
+    </td>
+   </tr>
+ <% }); } %>
+ </tbody>
+ </table>
+ </div></div>
+ </div>
+  </div>

@@ -1,0 +1,74 @@
+<%
+var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+var _up = locals.userPerms || [];
+function finModalHasP() {
+  if (_up.includes('*')) return true;
+  for (var i = 0; i < arguments.length; i++) {
+    if (_up.includes(arguments[i])) return true;
+  }
+  return false;
+}
+var finModalWrite = finModalHasP('financials.write', 'accounting.write', 'billing.write');
+%>
+<% if (finModalWrite) { %>
+<div class="modal fade acc-odoo-modal" id="finQuickActionsModal" tabindex="-1" role="dialog" aria-labelledby="finQuickActionsTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="finQuickActionsTitle"><i class="fa fa-bolt mr-2"></i><%= _t('modals.quick_actions', { ns: 'financials', defaultValue: 'Quick actions' }) %></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="<%= _t('common.close', { ns: 'financials', defaultValue: 'Close' }) %>"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-muted mb-3"><%= _t('modals.ohada_hint', { ns: 'financials', defaultValue: 'OHADA posting · XAF amounts · Cameroon statutory links preserved.' }) %></p>
+        <a href="/financials/journal-new" class="o_modal_action">
+          <i class="fa fa-pencil-square-o"></i>
+          <div>
+            <strong><%= _t('modals.new_journal_entry', { ns: 'financials', defaultValue: 'New journal entry' }) %></strong>
+            <div class="small text-muted"><%= _t('modals.new_journal_hint', { ns: 'financials', defaultValue: 'Manual double-entry (debits = credits)' }) %></div>
+          </div>
+        </a>
+        <a href="/financials/expenses/new" class="o_modal_action">
+          <i class="fa fa-credit-card"></i>
+          <div>
+            <strong><%= _t('modals.record_expense', { ns: 'financials', defaultValue: 'Record expense' }) %></strong>
+            <div class="small text-muted"><%= _t('modals.record_expense_hint', { ns: 'financials', defaultValue: 'Vendor bill / operating expense' }) %></div>
+          </div>
+        </a>
+        <% if (finModalHasP('cashier.read','cashier.write')) { %>
+        <a href="/cashier" class="o_modal_action">
+          <i class="fa fa-money"></i>
+          <div>
+            <strong><%= _t('modals.receive_payment', { ns: 'financials', defaultValue: 'Receive payment' }) %></strong>
+            <div class="small text-muted"><%= _t('modals.receive_payment_hint', { ns: 'financials', defaultValue: 'Cashier desk (patient receipts)' }) %></div>
+          </div>
+        </a>
+        <% } %>
+        <a href="/financials/bank-reconciliation" class="o_modal_action">
+          <i class="fa fa-check-square-o"></i>
+          <div>
+            <strong><%= _t('modals.bank_reconciliation', { ns: 'financials', defaultValue: 'Bank reconciliation' }) %></strong>
+            <div class="small text-muted"><%= _t('modals.bank_reconciliation_hint', { ns: 'financials', defaultValue: 'Match bank statement to GL' }) %></div>
+          </div>
+        </a>
+        <a href="/financials/sync-gl" class="o_modal_action">
+          <i class="fa fa-refresh"></i>
+          <div>
+            <strong><%= _t('modals.sync_billing_gl', { ns: 'financials', defaultValue: 'Sync billing to GL' }) %></strong>
+            <div class="small text-muted"><%= _t('modals.sync_billing_gl_hint', { ns: 'financials', defaultValue: 'Post receipts & billing to journals' }) %></div>
+          </div>
+        </a>
+        <a href="/tax" class="o_modal_action">
+          <i class="fa fa-percent"></i>
+          <div>
+            <strong><%= _t('modals.tax_hub', { ns: 'financials', defaultValue: 'Tax hub' }) %></strong>
+            <div class="small text-muted"><%= _t('modals.tax_hub_hint', { ns: 'financials', defaultValue: 'TVA, NIU, CNPS & statutory exports' }) %></div>
+          </div>
+        </a>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="hms-btn hms-btn-secondary" data-dismiss="modal"><%= _t('common.close', { ns: 'financials' }) %></button>
+      </div>
+    </div>
+  </div>
+</div>
+<% } %>

@@ -1,0 +1,54 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<%- include('partials/maternity-odoo-start', {
+  matOdooMenu: 'register',
+  matOdooTitle: _t('maternity_register.title', { ns: 'legacy', defaultValue: 'ANC registration' })
+}) %>
+<div class="o_content">
+
+<div class="row">
+ <div class="col-lg-5 mb-3">
+  <div class="mat-card p-3">
+   <p class="small text-muted"><%= _t('maternity_register.link_hint', { ns: 'legacy', defaultValue: 'Link an existing HMS patient. Find them in' }) %> <a href="/patients?from=maternity&action=new"><%= _t('maternity_register.patient_directory', { ns: 'legacy', defaultValue: 'Patient directory' }) %></a> <%= _t('maternity_register.link_hint_suffix_short', { ns: 'legacy', defaultValue: 'to register a new mother, or enter ID below.' }) %></p>
+   <form method="get" action="/maternity/register" class="form-inline mb-0">
+    <input type="number" name="patient_id" class="hms-input w-full mr-2" placeholder="<%= _t('maternity_register.patient_id_ph', { ns: 'legacy', defaultValue: 'Patient ID' }) %>" value="<%= patient ? patient.id : '' %>" required>
+    <button class="hms-btn hms-btn-secondary"><%= _t('maternity_register.load', { ns: 'legacy', defaultValue: 'Load' }) %></button>
+   </form>
+   <% if (patient) { %>
+   <div class="hms-flash hms-flash--success mt-3 mb-0"><strong><%= patient.first_name %> <%= patient.last_name %></strong> (#<%= patient.id %>) · <%= patient.phone || '' %></div>
+   <% } %>
+  </div>
+ </div>
+ <div class="col-lg-7">
+  <form method="post" action="/maternity/register" class="mat-card p-4">
+   <% if (!patient) { %>
+   <p class="text-muted"><%= _t('maternity_register.load_patient_first', { ns: 'legacy', defaultValue: 'Load a patient before completing booking.' }) %></p>
+   <% } else { %>
+   <input type="hidden" name="patient_id" value="<%= patient.id %>">
+   <div class="form-row">
+    <div class="form-group col-md-4"><label class="small font-weight-bold"><%= _t('maternity_register.gravida', { ns: 'legacy', defaultValue: 'Gravida' }) %></label><input type="number" name="gravida" class="hms-input w-full" value="1" min="1"></div>
+    <div class="form-group col-md-4"><label class="small font-weight-bold"><%= _t('maternity_register.para', { ns: 'legacy', defaultValue: 'Para' }) %></label><input type="number" name="para" class="hms-input w-full" value="0" min="0"></div>
+    <div class="form-group col-md-4"><label class="small font-weight-bold"><%= _t('maternity_register.abortions', { ns: 'legacy', defaultValue: 'Abortions' }) %></label><input type="number" name="abortion" class="hms-input w-full" value="0" min="0"></div>
+   </div>
+   <div class="form-row">
+    <div class="form-group col-md-4"><label class="small font-weight-bold"><%= _t('maternity_register.lmp', { ns: 'legacy', defaultValue: 'LMP' }) %></label><input type="date" name="lmp" class="hms-input w-full" id="mat_lmp"></div>
+    <div class="form-group col-md-4"><label class="small font-weight-bold"><%= _t('maternity_register.blood_group', { ns: 'legacy', defaultValue: 'Blood group' }) %></label>
+     <select name="blood_group" class="hms-input w-full"><option value="">—</option>
+      <% ['A+','A-','B+','B-','AB+','AB-','O+','O-'].forEach(function(bg){ %><option value="<%= bg %>"><%= bg %></option><% }) %>
+     </select>
+    </div>
+    <div class="form-group col-md-4"><label class="small font-weight-bold"><%= _t('maternity_register.hiv_status', { ns: 'legacy', defaultValue: 'HIV status' }) %></label>
+     <select name="hiv_status" class="hms-input w-full"><option value="unknown"><%= _t('maternity_register.hiv_unknown', { ns: 'legacy', defaultValue: 'Unknown' }) %></option><option value="negative"><%= _t('maternity_register.hiv_negative', { ns: 'legacy', defaultValue: 'Negative' }) %></option><option value="positive"><%= _t('maternity_register.hiv_positive', { ns: 'legacy', defaultValue: 'Positive' }) %></option></select>
+    </div>
+   </div>
+   <div class="form-group"><label><input type="checkbox" name="pmtct_enrolled" value="1"> <%= _t('maternity_register.pmtct_enrolled', { ns: 'legacy', defaultValue: 'PMTCT enrolled' }) %></label></div>
+   <p class="small text-muted"><%= _t('maternity_register.edd_hint', { ns: 'legacy', defaultValue: "EDD is calculated automatically from LMP (Naegele's rule). ANC number is assigned on save." }) %></p>
+   <button type="submit" class="hms-btn hms-btn-primary hms-btn hms-btn-lg"><i class="fa fa-user-plus mr-1"></i> <%= _t('maternity_register.register_open', { ns: 'legacy', defaultValue: 'Register & open chart' }) %></button>
+   <% } %>
+  </form>
+ </div>
+</div>
+
+</div>
+<%- include('partials/maternity-odoo-end') %>
+<%- include('partials/footer') %>

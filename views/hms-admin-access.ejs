@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+
+
+
+<html lang="<%= locals.lang || 'en' %>">
+
+
+
+<head>
+
+
+
+  <meta charset="UTF-8">
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+  <% var _t = locals.t || function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }; %>
+
+  <title><%= title || _t('admin_access.title', { ns: 'legacy', defaultValue: 'Access & Workflow — ZAIZENS' }) %></title>
+
+
+
+  <link rel="stylesheet" href="/css/hms-fonts-local.css">
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+
+
+
+  <link rel="stylesheet" href="/css/hms-tokens.css">
+  <link rel="stylesheet" href="/css/hms-components.css">
+  <link rel="stylesheet" href="/css/hms-app-surface.css">
+  <link rel="stylesheet" href="/css/hms-notify.css?v=2">
+
+
+
+</head>
+
+
+
+<body class="hms-admin-access-body hms-body--admin-access">
+
+
+
+  <div id="hms-notify-root"></div>
+
+
+
+  <div id="hms-modal-root" class="hms-ui"></div>
+
+
+
+  <div id="hms-react-root" class="hms-ui" data-page="hms-admin-access"></div>
+
+
+
+  <script id="hms-page-data" type="application/json"><%- JSON.stringify(locals.pageData || {}).replace(/</g, '\\u003c') %></script>
+
+
+
+  <% if (locals.hmsUiMissing) { %>
+
+
+
+  <div style="max-width:520px;margin:1rem auto;padding:1rem;background:#fef3c7;border-radius:12px;font-family:system-ui,sans-serif;font-size:14px;">
+
+
+
+    <strong><%= _t('admin_access.ui_bundle_missing', { ns: 'legacy', defaultValue: 'UI bundle missing.' }) %></strong> <%= _t('admin_access.ui_bundle_hint', { ns: 'legacy', defaultValue: 'Run npm run build:ui from the project root.' }) %>
+
+
+
+  </div>
+
+
+
+  <% } %>
+
+
+
+  <script src="/dist/hms-ui.js?v=38" defer onerror="window.__HMS_UI_LOAD_FAILED=1"></script>
+
+
+
+</body>
+
+
+
+</html>
+
+
+

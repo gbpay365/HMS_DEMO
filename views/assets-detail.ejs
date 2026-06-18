@@ -1,0 +1,147 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--assets'; %>
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+
+<div class="page-wrapper hms-surface-module">
+ <div class="content">
+  <% if(locals.flash){ %><div class="hms-flash hms-flash--success"><%= flash %></div><% } %>
+  <% if(locals.error){ %><div class="hms-flash hms-flash--error"><%= error %></div><% } %>
+
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+   <div>
+    <div class="text-muted small mb-1"><code><%= asset.asset_tag %></code></div>
+    <h4 class="page-title font-weight-bold text-dark mb-1"><%= asset.name %></h4>
+    <span class="badge badge-<%= statusBadge(asset.status) %> text-uppercase"><%= asset.status %></span>
+   </div>
+   <div class="d-flex flex-wrap gap-2" style="gap:8px;">
+    <a href="/assets/registry" class="hms-btn hms-btn-secondary btn-sm"><i class="fa fa-arrow-left mr-1"></i><%= _t('assets_detail.back_registry', { ns: 'legacy', defaultValue: 'Registry' }) %></a>
+    <% if (canWrite) { %>
+    <a href="/assets/registry/<%= asset.id %>/edit" class="hms-btn hms-btn-primary btn-sm font-weight-bold"><i class="fa fa-pencil mr-1"></i><%= _t('assets_detail.edit', { ns: 'legacy', defaultValue: 'Edit' }) %></a>
+    <% } %>
+   </div>
+  </div>
+
+  <div class="row mb-4">
+   <div class="col-lg-7 mb-3">
+    <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
+     <div class="card-header bg-white font-weight-bold"><%= _t('assets_detail.details', { ns: 'legacy', defaultValue: 'Asset details' }) %></div>
+     <div class="card-body">
+      <dl class="row small mb-0">
+       <dt class="col-sm-4 text-muted"><%= _t('assets_form.type', { ns: 'legacy', defaultValue: 'Type' }) %></dt><dd class="col-sm-8 text-uppercase"><%= asset.asset_type %></dd>
+       <dt class="col-sm-4 text-muted"><%= _t('assets_form.category', { ns: 'legacy', defaultValue: 'Category' }) %></dt><dd class="col-sm-8"><%= asset.category_name || '—' %></dd>
+       <dt class="col-sm-4 text-muted"><%= _t('assets_form.location', { ns: 'legacy', defaultValue: 'Location' }) %></dt><dd class="col-sm-8"><%= asset.location || '—' %></dd>
+       <dt class="col-sm-4 text-muted"><%= _t('assets_form.department', { ns: 'legacy', defaultValue: 'Department' }) %></dt><dd class="col-sm-8"><%= asset.department || '—' %></dd>
+       <dt class="col-sm-4 text-muted"><%= _t('assets_form.serial', { ns: 'legacy', defaultValue: 'Serial number' }) %></dt><dd class="col-sm-8"><%= asset.serial_number || '—' %></dd>
+       <dt class="col-sm-4 text-muted"><%= _t('assets_form.model', { ns: 'legacy', defaultValue: 'Model' }) %></dt><dd class="col-sm-8"><%= asset.model || '—' %> <% if (asset.manufacturer) { %><span class="text-muted">/ <%= asset.manufacturer %></span><% } %></dd>
+       <dt class="col-sm-4 text-muted"><%= _t('assets_form.purchase_date', { ns: 'legacy', defaultValue: 'Purchase date' }) %></dt><dd class="col-sm-8"><%= asset.purchase_date ? String(asset.purchase_date).slice(0,10) : '—' %></dd>
+       <dt class="col-sm-4 text-muted"><%= _t('assets_form.purchase_cost', { ns: 'legacy', defaultValue: 'Purchase cost' }) %></dt><dd class="col-sm-8"><%= asset.purchase_cost != null ? Number(asset.purchase_cost).toLocaleString() : '—' %></dd>
+       <dt class="col-sm-4 text-muted"><%= _t('assets_form.warranty', { ns: 'legacy', defaultValue: 'Warranty expires' }) %></dt><dd class="col-sm-8"><%= asset.warranty_expires ? String(asset.warranty_expires).slice(0,10) : '—' %></dd>
+       <dt class="col-sm-4 text-muted"><%= _t('assets_form.assigned', { ns: 'legacy', defaultValue: 'Assigned to' }) %></dt><dd class="col-sm-8"><%= asset.assigned_name || '—' %></dd>
+       <% if (asset.description) { %>
+       <dt class="col-sm-4 text-muted"><%= _t('assets_form.description', { ns: 'legacy', defaultValue: 'Description' }) %></dt><dd class="col-sm-8"><%= asset.description %></dd>
+       <% } %>
+       <% if (asset.notes) { %>
+       <dt class="col-sm-4 text-muted"><%= _t('assets_form.notes', { ns: 'legacy', defaultValue: 'Notes' }) %></dt><dd class="col-sm-8"><%= asset.notes %></dd>
+       <% } %>
+      </dl>
+     </div>
+    </div>
+   </div>
+   <div class="col-lg-5 mb-3">
+    <% if (canWrite) { %>
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:14px;">
+     <div class="card-header bg-white font-weight-bold"><%= _t('assets_detail.log_maintenance', { ns: 'legacy', defaultValue: 'Log maintenance' }) %></div>
+     <div class="card-body">
+      <form method="post" action="/assets/maintenance">
+       <input type="hidden" name="asset_id" value="<%= asset.id %>">
+       <div class="form-group">
+        <label class="font-weight-bold small" for="maintType"><%= _t('assets_maint.col_type', { ns: 'legacy', defaultValue: 'Type' }) %></label>
+        <select id="maintType" name="maintenance_type" class="hms-input w-full">
+         <% maintTypes.forEach(function(tp) { %><option value="<%= tp %>"><%= tp %></option><% }); %>
+        </select>
+       </div>
+       <div class="form-group">
+        <label class="font-weight-bold small" for="maintDate"><%= _t('assets_maint.col_scheduled', { ns: 'legacy', defaultValue: 'Scheduled' }) %></label>
+        <input type="date" id="maintDate" name="scheduled_date" class="hms-input w-full">
+       </div>
+       <div class="form-group">
+        <label class="font-weight-bold small" for="maintVendor"><%= _t('assets_maint.col_vendor', { ns: 'legacy', defaultValue: 'Vendor' }) %></label>
+        <input type="text" id="maintVendor" name="vendor_name" class="hms-input w-full">
+       </div>
+       <div class="form-group">
+        <label class="font-weight-bold small" for="maintDesc"><%= _t('assets_maint.col_description', { ns: 'legacy', defaultValue: 'Description' }) %></label>
+        <textarea id="maintDesc" name="description" class="hms-input w-full" rows="2"></textarea>
+       </div>
+       <button type="submit" class="hms-btn hms-btn-primary btn-sm font-weight-bold w-100"><%= _t('assets_detail.save_maintenance', { ns: 'legacy', defaultValue: 'Save maintenance' }) %></button>
+      </form>
+     </div>
+    </div>
+    <% } %>
+   </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+   <div class="card-header bg-white font-weight-bold d-flex justify-content-between align-items-center">
+    <span><%= _t('assets_detail.maintenance_history', { ns: 'legacy', defaultValue: 'Maintenance history' }) %></span>
+    <a href="/assets/maintenance?asset=<%= asset.id %>" class="small"><%= _t('assets_hub.view_all', { ns: 'legacy', defaultValue: 'View all' }) %></a>
+   </div>
+   <div class="card-body p-0 table-responsive">
+    <table class="table table-sm mb-0">
+     <thead class="bg-light"><tr>
+      <th><%= _t('assets_maint.col_type', { ns: 'legacy', defaultValue: 'Type' }) %></th>
+      <th><%= _t('assets_maint.col_scheduled', { ns: 'legacy', defaultValue: 'Scheduled' }) %></th>
+      <th><%= _t('assets_maint.col_status', { ns: 'legacy', defaultValue: 'Status' }) %></th>
+      <th><%= _t('assets_maint.col_vendor', { ns: 'legacy', defaultValue: 'Vendor' }) %></th>
+      <th><%= _t('assets_maint.col_cost', { ns: 'legacy', defaultValue: 'Cost' }) %></th>
+      <th class="text-right"><%= _t('assets_registry.col_actions', { ns: 'legacy', defaultValue: 'Actions' }) %></th>
+     </tr></thead>
+     <tbody>
+      <% if (!maintenance || !maintenance.length) { %>
+      <tr><td colspan="6" class="text-center text-muted py-3"><%= _t('assets_maint.empty', { ns: 'legacy', defaultValue: 'No maintenance records yet.' }) %></td></tr>
+      <% } %>
+      <% (maintenance || []).forEach(function(m) { %>
+      <tr>
+       <td class="text-uppercase small"><%= m.maintenance_type %></td>
+       <td><%= m.scheduled_date ? String(m.scheduled_date).slice(0,10) : '—' %></td>
+       <td><span class="badge badge-<%= statusBadge(m.status) %> text-uppercase extra-small"><%= m.status %></span></td>
+       <td><%= m.vendor_name || '—' %></td>
+       <td><%= m.cost != null ? Number(m.cost).toLocaleString() : '—' %></td>
+       <td class="text-right">
+        <% if (canWrite && m.status !== 'completed' && m.status !== 'cancelled') { %>
+        <form method="post" action="/assets/maintenance/<%= m.id %>/complete" class="d-inline">
+         <input type="hidden" name="return_to" value="/assets/registry/<%= asset.id %>">
+         <button type="submit" class="hms-btn hms-btn-secondary btn-sm"><%= _t('assets_maint.complete', { ns: 'legacy', defaultValue: 'Complete' }) %></button>
+        </form>
+        <% } else { %>—<% } %>
+       </td>
+      </tr>
+      <% }); %>
+     </tbody>
+    </table>
+   </div>
+  </div>
+
+  <% if (audit && audit.length) { %>
+  <div class="card border-0 shadow-sm" style="border-radius:14px;">
+   <div class="card-header bg-white font-weight-bold"><%= _t('assets_detail.audit', { ns: 'legacy', defaultValue: 'Change log' }) %></div>
+   <div class="card-body p-0 table-responsive">
+    <table class="table table-sm mb-0">
+     <thead class="bg-light"><tr><th><%= _t('assets_detail.audit_when', { ns: 'legacy', defaultValue: 'When' }) %></th><th><%= _t('assets_detail.audit_action', { ns: 'legacy', defaultValue: 'Action' }) %></th><th><%= _t('assets_detail.audit_by', { ns: 'legacy', defaultValue: 'By' }) %></th><th><%= _t('assets_detail.audit_note', { ns: 'legacy', defaultValue: 'Note' }) %></th></tr></thead>
+     <tbody>
+      <% audit.forEach(function(a) { %>
+      <tr>
+       <td class="small text-muted"><%= a.performed_at ? String(a.performed_at).slice(0,16).replace('T',' ') : '—' %></td>
+       <td><code><%= a.action %></code></td>
+       <td><%= (a.first_name || '') + ' ' + (a.last_name || '') %></td>
+       <td class="small"><%= a.note || '—' %></td>
+      </tr>
+      <% }); %>
+     </tbody>
+    </table>
+   </div>
+  </div>
+  <% } %>
+ </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,58 @@
+<%- include('partials/hms-date-helpers') %>
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<%- include('partials/vaccination-odoo-start', {
+  vacOdooMenu: dueOnly ? 'due' : 'patients',
+  vacOdooTitle: _t('vaccination_patients.title', { ns: 'legacy', defaultValue: 'Immunization registry' }),
+  vacOdooActions: '<a href="/vaccination/administer" class="o_btn_primary"><i class="fa fa-plus"></i> ' + _t('vaccination_patients.administer', { ns: 'legacy', defaultValue: 'Administer dose' }) + '</a>'
+}) %>
+<div class="o_content">
+
+<form method="get" action="/vaccination/patients" class="hms-filter-bar">
+ <input type="text" name="q" class="form-control hms-filter-bar__search" value="<%= search || '' %>" placeholder="<%= _t('vaccination_patients.search_ph', { ns: 'legacy', defaultValue: 'Name, code or ID' }) %>">
+ <label class="mb-0 small font-weight-bold"><input type="checkbox" name="due" value="1" <%= dueOnly ? 'checked' : '' %>> <%= _t('vaccination_patients.due_only', { ns: 'legacy', defaultValue: 'Due follow-ups only' }) %></label>
+ <button class="btn btn-primary"><%= _t('vaccination_patients.filter', { ns: 'legacy', defaultValue: 'Filter' }) %></button>
+ <a href="/vaccination/patients" class="btn btn-outline-secondary"><%= _t('vaccination_patients.reset', { ns: 'legacy', defaultValue: 'Reset' }) %></a>
+</form>
+
+<div class="vac-card">
+ <div class="table-responsive">
+  <table class="table table-hover mb-0 vac-table">
+   <thead><tr>
+    <th><%= _t('vaccination_patients.col_patient', { ns: 'legacy', defaultValue: 'Patient' }) %></th>
+    <th><%= _t('vaccination_patients.col_doses', { ns: 'legacy', defaultValue: 'Doses' }) %></th>
+    <th><%= _t('vaccination_patients.col_last', { ns: 'legacy', defaultValue: 'Last dose' }) %></th>
+    <th><%= _t('vaccination_patients.col_next', { ns: 'legacy', defaultValue: 'Next due' }) %></th>
+    <th></th>
+   </tr></thead>
+   <tbody>
+    <% if (!rows || !rows.length) { %>
+    <tr><td colspan="5" class="text-muted text-center py-4"><%= _t('vaccination_patients.empty', { ns: 'legacy', defaultValue: 'No immunization records found.' }) %></td></tr>
+    <% } %>
+    <% (rows || []).forEach(function(r){ %>
+    <tr>
+     <td>
+      <strong><%= r.first_name %> <%= r.last_name %></strong><br>
+      <span class="small text-muted"><%= r.patient_code || ('#' + r.id) %> · <%= r.phone || '' %></span>
+     </td>
+     <td><span class="dose-badge"><%= r.dose_count || 0 %></span></td>
+     <td><%= r.last_dose_date ? fmtDate(r.last_dose_date) : '—' %></td>
+     <td>
+      <% if (r.next_due) { %>
+      <span class="status-pill <%= new Date(r.next_due) <= new Date() ? 'due' : 'scheduled' %>"><%= fmtDate(r.next_due) %></span>
+      <% } else { %>—<% } %>
+     </td>
+     <td class="text-right">
+      <a href="/vaccination/chart/<%= r.id %>" class="btn btn-sm btn-outline-primary"><%= _t('vaccination_patients.chart', { ns: 'legacy', defaultValue: 'Chart' }) %></a>
+      <a href="/vaccination/administer?patient_id=<%= r.id %>" class="btn btn-sm btn-success"><%= _t('vaccination_patients.dose', { ns: 'legacy', defaultValue: '+ Dose' }) %></a>
+     </td>
+    </tr>
+    <% }) %>
+   </tbody>
+  </table>
+ </div>
+</div>
+
+</div>
+<%- include('partials/vaccination-odoo-end') %>
+<%- include('partials/footer') %>

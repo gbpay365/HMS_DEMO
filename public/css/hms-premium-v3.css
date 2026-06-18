@@ -1,0 +1,730 @@
+/**
+ * HMS Premium V3 — clinical component styles (tokens in hms-tokens.css)
+ */
+
+/* --- Global typography (app-wide) --- */
+html {
+    font-size: var(--hms-root-scale);
+}
+
+/* --- Global Overrides --- */
+body {
+    background-color: var(--hms-bg) !important;
+    color: var(--hms-text-main);
+    letter-spacing: -0.011em;
+    /* PreClinic template used 0.875rem (~14px); bump for readability */
+    font-size: 1rem !important;
+    line-height: 1.55 !important;
+}
+
+/* Glassmorphism Header */
+.header {
+    background: var(--hms-glass-bg) !important;
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border-bottom: 1px solid var(--hms-border-v3) !important;
+    box-shadow: var(--hms-shadow-sm);
+}
+
+/* Premium Sidebar (Glass + Dark) */
+.sidebar {
+    background: #0f172a !important; /* Deep Navy */
+    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.sidebar-inner {
+    background: transparent !important;
+}
+
+.sidebar-menu li a {
+    border-radius: var(--hms-radius-sm-v3) !important;
+    margin: 4px 12px !important;
+    padding: 12px 16px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-menu li a i {
+    font-size: 1.1rem;
+    color: var(--hms-text-tertiary);
+}
+
+.sidebar-menu li.active > a {
+    background: var(--hms-brand) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 20px var(--hms-brand-glow);
+}
+
+.sidebar-menu li.active > a i {
+    color: #ffffff !important;
+}
+
+.sidebar-menu li a:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #ffffff !important;
+}
+
+/* Card Revamp */
+.card {
+    border: 1px solid var(--hms-border-v3) !important;
+    border-radius: var(--hms-radius-v3) !important;
+    box-shadow: var(--hms-shadow-md) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: var(--hms-shadow-lg) !important;
+}
+
+.card-header {
+    background: transparent !important;
+    border-bottom: 1px solid var(--hms-border-v3) !important;
+    padding: 1.25rem 1.5rem !important;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.card-body {
+    padding: 1.5rem !important;
+}
+
+/* Cards with footer dropdowns (Doctors Directory, etc.) — default .card clips menus */
+.card.hms-card-overflow-visible {
+    overflow: visible !important;
+}
+.card.hms-card-overflow-visible .dropdown-menu {
+    z-index: 1060;
+    min-width: 11rem;
+}
+
+/* Form Styling */
+.form-control {
+    border-radius: var(--hms-radius-sm-v3) !important;
+    border: 1px solid var(--hms-border-v3) !important;
+    padding: 0.6rem 1rem !important;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--hms-brand) !important;
+    box-shadow: 0 0 0 4px var(--hms-brand-soft) !important;
+    outline: none;
+}
+
+/* Premium Buttons */
+.btn {
+    border-radius: var(--hms-radius-sm-v3) !important;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--hms-brand) 0%, var(--hms-brand-hover) 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 12px var(--hms-brand-glow);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px var(--hms-brand-glow);
+}
+
+/* Dashboard Widgets */
+.dash-widget {
+    background: var(--hms-card-bg);
+    border: 1px solid var(--hms-border-v3);
+    border-radius: var(--hms-radius-v3);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.dash-widget-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.dash-widget-info h3 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--hms-text-main);
+}
+
+.dash-widget-info span {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--hms-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Pill Badges */
+.badge {
+    padding: 0.5em 0.8em;
+    font-weight: 600;
+    border-radius: 9999px;
+    text-transform: capitalize;
+}
+
+.badge-pill {
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+/* Table Enhancements */
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background: var(--hms-bg);
+    border-top: none;
+    border-bottom: 1px solid var(--hms-border-v3);
+    padding: 1rem 1.5rem;
+    color: var(--hms-text-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.table tbody td {
+    padding: 1.25rem 1.5rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--hms-border-v3);
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Floating Elements */
+.hms-premium-float {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+/* Page shell — matches header.ejs --hms-content-max; cards fill the column */
+.main-wrapper .page-wrapper > .content > .card {
+    box-sizing: border-box;
+}
+
+/* Card toolbar: search/filter stretches; totals/actions stay on the right */
+.hms-card-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+.hms-card-toolbar .hms-card-toolbar-main {
+    flex: 1 1 240px;
+    min-width: 0;
+}
+.hms-card-toolbar .hms-card-toolbar-main .input-group,
+.hms-card-toolbar .hms-card-toolbar-main .form-control,
+.hms-card-toolbar .hms-card-toolbar-main .hms-search-box {
+    width: 100%;
+    max-width: none;
+}
+.hms-card-toolbar .hms-card-toolbar-aside {
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+/* Page header action buttons — single aligned row (Patients, Appointments, etc.) */
+.hms-page-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.hms-page-header-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    margin: 0 !important;
+    line-height: 1.25;
+    min-height: 31px;
+}
+.hms-page-header-actions .btn i {
+    line-height: 1;
+}
+/* Legacy inline max-width on search bars inside cards */
+.main-wrapper .card .card-body .input-group[style*="max-width"] {
+    max-width: none !important;
+    width: 100%;
+}
+.main-wrapper .card .card-body > .input-group:not(.hms-search-box) {
+    width: 100%;
+    max-width: none;
+}
+
+/* Server-side list pager (Stock Registry, Patients, etc.) */
+.main-wrapper .card .hms-list-pager {
+    flex-shrink: 0;
+    background: #f8fafc !important;
+    border-top: 1px solid var(--hms-border-v3) !important;
+}
+.main-wrapper .card .hms-list-pager .pagination {
+    margin-bottom: 0;
+}
+
+/* Standard list tables fill the card (no empty right gutter) */
+.main-wrapper .card.hms-table-fill-card .table-responsive > .table {
+    width: 100%;
+    min-width: 100%;
+    table-layout: auto;
+}
+
+/* Wide registries (OPD Visit Registry, etc.) */
+.main-wrapper .card.hms-data-table-card {
+    overflow: visible;
+}
+.main-wrapper .card.hms-data-table-card .table-responsive > .table {
+    width: max-content;
+    min-width: 1280px;
+}
+@media (max-width: 768px) {
+    .main-wrapper .card.hms-data-table-card .table-responsive > .table {
+        min-width: 960px;
+    }
+}
+
+/* ── HMS list tables: Role, Status, Actions (Employees module theme) ── */
+.main-wrapper .hms-list-table thead tr,
+.main-wrapper .hms-table-v3 thead tr,
+.main-wrapper .card .table-responsive > .table thead tr {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9) !important;
+}
+.main-wrapper .hms-list-table thead th,
+.main-wrapper .hms-table-v3 thead th,
+.main-wrapper .card .table-responsive > .table thead th {
+    border: 0 !important;
+    padding: 0.85rem 0.75rem !important;
+    font-size: 0.72rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #64748b !important;
+    font-weight: 600 !important;
+    vertical-align: middle;
+}
+.main-wrapper .hms-list-table thead th.hms-th-actions,
+.main-wrapper .hms-table-v3 thead th.hms-th-actions,
+.main-wrapper .card .table-responsive > .table thead th.hms-th-actions,
+.main-wrapper .card .table-responsive > .table thead th:last-child.text-right {
+    padding-right: 1.25rem !important;
+}
+.main-wrapper .hms-td-actions,
+.main-wrapper .card .table-responsive > .table td.hms-td-actions,
+.main-wrapper .card .table-responsive > .table td.text-right:has(.dropdown-action) {
+    text-align: right !important;
+    padding-right: 1.25rem !important;
+    vertical-align: middle;
+}
+.main-wrapper .hms-td-status,
+.main-wrapper .hms-td-role {
+    vertical-align: middle;
+}
+
+/* Role pill */
+.hms-role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+/* Status pill */
+.hms-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.hms-status-active, .hms-status-success, .hms-status-confirmed, .hms-status-completed {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid rgba(22, 101, 52, 0.15);
+}
+.hms-status-inactive, .hms-status-muted {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+.hms-status-pending, .hms-status-warning {
+    background: #fffbeb;
+    color: #854d0e;
+    border: 1px solid rgba(133, 77, 14, 0.15);
+}
+.hms-status-cancelled, .hms-status-danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid rgba(153, 27, 27, 0.15);
+}
+.hms-status-info {
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid rgba(3, 105, 161, 0.15);
+}
+.hms-status-purple {
+    background: #f3e8ff;
+    color: #7e22ce;
+    border: 1px solid rgba(126, 34, 206, 0.15);
+}
+.hms-status-pink {
+    background: #fce7f3;
+    color: #9d174d;
+    border: 1px solid rgba(157, 23, 77, 0.15);
+}
+
+/* OPD queue pills inside list tables — match status badge sizing */
+.main-wrapper .hms-list-table .pill,
+.main-wrapper .hms-table-v3 .pill,
+.main-wrapper .card .table-responsive .pill {
+    padding: 0.3rem 0.65rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: 20px;
+}
+
+/* Actions ⋯ dropdown (Employees module) */
+.main-wrapper .dropdown.dropdown-action .dropdown-toggle,
+.main-wrapper .dropdown.dropdown-action > a.action-icon {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    min-height: 2rem;
+    padding: 0.25rem 0.55rem !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    background: #fff !important;
+    color: #475569 !important;
+    font-size: 0.9rem;
+    box-shadow: none !important;
+    text-decoration: none !important;
+}
+.main-wrapper .dropdown.dropdown-action .dropdown-toggle:hover,
+.main-wrapper .dropdown.dropdown-action > a.action-icon:hover {
+    background: #f8fafc !important;
+    border-color: #94a3b8 !important;
+    color: #1e293b !important;
+}
+.main-wrapper .dropdown.dropdown-action .dropdown-toggle::after,
+.main-wrapper .dropdown.dropdown-action > a.action-icon::after {
+    display: none !important;
+}
+.main-wrapper .dropdown.dropdown-action .dropdown-menu {
+    border: 0 !important;
+    border-radius: 10px !important;
+    min-width: 160px !important;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12) !important;
+    padding: 0.35rem 0 !important;
+}
+.main-wrapper .dropdown.dropdown-action .dropdown-item {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.88rem;
+}
+.main-wrapper .dropdown.dropdown-action .dropdown-item.small {
+    font-size: 0.85rem;
+}
+
+/* Page Transitions */
+.page-wrapper {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .content {
+        padding: 16px !important;
+    }
+    .card {
+        border-radius: var(--hms-radius-sm-v3) !important;
+    }
+}
+/* Widget Icon Backgrounds */
+.bg-primary-light { background: var(--hms-brand-soft) !important; }
+.bg-success-light { background: rgba(16, 185, 129, 0.1) !important; }
+.bg-warning-light { background: rgba(245, 158, 11, 0.1) !important; }
+.bg-danger-light { background: rgba(239, 68, 68, 0.1) !important; }
+.bg-info-light { background: rgba(6, 182, 212, 0.1) !important; }
+
+.text-primary { color: var(--hms-brand) !important; }
+.text-success { color: var(--hms-success) !important; }
+.text-warning { color: var(--hms-warning) !important; }
+.text-danger { color: var(--hms-danger) !important; }
+.text-info { color: var(--hms-info) !important; }
+/* Patient & Doctor Card Specifics */
+.hms-pcard-badge, .hms-dcard-id {
+    background: var(--hms-brand-soft) !important;
+    color: var(--hms-brand) !important;
+    border: 1px solid var(--hms-brand-glow) !important;
+    font-weight: 700;
+}
+
+.hms-pcard-avatar, .hms-dcard-avatar {
+    border: 4px solid #fff;
+    box-shadow: var(--hms-shadow-md);
+    transition: transform 0.3s ease;
+}
+
+.card:hover .hms-pcard-avatar, 
+.card:hover .hms-dcard-avatar {
+    transform: scale(1.05);
+}
+
+.hms-pcard-stats, .hms-dcard-stats {
+    background: var(--hms-bg);
+    border-radius: var(--hms-radius-sm-v3);
+    padding: 10px !important;
+    border: 1px solid var(--hms-border-v3);
+}
+
+.hms-pcard-stat-label, .hms-dcard-stat-label {
+    font-size: 0.65rem;
+    color: var(--hms-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+}
+
+.hms-pcard-stat-value, .hms-dcard-stat-value {
+    font-size: 0.875rem;
+    color: var(--hms-text-main);
+    font-weight: 700;
+}
+
+.hms-pcard-stat-cell, .hms-dcard-stat-cell {
+    border-right: 1px solid var(--hms-border-v3);
+}
+
+.hms-pcard-stat-cell:last-child, 
+.hms-dcard-stat-cell:last-child {
+    border-right: none;
+}
+
+/* Action Buttons in Cards */
+.hms-pcard-appt-btn {
+    background: var(--hms-brand-soft) !important;
+    color: var(--hms-brand) !important;
+    border: 1px solid var(--hms-brand-glow) !important;
+}
+
+.hms-pcard-appt-btn:hover {
+    background: var(--hms-brand) !important;
+    color: #fff !important;
+}
+
+/* Search Box Styling */
+.hms-search-box {
+    border: 1px solid var(--hms-border-v3) !important;
+    transition: all 0.2s ease;
+}
+
+.hms-search-box:focus-within {
+    border-color: var(--hms-brand) !important;
+    box-shadow: 0 0 0 4px var(--hms-brand-soft) !important;
+}
+/* Shortcut Cards */
+.hms-shortcut-card .transition-all {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hms-shortcut-card:hover .transition-all {
+    transform: translateY(-5px);
+    border-color: var(--hms-brand) !important;
+    box-shadow: var(--hms-shadow-lg);
+}
+
+.hms-shortcut-card:hover .icon-wrap {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+
+/* Soft Badges */
+.badge-soft-primary { background: var(--hms-brand-soft) !important; color: var(--hms-brand) !important; }
+.badge-soft-success { background: rgba(16, 185, 129, 0.1) !important; color: var(--hms-success) !important; }
+.badge-soft-warning { background: rgba(245, 158, 11, 0.1) !important; color: var(--hms-warning) !important; }
+.badge-soft-danger { background: rgba(239, 68, 68, 0.1) !important; color: var(--hms-danger) !important; }
+.badge-soft-info { background: rgba(6, 182, 212, 0.1) !important; color: var(--hms-info) !important; }
+
+/* Dashboard Typography */
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--hms-text-main);
+    letter-spacing: -0.01em;
+}
+
+.text-muted {
+    color: var(--hms-text-tertiary) !important;
+}
+
+.rounded-xl { border-radius: 16px !important; }
+.rounded-lg { border-radius: 12px !important; }
+
+/* Submenu & Accordion Revamp */
+.sidebar-menu .submenu > a:after {
+    display: none !important; /* Hide default arrows if any */
+}
+
+.menu-arrow {
+    -webkit-transition: -webkit-transform 0.15s;
+    -o-transition: transform 0.15s;
+    transition: transform 0.15s;
+    position: absolute;
+    right: 20px;
+    display: inline-block;
+    font-family: 'FontAwesome';
+    text-rendering: auto;
+    line-height: 40px;
+    font-size: 18px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-transform: translate(0, 0);
+    -ms-transform: translate(0, 0);
+    -o-transform: translate(0, 0);
+    transform: translate(0, 0);
+    line-height: 18px;
+    top: 15px;
+}
+
+.menu-arrow:before {
+    content: "\f105"; /* FontAwesome chevron-right */
+}
+
+.submenu.open > a .menu-arrow {
+    -ms-transform: rotate(90deg);
+    -webkit-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    transform: rotate(90deg);
+}
+
+.sidebar-menu .submenu ul {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 5px 0;
+}
+
+.sidebar-menu .submenu ul li a {
+    padding: 8px 16px 8px 45px !important;
+    font-size: 0.875rem;
+    color: var(--hms-text-tertiary);
+}
+
+.sidebar-menu .submenu ul li a:hover {
+    color: #fff !important;
+}
+
+.sidebar-menu .submenu ul li a.active {
+    color: var(--hms-brand) !important;
+    font-weight: 600;
+}
+
+/* Select2 Custom Premium Styling */
+.select2-container--default .select2-selection--single {
+    border: 1px solid var(--hms-border-v3) !important;
+    height: 46px !important;
+    border-radius: var(--hms-radius-sm-v3) !important;
+    padding: 8px 12px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 44px !important;
+}
+
+.select2-dropdown {
+    border: 1px solid var(--hms-border-v3) !important;
+    border-radius: var(--hms-radius-sm-v3) !important;
+    box-shadow: var(--hms-shadow-lg) !important;
+    overflow: hidden;
+}
+
+.select2-results__option--highlighted[aria-selected] {
+    background-color: var(--hms-brand) !important;
+}
+
+/* ── Native <select> + Select2: prevent clipped / misaligned text ───────────
+   Body uses line-height: 1.55 !important; native selects inherit it and the
+   combo with .form-control / .form-control-sm heights causes the selected
+   option text to sit too low and clip (Chrome / Edge on Windows).
+   Select2: 46px box + 8px vertical padding leaves ~30px for text; style.css
+   used line-height 38px — also clips. ──────────────────────────────────── */
+
+select.form-control:not([multiple]),
+select.form-control-sm:not([multiple]) {
+    line-height: 1.25 !important;
+    min-height: calc(1.35em + 0.9rem) !important;
+    height: auto !important;
+    padding-top: 0.45rem !important;
+    padding-bottom: 0.45rem !important;
+    vertical-align: middle;
+}
+
+select.form-control-sm:not([multiple]) {
+    font-size: 0.875rem !important;
+    min-height: calc(1.35em + 0.8rem) !important;
+}
+
+select.form-control[multiple],
+select.form-control-sm[multiple] {
+    height: auto !important;
+    min-height: 4.5rem !important;
+    line-height: 1.4 !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 30px !important;
+    padding-left: 4px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* HMS client-side table search + pagination bars (staff portals) */
+html.dark .hms-table-paginate-toolbar {
+    background: var(--hms-card-bg) !important;
+    border-color: var(--hms-border) !important;
+}
+html.dark .hms-table-paginate-pager {
+    background: var(--hms-card-bg) !important;
+    border-color: var(--hms-border) !important;
+    color: var(--hms-text-tertiary);
+}
+html.dark .hms-table-paginate-toolbar .form-control {
+    background: var(--hms-card-bg);
+    border-color: var(--hms-border);
+    color: var(--hms-ink);
+}

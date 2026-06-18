@@ -1,0 +1,15 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--visiting-doctors'; %>
+<%- include('partials/header') %>
+<%- include('partials/react-page-mount', {
+  reactPage: 'visiting-doctor-admin',
+  pageData: {
+    accounts: accounts || [],
+    sessions: sessions || [],
+    summary: summary || {},
+    defaultPassword: defaultPassword || '12345',
+    flash: flash || null,
+    error: error || null
+  },
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.default', { ns: 'common' }) : 'Loading visiting doctors…')
+}) %>
+<%- include('partials/footer') %>

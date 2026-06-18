@@ -1,0 +1,28 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<div class="page-wrapper"><div class="content">
+<p class="mb-2"><a href="/hms/commission"><%= _t('hms_commission.back_rules', { ns: 'legacy', defaultValue: 'Commission rules' }) %></a></p>
+<form class="form-inline mb-3 card p-3" method="GET" action="/hms/commission/report">
+<select name="doctor_id" class="form-control form-control-sm mr-2"><option value=""><%= _t('hms_commission.all_doctors', { ns: 'legacy', defaultValue: 'All doctors' }) %></option>
+<% doctors.forEach(function(d){ %><option value="<%=d.id%>" <%=filters.doctor_id==d.id?'selected':''%>>Dr. <%=d.first_name%> <%=d.last_name%></option><% }); %></select>
+<input type="date" name="from" value="<%=filters.from%>" class="form-control form-control-sm mr-2">
+<input type="date" name="to" value="<%=filters.to%>" class="form-control form-control-sm mr-2">
+<button class="btn btn-primary btn-sm"><%= _t('hms_commission.run_report', { ns: 'legacy', defaultValue: 'Run report' }) %></button>
+</form>
+<p class="font-weight-bold"><%= _t('hms_commission.total', { ns: 'legacy', defaultValue: 'Total commission:' }) %> <%= Number(report.totalCommission||0).toLocaleString('fr-FR') %> XAF</p>
+<table class="table table-sm card shadow-sm"><thead><tr>
+<th><%= _t('hms_commission.col_date', { ns: 'legacy', defaultValue: 'Date' }) %></th>
+<th><%= _t('hms_commission.col_doctor', { ns: 'legacy', defaultValue: 'Doctor' }) %></th>
+<th><%= _t('hms_commission.col_patient', { ns: 'legacy', defaultValue: 'Patient' }) %></th>
+<th><%= _t('hms_commission.col_service', { ns: 'legacy', defaultValue: 'Service' }) %></th>
+<th><%= _t('hms_commission.col_base', { ns: 'legacy', defaultValue: 'Base' }) %></th>
+<th><%= _t('hms_commission.col_commission', { ns: 'legacy', defaultValue: 'Commission' }) %></th>
+</tr></thead><tbody>
+<% (report.lines||[]).forEach(function(l){ %><tr>
+<td class="small"><%= l.date ? fmtDate(l.date) : '' %></td>
+<td><%=l.doctor_name%></td><td><%=l.patient_name%></td><td><%=l.service_kind%></td>
+<td class="text-right"><%=Number(l.base_amount).toLocaleString('fr-FR')%></td>
+<td class="text-right font-weight-bold"><%=Number(l.commission).toLocaleString('fr-FR')%></td>
+</tr><% }); %>
+</tbody></table>
+</div></div><%- include('partials/footer') %>

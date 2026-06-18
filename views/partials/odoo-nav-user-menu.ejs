@@ -1,0 +1,34 @@
+<%- include('hms-perm-helpers') %>
+<%
+var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+var _odooUser = locals.userDisplayName
+  || (typeof hmsFormatDisplayName === 'function' ? hmsFormatDisplayName(locals.user && locals.user.name) : null)
+  || (locals.user && locals.user.name)
+  || _t('odoo_nav_user_menu.user_fallback', { ns: 'legacy', defaultValue: 'User' });
+%>
+<div class="o_nav_right">
+  <% if (locals.showPayrollNavLink) { %>
+  <a href="/payroll" class="o_nav_right_link"><%= _t('odoo_nav_user_menu.payroll', { ns: 'legacy', defaultValue: 'Payroll' }) %></a>
+  <% } %>
+  <% if (canHospitalDashboard()) { %>
+  <a href="/dashboard" class="o_nav_right_link d-none d-md-inline" title="<%= _t('odoo_nav_user_menu.hospital_home', { ns: 'legacy', defaultValue: 'Hospital home' }) %>"><i class="fa fa-hospital-o mr-1"></i>ZAIZENS</a>
+  <% } %>
+  <%- include('hms-lang-switcher', { langSwitcherOdoo: true }) %>
+  <div class="dropdown">
+    <a href="#" class="o_nav_user dropdown-toggle" data-toggle="dropdown" id="hmsOdooUserDrop" aria-haspopup="true" aria-expanded="false" style="display:inline-flex;align-items:center;gap:8px;">
+      <%- include('hms-user-avatar', { avatarClass: 'hms-user-avatar hms-user-avatar--sm', userProfileEmoji: locals.userProfileEmoji }) %>
+      <%= _odooUser %>
+    </a>
+    <div class="dropdown-menu dropdown-menu-right shadow border-0 mt-1" style="border-radius:6px;min-width:200px;">
+      <div class="px-3 py-2 border-bottom">
+        <div class="font-weight-bold small" style="color:#1e293b;"><%= _odooUser %></div>
+        <div class="small text-muted"><%= (locals.user && locals.user.username) || '' %></div>
+      </div>
+      <a class="dropdown-item py-2" href="/profile"><i class="fa fa-user-circle mr-2"></i><%= _t('odoo_nav_user_menu.my_profile', { ns: 'legacy', defaultValue: 'My profile' }) %></a>
+      <a class="dropdown-item py-2" href="/my-profile"><i class="fa fa-cog mr-2"></i><%= _t('odoo_nav_user_menu.settings', { ns: 'legacy', defaultValue: 'Settings' }) %></a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item py-2 text-danger" href="/logout"><i class="fa fa-sign-out mr-2"></i><%= _t('odoo_nav_user_menu.log_out', { ns: 'legacy', defaultValue: 'Log out' }) %></a>
+    </div>
+  </div>
+  <a href="/logout" class="o_nav_right_link o_nav_logout" title="<%= _t('odoo_nav_user_menu.log_out', { ns: 'legacy', defaultValue: 'Log out' }) %>" aria-label="<%= _t('odoo_nav_user_menu.log_out', { ns: 'legacy', defaultValue: 'Log out' }) %>"><i class="fa fa-sign-out"></i></a>
+</div>

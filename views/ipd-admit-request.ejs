@@ -1,0 +1,137 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<style>
+:root{--ipd:#1e3a5f;--ipd2:#1e40af;--green:#059669;}
+.ipd-header{background:linear-gradient(135deg,var(--ipd),var(--ipd2));border-radius:14px;color:#fff;padding:22px 28px;}
+.step-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);border-radius:20px;padding:3px 12px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;}
+.form-card{border:1px solid #e2e8f0;border-radius:12px;background:#fff;margin-bottom:20px;}
+.form-card .fc-head{padding:16px 20px;border-bottom:1px solid #f1f5f9;font-weight:700;font-size:.9rem;color:var(--ipd);}
+.form-card .fc-body{padding:20px;}
+.vitals-chip{display:inline-flex;align-items:center;gap:6px;background:#f0f4ff;border:1px solid #c7d7fd;border-radius:8px;padding:5px 12px;font-size:.8rem;font-weight:600;color:#1e40af;}
+.bed-option{border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;cursor:pointer;transition:.15s;}
+.bed-option:hover,.bed-option.selected{border-color:var(--ipd2);background:#f0f4ff;}
+</style>
+
+<div class="page-wrapper"><div class="content">
+
+<%if(locals.flash){%><div class="alert alert-success border-0 shadow-sm mb-3"><i class="fa fa-check-circle mr-2"></i><%=locals.flash%></div><%}%>
+<%if(locals.error){%><div class="alert alert-danger border-0 shadow-sm mb-3"><i class="fa fa-exclamation-circle mr-2"></i><%=locals.error%></div><%}%>
+
+<!-- Header -->
+<div class="ipd-header mb-4 d-flex align-items-center justify-content-between">
+  <div>
+ <div class="step-badge mb-2"><i class="fa fa-bed mr-1"></i><%= _t('admit_request.station_badge', { ns: 'ipd', defaultValue: 'Station 1 � Doctor' }) %></div>
+ <h4 class="mb-1 font-weight-bold"><%= _t('admit_request.title', { ns: 'ipd', defaultValue: 'IPD Admission Order' }) %></h4>
+ <p class="mb-0" style="opacity:.8;font-size:.88rem;"><%= _t('admit_request.subtitle', { ns: 'ipd', defaultValue: 'Patient requires hospitalization � issue formal admit order.' }) %></p>
+  </div>
+  <div class="text-right">
+ <div style="font-size:2rem;font-weight:800;opacity:.2;">&#x1F3E5;</div>
+  </div>
+</div>
+
+<!-- Patient Summary Banner -->
+<div class="card border-0 shadow-sm mb-4" style="border-radius:12px;border-left:4px solid var(--ipd2)!important;">
+  <div class="card-body py-3 d-flex align-items-center gap-3">
+ <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--ipd),var(--ipd2));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;flex-shrink:0;">
+ <%=(visit.first_name||'?')[0]%><%=(visit.last_name||'?')[0]%>
+ </div>
+ <div style="flex:1;">
+ <div class="font-weight-bold" style="font-size:1.05rem;"><%=visit.first_name%> <%=visit.last_name%></div>
+ <div class="small text-muted"><%= _t('admit_request.opd_visit', { ns: 'ipd', id: visit.id, department: visit.department || _t('admit_request.general', { ns: 'ipd', defaultValue: 'General' }), complaint: visit.chief_complaint || _t('admit_request.no_complaint', { ns: 'ipd', defaultValue: 'No complaint noted' }), defaultValue: 'OPD Visit #' + visit.id + ' � ' + (visit.department || 'General') + ' � ' + (visit.chief_complaint || 'No complaint noted') }) %></div>
+ </div>
+ <div class="d-flex flex-wrap gap-2" style="gap:6px;">
+ <% if(vitals.bp_sys){ %><span class="vitals-chip"><i class="fa fa-heartbeat"></i> BP <%=vitals.bp_sys%>/<%=vitals.bp_dia%></span><% } %>
+ <% if(vitals.temp_c){ %><span class="vitals-chip"><i class="fa fa-thermometer-half"></i> <%=vitals.temp_c%>&deg;C</span><% } %>
+ <% if(vitals.heart_rate){ %><span class="vitals-chip"><i class="fa fa-heart"></i> <%=vitals.heart_rate%> bpm</span><% } %>
+ <% if(!vitals.bp_sys && !vitals.temp_c){ %><span class="vitals-chip text-muted"><%= _t('admit_request.no_vitals', { ns: 'ipd', defaultValue: 'No vitals recorded' }) %></span><% } %>
+ </div>
+  </div>
+</div>
+
+<!-- Admit Order Form -->
+<form action="/ipd/admit-request" method="POST">
+  <input type="hidden" name="visit_id" value="<%=visit.id%>">
+
+  <div class="row">
+ <div class="col-lg-8">
+
+ <div class="form-card">
+ <div class="fc-head"><i class="fa fa-stethoscope mr-2 text-primary"></i><%= _t('admit_request.clinical_indication', { ns: 'ipd', defaultValue: 'Clinical Indication for Admission' }) %></div>
+ <div class="fc-body">
+ <div class="form-group">
+ <label class="small font-weight-bold"><%= _t('admit_request.admitting_diagnosis', { ns: 'ipd', defaultValue: 'Admitting Diagnosis' }) %> <span class="text-danger">*</span></label>
+ <textarea name="admitting_diagnosis" class="form-control hms-input" rows="3" required placeholder="<%= _t('admit_request.diagnosis_ph', { ns: 'ipd', defaultValue: 'Primary diagnosis or clinical reason requiring hospitalization (e.g. Severe malaria with complications, Post-op monitoring�)' }) %>"></textarea>
+ </div>
+ <div class="form-group mb-0">
+ <label class="small font-weight-bold"><%= _t('admit_request.admitting_department', { ns: 'ipd', defaultValue: 'Admitting Department' }) %> <span class="text-danger">*</span></label>
+ <select name="admitting_department" class="form-control hms-input" required>
+ <option value=""><%= _t('admit_request.select_department', { ns: 'ipd', defaultValue: '� Select Department �' }) %></option>
+ <option value="General Medicine"><%= _t('admit_request.dept_general_medicine', { ns: 'ipd', defaultValue: 'General Medicine' }) %></option>
+ <option value="General Surgery"><%= _t('admit_request.dept_general_surgery', { ns: 'ipd', defaultValue: 'General Surgery' }) %></option>
+ <option value="Pediatrics"><%= _t('admit_request.dept_pediatrics', { ns: 'ipd', defaultValue: 'Pediatrics' }) %></option>
+ <option value="Cardiology"><%= _t('admit_request.dept_cardiology', { ns: 'ipd', defaultValue: 'Cardiology' }) %></option>
+ <option value="Maternity"><%= _t('admit_request.dept_maternity', { ns: 'ipd', defaultValue: 'Maternity' }) %></option>
+ <option value="Orthopedics"><%= _t('admit_request.dept_orthopedics', { ns: 'ipd', defaultValue: 'Orthopedics' }) %></option>
+ <option value="ICU"><%= _t('admit_request.dept_icu', { ns: 'ipd', defaultValue: 'ICU' }) %></option>
+ <option value="Emergency"><%= _t('admit_request.dept_emergency', { ns: 'ipd', defaultValue: 'Emergency' }) %></option>
+ <% departments.forEach(function(d){ %>
+ <option value="<%=d%>"><%=d%></option>
+ <% }); %>
+ </select>
+ </div>
+ </div>
+ </div>
+
+ <div class="form-card">
+ <div class="fc-head"><i class="fa fa-file-text-o mr-2 text-muted"></i><%= _t('admit_request.additional_notes', { ns: 'ipd', defaultValue: 'Additional Clinical Notes' }) %></div>
+ <div class="fc-body">
+ <textarea name="notes" class="form-control hms-input" rows="3" placeholder="<%= _t('admit_request.notes_ph', { ns: 'ipd', defaultValue: 'Discharge plan outline, special nursing requirements, dietary restrictions, specialist referrals�' }) %>"></textarea>
+ </div>
+ </div>
+
+ <div class="alert alert-info border-0" style="border-radius:10px;font-size:.85rem;">
+ <i class="fa fa-info-circle mr-2"></i>
+ <%- _t('admit_request.what_next', { ns: 'ipd', defaultValue: '<strong>What happens next:</strong> Cashier collects admission deposit (Station 2), then ADT assigns a bed (Station 3). The patient is formally admitted and a running bill tab is opened.' }) %>
+ </div>
+
+ </div>
+ <div class="col-lg-4">
+
+ <!-- Available Beds Preview -->
+ <div class="form-card">
+ <div class="fc-head"><i class="fa fa-bed mr-2 text-success"></i><%= _t('admit_request.available_beds', { ns: 'ipd', count: availBeds.length, defaultValue: 'Available Beds (' + availBeds.length + ')' }) %></div>
+ <div class="fc-body" style="max-height:280px;overflow-y:auto;">
+ <% if(!availBeds.length){ %>
+ <div class="text-muted small text-center py-3"><%= _t('admit_request.no_beds', { ns: 'ipd', defaultValue: 'No beds available at this time.' }) %></div>
+ <% } %>
+ <% availBeds.slice(0,10).forEach(function(b){ %>
+ <div class="bed-option mb-2">
+ <div class="font-weight-bold small"><%=b.bed_label%></div>
+ <div class="text-muted" style="font-size:.72rem;"><%=b.ward_name%></div>
+ </div>
+ <% }); %>
+ <% if(availBeds.length > 10){ %>
+ <div class="small text-muted text-center mt-2"><%= _t('admit_request.more_beds', { ns: 'ipd', count: availBeds.length - 10, defaultValue: '+' + (availBeds.length - 10) + ' more beds. ADT will assign.' }) %></div>
+ <% } %>
+ </div>
+ </div>
+
+ <!-- Submit -->
+ <div class="card border-0 shadow-sm p-4" style="border-radius:12px;">
+ <button type="submit" class="btn btn-primary btn-block font-weight-bold py-3 hms-btn hms-btn-lg hms-btn-block" style="border-radius:10px;font-size:1rem;">
+ <i class="fa fa-check mr-2"></i><%= _t('admit_request.issue_order', { ns: 'ipd', defaultValue: 'Issue Admission Order' }) %>
+ </button>
+ <a href="/opd-queue" class="btn btn-light btn-block mt-2 hms-btn hms-btn-secondary hms-btn-block" style="border-radius:10px;">
+ <i class="fa fa-arrow-left mr-1"></i> <%= _t('admit_request.back_opd', { ns: 'ipd', defaultValue: 'Back to OPD Queue' }) %>
+ </a>
+ <div class="text-muted small text-center mt-3">
+ <i class="fa fa-lock mr-1"></i><%= _t('admit_request.authorized_by', { ns: 'ipd', defaultValue: 'Authorized by:' }) %> <strong><%=locals.user?.name||_t('admit_request.attending_physician', { ns: 'ipd', defaultValue: 'Attending Physician' })%></strong>
+ </div>
+ </div>
+
+ </div>
+  </div>
+</form>
+
+</div></div>
+<%- include('partials/footer') %>

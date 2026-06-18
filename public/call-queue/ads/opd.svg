@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" role="img" aria-label="OPD Outpatient">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07121c"/>
+      <stop offset="1" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="700" fill="url(#bg)"/>
+  <g filter="url(#shadow)">
+    <rect x="120" y="110" width="960" height="480" rx="28" fill="#ffffff" opacity="0.94"/>
+  </g>
+  <g transform="translate(170,165)">
+    <rect x="0" y="0" width="52" height="52" rx="14" fill="#0ea5e9" opacity="0.14"/>
+    <path d="M18 18h22v24H18z" fill="none" stroke="#0ea5e9" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M22 26h14M22 32h14" stroke="#0ea5e9" stroke-width="4" stroke-linecap="round"/>
+    <text x="70" y="22" font-family="Arial, sans-serif" font-size="30" font-weight="800" fill="#0f172a">OPD  Outpatient</text>
+    <text x="70" y="50" font-family="Arial, sans-serif" font-size="16" font-weight="600" fill="#475569">Registration � queue � same-day care</text>
+  </g>
+  <g transform="translate(230,250)">
+    <!-- queue card -->
+    <rect x="0" y="0" width="520" height="340" rx="26" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+    <rect x="28" y="28" width="180" height="18" rx="9" fill="#e2e8f0"/>
+    <rect x="28" y="60" width="260" height="14" rx="7" fill="#e2e8f0"/>
+    <g transform="translate(28,100)">
+      <rect x="0" y="0" width="464" height="70" rx="18" fill="#0b1220" opacity="0.06"/>
+      <circle cx="40" cy="35" r="18" fill="#0ea5e9" opacity="0.20"/>
+      <rect x="80" y="22" width="220" height="12" rx="6" fill="#cbd5e1"/>
+      <rect x="80" y="42" width="170" height="10" rx="5" fill="#e2e8f0"/>
+      <rect x="360" y="22" width="90" height="30" rx="15" fill="#0ea5e9" opacity="0.18"/>
+    </g>
+    <g transform="translate(28,190)">
+      <rect x="0" y="0" width="464" height="70" rx="18" fill="#0b1220" opacity="0.06"/>
+      <circle cx="40" cy="35" r="18" fill="#0ea5e9" opacity="0.20"/>
+      <rect x="80" y="22" width="200" height="12" rx="6" fill="#cbd5e1"/>
+      <rect x="80" y="42" width="150" height="10" rx="5" fill="#e2e8f0"/>
+      <rect x="360" y="22" width="90" height="30" rx="15" fill="#0ea5e9" opacity="0.18"/>
+    </g>
+
+    <!-- registrar (Black African) -->
+    <g transform="translate(620,40)">
+      <rect x="0" y="260" width="260" height="22" rx="11" fill="#0f172a" opacity="0.10"/>
+      <circle cx="120" cy="78" r="46" fill="#6b3f2a"/>
+      <path d="M78 78c4-32 28-52 54-50 24 2 42 20 44 44-14-10-28-14-50-14-22 0-32 4-48 20z" fill="#0f172a"/>
+      <path d="M44 320c0-84 30-140 76-140s76 56 76 140v40H44v-40z" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+      <path d="M74 250c12-24 28-36 46-36s34 12 46 36v110H74V250z" fill="#0ea5e9" opacity="0.16"/>
+      <rect x="170" y="240" width="84" height="86" rx="18" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+      <rect x="182" y="256" width="60" height="10" rx="5" fill="#e2e8f0"/>
+      <rect x="182" y="276" width="54" height="10" rx="5" fill="#e2e8f0"/>
+      <rect x="182" y="296" width="58" height="10" rx="5" fill="#e2e8f0"/>
+    </g>
+  </g>
+  <text x="600" y="650" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#cbd5e1" opacity="0.95">
+    Fast registration � Clear queue � Same-day care
+  </text>
+</svg>

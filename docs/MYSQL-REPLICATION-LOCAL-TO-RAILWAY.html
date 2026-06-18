@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ZAIZENS HMS — MySQL Replication Local Windows to Railway</title>
+  <link rel="stylesheet" href="ops-doc-styles.css" />
+</head>
+<body>
+  <section class="cover">
+    <div class="cover-top">
+      <div class="cover-brand">
+        <div><p class="vendor"><strong>ZAIZENS</strong> · Disaster Recovery</p></div>
+        <div class="cover-badge">Operations Guide · PDF</div>
+      </div>
+      <h1>MySQL Replication: Local Windows 10 → Railway</h1>
+      <p class="subtitle">Keep a warm online copy of the hospital database for failover when the on-premises server fails</p>
+    </div>
+    <div class="cover-accent"></div>
+    <div class="cover-body">
+      <dl class="client-grid">
+        <div class="full"><dt>Scenario</dt><dd>Primary HMS on Windows 10 + XAMPP MySQL; secondary HMS + MySQL on Railway for DR fallback</dd></div>
+        <div><dt>Primary</dt><dd>Windows 10 · localhost MySQL</dd></div>
+        <div><dt>Secondary</dt><dd>Railway MySQL + Railway Node service</dd></div>
+        <div><dt>Script</dt><dd><code>scripts/sync-mysql-to-railway.js</code></dd></div>
+        <div><dt>RPO target</dt><dd>15–60 minutes (scheduled sync interval)</dd></div>
+      </dl>
+      <div class="cover-meta">
+        <span><strong>Version</strong><br/>1.0 — June 2026</span>
+        <span><strong>Failover type</strong><br/>Manual DNS / URL switch</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="doc-strip"><span><strong>ZAIZENS</strong> HMS</span><span>Local → Railway DB Sync</span></div>
+  <main>
+    <div class="toc-block">
+      <h2>Table of contents</h2>
+      <ul class="toc-grid">
+        <li><a href="#strategy"><span class="num">1</span> Strategy &amp; terminology</a></li>
+        <li><a href="#arch"><span class="num">2</span> Architecture</a></li>
+        <li><a href="#railway-db"><span class="num">3</span> Railway MySQL setup</a></li>
+        <li><a href="#railway-app"><span class="num">4</span> Railway HMS app (standby)</a></li>
+        <li><a href="#sync"><span class="num">5</span> Scheduled sync (recommended)</a></li>
+        <li><a href="#native"><span class="num">6</span> Native replication (advanced)</a></li>
+        <li><a href="#failover"><span class="num">7</span> Failover procedure</a></li>
+        <li><a href="#failback"><span class="num">8</span> Fail-back to local</a></li>
+        <li><a href="#monitor"><span class="num">9</span> Monitoring &amp; RPO/RTO</a></li>
+        <li><a href="#trouble"><span class="num">10</span> Troubleshooting</a></li>
+      </ul>
+    </div>
+
+    <h2 id="strategy">1. Strategy &amp; terminology</h2>
+    <div class="callout"><strong>Goal:</strong> If the Windows 10 hospital server fails (hardware, power, disk, OS), staff can continue on the Railway-hosted HMS using data synced from the local MySQL database.</div>
+    <table>
+      <thead><tr><th>Term</th><th>Meaning for this guide</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Primary</strong></td><td>Local Windows HMS + local MySQL (daily production)</td></tr>
+        <tr><td><strong>Secondary / DR</strong></td><td>Railway HMS + Railway MySQL (warm standby)</td></tr>
+        <tr><td><strong>RPO</strong></td><td>Recovery Point Objective — max data loss = time since last sync</td></tr>
+        <tr><td><strong>RTO</strong></td><td>Recovery Time Objective — time to switch users to Railway URL</td></tr>
+        <tr><td><strong>Logical sync</strong></td><td><code>mysqldump</code> → import (recommended, included script)</td></tr>
+        <tr><td><strong>Native replication</strong></td><td>MySQL binlog streaming (advanced; Section 6)</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn"><strong>Important:</strong> This is <em>warm standby</em> sync, not live active-active. Only one site should accept writes at a time to avoid split-brain conflicts.</div>
+
+    <h2 id="arch">2. Architecture</h2>
+    <div class="diagram">┌─────────────────────────────┐         ┌──────────────────────────────┐
+│  Windows 10 (PRIMARY)       │         │  Railway (SECONDARY / DR)     │
+│  XAMPP MySQL localhost      │  sync   │  MySQL plugin (TCP proxy)     │
+│  HMS Node :3000             │ ──────► │  HMS Node service (HTTPS)     │
+│  LAN users → local URL      │ every   │  Public URL (standby)         │
+└─────────────────────────────┘  N min  └──────────────────────────────┘
+         │                                         │
+         │         Task Scheduler                  │
+         └──── scripts/sync-mysql-to-railway.js ────┘
+
+FAILOVER: Redirect users to Railway HTTPS URL when primary is down.</div>
+
+    <h2 id="railway-db">3. Railway MySQL setup</h2>
+    <ol class="steps">
+      <li>In your Railway project, click <strong>New</strong> → <strong>Database</strong> → <strong>MySQL</strong>.</li>
+      <li>Open the MySQL service → <strong>Variables</strong> tab. Note:
+        <ul>
+          <li><code>MYSQLHOST</code> (public proxy, e.g. <code>crossover.proxy.rlwy.net</code>)</li>
+          <li><code>MYSQLPORT</code></li>
+          <li><code>MYSQLUSER</code> / <code>MYSQLPASSWORD</code></li>
+          <li><code>MYSQLDATABASE</code> (often <code>railway</code>)</li>
+        </ul>
+      </li>
+      <li>Ensure the MySQL plugin allows <strong>public networking</strong> (required for sync from hospital WAN).</li>
+      <li>Restrict access: use strong password; consider IP allowlisting if Railway plan supports it.</li>
+    </ol>
+
+    <h2 id="railway-app">4. Railway HMS app (standby)</h2>
+    <p>Deploy the main HMS application as a second Railway service in the same project (or separate project linked to same MySQL).</p>
+    <table>
+      <thead><tr><th>Variable</th><th>Value on Railway standby</th></tr></thead>
+      <tbody>
+        <tr><td><code>DB_HOST</code></td><td>Railway MySQL host (<code>MYSQLHOST</code>)</td></tr>
+        <tr><td><code>DB_PORT</code></td><td>Railway MySQL port</td></tr>
+        <tr><td><code>DB_USER</code> / <code>DB_PASSWORD</code></td><td>From MySQL plugin</td></tr>
+        <tr><td><code>DB_NAME</code></td><td><code>railway</code> or your database name</td></tr>
+        <tr><td><code>SESSION_SECRET</code></td><td>Same as local OR different (users re-login on failover)</td></tr>
+        <tr><td><code>LICENSE_SERVER_URL</code></td><td>Your license server HTTPS URL</td></tr>
+        <tr><td><code>HMS_PUBLIC_URL</code></td><td>Railway HMS public HTTPS URL (for push webhooks when on DR)</td></tr>
+      </tbody>
+    </table>
+    <p>Generate Railway HTTPS domain for the HMS service. Keep this URL documented for failover.</p>
+    <div class="callout warn">During normal operations, train staff to use the <strong>local</strong> URL. Railway is the emergency URL only (or use DNS failover — Section 7).</div>
+
+    <h2 id="sync">5. Scheduled logical sync (recommended)</h2>
+    <p>The repository includes <code>scripts/sync-mysql-to-railway.js</code> which:</p>
+    <ol>
+      <li>Dumps local MySQL with <code>mysqldump</code> (XAMPP)</li>
+      <li>Connects to Railway MySQL over TLS TCP</li>
+      <li>Drops and re-imports tables (full refresh)</li>
+      <li>Verifies table count and sample row counts</li>
+    </ol>
+
+    <h3>5.1 Configure sync environment file</h3>
+    <p>Create <code>C:\HMS_JS\docs\scripts\railway-sync.env</code> (do not commit secrets):</p>
+    <pre># Local XAMPP MySQL (primary)
+LOCAL_DB_HOST=localhost
+LOCAL_DB_PORT=3306
+LOCAL_DB_USER=root
+LOCAL_DB_PASSWORD=your-local-password
+LOCAL_DB_NAME=hms_demo
+XAMPP_MYSQL_BIN=C:\xampp\mysql\bin
+
+# Railway MySQL (from plugin variables)
+RAILWAY_MYSQL_HOST=crossover.proxy.rlwy.net
+RAILWAY_MYSQL_PORT=36338
+RAILWAY_MYSQL_USER=root
+RAILWAY_MYSQL_PASSWORD=your-railway-password
+RAILWAY_MYSQL_DATABASE=railway
+
+# Optional dump path
+SYNC_DUMP_PATH=C:\HMS-Backups\railway-sync\latest.sql</pre>
+
+    <h3>5.2 Manual test run</h3>
+    <pre>cd C:\HMS_JS
+set RAILWAY_MYSQL_HOST=crossover.proxy.rlwy.net
+set RAILWAY_MYSQL_PORT=36338
+set RAILWAY_MYSQL_USER=root
+set RAILWAY_MYSQL_PASSWORD=your-password
+set RAILWAY_MYSQL_DATABASE=railway
+node scripts/sync-mysql-to-railway.js</pre>
+
+    <h3>5.3 Automate with Windows Task Scheduler</h3>
+    <ol class="steps">
+      <li>Create folder <code>C:\HMS-Backups\railway-sync\logs</code>.</li>
+      <li>Create <code>C:\HMS_JS\docs\scripts\run-railway-sync.ps1</code>:
+        <pre>$envFile = "C:\HMS_JS\docs\scripts\railway-sync.env"
+Get-Content $envFile | ForEach-Object {
+  if ($_ -match '^([^#=]+)=(.*)$') { Set-Item -Path "Env:$($matches[1].Trim())" -Value $matches[2].Trim() }
+}
+cd C:\HMS_JS
+node scripts/sync-mysql-to-railway.js *>&amp;1 | Tee-Object -FilePath "C:\HMS-Backups\railway-sync\logs\sync-$(Get-Date -Format yyyyMMdd-HHmm).log"</pre>
+      </li>
+      <li>Task Scheduler → Create Task:
+        <ul>
+          <li>Trigger: every <strong>15 minutes</strong> (or 30/60 based on RPO needs)</li>
+          <li>Action: <code>powershell.exe -ExecutionPolicy Bypass -File C:\HMS_JS\docs\scripts\run-railway-sync.ps1</code></li>
+          <li>Run whether user is logged on or not · highest privileges</li>
+          <li>Run only when network is available</li>
+        </ul>
+      </li>
+      <li>Schedule during low activity if full dump is large; test duration first.</li>
+    </ol>
+
+    <h3>5.4 Sync window &amp; production impact</h3>
+    <ul>
+      <li><code>mysqldump --single-transaction</code> avoids long table locks on InnoDB tables.</li>
+      <li>Large databases (multi-GB) may take several minutes — adjust interval accordingly.</li>
+      <li>During import, Railway DB is briefly inconsistent — run HMS on Railway in <strong>maintenance mode</strong> or keep it unused until sync completes.</li>
+    </ul>
+
+    <h2 id="native">6. Native MySQL replication (advanced)</h2>
+    <p>For near-real-time RPO, MySQL binary log replication can stream changes from local master to Railway replica. This is more complex and may be limited by Railway MySQL privileges.</p>
+    <h3>6.1 When to use</h3>
+    <ul>
+      <li>Database &gt; 2 GB and full dump every 15 min is too slow</li>
+      <li>RPO requirement &lt; 5 minutes</li>
+      <li>IT staff comfortable with MySQL replication administration</li>
+    </ul>
+    <h3>6.2 Local master (XAMPP my.ini)</h3>
+    <pre>[mysqld]
+server-id=1
+log-bin=mysql-bin
+binlog_format=ROW
+expire_logs_days=7
+bind-address=127.0.0.1</pre>
+    <div class="callout danger">Opening MySQL to the public internet for replication is a security risk. Prefer VPN or Railway private networking if available. Never expose XAMPP MySQL to <code>0.0.0.0</code> without firewall IP restrictions.</div>
+    <h3>6.3 Railway replica</h3>
+    <p>Create replication user on master, take initial snapshot, configure Railway MySQL as replica with <code>CHANGE REPLICATION SOURCE TO</code> (MySQL 8). Verify <code>SHOW REPLICA STATUS\G</code> — <code>Replica_IO_Running: Yes</code>.</p>
+    <p class="muted">If Railway managed MySQL blocks replication commands, remain on Section 5 logical sync.</p>
+
+    <h2 id="failover">7. Failover procedure (local → Railway)</h2>
+    <div class="callout danger"><strong>Stop writes on primary first.</strong> If primary is already dead, skip to step 3.</div>
+    <ol class="steps">
+      <li><strong>Confirm primary failure</strong> — server unreachable, MySQL down, or unrecoverable within RTO.</li>
+      <li><strong>Run final sync</strong> if primary MySQL is still readable (from another machine or disk mount):
+        <pre>node scripts/sync-mysql-to-railway.js</pre>
+      </li>
+      <li><strong>Verify Railway database</strong> — connect with MySQL client; check <code>tbl_patient</code> row count vs last known good.</li>
+      <li><strong>Start / verify Railway HMS</strong> — open <code>/__health</code> on Railway URL.</li>
+      <li><strong>Redirect users</strong>:
+        <ul>
+          <li>Update DNS A/CNAME for hospital hostname to Railway, OR</li>
+          <li>Communicate emergency URL to all departments, OR</li>
+          <li>Update reverse proxy / firewall rules</li>
+        </ul>
+      </li>
+      <li><strong>Update license server</strong> — ensure Railway HMS <code>HMS_PUBLIC_URL</code> matches active URL for push webhooks.</li>
+      <li><strong>Post incident</strong> — document data loss window (time since last successful sync).</li>
+    </ol>
+
+    <h2 id="failback">8. Fail-back to local Windows server</h2>
+    <ol class="steps">
+      <li>Repair or replace local hardware; restore OS and XAMPP from backup (see Backup DR guide).</li>
+      <li>Option A: Dump Railway MySQL → import to local (reverse sync — adapt script swapping LOCAL/RAILWAY).</li>
+      <li>Option B: Restore local from latest local backup then replay changes manually if gap is small.</li>
+      <li>Run full UAT on local before switching users back.</li>
+      <li>Re-enable scheduled sync local → Railway once local is primary again.</li>
+    </ol>
+
+    <h2 id="monitor">9. Monitoring &amp; RPO/RTO</h2>
+    <table>
+      <thead><tr><th>Metric</th><th>Target</th><th>How to monitor</th></tr></thead>
+      <tbody>
+        <tr><td>Sync success</td><td>Every scheduled run</td><td>Task Scheduler history + log files in <code>C:\HMS-Backups\railway-sync\logs</code></td></tr>
+        <tr><td>RPO</td><td>≤ sync interval (e.g. 15 min)</td><td>Timestamp in last log line</td></tr>
+        <tr><td>RTO</td><td>≤ 30 min staff communication</td><td>Quarterly failover drill</td></tr>
+        <tr><td>Railway HMS health</td><td>Weekly ping</td><td><code>GET /__health</code> on standby URL</td></tr>
+      </tbody>
+    </table>
+    <ul class="checklist">
+      <li>Quarterly DR drill: run sync, fail over to Railway URL, test login + one clinical workflow</li>
+      <li>Alert if sync log shows failure two consecutive runs</li>
+      <li>Document Railway URL and credentials in sealed IT runbook</li>
+    </ul>
+
+    <h2 id="trouble">10. Troubleshooting</h2>
+    <table>
+      <thead><tr><th>Problem</th><th>Solution</th></tr></thead>
+      <tbody>
+        <tr><td><code>ECONNREFUSED</code> to Railway</td><td>Check public networking on MySQL plugin; verify host/port/password</td></tr>
+        <tr><td><code>mysqldump</code> not found</td><td>Set <code>XAMPP_MYSQL_BIN=C:\xampp\mysql\bin</code></td></tr>
+        <tr><td>Import timeout</td><td>Increase Node memory; run sync off-peak; shrink dump (exclude logs if needed)</td></tr>
+        <tr><td>Schema errors on import</td><td>Script sanitizes MariaDB→MySQL8 defaults; ensure HMS versions match</td></tr>
+        <tr><td>Duplicate key after partial import</td><td>Script drops all tables first — check <code>clearRailwayDatabase</code> completed</td></tr>
+        <tr><td>Railway HMS shows old data</td><td>Confirm sync completed; restart Railway HMS service; check <code>DB_*</code> points to synced DB</td></tr>
+      </tbody>
+    </table>
+
+    <p class="footer-note">© ZAIZENS · MySQL Local-to-Railway Replication Guide v1.0 · Confidential</p>
+  </main>
+</body>
+</html>

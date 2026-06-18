@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--inventory'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'inventory',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.inventory', { ns: 'common' }) : 'Loading…')
+}) %>
+
+<%- include('partials/footer') %>

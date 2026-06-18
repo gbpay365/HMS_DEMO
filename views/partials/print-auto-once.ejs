@@ -1,0 +1,22 @@
+<%#
+  One automatic print dialog per page load (avoids double print from duplicate
+  load handlers, back/forward cache quirks, or overlapping timers).
+  Manual toolbar buttons should still call window.print() directly.
+%>
+<script>
+(function () {
+  if (window.__hmsAutoPrintHooked) return;
+  window.__hmsAutoPrintHooked = true;
+  var DELAY_MS = 280;
+  function firePrint() {
+    if (window.__hmsAutoPrintFired) return;
+    window.__hmsAutoPrintFired = true;
+    try { window.print(); } catch (e) {}
+  }
+  function arm() {
+    setTimeout(firePrint, DELAY_MS);
+  }
+  if (document.readyState === 'complete') arm();
+  else window.addEventListener('load', arm, { once: true });
+})();
+</script>

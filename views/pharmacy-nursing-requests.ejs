@@ -1,0 +1,167 @@
+<%- include('partials/header') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    var o = { ns: 'legacy', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+    return _t(key, o);
+  };
+}
+function statusLabel(st) {
+  var map = {
+    pending: _tl('pharmacy_nursing_requests.status_pending', 'Pending'),
+    preparing: _tl('pharmacy_nursing_requests.status_preparing', 'Preparing'),
+    ready: _tl('pharmacy_nursing_requests.status_ready', 'Ready'),
+    fulfilled: _tl('pharmacy_nursing_requests.status_fulfilled', 'Dispensed'),
+    cancelled: _tl('pharmacy_nursing_requests.status_cancelled', 'Cancelled')
+  };
+  return map[st] || st;
+}
+%>
+<%- include('partials/pharmacy-odoo-start', {
+  phaOdooMenu: 'nursing',
+  phaOdooTitle: _tl('pharmacy_nursing_requests.title', 'Nursing requests'),
+  nursingSupplyPending: nursingSupplyPending,
+  flash: flash,
+  error: error
+}) %>
+
+<div class="o_control_panel">
+  <a href="/pharmacy/nursing-requests" class="o_cp_new"><i class="fa fa-refresh"></i> <%= _tl('pharmacy_nursing_requests.refresh', 'Refresh') %></a>
+  <div class="o_cp_breadcrumb"><span><%= _tl('pharmacy_nursing_requests.title', 'Nursing requests') %></span><i class="fa fa-cog"></i></div>
+  <div class="o_cp_search_wrap">
+    <span class="o_cp_search_chip"><%= _tl('pharmacy_nursing_requests.filter_all', 'All') %></span>
+    <input type="search" id="phaOdooSearch" placeholder="<%= _tl('pharmacy_nursing_requests.search_ph', 'Search…') %>" autocomplete="off">
+    <i class="fa fa-search ml-1"></i>
+  </div>
+  <a href="/pharmacy?view=dispensing" class="o_btn_link"><%= _tl('pharmacy_nursing_requests.dispensing_queue', 'Dispensing queue') %></a>
+</div>
+
+<div class="o_content">
+  <p class="small text-muted mb-3" style="max-width:960px;">
+    <i class="fa fa-info-circle mr-1" aria-hidden="true"></i>
+    <%= _tl('pharmacy_nursing_requests.help', 'Use Dispense & deduct stock when handing items to nursing — this updates inventory automatically.') %>
+  </p>
+  <% if (!requests || !requests.length) { %>
+  <div class="o_list_empty" style="margin:2rem;"><i class="fa fa-hospital-o"></i><%= _tl('pharmacy_nursing_requests.empty', 'No nursing requests.') %></div>
+  <% } else { %>
+  <% requests.forEach(function(r) {
+       var st = String(r.status || 'pending').toLowerCase();
+       var needsDispense = st !== 'cancelled' && (st !== 'fulfilled' || !r.stock_deducted_at);
+       var isDispensed = st === 'fulfilled' && !!r.stock_deducted_at;
+  %>
+  <div class="o_form_sheet" style="max-width:960px;" data-pha-search="<%= (r.first_name||'') + ' ' + (r.last_name||'') + ' ' + r.id %>">
+    <div class="o_form_statusbar">
+      <span class="<%= ['pending','preparing','ready','fulfilled'].indexOf(st) >= 0 ? 'done' : '' %>"><%= _tl('pharmacy_nursing_requests.status_pending', 'Pending') %></span>
+      <span class="<%= ['preparing','ready','fulfilled'].indexOf(st) >= 0 ? 'done' : '' %>"><%= _tl('pharmacy_nursing_requests.status_preparing', 'Preparing') %></span>
+      <span class="<%= ['ready','fulfilled'].indexOf(st) >= 0 ? 'done' : '' %>"><%= _tl('pharmacy_nursing_requests.status_ready', 'Ready') %></span>
+      <span class="<%= st === 'fulfilled' ? 'done' : '' %>"><%= _tl('pharmacy_nursing_requests.status_fulfilled', 'Dispensed') %></span>
+    </div>
+    <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap" style="gap:10px;">
+      <div>
+        <h2 class="h5 font-weight-bold mb-1"><%= _tl('pharmacy_nursing_requests.request_label', 'Request #') %><%= r.id %></h2>
+        <p class="text-muted small mb-0"><%= r.nurse_name || ((r.first_name || '') + ' ' + (r.last_name || '')).trim() %> · <%= r.created_at ? new Date(r.created_at).toLocaleString() : '' %></p>
+        <% if (r.patient_label || r.ward_name || r.admission_id) { %>
+        <p class="small text-primary mb-0">
+          <i class="fa fa-user mr-1"></i>
+          <% if (r.ward_name) { %><%= _tl('pharmacy_nursing_requests.ward', 'Ward') %>: <%= r.ward_name %><% if (r.patient_label || r.admission_id) { %> · <% } %><% } %>
+          <% if (r.patient_label) { %><%= _tl('pharmacy_nursing_requests.patient', 'Patient') %>: <%= r.patient_label %><% } %>
+          <% if (r.admission_id) { %><% if (r.patient_label) { %> · <% } %><%= _tl('pharmacy_nursing_requests.admission', 'Admission') %>: #<%= r.admission_id %><% } %>
+        </p>
+        <% } %>
+      </div>
+      <span class="o_status_pill <%= st === 'fulfilled' ? 'o_status_sales' : (st === 'cancelled' ? '' : 'o_status_pending') %>"<%= st === 'cancelled' ? ' style="background:#e2e8f0;color:#475569;"' : '' %>><%= statusLabel(st) %></span>
+    </div>
+    <% if (r.notes) { %><p class="small text-muted border-left pl-3 mb-3"><%= r.notes %></p><% } %>
+
+    <div class="o_list_renderer mb-3" style="border:1px solid #dee2e6;border-radius:4px;">
+      <table class="o_list_table">
+        <thead>
+          <tr>
+            <th><%= _tl('pharmacy_shared.type', 'Type') %></th>
+            <th><%= _tl('pharmacy_nursing_requests.col_item', 'Item') %></th>
+            <th><%= _tl('pharmacy_shared.qty', 'Qty requested') %></th>
+            <th><%= _tl('pharmacy_nursing_requests.col_stock_now', 'Stock now') %></th>
+            <th><%= _tl('pharmacy_nursing_requests.col_remarks', 'Remarks') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (r.lines||[]).forEach(function(ln) {
+               var stockNow = ln.stock_now;
+               var low = stockNow != null && ln.quantity && parseInt(String(ln.quantity).replace(/\D/g,''), 10) > stockNow;
+          %>
+          <tr>
+            <td><%= ln.line_type %></td>
+            <td class="font-weight-bold"><%= ln.item_name %></td>
+            <td><%= ln.quantity || _tl('pharmacy_shared.em_dash', '—') %></td>
+            <td class="small <%= low ? 'text-danger font-weight-bold' : 'text-muted' %>">
+              <% if (stockNow != null) { %>
+                <%= stockNow %> <%= _tl('pharmacy_nursing_requests.units', 'units') %>
+                <% if (low) { %> <span class="badge badge-danger ml-1"><%= _tl('pharmacy_nursing_requests.low_stock', 'Low') %></span><% } %>
+              <% } else { %>
+                <%= _tl('pharmacy_shared.em_dash', '—') %>
+              <% } %>
+            </td>
+            <td class="small text-muted"><%= ln.remarks || _tl('pharmacy_shared.em_dash', '—') %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if (isDispensed) { %>
+    <div class="alert alert-success border-0 mb-0" style="border-radius:8px;">
+      <i class="fa fa-check-circle mr-1"></i>
+      <%= _tl('pharmacy_nursing_requests.dispensed_banner', 'Dispensed — stock has been deducted from inventory.') %>
+      <% if (r.stock_deducted_at) { %>
+      <span class="d-block small mt-1 opacity-90"><%= new Date(r.stock_deducted_at).toLocaleString() %></span>
+      <% } %>
+    </div>
+    <% } else if (st === 'cancelled') { %>
+    <div class="alert alert-secondary border-0 mb-0" style="border-radius:8px;">
+      <%= _tl('pharmacy_nursing_requests.cancelled_banner', 'This request was cancelled.') %>
+    </div>
+    <% } else if (needsDispense) { %>
+    <% if (st === 'fulfilled' && !r.stock_deducted_at) { %>
+    <div class="alert alert-warning border-0 mb-2" style="border-radius:8px;">
+      <%= _tl('pharmacy_nursing_requests.pending_stock_banner', 'Marked as dispensed but stock was not deducted yet. Use the button below to complete dispensing.') %>
+    </div>
+    <% } %>
+    <div class="rounded p-3 mb-2" style="background:#ecfdf5;border:1px solid #86efac;">
+      <div class="font-weight-bold mb-2 text-success">
+        <i class="fa fa-medkit mr-1"></i><%= _tl('pharmacy_nursing_requests.dispense_heading', 'Dispense to nursing') %>
+      </div>
+      <p class="small text-muted mb-3"><%= _tl('pharmacy_nursing_requests.dispense_hint', 'Hand over the items above, then click below. Quantities will be removed from pharmacy stock.') %></p>
+      <form method="post" action="/pharmacy/nursing-requests/<%= r.id %>/status" class="d-inline"
+            onsubmit="return confirm(<%= JSON.stringify(_tl('pharmacy_nursing_requests.dispense_confirm', 'Dispense this request and deduct stock from inventory?')) %>);">
+        <input type="hidden" name="status" value="fulfilled">
+        <button type="submit" class="o_cp_new" style="border:none;font-size:14px;padding:10px 18px;">
+          <i class="fa fa-check mr-1"></i><%= _tl('pharmacy_nursing_requests.dispense_btn', 'Dispense & deduct stock') %>
+        </button>
+      </form>
+    </div>
+
+    <div class="mt-3 pt-3 border-top">
+      <div class="small font-weight-bold text-muted mb-2"><%= _tl('pharmacy_nursing_requests.other_actions', 'Other status updates') %></div>
+      <form method="post" action="/pharmacy/nursing-requests/<%= r.id %>/status" class="d-flex flex-wrap align-items-center" style="gap:8px;">
+        <select name="status" class="form-control form-control-sm" style="max-width:220px;">
+          <option value="pending" <%= st === 'pending' ? 'selected' : '' %>><%= _tl('pharmacy_nursing_requests.status_pending', 'Pending') %></option>
+          <option value="preparing" <%= st === 'preparing' ? 'selected' : '' %>><%= _tl('pharmacy_nursing_requests.status_preparing', 'Preparing') %></option>
+          <option value="ready" <%= st === 'ready' ? 'selected' : '' %>><%= _tl('pharmacy_nursing_requests.status_ready_pickup', 'Ready for pickup') %></option>
+          <option value="cancelled" <%= st === 'cancelled' ? 'selected' : '' %>><%= _tl('pharmacy_nursing_requests.status_cancelled', 'Cancelled') %></option>
+        </select>
+        <button type="submit" class="btn btn-sm btn-outline-secondary"><%= _tl('pharmacy_shared.save', 'Save') %></button>
+      </form>
+    </div>
+    <% } %>
+  </div>
+  <% }); %>
+  <% } %>
+</div>
+
+<%- include('partials/pharmacy-odoo-end') %>
+<script src="/js/pharmacy-odoo.js?v=2"></script>
+<%- include('partials/footer') %>

@@ -1,0 +1,240 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    var o = { ns: 'legacy', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+    return _t(key, o);
+  };
+}
+%>
+<!DOCTYPE html>
+<html lang="<%= locals.lang || 'en' %>">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= title %></title>
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/font-awesome.min.css">
+<link rel="stylesheet" href="/css/hms-fonts-local.css">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: linear-gradient(180deg,#0b1220 0%,#0f172a 100%);
+    color: #f1f5f9;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+  }
+  .tm-shell { display: flex; flex-direction: column; min-height: 100vh; }
+  .tm-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 22px;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  }
+  .tm-brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.05rem;
+  }
+  .tm-brand .dot { width: 10px; height: 10px; border-radius: 50%; background: #34d399; box-shadow: 0 0 12px #34d399; animation: tmPulse 1.5s infinite; }
+  @keyframes tmPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .55; transform: scale(.85); } }
+  .tm-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: .85rem; color: #94a3b8; }
+  .tm-meta .pill { padding: 4px 12px; border-radius: 999px; background: rgba(56, 189, 248, 0.15); color: #7dd3fc; font-weight: 600; font-size: .78rem; }
+  .tm-actions { display: flex; gap: 10px; }
+  .tm-btn-out {
+    background: rgba(255, 255, 255, 0.06);
+    color: #f1f5f9;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: .82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .2s, border-color .2s;
+  }
+  .tm-btn-out:hover { background: rgba(255, 255, 255, 0.12); color: #fff; border-color: rgba(148, 163, 184, 0.45); }
+  .tm-btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: .82rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .tm-stage {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    padding: 12px;
+  }
+  #jitsiContainer {
+    width: 100%;
+    height: 100%;
+    min-height: 70vh;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+  }
+  #jitsiContainer iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .tm-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 14px;
+    color: #94a3b8;
+    font-size: .9rem;
+    pointer-events: none;
+  }
+  .tm-loading .spinner {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 3px solid rgba(56, 189, 248, 0.25);
+    border-top-color: #38bdf8;
+    animation: tmSpin 0.9s linear infinite;
+  }
+  @keyframes tmSpin { to { transform: rotate(360deg); } }
+  .tm-foot {
+    text-align: center;
+    color: #64748b;
+    font-size: .78rem;
+    padding: 10px 18px 14px;
+  }
+  .tm-foot strong { color: #cbd5e1; }
+</style>
+</head>
+<body>
+<div class="tm-shell">
+  <header class="tm-bar">
+    <div class="tm-brand">
+      <span class="dot"></span>
+      <span><i class="fa fa-video-camera mr-1"></i><%= _tl('telemedicine_room.brand_title', 'Telemedicine consultation') %></span>
+    </div>
+    <div class="tm-meta">
+      <span class="pill"><%= _tl('telemedicine_room.you_label', 'You') %>: <%= displayName %></span>
+      <span><i class="fa fa-user-md mr-1"></i><%= _tl('telemedicine_room.with_prefix', 'With') %> <%= peerName %></span>
+      <span><i class="fa fa-calendar mr-1"></i><%= appointment.date ? fmtDate(appointment.date) : _tl('telemedicine_room.today', 'today') %><% if (appointment.time) { %> · <%= appointment.time %><% } %></span>
+      <span><i class="fa fa-hashtag mr-1"></i><%= appointment.appointment_id || ('A-' + appointment.id) %></span>
+    </div>
+    <div class="tm-actions">
+      <a href="<%= isPatient ? '/portal/dashboard?tab=appointments' : '/portal/doctor?tab=appointments&filter=confirmed' %>" class="tm-btn-out">
+        <i class="fa fa-arrow-left mr-1"></i><%= _tl('telemedicine_room.back', 'Back') %>
+      </a>
+      <button type="button" class="tm-btn-danger" id="tmHangup">
+        <i class="fa fa-phone-slash mr-1"></i><%= _tl('telemedicine_room.end_call', 'End call') %>
+      </button>
+    </div>
+  </header>
+
+  <main class="tm-stage">
+    <div id="jitsiContainer"></div>
+    <div class="tm-loading" id="tmLoader">
+      <div class="spinner"></div>
+      <div><%= _tl('telemedicine_room.connecting', 'Connecting to secure video room…') %></div>
+    </div>
+  </main>
+
+  <p class="tm-foot">
+    <%- _tl('telemedicine_room.footer_intro', '🔒 This consultation runs over Jitsi Meet (<strong>meet.jit.si</strong>). Your microphone &amp; camera are managed by your browser.') %>
+    <%= _tl('telemedicine_room.footer_room', 'Room:') %> <strong><%= room %></strong>
+  </p>
+</div>
+
+<script src="/assets/js/jquery-3.6.0.min.js"></script>
+<script src="https://meet.jit.si/external_api.js"></script>
+<script>
+(function(){
+  var room = <%- JSON.stringify(room) %>;
+  var displayName = <%- JSON.stringify(displayName) %>;
+  var role = <%- JSON.stringify(role) %>;
+  var peerName = <%- JSON.stringify(peerName) %>;
+  var jitsiLoadError = <%- JSON.stringify(_tl('telemedicine_room.jitsi_load_error', 'Could not load the Jitsi video library. Please check your internet connection and try again.')) %>;
+
+  if (!window.JitsiMeetExternalAPI) {
+    document.getElementById('tmLoader').innerHTML =
+      '<div style="color:#fca5a5;text-align:center;max-width:480px;">' + jitsiLoadError + '</div>';
+    return;
+  }
+
+  var domain = 'meet.jit.si';
+  var options = {
+    roomName: room,
+    parentNode: document.getElementById('jitsiContainer'),
+    width: '100%',
+    height: '100%',
+    userInfo: {
+      displayName: displayName
+    },
+    configOverwrite: {
+      prejoinPageEnabled: false,
+      disableDeepLinking: true,
+      startWithAudioMuted: false,
+      startWithVideoMuted: false,
+      enableWelcomePage: false,
+      defaultLanguage: 'en'
+    },
+    interfaceConfigOverwrite: {
+      MOBILE_APP_PROMO: false,
+      SHOW_JITSI_WATERMARK: false,
+      SHOW_BRAND_WATERMARK: false,
+      SHOW_POWERED_BY: false,
+      DEFAULT_BACKGROUND: '#0b1220',
+      DEFAULT_REMOTE_DISPLAY_NAME: peerName,
+      TOOLBAR_BUTTONS: [
+        'microphone', 'camera', 'desktop', 'fullscreen',
+        'fodeviceselection', 'hangup', 'chat', 'raisehand',
+        'videoquality', 'tileview', 'settings'
+      ]
+    }
+  };
+
+  var api = new JitsiMeetExternalAPI(domain, options);
+
+  api.addEventListener('videoConferenceJoined', function(){
+    var loader = document.getElementById('tmLoader');
+    if (loader) loader.style.display = 'none';
+  });
+
+  api.addEventListener('readyToClose', function(){
+    var back = role === 'patient'
+      ? '/portal/dashboard?tab=appointments'
+      : '/portal/doctor?tab=appointments&filter=confirmed';
+    window.location.href = back;
+  });
+
+  document.getElementById('tmHangup').addEventListener('click', function(){
+    try { api.executeCommand('hangup'); } catch(e) {}
+    setTimeout(function(){
+      var back = role === 'patient'
+        ? '/portal/dashboard?tab=appointments'
+        : '/portal/doctor?tab=appointments&filter=confirmed';
+      window.location.href = back;
+    }, 600);
+  });
+
+  // Hide loader if Jitsi never sends the join event after 8s
+  setTimeout(function(){
+    var loader = document.getElementById('tmLoader');
+    if (loader) loader.style.display = 'none';
+  }, 8000);
+})();
+</script>
+</body>
+</html>

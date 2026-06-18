@@ -1,0 +1,91 @@
+<%
+// Reusable hospital letterhead for receipts, invoices, prescriptions, reports.
+// Optional locals: docTitle, docNumber, docDate, variant (full|compact|mark), accent, tagline
+var _b = locals.brand || {};
+var _bName = _b.name || 'ZAIZENS';
+var _bLegal = _b.legalName || _b.orgName || 'ZAIZENS';
+var _bOrg = locals.finReportOrgName || _b.orgName || _b.facilityName || 'ZAIZENS';
+var _bTag = _b.tagline || '';
+var _bLogo = _b.logoPath || '/img/zaizens-brand.svg';
+var _bLh = _b.letterheadPath || '/img/hms-letterhead.png?v=20260515';
+var _bSlipHeader = _b.slipHeader || _bOrg || 'ZAIZENS';
+var __lh = {
+ docTitle:  (typeof docTitle  !== 'undefined') ? docTitle  : '',
+ docNumber: (typeof docNumber !== 'undefined') ? docNumber : '',
+ docDate:   (typeof docDate   !== 'undefined') ? docDate   : '',
+ variant:   (typeof variant   !== 'undefined') ? variant   : 'full',
+ accent:    (typeof accent    !== 'undefined') ? accent    : '#0f172a',
+ tagline:   (typeof tagline   !== 'undefined') ? tagline   : ''
+};
+%>
+<style>
+ .hms-letterhead { width:100%; }
+ .hms-letterhead .hms-lh-banner { width:100%; display:block; text-align:center; }
+ .hms-letterhead .hms-lh-banner img {
+   display:block; margin:0 auto;
+   width:100%; height:auto; max-width:100%;
+   object-fit:contain; object-position:center;
+   image-rendering:-webkit-optimize-contrast;
+   -webkit-print-color-adjust:exact; print-color-adjust:exact;
+ }
+ .hms-letterhead.hms-lh-compact .hms-lh-banner img { max-height:90px; }
+ .hms-letterhead .hms-lh-bar {
+   display:flex; justify-content:space-between; align-items:center; gap:10px;
+   padding:6px 12px; margin-top:8px;
+   background: <%= __lh.accent %>; color:#fff;
+   border-radius:6px;
+   -webkit-print-color-adjust:exact; print-color-adjust:exact;
+ }
+ .hms-letterhead .hms-lh-bar .hms-lh-title {
+   font-weight:800; font-size:13px; letter-spacing:.08em; text-transform:uppercase;
+ }
+ .hms-letterhead .hms-lh-bar .hms-lh-meta {
+   text-align:right; font-size:11px; line-height:1.35; font-weight:600;
+ }
+ .hms-letterhead .hms-lh-bar .hms-lh-meta .hms-lh-num {
+   font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+   font-size:12px; font-weight:700; letter-spacing:.04em;
+ }
+ .hms-letterhead .hms-lh-tagline {
+   margin-top:4px; text-align:center; font-size:11px; color:#475569; font-weight:600;
+   letter-spacing:.04em; text-transform:uppercase;
+ }
+
+ /* Mark-only mode (narrow payment / cashier slips — facility name only) */
+ .hms-letterhead.hms-lh-mark { text-align:center; padding:4px 0 6px; }
+ .hms-letterhead.hms-lh-mark .hms-lh-facility {
+   font-size:13px; font-weight:800; font-style:italic; line-height:1.35;
+   letter-spacing:.01em; color:#000; margin:0 0 4px;
+ }
+
+ @media print {
+  .hms-letterhead, .hms-letterhead * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .hms-letterhead .hms-lh-banner img { width:100%; }
+ }
+</style>
+
+<% if (__lh.variant === 'mark') { %>
+ <div class="hms-letterhead hms-lh-mark">
+  <div class="hms-lh-facility"><%= _bSlipHeader %></div>
+  <% if (__lh.docTitle) { %><div class="hms-lh-tagline"><%= __lh.docTitle %></div><% } %>
+ </div>
+<% } else { %>
+ <div class="hms-letterhead <%= __lh.variant === 'compact' ? 'hms-lh-compact' : '' %>">
+  <div class="hms-lh-banner">
+   <img src="<%= _bLh %>" alt="<%= _bOrg %>" />
+  </div>
+  <% if (__lh.docTitle || __lh.docNumber || __lh.docDate) { %>
+   <div class="hms-lh-bar">
+    <div class="hms-lh-title"><%= __lh.docTitle || '' %></div>
+    <div class="hms-lh-meta">
+     <% if (__lh.docNumber) { %><div class="hms-lh-num"><%= __lh.docNumber %></div><% } %>
+     <% if (__lh.docDate)   { %><div><%= __lh.docDate %></div><% } %>
+    </div>
+   </div>
+  <% } %>
+  <% if (__lh.tagline) { %><div class="hms-lh-tagline"><%= __lh.tagline %></div><% } %>
+ </div>
+<% } %>

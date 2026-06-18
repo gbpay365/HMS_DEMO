@@ -1,0 +1,539 @@
+/**
+ * Full-screen OPD call queue boards & launcher — TV / kiosk displays
+ * Brand: emerald on dark slate (#070b14)
+ */
+:root {
+  --cq-bg: #070b14;
+  --cq-brand: #10b981;
+  --cq-brand-dim: #34d399;
+  --cq-brand-glow: rgba(16, 185, 129, 0.28);
+  --cq-header-grad: linear-gradient(90deg, rgba(15, 23, 42, 0.97) 0%, rgba(6, 78, 59, 0.55) 100%);
+  --cq-border: rgba(16, 185, 129, 0.2);
+}
+
+body.hms-body--call-queue-board,
+body.hms-body--call-queue-launcher {
+  margin: 0;
+  overflow: hidden;
+  background: var(--cq-bg);
+  color: #f8fafc;
+}
+
+/* —— Launcher —— */
+.cq-launcher {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  background: var(--cq-bg);
+  color: #f1f5f9;
+}
+
+.cq-launcher__header {
+  border-bottom: 1px solid var(--cq-border);
+  background: var(--cq-header-grad);
+  padding: 1.25rem 1.5rem;
+}
+
+.cq-launcher__title {
+  margin: 0;
+  font-size: 1.875rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #fff;
+}
+
+.cq-launcher__subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.cq-launcher__main {
+  flex: 1;
+  overflow: auto;
+  padding: 1.5rem;
+}
+
+.cq-launcher__section-title {
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cq-brand-dim);
+}
+
+.cq-launcher__grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.cq-launcher__grid--presets {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.cq-launcher__grid--rooms {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+
+.cq-launcher__grid--doctors {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.cq-launcher__tile {
+  display: block;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  background: rgba(15, 23, 42, 0.65);
+  padding: 1rem 1.25rem;
+  font-weight: 700;
+  color: #f8fafc;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cq-launcher__tile:hover {
+  border-color: rgba(16, 185, 129, 0.45);
+  background: rgba(30, 41, 59, 0.85);
+}
+
+.cq-launcher__tile--primary {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.cq-launcher__tile-icon {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  color: var(--cq-brand-dim);
+}
+
+.cq-launcher__tile-sub {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+.cq-launcher__footer {
+  border-top: 1px solid rgba(51, 65, 85, 0.5);
+  padding: 0.75rem 1.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* —— Board shell —— */
+.cq-board {
+  display: flex;
+  height: 100vh;
+  flex-direction: column;
+  background: var(--cq-bg);
+  color: #f1f5f9;
+}
+
+.cq-board__header {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--cq-border);
+  background: var(--cq-header-grad);
+  padding: 0.75rem 1.5rem;
+}
+
+.cq-board__title {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.cq-board__subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.cq-board__clock {
+  font-family: ui-monospace, monospace;
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--cq-brand-dim);
+}
+
+.cq-board__status {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.cq-board__status-dot {
+  display: inline-block;
+  height: 0.5rem;
+  width: 0.5rem;
+  border-radius: 999px;
+}
+
+.cq-board__status-dot--live {
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+}
+
+.cq-board__status-dot--connecting {
+  background: #6ee7b7;
+}
+
+.cq-board__status-dot--poll {
+  background: #fbbf24;
+}
+
+.cq-board__footer {
+  flex-shrink: 0;
+  border-top: 1px solid rgba(51, 65, 85, 0.5);
+  padding: 0.5rem 1rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.cq-board__section-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-weight: 800;
+}
+
+.cq-board__section-title .fa {
+  color: var(--cq-brand-dim);
+}
+
+.cq-board__queue-panel {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  background: rgba(15, 23, 42, 0.45);
+}
+
+/* —— Queue rows —— */
+.cq-board .cq-row {
+  border-left: 4px solid transparent;
+}
+
+.cq-row-default {
+  background: linear-gradient(90deg, rgba(30, 41, 59, 0.55) 0%, rgba(15, 23, 42, 0.35) 100%);
+  border-left-color: rgba(100, 116, 139, 0.45);
+}
+
+.cq-row-next {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.18) 0%, rgba(30, 41, 59, 0.6) 100%);
+  border-left-color: var(--cq-brand);
+  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.25);
+}
+
+.cq-row-empty {
+  background: rgba(15, 23, 42, 0.25);
+  border-left: 4px dashed rgba(71, 85, 105, 0.35);
+}
+
+.cq-row-separator {
+  height: 2px;
+  margin: 0 1.25rem;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.45), transparent);
+}
+
+.cq-slot-num {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.cq-status-pill {
+  margin-top: 0.2rem;
+  max-width: 3.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6ee7b7;
+}
+
+.cq-col {
+  border-right: 1px solid rgba(71, 85, 105, 0.35);
+  padding-right: 1rem;
+}
+
+.cq-col-room {
+  border-right: none;
+  padding-right: 0;
+}
+
+.cq-col-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.15rem;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.cq-col-label .cq-icon {
+  width: 0.9rem;
+  text-align: center;
+  color: var(--cq-brand-dim);
+}
+
+.cq-col-value {
+  font-size: clamp(1rem, 1.6vw, 1.35rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: #f8fafc;
+}
+
+.cq-col-sub {
+  margin-top: 0.1rem;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.cq-next-badge {
+  border-radius: 999px;
+  background: var(--cq-brand);
+  padding: 0.1rem 0.45rem;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #022c22;
+}
+
+.cq-auto-badge {
+  border-radius: 0.35rem;
+  background: rgba(16, 185, 129, 0.15);
+  padding: 0.05rem 0.35rem;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6ee7b7;
+}
+
+.cq-slot-col {
+  width: 3.25rem;
+}
+
+.cq-focus-serving {
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: linear-gradient(180deg, rgba(6, 78, 59, 0.45) 0%, rgba(15, 23, 42, 0.85) 100%);
+  box-shadow: 0 0 40px var(--cq-brand-glow);
+}
+
+.cq-focus-up-next {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  background: rgba(15, 23, 42, 0.55);
+  padding: 0.75rem 1rem;
+}
+
+/* —— Table board (TV waiting room) —— */
+.cq-board--table {
+  background: #1c1c1c;
+}
+
+.cq-table {
+  min-height: 0;
+}
+
+.cq-table__head {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.6fr);
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.35rem 0.35rem 0 0;
+  background: #ffffff;
+  color: #111827;
+  padding: 0.85rem 1.25rem;
+  font-size: clamp(1rem, 1.8vw, 1.35rem);
+  font-weight: 800;
+}
+
+.cq-table__th {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  text-align: center;
+}
+
+.cq-table__th--patient {
+  justify-content: flex-start;
+}
+
+.cq-table__th--doctor {
+  justify-content: flex-start;
+}
+
+.cq-table__th .fa {
+  font-size: 1.1em;
+  opacity: 0.9;
+}
+
+.cq-table__body {
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-top: none;
+  background: #111827;
+}
+
+.cq-table__row {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.6fr);
+  align-items: center;
+  gap: 0.5rem;
+  min-height: clamp(4.5rem, 11vh, 7rem);
+  padding: 0.65rem 1.25rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.92);
+  color: #ffffff;
+}
+
+.cq-table__row:last-child {
+  border-bottom: none;
+}
+
+.cq-table__row--now {
+  background: #c62828;
+}
+
+.cq-table__row--next {
+  background: #2e7d32;
+}
+
+.cq-table__row--waiting {
+  background: #37474f;
+}
+
+.cq-table__td {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.cq-table__td--patient,
+.cq-table__td--doctor {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.cq-table__patient-line {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.cq-table__queue-no {
+  font-size: clamp(0.9rem, 1.4vw, 1.1rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.92;
+}
+
+.cq-table__patient-name {
+  display: block;
+  font-size: clamp(1.35rem, 2.4vw, 2rem);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.cq-table__wait-label {
+  font-size: clamp(1.25rem, 2.2vw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.cq-table__room-label {
+  font-size: clamp(1.15rem, 2vw, 1.65rem);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.cq-table__doctor-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.cq-table__doctor-photo {
+  flex-shrink: 0;
+  width: clamp(2.75rem, 5vw, 3.75rem);
+  height: clamp(2.75rem, 5vw, 3.75rem);
+  overflow: hidden;
+  border-radius: 0.35rem;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.cq-table__doctor-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cq-table__doctor-initials {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.cq-table__doctor-name {
+  font-size: clamp(1rem, 1.8vw, 1.45rem);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.cq-table__empty {
+  min-height: 12rem;
+  background: #263238;
+}
+
+.cq-table__overflow {
+  color: #cfd8dc;
+}
+
+@media (max-width: 768px) {
+  .cq-table__head,
+  .cq-table__row {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 1.3fr);
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}

@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--ipd-census'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'ipd-census',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading.census', { ns: 'ipd', defaultValue: 'Loading IPD census…' }) : 'Loading IPD census…')
+}) %>
+
+<%- include('partials/footer') %>

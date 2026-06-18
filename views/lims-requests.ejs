@@ -1,0 +1,58 @@
+<%- include('partials/header') %>
+<%
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback) {
+    return (typeof t === 'function' ? t(key, { ns: 'legacy', defaultValue: fallback }) : fallback);
+  };
+}
+var _f = filter || 'today';
+%>
+<%- include('partials/laboratory-odoo-start', {
+  labOdooMenu: 'operations',
+  labOdooTitle: _tl('lims_requests.title', 'Lab requests'),
+  labOdooActions: '<a href="/lims/request/new" class="o_btn_primary"><i class="fa fa-plus"></i> ' + _tl('lims_requests.new_request', 'New request') + '</a>'
+}) %>
+<div class="o_content">
+
+<div class="hms-chip-row">
+ <a href="/lims/requests?filter=today" class="hms-chip<%= _f === 'today' ? ' active' : '' %>"><%= _tl('lims_requests.filter_today', 'Today') %></a>
+ <a href="/lims/requests?filter=pending" class="hms-chip<%= _f === 'pending' ? ' active' : '' %>"><%= _tl('lims_requests.filter_open', 'Open') %></a>
+ <a href="/lims/requests?filter=done" class="hms-chip<%= _f === 'done' ? ' active' : '' %>"><%= _tl('lims_requests.filter_done', 'Done') %></a>
+ <a href="/lims/requests?filter=all" class="hms-chip<%= _f === 'all' ? ' active' : '' %>"><%= _tl('lims_requests.filter_all', 'All') %></a>
+</div>
+
+<div class="hms-surface-card">
+ <div class="table-responsive">
+  <table class="table table-hover mb-0">
+   <thead class="thead-light">
+    <tr>
+     <th><%= _tl('lims_requests.col_request', 'Request') %></th>
+     <th><%= _tl('lims_requests.col_patient', 'Patient') %></th>
+     <th><%= _tl('lims_requests.col_date', 'Date') %></th>
+     <th><%= _tl('lims_requests.col_status', 'Status') %></th>
+     <th><%= _tl('lims_requests.col_tests', 'Tests') %></th>
+     <th></th>
+    </tr>
+   </thead>
+   <tbody>
+   <% if (!rows || !rows.length) { %>
+   <tr><td colspan="6" class="text-muted text-center py-4"><%= _tl('lims_requests.empty', 'No lab requests for this filter.') %></td></tr>
+   <% } %>
+   <% (rows || []).forEach(function(r){ %>
+   <tr>
+    <td class="font-weight-bold"><%= r.request_no || ('#' + r.id) %></td>
+    <td><%= r.first_name %> <%= r.last_name %></td>
+    <td class="small"><%= r.scheduled_date %></td>
+    <td><span class="badge badge-light border"><%= r.status %></span></td>
+    <td><%= r.line_count %></td>
+    <td><a href="/lims/request/<%= r.id %>" class="btn btn-sm btn-outline-primary"><%= _tl('lims_requests.open', 'Open') %></a></td>
+   </tr>
+   <% }); %>
+   </tbody>
+  </table>
+ </div>
+</div>
+
+</div>
+<%- include('partials/laboratory-odoo-end') %>
+<%- include('partials/footer') %>

@@ -1,0 +1,201 @@
+/**
+ * HMS shared EJS components (Phase 2) — mirrors React StatCard, filter bar, chips.
+ * Load after hms-tokens.css; works inside dept shells and sidebar pages.
+ */
+
+/* ── Stat cards ── */
+.hms-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .hms-stat-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.hms-stat-card {
+  background: var(--hms-card-bg, #fff);
+  border: 1px solid var(--hms-border, #e2e8f0);
+  border-radius: var(--hms-radius-sm, 10px);
+  padding: 14px 16px;
+  box-shadow: var(--hms-shadow-sm);
+  text-align: center;
+}
+
+.hms-stat-card__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--hms-ink-muted, #64748b);
+}
+
+.hms-stat-card__value {
+  margin-top: 4px;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--hms-ink, #1e293b);
+}
+
+.hms-stat-card__hint {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  color: var(--hms-ink-muted, #64748b);
+}
+
+.hms-stat-card--brand .hms-stat-card__value { color: var(--hms-brand, #10b981); }
+.hms-stat-card--success .hms-stat-card__value { color: var(--hms-success, #10b981); }
+.hms-stat-card--warning .hms-stat-card__value { color: var(--hms-warning, #f59e0b); }
+.hms-stat-card--danger .hms-stat-card__value { color: var(--hms-danger, #ef4444); }
+.hms-stat-card--info .hms-stat-card__value { color: var(--hms-info, #06b6d4); }
+.hms-stat-card--lab .hms-stat-card__value { color: var(--hms-dept-laboratory, #8b5cf6); }
+.hms-stat-card--procurement .hms-stat-card__value { color: var(--hms-dept-finance, #6366f1); }
+
+/* Quick-link tiles (LIMS hub, module menus) */
+a.hms-menu-tile {
+  display: block;
+  padding: 14px 16px;
+  text-decoration: none;
+  color: var(--hms-ink, #1e293b);
+  transition: box-shadow 0.15s, border-color 0.15s, transform 0.12s;
+}
+
+a.hms-menu-tile:hover {
+  text-decoration: none;
+  color: var(--hms-ink, #1e293b);
+  border-color: var(--hms-brand, #10b981);
+  box-shadow: var(--hms-shadow-md);
+  transform: translateY(-1px);
+}
+
+a.hms-menu-tile .hms-menu-tile__ico {
+  color: var(--hms-brand, #10b981);
+  margin-right: 8px;
+}
+
+.hms-menu-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 576px) {
+  .hms-menu-tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 992px) {
+  .hms-menu-tile-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.mat-stat.hms-stat-card,
+.vac-stat.hms-stat-card {
+  text-align: center;
+}
+
+/* ── Filter bar ── */
+.hms-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--hms-card-bg, #fff);
+  border: 1px solid var(--hms-border, #e2e8f0);
+  border-radius: var(--hms-radius-sm, 10px);
+  box-shadow: var(--hms-shadow-sm);
+  margin-bottom: 1rem;
+}
+
+.hms-filter-bar .form-control,
+.hms-filter-bar select {
+  border-radius: 8px;
+  border-color: var(--hms-border, #e2e8f0);
+  font-size: 0.88rem;
+}
+
+.hms-filter-bar__search {
+  flex: 1 1 200px;
+  min-width: 160px;
+}
+
+/* ── Filter chips ── */
+.hms-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.hms-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--hms-ink-muted, #64748b);
+  background: var(--hms-bg, #f8fafc);
+  border: 1px solid var(--hms-border, #e2e8f0);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.hms-chip:hover {
+  color: var(--hms-brand-hover, #059669);
+  border-color: var(--hms-brand-light, #d1fae5);
+  text-decoration: none;
+}
+
+.hms-chip.active,
+.hms-chip.is-active {
+  color: var(--hms-brand-dark, #047857);
+  background: var(--hms-brand-soft, rgba(16, 185, 129, 0.12));
+  border-color: var(--hms-brand, #10b981);
+}
+
+/* ── Surface cards (EJS lists) ── */
+.hms-surface-card {
+  background: var(--hms-card-bg, #fff);
+  border: 1px solid var(--hms-border, #e2e8f0);
+  border-radius: var(--hms-radius-sm, 12px);
+  overflow: hidden;
+  box-shadow: var(--hms-shadow-card);
+}
+
+.hms-surface-card__head {
+  padding: 12px 16px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--hms-border, #e2e8f0);
+  background: var(--hms-bg, #f8fafc);
+  color: var(--hms-ink, #1e293b);
+}
+
+.hms-surface-card__body {
+  padding: 12px 16px;
+}
+
+/* ── Flash (sidebar pages; dept shells use .o_flash) ── */
+.hms-flash {
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--hms-brand, #10b981);
+}
+
+.hms-flash--success {
+  background: #ecfdf5;
+  color: #065f46;
+  border-left-color: var(--hms-success, #10b981);
+}
+
+.hms-flash--error {
+  background: #fef2f2;
+  color: #991b1b;
+  border-left-color: var(--hms-danger, #ef4444);
+}

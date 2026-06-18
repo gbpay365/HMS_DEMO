@@ -1,0 +1,41 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<div class="page-wrapper"><div class="content">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
+        <div class="card-header text-white font-weight-bold py-4" style="background:linear-gradient(135deg,#b45309,#ea580c);">
+          <i class="fa fa-user-md mr-2"></i><%= _t('consultation_ack_not_assigned.title', { ns: 'legacy', defaultValue: 'Patient not assigned to you' }) %>
+        </div>
+        <div class="card-body p-4">
+          <p class="text-dark mb-2" style="font-size:1rem;">
+            <strong><%= patientName || _t('consultation_ack_not_assigned.this_patient', { ns: 'legacy', defaultValue: 'This patient' }) %></strong>
+            <% if (typeof ticketNumber !== 'undefined' && ticketNumber) { %>
+              <span class="text-muted">· <%= _t('consultation_ack_not_assigned.ticket', { ns: 'legacy', defaultValue: 'Ticket' }) %> <code><%= ticketNumber %></code></span>
+            <% } %>
+            <%= _t('consultation_ack_not_assigned.assigned_prefix', { ns: 'legacy', defaultValue: 'is assigned to' }) %>
+            <strong class="text-primary"><%= assignedDoctorLabel || _t('consultation_ack_not_assigned.another_physician', { ns: 'legacy', defaultValue: 'another physician' }) %></strong>,
+            <%= _t('consultation_ack_not_assigned.assigned_suffix', { ns: 'legacy', defaultValue: 'not to your account.' }) %>
+          </p>
+          <p class="text-muted small mb-4">
+            <%= _t('consultation_ack_not_assigned.session_hint', { ns: 'legacy', defaultValue: 'If you still need to see this chart (e.g. covering for a colleague), confirm below. This choice is recorded for the current session only.' }) %>
+          </p>
+          <form method="post" action="/clinical/accept-not-assigned" class="d-flex flex-wrap" style="gap:10px;">
+            <input type="hidden" name="kind" value="<%= mode === 'ipd' ? 'ipd' : 'opd' %>">
+            <input type="hidden" name="next" value="<%= nextUrl %>">
+            <% if (mode === 'ipd') { %>
+            <input type="hidden" name="admission_id" value="<%= admissionId %>">
+            <% } else { %>
+            <input type="hidden" name="visit_id" value="<%= visitId %>">
+            <% } %>
+            <button type="submit" class="btn btn-warning font-weight-bold px-4">
+              <i class="fa fa-check mr-1"></i> <%= _t('consultation_ack_not_assigned.continue_btn', { ns: 'legacy', defaultValue: 'I understand — continue' }) %>
+            </button>
+            <a href="<%= mode === 'ipd' ? '/ipd/ward-rounds' : '/opd-queue' %>" class="btn btn-outline-secondary"><%= _t('consultation_ack_not_assigned.cancel', { ns: 'legacy', defaultValue: 'Cancel' }) %></a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+<%- include('partials/footer') %>

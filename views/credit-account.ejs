@@ -1,0 +1,246 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<div class="page-wrapper"><div class="content">
+
+
+
+<!-- Back + Title -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+ <div>
+  <a href="/credit-receivables" class="btn btn-sm btn-outline-secondary rounded-pill mb-2"><i class="fa fa-arrow-left mr-1"></i><%= _t('credit_account.back', { ns: 'legacy', defaultValue: 'Back' }) %></a>
+  <h4 class="font-weight-bold text-dark mb-1"><%= _t('credit_account.title', { ns: 'legacy', defaultValue: 'Credit Account' }) %> #<%= acct.id %></h4>
+  <p class="text-muted small mb-0"><%= acct.first_name %> <%= acct.last_name %> &bull; <%= acct.phone||'—' %></p>
+ </div>
+ <span class="badge badge-<%= acct.status==='active'?'warning':acct.status==='collections'?'danger':'secondary' %> px-3 py-2" style="font-size:.85rem;">
+  <%= acct.status||'—' %>
+ </span>
+</div>
+
+<div class="row">
+ <!-- Left: Summary + Actions -->
+ <div class="col-lg-5 mb-4">
+
+  <!-- Summary -->
+  <div class="card border-0 shadow-sm rounded-xl mb-4">
+   <div class="card-header bg-white font-weight-bold py-3"><%= _t('credit_account.summary', { ns: 'legacy', defaultValue: 'Summary' }) %></div>
+   <div class="card-body">
+    <dl class="row small mb-0">
+     <dt class="col-5 text-muted"><%= _t('credit_account.outstanding', { ns: 'legacy', defaultValue: 'Outstanding' }) %></dt>
+     <dd class="col-7 font-weight-bold text-danger" style="font-size:1.1rem;"><%= parseFloat(acct.outstanding_balance||0).toLocaleString('fr-FR') %> FCFA</dd>
+     <dt class="col-5 text-muted"><%= _t('credit_account.aging', { ns: 'legacy', defaultValue: 'Aging' }) %></dt><dd class="col-7"><%= acct.aging_days||0 %> <%= _t('credit_account.days', { ns: 'legacy', defaultValue: 'days' }) %></dd>
+     <dt class="col-5 text-muted"><%= _t('credit_account.patient', { ns: 'legacy', defaultValue: 'Patient' }) %></dt><dd class="col-7"><a href="/patient-chart/<%= acct.patient_id %>">#P-<%= acct.patient_id %></a></dd>
+     <% if (acct.guarantor_name) { %><dt class="col-5 text-muted"><%= _t('credit_account.guarantor', { ns: 'legacy', defaultValue: 'Guarantor' }) %></dt><dd class="col-7"><%= acct.guarantor_name %> <%= acct.guarantor_phone ? '· '+acct.guarantor_phone : '' %></dd><% } %>
+     <% if (acct.notes) { %><dt class="col-5 text-muted"><%= _t('credit_account.notes', { ns: 'legacy', defaultValue: 'Notes' }) %></dt><dd class="col-7 small text-muted"><%= acct.notes %></dd><% } %>
+    </dl>
+    <hr class="my-3">
+    <p class="small text-muted mb-0"><%= _t('credit_account.suggested_policy', { ns: 'legacy', defaultValue: 'Suggested: reminders at 7 / 14 / 30 days, escalate to collections after 60 days, write-off only with Director approval (90+ days).' }) %></p>
+   </div>
+  </div>
+
+  <!-- Record Payment -->
+  <% if (acct.status === 'active' && parseFloat(acct.outstanding_balance||0) > 0.02) { %>
+  <div class="card border-0 shadow-sm rounded-xl mb-4">
+   <div class="card-header bg-white font-weight-bold py-3"><%= _t('credit_account.record_payment', { ns: 'legacy', defaultValue: 'Record Payment' }) %></div>
+   <div class="card-body">
+    <form method="POST" action="/credit-account/<%= acct.id %>/payment">
+     <div class="form-row">
+      <div class="form-group col-6">
+       <label class="small font-weight-bold"><%= _t('credit_account.amount_label', { ns: 'legacy', defaultValue: 'Amount (FCFA)' }) %></label>
+       <input class="hms-input w-full text-sm" name="pay_amount" type="number" step="1" min="1" required>
+      </div>
+      <div class="form-group col-6">
+       <label class="small font-weight-bold"><%= _t('credit_account.method', { ns: 'legacy', defaultValue: 'Method' }) %></label>
+       <select class="hms-input w-full text-sm" name="pay_method">
+        <option>Cash</option><option>Mobile Money</option><option>Bank Transfer</option><option>Card</option><option>Cheque</option>
+       </select>
+      </div>
+     </div>
+     <div class="form-group">
+      <label class="small font-weight-bold"><%= _t('credit_account.notes', { ns: 'legacy', defaultValue: 'Notes' }) %></label>
+      <input class="hms-input w-full text-sm" name="pay_notes" maxlength="600" placeholder="<%= _t('credit_account.notes_ph', { ns: 'legacy', defaultValue: 'Receipt ref, notes…' }) %>">
+     </div>
+     <button type="submit" class="hms-btn hms-btn-primary hms-btn-sm rounded-pill"><i class="fa fa-check mr-1"></i><%= _t('credit_account.save_payment', { ns: 'legacy', defaultValue: 'Save Payment' }) %></button>
+    </form>
+   </div>
+  </div>
+  <% } %>
+
+  <!-- Installment Plan -->
+  <% if (acct.status === 'active' && parseFloat(acct.outstanding_balance||0) > 0.02) { %>
+  <div class="card border-0 shadow-sm rounded-xl mb-4">
+   <div class="card-header bg-white font-weight-bold py-3"><%= _t('credit_account.installment_plan', { ns: 'legacy', defaultValue: 'Installment Plan' }) %></div>
+   <div class="card-body">
+    <form method="POST" action="/credit-account/<%= acct.id %>/plan">
+     <div class="form-row">
+      <div class="form-group col-12">
+       <label class="small font-weight-bold"><%= _t('credit_account.plan_title', { ns: 'legacy', defaultValue: 'Title' }) %></label>
+       <input class="hms-input w-full text-sm" name="plan_title" placeholder="<%= _t('credit_account.plan_title_ph', { ns: 'legacy', defaultValue: 'e.g. 3-month plan' }) %>">
+      </div>
+      <div class="form-group col-4">
+       <label class="small font-weight-bold"><%= _t('credit_account.num_payments', { ns: 'legacy', defaultValue: '# Payments' }) %></label>
+       <input class="hms-input w-full text-sm" name="plan_count" type="number" min="1" max="60" value="3">
+      </div>
+      <div class="form-group col-4">
+       <label class="small font-weight-bold"><%= _t('credit_account.each_amount', { ns: 'legacy', defaultValue: 'Each (FCFA)' }) %></label>
+       <input class="hms-input w-full text-sm" name="plan_each" type="number" step="1" min="1">
+      </div>
+      <div class="form-group col-4">
+       <label class="small font-weight-bold"><%= _t('credit_account.first_due', { ns: 'legacy', defaultValue: 'First Due' }) %></label>
+       <input class="hms-input w-full text-sm" name="plan_first_due" type="date" required>
+      </div>
+     </div>
+     <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill"><i class="fa fa-calendar mr-1"></i><%= _t('credit_account.create_plan', { ns: 'legacy', defaultValue: 'Create Plan' }) %></button>
+    </form>
+   </div>
+  </div>
+  <% } %>
+
+  <!-- Collections / Write-off -->
+  <form id="escalateForm" method="POST" action="/credit-account/<%= acct.id %>/collections" style="display:none;"></form>
+  <button type="button" class="hms-btn hms-btn-warning btn-block rounded-pill mb-3" onclick="confirmEscalate()"><i class="fa fa-exclamation-triangle mr-1"></i><%= _t('credit_account.escalate_btn', { ns: 'legacy', defaultValue: 'Escalate to Collections' }) %></button>
+  <% if ((acct.status==='active'||acct.status==='collections') && parseFloat(acct.outstanding_balance||0) > 0.02) { %>
+  <div class="card border-0 shadow-sm rounded-xl mb-4">
+   <div class="card-header bg-white font-weight-bold py-3 text-danger"><%= _t('credit_account.writeoff_title', { ns: 'legacy', defaultValue: 'Write-off (Approval Required)' }) %></div>
+   <div class="card-body">
+    <form method="POST" action="/credit-account/<%= acct.id %>/writeoff">
+     <div class="form-row">
+      <div class="form-group col-5">
+       <label class="small font-weight-bold"><%= _t('credit_account.amount_label_short', { ns: 'legacy', defaultValue: 'Amount' }) %></label>
+       <input class="hms-input w-full text-sm" name="wo_amount" type="number" step="1" min="1" required>
+      </div>
+      <div class="form-group col-7">
+       <label class="small font-weight-bold"><%= _t('credit_account.approval_note', { ns: 'legacy', defaultValue: 'Approval Note' }) %></label>
+       <input class="hms-input w-full text-sm" name="wo_notes" required placeholder="<%= _t('credit_account.approval_ph', { ns: 'legacy', defaultValue: 'Director ref, reason…' }) %>">
+      </div>
+     </div>
+     <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill"><i class="fa fa-times mr-1"></i><%= _t('credit_account.record_writeoff', { ns: 'legacy', defaultValue: 'Record Write-off' }) %></button>
+    </form>
+   </div>
+  </div>
+  <% } %>
+
+  <!-- Follow-Up Log -->
+  <div class="card border-0 shadow-sm rounded-xl mb-4">
+   <div class="card-header bg-white font-weight-bold py-3"><%= _t('credit_account.followup_log', { ns: 'legacy', defaultValue: 'Follow-up Log' }) %></div>
+   <div class="card-body">
+    <form method="POST" action="/credit-account/<%= acct.id %>/followup" class="mb-3">
+     <div class="form-row">
+      <div class="form-group col-4">
+       <label class="small font-weight-bold"><%= _t('credit_account.channel', { ns: 'legacy', defaultValue: 'Channel' }) %></label>
+       <select class="hms-input w-full text-sm" name="fu_channel">
+        <option value="note"><%= _t('credit_account.channel_note', { ns: 'legacy', defaultValue: 'Note' }) %></option><option value="sms"><%= _t('credit_account.channel_sms', { ns: 'legacy', defaultValue: 'SMS' }) %></option>
+        <option value="call"><%= _t('credit_account.channel_call', { ns: 'legacy', defaultValue: 'Call' }) %></option><option value="email"><%= _t('credit_account.channel_email', { ns: 'legacy', defaultValue: 'Email' }) %></option><option value="escalate"><%= _t('credit_account.channel_escalate', { ns: 'legacy', defaultValue: 'Escalate' }) %></option>
+       </select>
+      </div>
+      <div class="form-group col-8">
+       <label class="small font-weight-bold"><%= _t('credit_account.followup_summary', { ns: 'legacy', defaultValue: 'Summary' }) %></label>
+       <input class="hms-input w-full text-sm" name="fu_summary" required maxlength="600" placeholder="<%= _t('credit_account.summary_ph', { ns: 'legacy', defaultValue: 'e.g. Day-7 reminder sent…' }) %>">
+      </div>
+     </div>
+     <button type="submit" class="btn btn-sm btn-secondary rounded-pill"><i class="fa fa-plus mr-1"></i><%= _t('credit_account.log_entry', { ns: 'legacy', defaultValue: 'Log Entry' }) %></button>
+    </form>
+    <ul class="list-unstyled small mb-0" style="max-height:200px;overflow-y:auto;">
+     <% if (followups.length===0) { %><li class="text-muted"><%= _t('credit_account.no_entries', { ns: 'legacy', defaultValue: 'No entries yet.' }) %></li><% } %>
+     <% followups.forEach(f => { %>
+     <li class="mb-2 border-bottom pb-2">
+      <span class="text-muted"><%= f.created_at ? new Date(f.created_at).toLocaleString() : '—' %></span>
+      <span class="badge badge-light border ml-1"><%= f.channel %></span>
+      <span class="ml-1"><%= f.summary %></span>
+     </li>
+     <% }) %>
+    </ul>
+   </div>
+  </div>
+
+ </div>
+
+ <!-- Right: Charges + Payments + Plans -->
+ <div class="col-lg-7 mb-4">
+
+  <!-- Active Plans -->
+  <% if (plans.length > 0) { %>
+  <div class="card border-0 shadow-sm rounded-xl mb-4">
+   <div class="card-header bg-white font-weight-bold py-3"><%= _t('credit_account.installment_plans', { ns: 'legacy', defaultValue: 'Installment Plans' }) %></div>
+   <div class="table-responsive">
+    <table class="table table-sm mb-0 small">
+     <thead class="thead-light"><tr><th><%= _t('credit_account.col_title', { ns: 'legacy', defaultValue: 'Title' }) %></th><th><%= _t('credit_account.col_installments', { ns: 'legacy', defaultValue: 'Installments' }) %></th><th><%= _t('credit_account.col_each', { ns: 'legacy', defaultValue: 'Each' }) %></th><th><%= _t('credit_account.col_first_due', { ns: 'legacy', defaultValue: 'First Due' }) %></th><th><%= _t('credit_account.col_status', { ns: 'legacy', defaultValue: 'Status' }) %></th></tr></thead>
+     <tbody>
+     <% plans.forEach(pl => { %>
+      <tr>
+       <td><%= pl.title||'—' %></td>
+       <td><%= pl.installment_count||'—' %></td>
+       <td><%= parseFloat(pl.amount_each||0).toLocaleString('fr-FR') %> FCFA</td>
+       <td><%= pl.first_due_date ? fmtDate(pl.first_due_date) : '—' %></td>
+       <td><span class="badge badge-<%= pl.status==='active'?'success':'secondary' %>"><%= pl.status %></span></td>
+      </tr>
+     <% }) %>
+     </tbody>
+    </table>
+   </div>
+  </div>
+  <% } %>
+
+  <!-- On-Credit Charges -->
+  <div class="card border-0 shadow-sm rounded-xl mb-4">
+   <div class="card-header bg-white font-weight-bold py-3"><%= _t('credit_account.on_credit_charges', { ns: 'legacy', defaultValue: 'On-Credit Charges' }) %></div>
+   <div class="table-responsive">
+    <table class="table table-sm mb-0 small">
+     <thead class="thead-light"><tr><th><%= _t('credit_account.col_date', { ns: 'legacy', defaultValue: 'Date' }) %></th><th><%= _t('credit_account.col_description', { ns: 'legacy', defaultValue: 'Description' }) %></th><th class="text-right"><%= _t('credit_account.col_amount', { ns: 'legacy', defaultValue: 'Amount' }) %></th></tr></thead>
+     <tbody>
+     <% if (charges.length===0) { %>
+      <tr><td colspan="3" class="text-center text-muted py-3"><%= _t('credit_account.no_charges', { ns: 'legacy', defaultValue: 'No charges linked to this account.' }) %></td></tr>
+     <% } else { charges.forEach(c => { if (parseInt(c.on_credit)!==1) return; %>
+      <tr>
+       <td><%= c.posted_at ? fmtDate(c.posted_at) : '—' %></td>
+       <td><%= c.description||'—' %></td>
+       <td class="text-right"><%= parseFloat(c.amount||0).toLocaleString('fr-FR') %></td>
+      </tr>
+     <% }) } %>
+     </tbody>
+    </table>
+   </div>
+  </div>
+
+  <!-- Payments -->
+  <div class="card border-0 shadow-sm rounded-xl mb-4">
+   <div class="card-header bg-white font-weight-bold py-3"><%= _t('credit_account.payments_received', { ns: 'legacy', defaultValue: 'Payments Received' }) %></div>
+   <div class="table-responsive">
+    <table class="table table-sm mb-0 small">
+     <thead class="thead-light"><tr><th><%= _t('credit_account.col_date', { ns: 'legacy', defaultValue: 'Date' }) %></th><th><%= _t('credit_account.col_method', { ns: 'legacy', defaultValue: 'Method' }) %></th><th class="text-right"><%= _t('credit_account.col_amount', { ns: 'legacy', defaultValue: 'Amount' }) %></th><th><%= _t('credit_account.notes', { ns: 'legacy', defaultValue: 'Notes' }) %></th></tr></thead>
+     <tbody>
+     <% if (payments.length===0) { %>
+      <tr><td colspan="4" class="text-center text-muted py-3"><%= _t('credit_account.no_payments', { ns: 'legacy', defaultValue: 'No payments recorded yet.' }) %></td></tr>
+     <% } else { payments.forEach(p => { %>
+      <tr>
+       <td><%= p.created_at ? fmtDate(p.created_at) : '—' %></td>
+       <td><%= p.payment_method||'Cash' %></td>
+       <td class="text-right text-success font-weight-bold"><%= parseFloat(p.amount||0).toLocaleString('fr-FR') %></td>
+       <td class="text-muted"><%= p.notes ? p.notes.substring(0,40) : '—' %></td>
+      </tr>
+     <% }) } %>
+     </tbody>
+    </table>
+   </div>
+  </div>
+
+ </div>
+</div>
+
+</div></div>
+<script>
+function confirmEscalate() {
+  HMS.confirm(
+    <%- JSON.stringify(_t('credit_account.js_escalate_title', { ns: 'legacy', defaultValue: 'Escalate Account?' })) %>,
+    <%- JSON.stringify(_t('credit_account.js_escalate_body', { ns: 'legacy', defaultValue: 'Escalate this credit account to collections? This will flag it for high-priority recovery.' })) %>,
+    'warning',
+    <%- JSON.stringify(_t('credit_account.js_escalate_confirm', { ns: 'legacy', defaultValue: 'Yes, Escalate' })) %>,
+    '#f59e0b'
+  )
+  .then((result) => {
+    if (result.isConfirmed) {
+      document.getElementById('escalateForm').submit();
+    }
+  });
+}
+</script>
+<%- include('partials/footer') %>

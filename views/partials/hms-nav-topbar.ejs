@@ -1,0 +1,83 @@
+<%- include('hms-perm-helpers') %>
+<%
+var _path = locals.hmsPath || '';
+var _nav = locals.navTopnav || { primaryLinks: [], menus: [] };
+var _user = locals.userNavDisplayName || locals.userDisplayName || (locals.user && locals.user.name) || (typeof _t === 'function' ? _t('user', { ns: 'nav', defaultValue: 'User' }) : 'User');
+var _homeUrl = locals.navHomeUrl || '/hms';
+var _homeLabel = locals.navHomeLabel || (typeof _t === 'function' ? _t('home', { ns: 'nav', defaultValue: 'Home' }) : 'Home');
+var _navLbl = locals.navLabel || function (_code, label) { return label; };
+var _t = locals.t || function (k, o) { return (o && o.defaultValue) || k; };
+
+function _navActive(url, extraPrefixes) {
+  var path = String(_path || '');
+  var u = String(url || '').trim();
+  if (!u || u === '__home__') {
+    if (path === '/' || path === '/hms' || path === '/dashboard') return ' active';
+    return '';
+  }
+  if (path === u || path.indexOf(u + '/') === 0) return ' active';
+  if (extraPrefixes) {
+    for (var i = 0; i < extraPrefixes.length; i++) {
+      var p = extraPrefixes[i];
+      if (p && (path === p || path.indexOf(p + '/') === 0)) return ' active';
+    }
+  }
+  return '';
+}
+function _dropPrefixes(menu) {
+  var out = [];
+  (menu.children || []).forEach(function(ch) {
+    var u = String(ch.url || '').trim();
+    if (u && u !== '__home__') out.push(u.split('?')[0]);
+  });
+  return out;
+}
+%>
+<% if (locals.user && locals.showPageNav !== false) { %>
+<%- include('page-nav-data', { pageNav: locals.pageNav || {} }) %>
+<% } %>
+<header class="o_web_navbar">
+  <% if (locals.user && locals.showPageNav !== false) { %>
+  <div id="hms-topnav-back-root" class="hms-ui o_nav_back_slot"></div>
+  <% } %>
+  <button type="button" class="o_nav_home" id="hmsOdooAppsBtn" title="<%= _t('all_applications', { ns: 'nav', defaultValue: 'All applications' }) %>" aria-label="<%= _t('all_applications', { ns: 'nav', defaultValue: 'All applications' }) %>">
+    <i class="fa fa-th"></i>
+  </button>
+  <% if (canHospitalDashboard()) { %>
+  <a href="/dashboard" class="o_nav_module"><%= _t('hospital_dashboard', { ns: 'nav', defaultValue: 'Dashboard' }) %></a>
+  <% } %>
+  <button type="button" class="o_nav_menu_toggle" id="hmsOdooMenuToggle" aria-label="<%= _t('menu', { ns: 'nav', defaultValue: 'Menu' }) %>"><i class="fa fa-bars"></i></button>
+  <nav class="o_nav_menu" id="hmsOdooNavMenu">
+    <% (_nav.primaryLinks || []).forEach(function(it){ %>
+    <a href="<%= (it.url && it.url !== '__home__') ? it.url : _homeUrl %>" class="o_nav_link<%= _navActive(it.url) %>"><%= _navLbl(it.code, it.label) %></a>
+    <% }); %>
+
+    <% (_nav.menus || []).forEach(function(menu){ %>
+    <div class="o_nav_dropdown<%= _navActive(null, _dropPrefixes(menu)) %>">
+      <button type="button" class="o_nav_link o_nav_drop_btn"><%= _navLbl(menu.parent.code, menu.parent.label) %> <i class="fa fa-caret-down"></i></button>
+      <div class="o_nav_drop_panel">
+        <% (menu.children || []).forEach(function(ch){ %>
+        <a href="<%= ch.url %>"><%= _navLbl(ch.code, ch.label) %></a>
+        <% }); %>
+      </div>
+    </div>
+    <% }); %>
+  </nav>
+  <div class="o_nav_right">
+    <a href="<%= _homeUrl %>" class="o_nav_right_link o_nav_home_link"><i class="fa fa-home"></i> <%= _homeLabel %></a>
+    <%- include('hms-lang-switcher', { langSwitcherOdoo: true }) %>
+    <div class="dropdown">
+      <a href="#" class="o_nav_user dropdown-toggle" data-toggle="dropdown" id="hmsOdooUserDrop">
+        <%- include('hms-user-avatar', { avatarClass: 'hms-user-avatar hms-user-avatar--sm', userProfileEmoji: locals.userProfileEmoji }) %>
+        <span class="o_nav_user_name"><%= _user %></span>
+      </a>
+      <div class="dropdown-menu dropdown-menu-right shadow border-0 mt-1" style="border-radius:6px;min-width:200px;">
+        <a class="dropdown-item py-2" href="/profile"><i class="fa fa-user-circle mr-2"></i><%= _t('my_profile', { ns: 'nav', defaultValue: 'My profile' }) %></a>
+        <a class="dropdown-item py-2" href="/my-profile"><i class="fa fa-cog mr-2"></i><%= _t('account_settings', { ns: 'nav', defaultValue: 'Settings' }) %></a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item py-2 text-danger" href="/logout"><i class="fa fa-sign-out mr-2"></i><%= _t('log_out', { ns: 'nav', defaultValue: 'Log out' }) %></a>
+      </div>
+    </div>
+  </div>
+</header>
+<%- include('hms-odoo-apps') %>

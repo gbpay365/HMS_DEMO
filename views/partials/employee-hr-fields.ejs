@@ -1,0 +1,52 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    var o = { ns: 'legacy', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+    return _t(key, o);
+  };
+}
+%><% var _emp = (typeof emp !== 'undefined' && emp) ? emp : {}; %>
+<div class="card-body pb-0 pt-1">
+  <h6 class="font-weight-bold text-uppercase small mb-3 pb-2" style="color:#64748b;border-bottom:2px solid #f1f5f9;letter-spacing:.06em;">
+    <i class="fa fa-id-card mr-2" style="color:#0d2137;"></i><%= _tl('employee_hr.section_title', 'Payroll & statutory IDs') %>
+    <span class="text-muted font-weight-normal" style="text-transform:none;font-size:.72rem;"> <%= _tl('employee_hr.section_sub', '— shown on payslip') %></span>
+  </h6>
+  <div class="row">
+    <div class="col-md-6"><div class="form-group">
+      <label class="font-weight-bold small" for="job_title"><%= _tl('employee_hr.job_title', 'Position / Poste') %></label>
+      <input id="job_title" class="hms-input w-full" type="text" name="job_title" value="<%= _emp.job_title || '' %>"
+             placeholder="<%= _tl('employee_hr.job_title_ph', 'e.g. Registered Nurse (Grade A)') %>">
+      <small class="text-muted"><%= _tl('employee_hr.job_title_hint', 'Leave blank to use role title on payslip.') %></small>
+    </div></div>
+    <div class="col-md-6"><div class="form-group">
+      <label class="font-weight-bold small" for="cnps_number"><%= _tl('employee_hr.cnps_no', 'CNPS No') %></label>
+      <input id="cnps_number" class="hms-input w-full" type="text" name="cnps_number" value="<%= _emp.cnps_number || '' %>"
+             placeholder="<%= _tl('employee_hr.cnps_ph', 'e.g. CM-NW-09-87654') %>">
+    </div></div>
+    <div class="col-md-6"><div class="form-group">
+      <label class="font-weight-bold small" for="nic_number"><%= _tl('employee_hr.nic_no', 'NIC No') %></label>
+      <input id="nic_number" class="hms-input w-full" type="text" name="nic_number" value="<%= _emp.nic_number || '' %>"
+             placeholder="<%= _tl('employee_hr.nic_ph', 'National ID card number') %>">
+    </div></div>
+    <div class="col-md-6"><div class="form-group">
+      <label class="font-weight-bold small" for="tax_niu"><%= _tl('employee_hr.tax_niu', 'Tax ID / NIU') %></label>
+      <input id="tax_niu" class="hms-input w-full" type="text" name="tax_niu" value="<%= _emp.tax_niu || '' %>"
+             placeholder="<%= _tl('employee_hr.tax_niu_ph', 'e.g. M010000012345K') %>">
+    </div></div>
+    <div class="col-md-6"><div class="form-group">
+      <label class="font-weight-bold small" for="bank_name"><%= _tl('employee_hr.bank_name', 'Bank / Banque') %></label>
+      <input id="bank_name" class="hms-input w-full" type="text" name="bank_name" value="<%= _emp.bank_name || '' %>"
+             placeholder="<%= _tl('employee_hr.bank_name_ph', 'e.g. Afriland First Bank') %>">
+    </div></div>
+    <div class="col-md-6"><div class="form-group">
+      <label class="font-weight-bold small" for="bank_account_no"><%= _tl('employee_hr.account_no', 'Account No') %></label>
+      <input id="bank_account_no" class="hms-input w-full" type="text" name="bank_account_no" value="<%= _emp.bank_account_no || '' %>"
+             placeholder="<%= _tl('employee_hr.account_no_ph', 'Salary account number') %>" autocomplete="off">
+      <small class="text-muted"><%= _tl('employee_hr.account_no_hint', 'Masked on printed payslip (last 4 digits visible).') %></small>
+    </div></div>
+  </div>
+</div>

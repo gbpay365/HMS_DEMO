@@ -1,0 +1,19 @@
+{
+  "name": "zaizens-license-generator",
+  "version": "1.0.0",
+  "description": "Standalone ZAIZENS serial number generator for hospital solution subscriptions",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "generate-keys": "node scripts/generate-keys.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "nodemailer": "^6.10.1"
+  }
+}

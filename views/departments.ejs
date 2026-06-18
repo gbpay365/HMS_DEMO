@@ -1,0 +1,257 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<%
+  var tab = (locals.tab || 'departments').toLowerCase() === 'specialisations' ? 'specialisations' : 'departments';
+  var isSpec = tab === 'specialisations';
+  var rows = isSpec ? (specialisations || []) : (departments || []);
+  var catalog = isSpec ? 'specialisation' : 'department';
+  var itemLabel = isSpec ? _t('departments.specialisation', { ns: 'legacy', defaultValue: 'Specialisation' }) : _t('departments.department', { ns: 'legacy', defaultValue: 'Department' });
+  var itemLabelPlural = isSpec ? _t('departments.specialisations', { ns: 'legacy', defaultValue: 'specialisations' }) : _t('departments.departments', { ns: 'legacy', defaultValue: 'departments' });
+  var itemLabelCount = rows.length === 1 ? itemLabel : itemLabelPlural;
+  var addLabel = isSpec ? _t('departments.add_specialisation', { ns: 'legacy', defaultValue: 'Add Specialisation' }) : _t('departments.add_department', { ns: 'legacy', defaultValue: 'Add Department' });
+  var itemLabelLower = itemLabel.toLowerCase();
+  var itemIcon = isSpec ? 'fa-stethoscope' : 'fa-building-o';
+%>
+<div class="page-wrapper"><div class="content">
+
+<% if (locals.flash) { %>
+<div class="hms-flash hms-flash--success border-0 shadow-sm mb-3" role="alert">
+  <i class="fa fa-check-circle mr-2"></i><%= flash %>
+</div>
+<% } %>
+<% if (locals.error) { %>
+<div class="hms-flash hms-flash--error border-0 shadow-sm mb-3" role="alert">
+  <i class="fa fa-exclamation-circle mr-2"></i><%= error %>
+</div>
+<% } %>
+
+<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap" style="gap:10px;">
+  <div class="d-flex align-items-center" style="gap:14px;">
+    <a href="/employees" class="hms-btn hms-btn-secondary btn-sm">
+      <i class="fa fa-arrow-left mr-1"></i><%= _t('departments.back_employees', { ns: 'legacy', defaultValue: 'Employees' }) %>
+    </a>
+    <div>
+      <h1 class="h4 font-weight-bold mb-0" style="color:#1b2559;">
+        <i class="fa fa-sitemap mr-2" style="color:#1a6bd8;"></i><%= _t('departments.title', { ns: 'legacy', defaultValue: 'Departments & specialisations' }) %>
+      </h1>
+      <p class="text-muted small mb-0"><%= _t('departments.subtitle', { ns: 'legacy', defaultValue: 'Manage the lists used when assigning doctor departments and specialties.' }) %></p>
+    </div>
+  </div>
+  <button class="hms-btn hms-btn-primary btn-sm font-weight-bold px-3"
+          onclick="openAdd()">
+    <i class="fa fa-plus mr-1"></i><%= addLabel %>
+  </button>
+</div>
+
+<ul class="nav nav-pills mb-4" style="gap:8px;">
+  <li class="nav-item">
+    <a class="nav-link <%= !isSpec ? 'active font-weight-bold' : '' %>"
+       href="/departments"
+       style="border-radius:8px;<%= !isSpec ? ' background:#1a6bd8;' : '' %>">
+      <i class="fa fa-building-o mr-1"></i><%= _t('departments.tab_departments', { ns: 'legacy', defaultValue: 'Departments' }) %>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link <%= isSpec ? 'active font-weight-bold' : '' %>"
+       href="/departments?tab=specialisations"
+       style="border-radius:8px;<%= isSpec ? ' background:#7c3aed;' : '' %>">
+      <i class="fa fa-stethoscope mr-1"></i><%= _t('departments.tab_specialisations', { ns: 'legacy', defaultValue: 'Specialisations' }) %>
+    </a>
+  </li>
+</ul>
+
+<div class="card border-0 shadow-sm" style="border-radius:14px;">
+  <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between"
+       style="border-bottom:2px solid #e2e8f0;">
+    <span class="font-weight-bold" style="color:#1e293b;">
+      <i class="fa <%= itemIcon %> mr-2 text-primary"></i>
+      <%= rows.length %> <%= itemLabelCount %>
+    </span>
+    <input type="text" id="catalogSearch" class="hms-input w-full text-sm"
+           style="max-width:220px;border-radius:8px;"
+           placeholder="<%= _t('departments.search_ph', { ns: 'legacy', defaultValue: 'Search…' }) %>" oninput="filterRows(this.value)">
+  </div>
+
+  <% if (!rows.length) { %>
+  <div class="card-body text-center py-5 text-muted">
+    <i class="fa <%= itemIcon %>" style="font-size:2.5rem;opacity:.25;"></i>
+    <p class="mt-3 mb-0"><%- _t('departments.empty_msg', { ns: 'legacy', items: itemLabelPlural, addLabel: addLabel, defaultValue: 'No ' + itemLabelPlural + ' yet. Click <strong>' + addLabel + '</strong> to create one.' }) %></p>
+  </div>
+  <% } else { %>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0" style="font-size:.9rem;">
+      <thead style="background:#f8fafc;">
+        <tr>
+          <th class="px-4" style="font-size:.72rem;text-transform:uppercase;color:#64748b;font-weight:600;">#</th>
+          <th style="font-size:.72rem;text-transform:uppercase;color:#64748b;font-weight:600;"><%= _t('departments.col_name', { ns: 'legacy', label: itemLabel, defaultValue: itemLabel + ' name' }) %></th>
+          <th class="text-center" style="font-size:.72rem;text-transform:uppercase;color:#64748b;font-weight:600;"><%= _t('departments.col_status', { ns: 'legacy', defaultValue: 'Status' }) %></th>
+          <th class="text-right px-4" style="font-size:.72rem;text-transform:uppercase;color:#64748b;font-weight:600;"><%= _t('departments.col_actions', { ns: 'legacy', defaultValue: 'Actions' }) %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% rows.forEach(function(row, i) { %>
+        <tr class="catalog-row" data-name="<%= String(row.name || '').toLowerCase() %>">
+          <td class="px-4 align-middle text-muted" style="width:48px;"><%= i + 1 %></td>
+          <td class="align-middle font-weight-600" style="color:#1e293b;">
+            <i class="fa <%= itemIcon %> mr-2" style="color:#94a3b8;"></i><%= row.name %>
+          </td>
+          <td class="text-center align-middle">
+            <% if (row.status) { %>
+            <span class="badge badge-success px-2 py-1" style="border-radius:6px;font-size:.72rem;"><%= _t('employee_edit.active', { ns: 'legacy', defaultValue: 'Active' }) %></span>
+            <% } else { %>
+            <span class="badge badge-secondary px-2 py-1" style="border-radius:6px;font-size:.72rem;"><%= _t('employee_edit.inactive', { ns: 'legacy', defaultValue: 'Inactive' }) %></span>
+            <% } %>
+          </td>
+          <td class="text-right px-4 align-middle">
+            <div class="btn-group btn-group-sm">
+              <button class="hms-btn hms-btn-outline-primary"
+                      style="border-radius:6px 0 0 6px;"
+                      title="<%= _t('departments.action_edit', { ns: 'legacy', defaultValue: 'Edit' }) %>"
+                      onclick="openEdit(<%= row.id %>, '<%= String(row.name || '').replace(/'/g, "\\'") %>')">
+                <i class="fa fa-pencil"></i>
+              </button>
+              <form method="POST" action="/departments" class="d-inline" style="margin:0;">
+                <input type="hidden" name="catalog" value="<%= catalog %>">
+                <input type="hidden" name="action" value="toggle">
+                <input type="hidden" name="id" value="<%= row.id %>">
+                <button type="submit" class="btn <%= row.status ? 'btn-outline-warning' : 'btn-outline-success' %>"
+                        style="border-radius:0;"
+                        title="<%= row.status ? _t('departments.action_disable', { ns: 'legacy', defaultValue: 'Disable' }) : _t('departments.action_enable', { ns: 'legacy', defaultValue: 'Enable' }) %>">
+                  <i class="fa <%= row.status ? 'fa-pause' : 'fa-play' %>"></i>
+                </button>
+              </form>
+              <button class="hms-btn hms-btn-outline-danger"
+                      style="border-radius:0 6px 6px 0;"
+                      title="<%= _t('departments.action_delete', { ns: 'legacy', defaultValue: 'Delete' }) %>"
+                      onclick="confirmDelete(<%= row.id %>, '<%= String(row.name || '').replace(/'/g, "\\'") %>')">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalTitle">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:440px;">
+    <div class="modal-content border-0 shadow" style="border-radius:14px;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title font-weight-bold" style="color:#1b2559;" id="addModalTitle">
+          <i class="fa fa-plus-circle mr-2 text-primary" aria-hidden="true"></i><%= addLabel %>
+        </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="<%= _t('employee_edit.cancel', { ns: 'legacy' }) %>"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <form method="POST" action="/departments">
+        <input type="hidden" name="catalog" value="<%= catalog %>">
+        <input type="hidden" name="action" value="add">
+        <div class="modal-body pt-3">
+          <label class="font-weight-bold small mb-1"><%= _t('departments.col_name', { ns: 'legacy', label: itemLabel }) %> <span class="text-danger">*</span></label>
+          <input type="text" name="name" class="hms-input w-full"
+                 placeholder="<%= isSpec ? _t('departments.ph_specialisation', { ns: 'legacy' }) : _t('departments.ph_department', { ns: 'legacy' }) %>"
+                 required autofocus>
+          <div class="text-muted small mt-2">
+            <i class="fa fa-info-circle mr-1" aria-hidden="true"></i>
+            <%= _t('departments.modal_hint', { ns: 'legacy' }) %>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="hms-btn hms-btn-secondary text-sm" data-dismiss="modal"><%= _t('employee_edit.cancel', { ns: 'legacy' }) %></button>
+          <button type="submit" class="hms-btn hms-btn-primary text-sm font-weight-bold px-4">
+            <i class="fa fa-plus mr-1" aria-hidden="true"></i><%= _t('departments.add_btn', { ns: 'legacy' }) %>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalTitle">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:440px;">
+    <div class="modal-content border-0 shadow" style="border-radius:14px;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title font-weight-bold" style="color:#1b2559;" id="editModalTitle">
+          <i class="fa fa-pencil mr-2 text-primary" aria-hidden="true"></i><%= _t('departments.edit_label', { ns: 'legacy', label: itemLabel }) %>
+        </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="<%= _t('employee_edit.cancel', { ns: 'legacy' }) %>"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <form method="POST" action="/departments">
+        <input type="hidden" name="catalog" value="<%= catalog %>">
+        <input type="hidden" name="action" value="edit">
+        <input type="hidden" name="id" id="editId">
+        <div class="modal-body pt-3">
+          <label class="font-weight-bold small mb-1"><%= _t('departments.col_name', { ns: 'legacy', label: itemLabel }) %> <span class="text-danger">*</span></label>
+          <input type="text" name="name" id="editName" class="hms-input w-full" required>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="hms-btn hms-btn-secondary text-sm" data-dismiss="modal"><%= _t('employee_edit.cancel', { ns: 'legacy' }) %></button>
+          <button type="submit" class="hms-btn hms-btn-primary text-sm font-weight-bold px-4">
+            <i class="fa fa-save mr-1" aria-hidden="true"></i><%= _t('departments.save_btn', { ns: 'legacy' }) %>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<form method="POST" action="/departments" id="deleteForm" style="display:none;">
+  <input type="hidden" name="catalog" value="<%= catalog %>">
+  <input type="hidden" name="action" value="delete">
+  <input type="hidden" name="id" id="deleteId">
+</form>
+
+</div></div>
+<%- include('partials/footer') %>
+
+<script>
+var CURRENT_CATALOG = '<%= catalog %>';
+var CURRENT_LABEL = '<%= itemLabelLower %>';
+var DEPT_I18N = <%- JSON.stringify({
+  deleteTitle: _t('departments.js_delete_title', { ns: 'legacy', label: itemLabelLower, defaultValue: 'Delete ' + itemLabelLower + '?' }),
+  deleteBody: _t('departments.js_delete_body', { ns: 'legacy', defaultValue: 'Are you sure you want to delete <strong>{{name}}</strong>?' }),
+  deleteHint: _t('departments.js_delete_hint', { ns: 'legacy', label: itemLabelLower, defaultValue: 'Staff still linked to this ' + itemLabelLower + ' must be reassigned first.' }),
+  deleteConfirm: _t('departments.js_delete_confirm', { ns: 'legacy', defaultValue: 'Yes, delete' }),
+  cancel: _t('employee_edit.cancel', { ns: 'legacy', defaultValue: 'Cancel' })
+}) %>;
+
+function openAdd() {
+  $('#addModal').modal('show');
+}
+
+function openEdit(id, name) {
+  document.getElementById('editId').value = id;
+  document.getElementById('editName').value = name;
+  $('#editModal').modal('show');
+}
+
+function confirmDelete(id, name) {
+  Swal.fire({
+    icon: 'warning',
+    title: DEPT_I18N.deleteTitle,
+    html: DEPT_I18N.deleteBody.replace('{{name}}', name) + '<br>'
+        + '<span class="text-muted small">' + DEPT_I18N.deleteHint + '</span>',
+    showCancelButton: true,
+    confirmButtonText: DEPT_I18N.deleteConfirm,
+    confirmButtonColor: '#dc2626',
+    cancelButtonText: DEPT_I18N.cancel,
+  }).then(function(r) {
+    if (!r.isConfirmed) return;
+    document.getElementById('deleteId').value = id;
+    document.getElementById('deleteForm').submit();
+  });
+}
+
+function filterRows(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('.catalog-row').forEach(function(row) {
+    row.style.display = (!q || row.dataset.name.indexOf(q) !== -1) ? '' : 'none';
+  });
+}
+
+<% if (!rows.length) { %>
+$(document).ready(function(){ $('#addModal').modal('show'); });
+<% } %>
+</script>

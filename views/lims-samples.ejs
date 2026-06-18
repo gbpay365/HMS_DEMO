@@ -1,0 +1,85 @@
+<%- include('partials/header') %>
+<%
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback) {
+    return (typeof t === 'function' ? t(key, { ns: 'legacy', defaultValue: fallback }) : fallback);
+  };
+}
+var _sf = locals.sampleFilter || 'all';
+var _ss = locals.sampleStats || {};
+var _search = locals.sampleSearch || '';
+%>
+<%- include('partials/laboratory-odoo-start', {
+  labOdooMenu: 'operations',
+  labOdooTitle: _tl('lims_samples.title', 'Lab samples')
+}) %>
+<div class="o_content">
+
+<div class="hms-stat-grid">
+ <div class="hms-stat-card hms-stat-card--brand">
+  <div class="hms-stat-card__value"><%= _ss.total || 0 %></div>
+  <div class="hms-stat-card__label"><%= _tl('lims_samples.stat_total', 'Total samples') %></div>
+ </div>
+ <div class="hms-stat-card hms-stat-card--warning">
+  <div class="hms-stat-card__value"><%= _ss.pending || 0 %></div>
+  <div class="hms-stat-card__label"><%= _tl('lims_samples.stat_pending', 'Pending') %></div>
+ </div>
+ <div class="hms-stat-card hms-stat-card--info">
+  <div class="hms-stat-card__value"><%= _ss.collected || 0 %></div>
+  <div class="hms-stat-card__label"><%= _tl('lims_samples.stat_collected', 'Collected') %></div>
+ </div>
+ <div class="hms-stat-card hms-stat-card--success">
+  <div class="hms-stat-card__value"><%= _ss.examined || 0 %></div>
+  <div class="hms-stat-card__label"><%= _tl('lims_samples.stat_examined', 'Examined') %></div>
+ </div>
+</div>
+
+<form method="get" action="/lims/samples" class="hms-filter-bar">
+ <input type="search" name="q" class="form-control hms-filter-bar__search" value="<%= _search %>" placeholder="<%= _tl('lims_samples.search_ph', 'Request #, patient or container') %>">
+ <% if (_sf && _sf !== 'all') { %><input type="hidden" name="filter" value="<%= _sf %>"><% } %>
+ <button type="submit" class="btn btn-outline-secondary"><%= _tl('lims_samples.search', 'Search') %></button>
+ <% if (_search || (_sf && _sf !== 'all')) { %><a href="/lims/samples" class="btn btn-link"><%= _tl('lims_samples.reset', 'Reset') %></a><% } %>
+</form>
+
+<div class="hms-chip-row">
+ <a href="/lims/samples<%= _search ? ('?q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _sf === 'all' ? ' active' : '' %>"><%= _tl('lims_samples.filter_all', 'All') %></a>
+ <a href="/lims/samples?filter=pending<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _sf === 'pending' ? ' active' : '' %>"><%= _tl('lims_samples.filter_pending', 'Pending') %></a>
+ <a href="/lims/samples?filter=collected<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _sf === 'collected' ? ' active' : '' %>"><%= _tl('lims_samples.filter_collected', 'Collected') %></a>
+ <a href="/lims/samples?filter=examined<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _sf === 'examined' ? ' active' : '' %>"><%= _tl('lims_samples.filter_examined', 'Examined') %></a>
+</div>
+
+<div class="hms-surface-card">
+ <div class="table-responsive">
+  <table class="table table-hover mb-0">
+   <thead class="thead-light">
+    <tr>
+     <th><%= _tl('lims_samples.col_request', 'Request') %></th>
+     <th><%= _tl('lims_samples.col_patient', 'Patient') %></th>
+     <th><%= _tl('lims_samples.col_container', 'Container') %></th>
+     <th><%= _tl('lims_samples.col_type', 'Type') %></th>
+     <th><%= _tl('lims_samples.col_status', 'Status') %></th>
+     <th></th>
+    </tr>
+   </thead>
+   <tbody>
+   <% if (!rows || !rows.length) { %>
+   <tr><td colspan="6" class="text-muted text-center py-4"><%= _tl('lims_samples.empty', 'No samples match this filter.') %></td></tr>
+   <% } %>
+   <% (rows || []).forEach(function(s){ %>
+   <tr>
+    <td class="font-weight-bold"><%= s.request_no %></td>
+    <td><%= s.first_name %> <%= s.last_name %></td>
+    <td><%= s.container_no || '—' %></td>
+    <td><%= s.sample_type_name || '—' %></td>
+    <td><span class="badge badge-light border text-uppercase small"><%= s.status %></span></td>
+    <td><a href="/lims/request/<%= s.request_id %>" class="btn btn-sm btn-outline-primary"><%= _tl('lims_samples.open_request', 'Open') %></a></td>
+   </tr>
+   <% }); %>
+   </tbody>
+  </table>
+ </div>
+</div>
+
+</div>
+<%- include('partials/laboratory-odoo-end') %>
+<%- include('partials/footer') %>

@@ -1,0 +1,8 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--doctor-schedule'; %>
+<%- include('partials/header') %>
+<%- include('partials/react-page-mount', {
+  reactPage: 'doctor-schedule',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.doctor_schedule', { ns: 'common', defaultValue: 'Loading…' }) : 'Loading…'),
+  pageData: locals.pageData || {}
+}) %>
+<%- include('partials/footer') %>

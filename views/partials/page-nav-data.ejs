@@ -1,0 +1,11 @@
+<%
+  var _nav = locals.pageNav || {};
+  var _tNav = typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue) || k; };
+  var _navPayload = {
+    homeHref: _nav.homeHref || '/dashboard',
+    backFallback: _nav.backFallback || _nav.homeHref || '/dashboard',
+    backLabel: _tNav('back', { ns: 'nav', defaultValue: 'Back' }),
+    homeLabel: _tNav('home', { ns: 'nav', defaultValue: 'Home' })
+  };
+%>
+<script id="hms-page-nav-data" type="application/json"><%- JSON.stringify(_navPayload).replace(/</g, '\\u003c') %></script>

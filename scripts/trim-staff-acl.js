@@ -1,0 +1,11 @@
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const file = path.join(__dirname, '../routes/staff.js');
+let s = fs.readFileSync(file, 'utf8');
+const a = s.indexOf("app.get('/__removed_access_control_block__'");
+const b = s.indexOf('// ── ACL audit export', a);
+if (a < 0 || b < 0) throw new Error('markers not found');
+s = s.slice(0, a) + s.slice(b);
+fs.writeFileSync(file, s);
+console.log('removed bytes', b - a);

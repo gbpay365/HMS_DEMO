@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="<%= locals.lang || 'en' %>">
+<head>
+  <meta charset="utf-8">
+  <title><%= title %></title>
+  <link rel="icon" type="image/png" href="/img/fransohh-logo.png">
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <style>
+    @media print {
+      @page { size: A5 portrait; margin: 7mm 8mm 9mm 8mm; }
+      html, body { background: #fff !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="hms-react-root" data-page="print-medical-passport"></div>
+  <script id="hms-page-data" type="application/json"><%- JSON.stringify(locals.pageData || {}).replace(/</g, '\\u003c') %></script>
+  <%- include('partials/print-assets', { hmsPrintIncludeEpsonCss: false }) %>
+</body>
+</html>

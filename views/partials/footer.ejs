@@ -1,0 +1,59 @@
+<% if (locals.useOdooShell) { %></main><% } %>
+    </div>
+<% if (locals.useOdooShell) { %></div><script src="/js/hms-odoo-shell.js?v=3" defer></script><% } %>
+<script src="/js/hms-list-search.js" defer></script>
+<script>
+window.HMS_TABLE_PAGINATION_I18N = <%- JSON.stringify({
+  searchAria: typeof _t === 'function' ? _t('table_pagination.search_aria', { ns: 'common', defaultValue: 'Search this table' }) : 'Search this table',
+  quickSearchPh: typeof _t === 'function' ? _t('table_pagination.quick_search_ph', { ns: 'common', defaultValue: 'Quick search…' }) : 'Quick search…',
+  noRowsSearch: typeof _t === 'function' ? _t('table_pagination.no_rows_search', { ns: 'common', defaultValue: 'No rows to search' }) : 'No rows to search',
+  noMatchRows: typeof _t === 'function' ? _t('table_pagination.no_match_rows', { ns: 'common', defaultValue: 'No rows match your search.' }) : 'No rows match your search.',
+  noRowsDisplay: typeof _t === 'function' ? _t('table_pagination.no_rows_display', { ns: 'common', defaultValue: 'No rows to display.' }) : 'No rows to display.',
+  noMatches: typeof _t === 'function' ? _t('table_pagination.no_matches', { ns: 'common', defaultValue: 'No matches.' }) : 'No matches.',
+  zeroRows: typeof _t === 'function' ? _t('table_pagination.zero_rows', { ns: 'common', defaultValue: '0 rows.' }) : '0 rows.',
+  prev: typeof _t === 'function' ? _t('pagination.prev', { ns: 'common', defaultValue: 'Prev' }) : 'Prev',
+  next: typeof _t === 'function' ? _t('pagination.next', { ns: 'common', defaultValue: 'Next' }) : 'Next'
+}) %>;
+</script>
+<script src="/js/hms-table-pagination.js" defer></script>
+<script src="/js/hms-format-date.js" defer></script>
+<script src="/js/hms-display-date.js" defer></script>
+<script src="/js/hms-clinical-gates.js" defer></script>
+<script src="/js/hms-diagnostic-code-validate.js" defer></script>
+<% if (locals.hmsSessionIdle && locals.hmsSessionIdle.active) { %>
+<script>window.HMS_SESSION_IDLE = <%- JSON.stringify(Object.assign({}, locals.hmsSessionIdle, {
+  warnTitle: typeof t === 'function' ? t('session.idle_warn_title', { ns: 'common', defaultValue: 'Session expiring' }) : 'Session expiring',
+  warnMessage: typeof t === 'function' ? t('session.idle_warn_message', { ns: 'common', defaultValue: 'You will be signed out in 1 minute due to inactivity.' }) : 'You will be signed out in 1 minute due to inactivity.'
+})) %>;</script>
+<script src="/js/hms-session-idle.js?v=3" defer></script>
+<% } %>
+<div id="hms-modal-root" class="hms-ui"></div>
+<div id="hms-notify-root" class="hms-ui"></div>
+<div id="hms-quick-launcher-root" class="hms-ui" aria-hidden="true"></div>
+<script src="/dist/hms-ui.js?v=<%= locals.hmsUiBundleVersion || 57 %>" defer onerror="window.__HMS_UI_LOAD_FAILED=1"></script>
+<script>
+(function () {
+  var uiFailMsg = <%- JSON.stringify(typeof t === 'function' ? t('shell.ui_bundle_failed', { ns: 'common', defaultValue: 'UI bundle failed to load. Run npm run build:ui and refresh.' }) : 'UI bundle failed to load. Run npm run build:ui and refresh.') %>;
+  function showUiLoadFailure() {
+    var root = document.getElementById('hms-react-root');
+    if (!root || root.dataset.hmsMounted === '1') return;
+    root.innerHTML =
+      '<div class="content px-4 py-8"><div class="alert alert-danger border-0 shadow-sm" style="border-radius:12px;">' +
+      '<strong>' + uiFailMsg + '</strong>' +
+      '</div></div>';
+  }
+  window.addEventListener('load', function () {
+    if (window.__HMS_UI_LOAD_FAILED) showUiLoadFailure();
+    else {
+      setTimeout(function () {
+        var root = document.getElementById('hms-react-root');
+        if (root && root.dataset.hmsMounted !== '1' && root.querySelector('#hms-react-fallback')) {
+          showUiLoadFailure();
+        }
+      }, 1500);
+    }
+  });
+})();
+</script>
+</body>
+</html>

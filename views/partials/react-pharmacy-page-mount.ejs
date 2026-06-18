@@ -1,0 +1,19 @@
+<%
+  var _page = locals.reactPage || 'pharmacy';
+  var _loadingLabel = locals.reactLoadingLabel || (typeof t === 'function' ? t('loading_pages.pharmacy', { ns: 'common' }) : 'Loading…');
+  var _view = locals.phaView || 'products';
+  var _menuMap = { overview: 'overview', dispensing: 'dispensing', products: 'products', prescriptions: 'prescriptions' };
+  var _titles = { overview: 'Dashboard', dispensing: 'Dispensing', products: 'Products', prescriptions: 'Prescriptions' };
+%>
+<%- include('pharmacy-odoo-start', {
+  phaOdooMenu: _menuMap[_view] || 'products',
+  phaOdooTitle: _titles[_view] || 'Products',
+  nursingSupplyPending: locals.nursingSupplyPending,
+  flash: locals.flash,
+  error: locals.error
+}) %>
+<%- include('react-page-mount', {
+  reactPage: _page,
+  reactLoadingLabel: _loadingLabel
+}) %>
+<%- include('pharmacy-odoo-end') %>

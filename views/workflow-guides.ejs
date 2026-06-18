@@ -1,0 +1,318 @@
+<%- include('partials/header') %>
+<div class="page-wrapper"><div class="content">
+
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<style>
+.wg-hero{background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:16px;padding:2rem;color:#fff;margin-bottom:1.5rem;}
+.wg-tab-btn{border:none;background:transparent;padding:.6rem 1.4rem;border-radius:30px;font-weight:700;font-size:.85rem;cursor:pointer;color:#64748b;transition:.2s;}
+.wg-tab-btn.active{background:#1a6bd8;color:#fff;box-shadow:0 4px 14px rgba(26,107,216,.3);}
+.wg-tab-pane{display:none;}.wg-tab-pane.active{display:block;}
+.step-table th{background:#f1f5f9;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;color:#475569;padding:.6rem .8rem;border-bottom:2px solid #e2e8f0;}
+.step-table td{padding:.65rem .8rem;border-bottom:1px solid #f1f5f9;font-size:.85rem;vertical-align:top;}
+.step-table tr:last-child td{border-bottom:none;}
+.step-table tr.my-role td{background:#fffbeb;border-left:4px solid #f59e0b;}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#1a6bd8;color:#fff;font-weight:800;font-size:.75rem;flex-shrink:0;}
+.flow-box{background:#f8fafc;border-radius:14px;padding:1.2rem;margin-bottom:1.2rem;border:1px solid #e2e8f0;}
+.note-box{background:#f0f9ff;border-left:4px solid #38bdf8;border-radius:6px;padding:.8rem 1rem;font-size:.85rem;margin:.8rem 0;}
+.warn-box{background:#fef3c7;border-left:4px solid #f59e0b;border-radius:6px;padding:.8rem 1rem;font-size:.85rem;margin:.8rem 0;}
+.danger-box{background:#fef2f2;border-left:4px solid #ef4444;border-radius:6px;padding:.8rem 1rem;font-size:.85rem;margin:.8rem 0;}
+.wf-card{border-radius:14px;border-top:4px solid transparent;transition:transform .15s,box-shadow .15s;}
+.wf-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.1);}
+.perm-code{background:#f1f5f9;border-radius:4px;padding:1px 6px;font-family:monospace;font-size:.8rem;color:#1e293b;}
+</style>
+
+<% var myR = locals.userRole || ''; %>
+<% var wfList = locals.workflows || []; %>
+<% var stepsMap = locals.stepsByWorkflow || {}; %>
+<% var defWf = locals.defaultWorkflowId || 'opd'; %>
+<% var showSys = !!locals.showSystemModules; %>
+<% var scopeRole = locals.guidesScope === 'role'; %>
+
+<% function stepIsMe(step) {
+  if (!step || !step.roleIds) return false;
+  return String(step.roleIds).split(',').map(function(s){ return s.trim(); }).indexOf(myR) !== -1;
+} %>
+
+<div class="wg-hero mb-4">
+  <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap:12px;">
+    <div>
+      <h1 class="h4 mb-1 font-weight-bold" style="color:#fff;"><i class="fa fa-sitemap mr-2"></i><%= _t('workflow_guides.title', { ns: 'legacy', defaultValue: 'Clinical Workflow Guides' }) %></h1>
+      <p class="mb-0 small" style="color:rgba(255,255,255,.8);"><%= locals.heroSubtitle || _t('workflow_guides.hero_subtitle', { ns: 'legacy', defaultValue: 'Clinical workflow guides — betterplanning Ltd' }) %></p>
+    </div>
+    <div>
+      <% if (locals.myRoleLabel) { %>
+      <span class="badge" style="background:#f59e0b;color:#1e293b;font-size:.85rem;padding:6px 14px;border-radius:20px;font-weight:700;"><i class="fa fa-user mr-1"></i><%= _t('workflow_guides.viewing_as', { ns: 'legacy', role: myRoleLabel, defaultValue: 'Viewing as: ' + myRoleLabel }) %></span>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<% if (!wfList.length) { %>
+<div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+  <div class="card-body text-center py-5">
+    <i class="fa fa-info-circle fa-2x text-muted mb-3"></i>
+    <p class="text-muted mb-0"><%= _t('workflow_guides.no_steps_mapped', { ns: 'legacy', defaultValue: 'No clinical workflow steps are mapped to your role in this guide. Contact your administrator if you need access documentation.' }) %></p>
+  </div>
+</div>
+<% } else { %>
+
+<% if (locals.showAllWorkflowCards) { %>
+<div class="row mb-4">
+  <% wfList.forEach(function(w) { %>
+  <div class="col-md-4 mb-3">
+    <div class="card border-0 shadow-sm h-100 wf-card" style="border-top-color:<%= w.color %> !important;">
+      <div class="card-body text-center py-4">
+        <span class="d-flex align-items-center justify-content-center rounded-circle mx-auto mb-3" style="width:72px;height:72px;background:<%= w.bg %>;">
+          <i class="fa <%= w.icon %> fa-2x" style="color:<%= w.color %>;"></i>
+        </span>
+        <h5 class="font-weight-bold mb-1"><%= w.short %> — <%= _t('workflow_guides.card.' + w.id + '.title', { ns: 'legacy', defaultValue: w.title }) %></h5>
+        <p class="text-muted small mb-3"><%= _t('workflow_guides.card.' + w.id + '.description', { ns: 'legacy', defaultValue: w.description }) %></p>
+        <button type="button" class="btn btn-sm px-4 font-weight-bold" style="background:<%= w.color %>;color:#fff;border-radius:20px;" onclick="openGuide('<%= w.id %>')">
+          <i class="fa fa-eye mr-1"></i><%= _t('workflow_guides.view_guide', { ns: 'legacy', defaultValue: 'View Guide' }) %>
+        </button>
+      </div>
+      <div class="card-footer bg-white border-0 text-center pb-3">
+        <small class="text-muted"><i class="fa fa-users mr-1"></i><%= _t('workflow_guides.card.' + w.id + '.roles', { ns: 'legacy', defaultValue: w.rolesLabel }) %></small>
+      </div>
+    </div>
+  </div>
+  <% }); %>
+</div>
+<% } %>
+
+<div class="card border-0 shadow-sm mb-4" style="border-radius:14px;" id="guide-panel">
+  <div class="card-header bg-white py-3" style="border-bottom:2px solid #e2e8f0;border-radius:14px 14px 0 0;">
+    <% if (wfList.length > 1) { %>
+    <div class="d-flex align-items-center" style="gap:8px;flex-wrap:wrap;">
+      <% wfList.forEach(function(w) { %>
+      <button type="button" class="wg-tab-btn<%= w.id === defWf ? ' active' : '' %>" onclick="switchTab('<%= w.id %>',this)" id="tab-<%= w.id %>">
+        <i class="fa <%= w.icon %> mr-1" style="color:<%= w.color %>;"></i><%= w.short %>
+      </button>
+      <% }); %>
+    </div>
+    <% } else { %>
+    <span class="font-weight-bold"><i class="fa <%= wfList[0].icon %> mr-2" style="color:<%= wfList[0].color %>;"></i><%= _t('workflow_guides.card.' + wfList[0].id + '.title', { ns: 'legacy', defaultValue: wfList[0].title }) %></span>
+    <% } %>
+  </div>
+  <div class="card-body">
+
+    <% wfList.forEach(function(w) {
+      var steps = stepsMap[w.id] || [];
+      var isActive = w.id === defWf;
+    %>
+    <div class="wg-tab-pane<%= isActive ? ' active' : '' %>" id="pane-<%= w.id %>">
+
+      <% if (w.id === 'opd') { %>
+      <h5 class="font-weight-bold mb-2" style="color:#1a6bd8;"><i class="fa fa-stethoscope mr-2"></i><%= _t('workflow_guides.opd.title', { ns: 'legacy', defaultValue: 'Outpatient (OPD) Process' }) %></h5>
+      <% if (!scopeRole) { %>
+      <div class="note-box"><%- _t('workflow_guides.opd.tip_full', { ns: 'legacy', defaultValue: '<strong>Tip:</strong> Monitor real-time flow in the <a href="/opd-queue">OPD Queue</a>. Patient stages: <strong>Registered → Triage → Waiting Doctor → In Consultation → Completed</strong>. <strong>Entry order:</strong> register at Front Desk → pay consultation fee at Cashier → return to Front Desk for the OPD queue.' }) %></div>
+      <% } else { %>
+      <div class="note-box"><%- _t('workflow_guides.opd.tip_role', { ns: 'legacy', defaultValue: 'Your steps in the outpatient flow. Full team coordination happens in the <a href="/opd-queue">OPD Queue</a>.' }) %></div>
+      <% } %>
+      <div class="flow-box mb-3"><div class="mermaid">
+graph LR
+  A([Patient Arrives]) --> B[Front Desk: Register]
+  B --> C[Cashier: Consultation Fee]
+  C --> D[Front Desk: OPD Queue]
+  D --> E[Nurse: Triage & Vitals]
+  E --> F[Doctor: Consultation]
+  F --> G{Orders?}
+  G -->|No| Z([Completed])
+  G -->|Yes| H[Cashier: Pay Orders]
+  H --> I[Lab / Radiology]
+  I --> J[Doctor: Review & Finalize]
+  J --> K[Pharmacy: Dispense]
+  K --> Z
+      </div></div>
+      <% } else if (w.id === 'ipd') { %>
+      <h5 class="font-weight-bold mb-2" style="color:#7c3aed;"><i class="fa fa-bed mr-2"></i><%= _t('workflow_guides.ipd.title', { ns: 'legacy', defaultValue: 'Inpatient (IPD) Process' }) %></h5>
+      <% if (!scopeRole) { %>
+      <div class="note-box"><%- _t('workflow_guides.ipd.key_principle', { ns: 'legacy', defaultValue: '<strong>Key Principle:</strong> Patient cannot physically leave until both <strong>Clinical Discharge</strong> (Doctor) and <strong>Financial Discharge</strong> (Cashier) are completed.' }) %></div>
+      <% } %>
+      <div class="flow-box mb-3"><div class="mermaid">
+graph LR
+  A([Doctor: Admission Decision]) --> B[Cashier: Admission Deposit]
+  B --> C[ADT: Assign Ward & Bed]
+  C --> D[Nurse: Receive & Monitor]
+  D --> E[Doctor: Daily Rounds & Orders]
+  E --> F{New Orders?}
+  F -->|Yes| G[Lab / Radiology / Pharmacy]
+  G --> E
+  F -->|No| H{Ready?}
+  H -->|No| E
+  H -->|Yes| I[Doctor: Clinical Discharge]
+  I --> J[Cashier: Financial Discharge]
+  J --> K([Patient Leaves])
+      </div></div>
+      <% } else if (w.id === 'emg') { %>
+      <h5 class="font-weight-bold mb-2" style="color:#ef4444;"><i class="fa fa-ambulance mr-2"></i><%= _t('workflow_guides.emg.title', { ns: 'legacy', defaultValue: 'Emergency / A&E Process' }) %></h5>
+      <% if (!scopeRole) { %>
+      <div class="danger-box"><%- _t('workflow_guides.emg.critical_rule', { ns: 'legacy', defaultValue: '<strong>Critical Rule:</strong> For emergency patients, the <strong>"Emergency / Waiver"</strong> checkbox MUST be selected at registration. This activates the entire prepayment bypass.' }) %></div>
+      <% } %>
+      <div class="flow-box mb-3"><div class="mermaid">
+graph LR
+  A([Critical Patient Arrives]) --> B[Front Desk: Rapid Register\nBYPASS Prepayment]
+  B --> C[Auto-routed: Emergency A&E]
+  C --> D[Nurse: Immediate Vitals]
+  C --> E[Doctor: Immediate Treatment]
+  D --> F{Stabilized?}
+  E --> F
+  F -->|Admit| G[ADT: Transfer to Ward]
+  F -->|Discharge| H[Cashier: Retrospective Bill]
+  G --> H
+  H --> I([Patient Discharged])
+      </div></div>
+      <% } %>
+
+      <% if (!steps.length) { %>
+      <p class="text-muted small mb-0"><%= _t('workflow_guides.no_steps_role', { ns: 'legacy', defaultValue: 'No steps listed for your role in this workflow.' }) %></p>
+      <% } else { %>
+      <table class="table step-table border-0">
+        <thead><tr>
+          <th>#</th>
+          <th><%= _t('workflow_guides.col_role', { ns: 'legacy', defaultValue: 'Role' }) %></th>
+          <th><%= _t('workflow_guides.col_action', { ns: 'legacy', defaultValue: 'Action' }) %></th>
+          <% if (showSys) { %><th><%= _t('workflow_guides.col_module', { ns: 'legacy', defaultValue: 'System Module' }) %></th><% } %>
+        </tr></thead>
+        <tbody>
+        <% steps.forEach(function(step) {
+          var isMe = stepIsMe(step);
+        %>
+          <tr class="<%= isMe ? 'my-role' : '' %>">
+            <td><span class="step-num" style="background:<%= w.color %>;"><%= step.num %></span></td>
+            <td class="font-weight-bold"><%= _t('workflow_guides.step.' + w.id + '.' + step.num + '.role', { ns: 'legacy', defaultValue: step.roleLabel }) %><% if (isMe) { %> <span class="badge badge-warning ml-1" style="font-size:.65rem;"><%= _t('workflow_guides.you_badge', { ns: 'legacy', defaultValue: 'YOU' }) %></span><% } %></td>
+            <td><%= _t('workflow_guides.step.' + w.id + '.' + step.num + '.action', { ns: 'legacy', defaultValue: step.action }) %></td>
+            <% if (showSys) { %>
+            <td class="small"><span class="text-muted"><%= _t('workflow_guides.step.' + w.id + '.' + step.num + '.module', { ns: 'legacy', defaultValue: step.module }) %></span><br><code class="perm-code"><%= step.perms %></code></td>
+            <% } %>
+          </tr>
+        <% }); %>
+        </tbody>
+      </table>
+      <% } %>
+
+      <% if (w.id === 'opd' && !scopeRole) { %>
+      <div class="warn-box"><%- _t('workflow_guides.opd.payment_note', { ns: 'legacy', defaultValue: '<strong>Note:</strong> If orders are NOT paid at the Cashier, Lab and Pharmacy will not process them. Always confirm payment before investigations begin.' }) %></div>
+      <% } else if (w.id === 'ipd' && !scopeRole) { %>
+      <div class="warn-box"><%- _t('workflow_guides.ipd.discharge_note', { ns: 'legacy', defaultValue: '<strong>Reminder:</strong> Clinical Discharge = Doctor (medical fitness). Financial Discharge = Cashier (bill settlement). Both required before patient leaves.' }) %></div>
+      <% } else if (w.id === 'emg' && !scopeRole) { %>
+      <div class="note-box"><%- _t('workflow_guides.emg.visibility_note', { ns: 'legacy', defaultValue: '<strong>Visibility:</strong> Front Desk and Nurse Station dashboards show a real-time "Active Emergency" widget with every patient currently in A&E.' }) %></div>
+      <% } %>
+
+    </div>
+    <% }); %>
+
+  </div>
+</div>
+
+<% if (locals.showComparisonTable) { %>
+<div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+  <div class="card-header bg-white font-weight-bold py-3" style="border-bottom:2px solid #e2e8f0;">
+    <i class="fa fa-table mr-2 text-primary"></i><%= _t('workflow_guides.compare_title', { ns: 'legacy', defaultValue: 'Quick Reference: Workflow Comparison by Role' }) %>
+  </div>
+  <div class="card-body p-0"><div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="thead-light"><tr>
+        <th><%= _t('workflow_guides.compare_col_stage', { ns: 'legacy', defaultValue: 'Stage / Role' }) %></th>
+        <th><span class="badge badge-primary"><%= _t('workflow_guides.compare_opd', { ns: 'legacy', defaultValue: 'OPD' }) %></span></th>
+        <th><span class="badge" style="background:#7c3aed;color:#fff;"><%= _t('workflow_guides.compare_ipd', { ns: 'legacy', defaultValue: 'IPD' }) %></span></th>
+        <th><span class="badge badge-danger"><%= _t('workflow_guides.compare_emergency', { ns: 'legacy', defaultValue: 'Emergency' }) %></span></th>
+      </tr></thead>
+      <tbody>
+      <% [
+        ['Cashier (role 11)','11','compare_cashier_opd','compare_cashier_ipd','compare_cashier_emg'],
+        ['Front Desk (role 3)','3','compare_fd_opd','compare_fd_ipd','compare_fd_emg'],
+        ['Nurse / Nursing Aid (roles 7 & 8)','7,8','compare_nurse_opd','compare_nurse_ipd','compare_nurse_emg'],
+        ['Doctor (role 2)','2','compare_doc_opd','compare_doc_ipd','compare_doc_emg'],
+        ['Lab Technician (role 4)','4','compare_lab_opd','compare_lab_ipd','compare_lab_emg'],
+        ['Radiologist (role 6)','6','compare_rad_opd','compare_rad_ipd','compare_rad_emg'],
+        ['Pharmacist (role 5)','5','compare_pharm_opd','compare_pharm_ipd','compare_pharm_emg'],
+        ['Discharge','','compare_discharge_opd','compare_discharge_ipd','compare_discharge_emg']
+      ].forEach(function(r, ri) {
+        var isMe = r[1] && r[1].split(',').indexOf(myR) !== -1;
+        var rowLabel = _t('workflow_guides.' + (r[2].replace('compare_','compare_row_').split('_').slice(0,2).join('_')), { ns: 'legacy', defaultValue: r[0] });
+        if (ri === 0) rowLabel = _t('workflow_guides.compare_row_cashier', { ns: 'legacy', defaultValue: r[0] });
+        else if (ri === 1) rowLabel = _t('workflow_guides.compare_row_front_desk', { ns: 'legacy', defaultValue: r[0] });
+        else if (ri === 2) rowLabel = _t('workflow_guides.compare_row_nurse', { ns: 'legacy', defaultValue: r[0] });
+        else if (ri === 3) rowLabel = _t('workflow_guides.compare_row_doctor', { ns: 'legacy', defaultValue: r[0] });
+        else if (ri === 4) rowLabel = _t('workflow_guides.compare_row_lab', { ns: 'legacy', defaultValue: r[0] });
+        else if (ri === 5) rowLabel = _t('workflow_guides.compare_row_radiologist', { ns: 'legacy', defaultValue: r[0] });
+        else if (ri === 6) rowLabel = _t('workflow_guides.compare_row_pharmacist', { ns: 'legacy', defaultValue: r[0] });
+        else if (ri === 7) rowLabel = _t('workflow_guides.compare_row_discharge', { ns: 'legacy', defaultValue: r[0] });
+      %>
+        <tr style="<%= isMe ? 'background:#fffbeb;border-left:4px solid #f59e0b;' : '' %>">
+          <td class="font-weight-bold"><%= rowLabel %><% if (isMe) { %> <span class="badge badge-warning ml-1" style="font-size:.65rem;"><%= _t('workflow_guides.you_badge', { ns: 'legacy', defaultValue: 'YOU' }) %></span><% } %></td>
+          <td class="small"><%= _t('workflow_guides.' + r[2], { ns: 'legacy', defaultValue: '' }) %></td>
+          <td class="small"><%= _t('workflow_guides.' + r[3], { ns: 'legacy', defaultValue: '' }) %></td>
+          <td class="small"><%= _t('workflow_guides.' + r[4], { ns: 'legacy', defaultValue: '' }) %></td>
+        </tr>
+      <% }); %>
+      </tbody>
+    </table>
+  </div></div>
+</div>
+<% } %>
+
+<% if (locals.showPermissionsSummary) { %>
+<div class="card border-0 shadow-sm" style="border-radius:14px;">
+  <div class="card-header bg-white font-weight-bold py-3" style="border-bottom:2px solid #e2e8f0;">
+    <i class="fa fa-lock mr-2 text-warning"></i><%= _t('workflow_guides.perms_title', { ns: 'legacy', defaultValue: 'System Permissions Summary' }) %>
+  </div>
+  <div class="card-body p-0"><div class="table-responsive">
+    <table class="table table-sm table-hover mb-0">
+      <thead class="thead-light"><tr><th><%= _t('workflow_guides.perms_col_role', { ns: 'legacy', defaultValue: 'Role' }) %></th><th><%= _t('workflow_guides.perms_col_key', { ns: 'legacy', defaultValue: 'Key Permissions' }) %></th><th><%= _t('workflow_guides.perms_col_portal', { ns: 'legacy', defaultValue: 'Primary Portal' }) %></th></tr></thead>
+      <tbody>
+      <% [
+        ['Doctor','2','perms_doctor','/portal/doctor'],
+        ['Front Desk','3','perms_front_desk','/portal/front-desk'],
+        ['Lab Technician','4','perms_lab','/portal/lab'],
+        ['Pharmacist','5','perms_pharmacist','/portal/pharmacy'],
+        ['Radiologist','6','perms_radiologist','/portal/radiology'],
+        ['Nurse','7','perms_nurse','/portal/nurse'],
+        ['Nursing Aid','8','perms_nursing_aid','/portal/nurse'],
+        ['Accountant','9','perms_accountant','/portal/accountant'],
+        ['Cashier','11','perms_cashier','/portal/cashier'],
+        ['System Admin','1','perms_admin','/dashboard'],
+        ['Super Admin','99','perms_super','/super-admin']
+      ].forEach(function(r) {
+        var isMe = (r[1] === myR);
+      %>
+        <tr style="<%= isMe ? 'background:#fffbeb;border-left:4px solid #f59e0b;' : '' %>">
+          <td class="font-weight-bold"><%= _t('workflow_guides.perm_role_' + r[2].replace('perms_',''), { ns: 'legacy', defaultValue: r[0] }) %> <span class="text-muted small">(<%= _t('workflow_guides.role_label', { ns: 'legacy', role: r[1], defaultValue: 'role ' + r[1] }) %>)</span><% if (isMe) { %> <span class="badge badge-warning ml-1" style="font-size:.65rem;"><%= _t('workflow_guides.you_badge', { ns: 'legacy', defaultValue: 'YOU' }) %></span><% } %></td>
+          <td><code class="perm-code" style="word-break:break-all;"><%= _t('workflow_guides.' + r[2], { ns: 'legacy', defaultValue: '' }) %></code></td>
+          <td><a href="<%= r[3] %>" class="small"><%= r[3] %></a></td>
+        </tr>
+      <% }); %>
+      </tbody>
+    </table>
+  </div></div>
+</div>
+<% } %>
+
+<% } %>
+
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: { primaryColor:'#dbeafe', primaryTextColor:'#1e293b', lineColor:'#94a3b8', fontSize:'13px' } });
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.wg-tab-pane').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.wg-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  var pane = document.getElementById('pane-' + id);
+  if (pane) pane.classList.add('active');
+  if (btn) btn.classList.add('active');
+  var panel = document.getElementById('guide-panel');
+  if (panel) panel.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function openGuide(id) {
+  var tab = document.getElementById('tab-' + id);
+  if (tab) tab.click();
+  else switchTab(id, null);
+  var panel = document.getElementById('guide-panel');
+  if (panel) panel.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+</script>
+
+<%- include('partials/footer') %>

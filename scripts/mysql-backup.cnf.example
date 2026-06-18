@@ -1,0 +1,7 @@
+# Copy to D:\HMS-Data\hms-backups\mysql-backup.cnf
+# Restrict ACL: Administrators + backup service account READ only
+[client]
+user=root
+password=Ts$fSOA2026!Hms
+host=localhost
+port=3306

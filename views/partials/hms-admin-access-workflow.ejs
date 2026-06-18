@@ -1,0 +1,76 @@
+<%
+if (typeof _ac !== 'function') {
+  var _ac = function (k, d, opts) {
+    if (typeof t !== 'function') return d || k;
+    var o = { ns: 'access', defaultValue: d || k };
+    if (opts) Object.assign(o, opts);
+    return t(k, o);
+  };
+}
+%>
+<p class="text-muted small mb-3">
+  <%= _ac('workflow.intro', 'Map clinical pathways to staff portals. Drag a portal pill onto a step. This guides staff documentation — it does not grant permissions.') %>
+</p>
+<div class="haa-wf-toolbar">
+  <span class="small font-weight-bold text-muted text-uppercase mr-2"><%= _ac('workflow.drag_hint', 'Drag onto step:') %></span>
+  <% (portals || []).forEach(function(p) { %>
+  <div class="haa-wf-pill" draggable="true" data-code="<%= p.code %>" data-label="<%= p.label %>">
+    <i class="fa fa-th-large mr-1"></i><%= p.label %>
+  </div>
+  <% }); %>
+</div>
+
+<div class="card border-0 shadow-sm mb-3" style="border-radius:10px;overflow:hidden;">
+  <div class="wf-tab-bar d-flex gap-2 p-2" style="background:#f8fafc;border-bottom:1px solid #dee2e6;">
+    <button type="button" class="haa-wf-tab wf-tab-btn active" onclick="haaWfTab('opd',this)"><i class="fa fa-hospital-o mr-1"></i><%= _ac('workflow.tab_opd', 'OPD') %></button>
+    <button type="button" class="haa-wf-tab wf-tab-btn" onclick="haaWfTab('ipd',this)"><i class="fa fa-bed mr-1"></i><%= _ac('workflow.tab_ipd', 'IPD') %></button>
+    <button type="button" class="haa-wf-tab wf-tab-btn" onclick="haaWfTab('emg',this)"><i class="fa fa-ambulance mr-1"></i><%= _ac('workflow.tab_emg', 'Emergency') %></button>
+  </div>
+
+  <% function renderFlow(wfKey, steps, tabId, show) { %>
+  <div id="<%= tabId %>" class="wf-flow-wrap" style="<%= show ? '' : 'display:none' %>">
+    <div class="wf-flow p-3">
+      <% steps.forEach(function(step, i) { %>
+      <% if (i > 0) { %><span class="wf-arrow"><i class="fa fa-arrow-right"></i></span><% } %>
+      <div class="wf-step" style="background:<%= step.step_color || '#714b67' %>"
+           data-workflow="<%= wfKey %>" data-key="<%= step.step_key %>">
+        <div class="wf-step-label">
+          <span class="step-label-text"><%= step.step_label %></span>
+          <div style="display:flex;gap:3px;">
+            <button type="button" class="wf-step-edit" onclick="haaRenameStep('<%= wfKey %>','<%= step.step_key %>',this)" title="<%= _ac('shared.rename', 'Rename') %>"><i class="fa fa-pencil"></i></button>
+            <% if (step.is_custom) { %>
+            <button type="button" class="wf-step-edit" style="background:rgba(220,38,38,.4)" onclick="haaDeleteStep('<%= wfKey %>','<%= step.step_key %>')" title="<%= _ac('shared.delete', 'Delete') %>"><i class="fa fa-trash"></i></button>
+            <% } %>
+          </div>
+        </div>
+        <div class="wf-step-portals">
+          <% (step.portals || []).forEach(function(pc) { %>
+          <span class="wf-badge"><%= plMap[pc] || pc %>
+            <button type="button" class="wf-badge-x" onclick="haaRemovePortal('<%= wfKey %>','<%= step.step_key %>','<%= pc %>')">&times;</button>
+          </span>
+          <% }); %>
+        </div>
+      </div>
+      <% }); %>
+      <span class="wf-arrow"><i class="fa fa-arrow-right"></i></span>
+      <div class="wf-add-step" onclick="haaAddStep('<%= wfKey %>')"><i class="fa fa-plus"></i><span><%= _ac('workflow.add_step', 'Add step') %></span></div>
+    </div>
+  </div>
+  <% } %>
+
+  <% renderFlow('opd', opdSteps || [], 'haa-tab-opd', true); %>
+  <% renderFlow('ipd', ipdSteps || [], 'haa-tab-ipd', false); %>
+  <% renderFlow('emg', emgSteps || [], 'haa-tab-emg', false); %>
+</div>
+
+<style>
+.wf-flow-wrap{padding:0;overflow-x:auto}
+.wf-flow{display:flex;flex-wrap:nowrap;align-items:flex-start}
+.wf-step{width:155px;min-height:90px;border-radius:8px;padding:.75rem;color:#fff;flex-shrink:0}
+.wf-step.drop-over{box-shadow:0 0 0 3px #fff,0 0 0 5px var(--haa-brand)}
+.wf-arrow{color:#adb5bd;align-self:center;padding:0 .25rem}
+.wf-badge{background:rgba(255,255,255,.25);border-radius:10px;padding:2px 6px;font-size:.65rem;margin:2px;display:inline-flex;align-items:center;gap:2px}
+.wf-badge-x{border:none;background:rgba(255,255,255,.4);border-radius:50%;width:14px;height:14px;font-size:.55rem;cursor:pointer}
+.wf-add-step{border:2px dashed #ced4da;border-radius:8px;width:100px;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#6c757d;font-size:.72rem;flex-shrink:0}
+.wf-step-edit{background:rgba(255,255,255,.25);border:none;color:#fff;border-radius:4px;width:20px;height:20px;font-size:.6rem;cursor:pointer}
+</style>

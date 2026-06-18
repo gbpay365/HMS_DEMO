@@ -1,0 +1,189 @@
+<% if(hasP('clinical.write','prescription.write') && heroVisible('doc.hero.followup')){
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _tp = function (key, fallback, opts) {
+  return _t(key, Object.assign({ ns: 'portal', defaultValue: fallback }, opts || {}));
+};
+var _docFuI18n = {
+  patientHash: _tp('doctor_followup.patient_hash', 'Patient #{{id}}'),
+  no_filter_match: _tp('doctor_followup.no_filter_match', 'No patients match your filter.'),
+  load_error: _tp('doctor_followup.load_error', 'Could not load patients.'),
+  empty_eligible: _tp('doctor_followup.empty_eligible', 'No eligible follow-up patients right now. End a consultation with <strong>“Patient may return for a follow-up consultation…”</strong> checked, and ensure payment validity still applies.'),
+  network_error: _tp('doctor_followup.network_error', 'Network error while loading patients.')
+};
+%>
+<div class="modal fade" id="docFollowUpModal" tabindex="-1" role="dialog" aria-labelledby="docFollowUpModalTitle" aria-hidden="true">
+ <div class="modal-dialog modal-dialog-centered" role="document">
+  <div class="modal-content border-0 shadow" style="border-radius:16px;overflow:hidden;">
+   <div class="modal-header text-white py-3" style="background:linear-gradient(135deg,#6d28d9,#7c3aed);border:0;">
+    <h5 class="modal-title font-weight-bold" id="docFollowUpModalTitle"><i class="fa fa-calendar-check-o mr-2"></i><%= _tp('doctor_followup.title', 'Start follow-up consultation') %></h5>
+    <button type="button" class="close text-white" data-dismiss="modal" aria-label="<%= _tp('doctor_followup.close', 'Close') %>"><span aria-hidden="true">&times;</span></button>
+   </div>
+   <div class="modal-body py-4">
+    <p class="text-muted small mb-3"><%= _tp('doctor_followup.intro', 'Patients you previously marked for follow-up with a valid payment code. Select one to start the visit.') %></p>
+    <label class="small font-weight-bold text-secondary mb-1" for="docFuFilter"><%= _tp('doctor_followup.filter_label', 'Filter list') %></label>
+    <input type="text" id="docFuFilter" class="hms-input w-full text-sm mb-2" placeholder="<%= _tp('doctor_followup.filter_ph', 'Name, phone, or patient ID…') %>" autocomplete="off">
+    <div id="docFuListLoading" class="text-center text-muted small py-4">
+     <i class="fa fa-spinner fa-spin mr-1"></i><%= _tp('doctor_followup.loading', 'Loading eligible patients…') %>
+    </div>
+    <div id="docFuListEmpty" class="alert alert-light border small text-muted mb-0 d-none py-3">
+     <i class="fa fa-info-circle mr-1"></i><%- _tp('doctor_followup.empty_eligible', 'No eligible follow-up patients right now. End a consultation with <strong>“Patient may return for a follow-up consultation…”</strong> checked, and ensure payment validity still applies.') %>
+    </div>
+    <div id="docFuList" class="list-group list-group-flush border rounded d-none" style="max-height:280px;overflow-y:auto;"></div>
+    <div id="docFuPatientPick" class="alert alert-light border small mb-0 mt-2 d-none py-2">
+     <i class="fa fa-user mr-1 text-primary"></i><span id="docFuPatientLabel"></span>
+     <button type="button" class="btn btn-link btn-sm p-0 ml-2" id="docFuPatientClear"><%= _tp('doctor_followup.change', 'Change') %></button>
+    </div>
+   </div>
+   <div class="modal-footer bg-light border-0">
+    <button type="button" class="hms-btn hms-btn-secondary text-sm" data-dismiss="modal"><%= _tp('doctor_followup.cancel', 'Cancel') %></button>
+    <a href="#" id="docFuStartBtn" class="btn btn-sm font-weight-bold text-white disabled" style="background:linear-gradient(135deg,#6d28d9,#7c3aed);pointer-events:none;opacity:.55;" aria-disabled="true">
+     <i class="fa fa-play mr-1"></i><%= _tp('doctor_followup.start', 'Start follow-up') %>
+    </a>
+   </div>
+  </div>
+ </div>
+</div>
+<script type="application/json" id="docFuI18n"><%- JSON.stringify(_docFuI18n).replace(/</g, '\\u003c') %></script>
+<script>
+(function(){
+  var i18n = {};
+  try {
+    var i18nEl = document.getElementById('docFuI18n');
+    if (i18nEl) i18n = JSON.parse(i18nEl.textContent || '{}');
+  } catch (e) { i18n = {}; }
+  function tr(key, fallback, vars) {
+    var s = (i18n && i18n[key] != null) ? i18n[key] : fallback;
+    if (vars) Object.keys(vars).forEach(function (k) { s = s.split('{{' + k + '}}').join(vars[k]); });
+    return s;
+  }
+  var filterEl = document.getElementById('docFuFilter');
+  var listEl = document.getElementById('docFuList');
+  var loadingEl = document.getElementById('docFuListLoading');
+  var emptyEl = document.getElementById('docFuListEmpty');
+  var pickBox = document.getElementById('docFuPatientPick');
+  var pickLabel = document.getElementById('docFuPatientLabel');
+  var startBtn = document.getElementById('docFuStartBtn');
+  if (!listEl || !startBtn) return;
+
+  var allPatients = [];
+  var selectedId = 0;
+
+  function setPick(id, label) {
+    selectedId = id > 0 ? id : 0;
+    if (selectedId > 0) {
+      pickLabel.textContent = label || tr('patientHash', 'Patient #{{id}}', { id: selectedId });
+      pickBox.classList.remove('d-none');
+      startBtn.classList.remove('disabled');
+      startBtn.style.pointerEvents = '';
+      startBtn.style.opacity = '';
+      startBtn.setAttribute('aria-disabled', 'false');
+      startBtn.href = '/clinical/follow-up-opd?patient_id=' + selectedId;
+    } else {
+      pickBox.classList.add('d-none');
+      startBtn.classList.add('disabled');
+      startBtn.href = '#';
+      startBtn.style.pointerEvents = 'none';
+      startBtn.style.opacity = '.55';
+      startBtn.setAttribute('aria-disabled', 'true');
+    }
+    renderList(filterEl ? filterEl.value : '');
+  }
+
+  function renderList(filterTerm) {
+    var term = String(filterTerm || '').trim().toLowerCase();
+    listEl.innerHTML = '';
+    var rows = allPatients.filter(function(p) {
+      if (!term) return true;
+      var hay = [p.name, p.first_name, p.last_name, p.phone, String(p.patient_id), p.department, p.payment_code].join(' ').toLowerCase();
+      return hay.indexOf(term) !== -1;
+    });
+    if (!rows.length) {
+      listEl.classList.add('d-none');
+      if (allPatients.length) {
+        emptyEl.classList.remove('d-none');
+        emptyEl.innerHTML = '<i class="fa fa-search mr-1"></i>' + tr('no_filter_match', 'No patients match your filter.');
+      }
+      return;
+    }
+    emptyEl.classList.add('d-none');
+    listEl.classList.remove('d-none');
+    rows.forEach(function(p) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'list-group-item list-group-item-action py-2' + (selectedId === p.patient_id ? ' active' : '');
+      var meta = [];
+      if (p.phone) meta.push(p.phone);
+      if (p.department) meta.push(p.department);
+      btn.innerHTML =
+        '<div class="d-flex justify-content-between align-items-start" style="gap:8px;">' +
+        '<div><strong>' + (p.name || tr('patientHash', 'Patient #{{id}}', { id: p.patient_id })) + '</strong>' +
+        (meta.length ? '<div class="small text-muted">' + meta.join(' · ') + '</div>' : '') +
+        '</div>' +
+        '<span class="badge badge-light border" style="font-size:.65rem;">#' + p.patient_id + '</span>' +
+        '</div>';
+      btn.addEventListener('click', function() { setPick(p.patient_id, p.name); });
+      listEl.appendChild(btn);
+    });
+  }
+
+  function loadEligible() {
+    allPatients = [];
+    selectedId = 0;
+    setPick(0, '');
+    if (filterEl) filterEl.value = '';
+    loadingEl.classList.remove('d-none');
+    emptyEl.classList.add('d-none');
+    listEl.classList.add('d-none');
+    listEl.innerHTML = '';
+
+    fetch('/api/clinical/follow-up-eligible-patients', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        loadingEl.classList.add('d-none');
+        if (!data || !data.ok) {
+          emptyEl.classList.remove('d-none');
+          emptyEl.innerHTML = '<i class="fa fa-exclamation-triangle mr-1"></i>' + (data && data.error ? data.error : tr('load_error', 'Could not load patients.'));
+          return;
+        }
+        allPatients = Array.isArray(data.patients) ? data.patients : [];
+        if (!allPatients.length) {
+          emptyEl.classList.remove('d-none');
+          emptyEl.innerHTML = '<i class="fa fa-info-circle mr-1"></i>' + tr('empty_eligible', 'No eligible follow-up patients right now. End a consultation with <strong>“Patient may return for a follow-up consultation…”</strong> checked, and ensure payment validity still applies.');
+          return;
+        }
+        renderList('');
+      })
+      .catch(function(){
+        loadingEl.classList.add('d-none');
+        emptyEl.classList.remove('d-none');
+        emptyEl.innerHTML = '<i class="fa fa-exclamation-triangle mr-1"></i>' + tr('network_error', 'Network error while loading patients.');
+      });
+  }
+
+  if (filterEl) {
+    filterEl.addEventListener('input', function() { renderList(filterEl.value); });
+  }
+
+  document.getElementById('docFuPatientClear').addEventListener('click', function() {
+    setPick(0, '');
+    if (filterEl) filterEl.focus();
+  });
+
+  if (window.jQuery) {
+    jQuery('#docFollowUpModal').on('shown.bs.modal', loadEligible);
+    jQuery('#docFollowUpModal').on('hidden.bs.modal', function() {
+      allPatients = [];
+      setPick(0, '');
+      if (filterEl) filterEl.value = '';
+      loadingEl.classList.remove('d-none');
+      emptyEl.classList.add('d-none');
+      listEl.classList.add('d-none');
+    });
+  } else {
+    loadEligible();
+  }
+})();
+</script>
+<% } %>

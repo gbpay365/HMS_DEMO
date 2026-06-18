@@ -1,0 +1,84 @@
+<%
+// Shared permission / sidebar helpers (include once per page render).
+var _acl = locals.aclLayout || null;
+if (typeof role === 'undefined') {
+  role = String((locals.user && locals.user.role) || '0');
+}
+if (typeof isAdminOrSuper === 'undefined') {
+  isAdminOrSuper = (role === '1' || role === '99');
+}
+var _previewRole = locals.previewRole ? String(locals.previewRole) : null;
+var _navRole = locals.navRole ? String(locals.navRole) : role;
+if (typeof hasP !== 'function') {
+  var _up = (_previewRole && Array.isArray(locals.navPerms)) ? locals.navPerms : (locals.userPerms || []);
+  hasP = function () {
+    if (_up.includes('*')) return true;
+    for (var i = 0; i < arguments.length; i++) {
+      if (_up.includes(arguments[i])) return true;
+    }
+    return false;
+  };
+}
+if (typeof sbHidden !== 'function') {
+  sbHidden = function (code) {
+    if (!_acl || typeof _acl.isRoleHidden !== 'function') return false;
+    return _acl.isRoleHidden(_navRole, code);
+  };
+}
+/** Top-nav link: not hidden for role + has at least one required permission. */
+if (typeof tnShow !== 'function') {
+  tnShow = function (code) {
+    if (sbHidden(code)) return false;
+    var perms = [];
+    for (var i = 1; i < arguments.length; i++) perms.push(arguments[i]);
+    if (!perms.length) return true;
+    return hasP.apply(null, perms);
+  };
+}
+/** Any ACL UI element (sidebar, portal hero, etc.) — slices, overrides, perms, role hide. */
+if (typeof uiVisible !== 'function') {
+  uiVisible = function (code) {
+    if (!_acl || typeof _acl.uiElementVisible !== 'function') return !sbHidden(code);
+    var _upNav = (_previewRole && Array.isArray(locals.navPerms)) ? locals.navPerms : (locals.userPerms || []);
+    var permForNav = (role === '99' && !_previewRole) ? ['*'] : _upNav;
+    var navOpts = { viewerRole: role };
+    if (typeof _acl.getProductSlices === 'function') navOpts.productSlices = _acl.getProductSlices();
+    if (typeof _acl.getModuleOverrides === 'function') navOpts.moduleOverrides = _acl.getModuleOverrides();
+    return _acl.uiElementVisible(code, permForNav, _navRole, navOpts);
+  };
+}
+/** Portal hero actions: page already checks hasP(); only Navigation Studio role-hide applies. */
+if (typeof heroVisible !== 'function') {
+  heroVisible = function (code) {
+    return !sbHidden(code);
+  };
+}
+/** Hospital-wide dashboard (/dashboard) — show ZAIZENS when dashboard.read is granted. */
+if (typeof canHospitalDashboard !== 'function') {
+  canHospitalDashboard = function () {
+    if (typeof locals.showZaizensBrand === 'boolean') return locals.showZaizensBrand;
+    var _dashPerms = (_previewRole && Array.isArray(locals.navPerms)) ? locals.navPerms : (locals.userPerms || []);
+    try {
+      var _pop = require('../../lib/portalOverviewPolicy');
+      return _pop.canShowHospitalDashboardBrand(_dashPerms, _navRole);
+    } catch (_) {
+      return hasP('dashboard.read');
+    }
+  };
+}
+locals.hasP = hasP;
+locals.sbHidden = sbHidden;
+locals.tnShow = tnShow;
+locals.uiVisible = uiVisible;
+locals.heroVisible = heroVisible;
+if (typeof canManageConsultationRooms !== 'function') {
+  canManageConsultationRooms = function () {
+    if (role === '1' || role === '99' || role === '101' || role === '106') return true;
+    return hasP('access_control.manage', 'opd.write', 'nursing.write', 'scheduling.read');
+  };
+}
+locals.canManageConsultationRooms = canManageConsultationRooms();
+locals.isAdminOrSuper = isAdminOrSuper;
+locals.role = role;
+locals.navRole = _navRole;
+%>

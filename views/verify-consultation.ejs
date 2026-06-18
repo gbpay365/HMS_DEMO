@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="<%= locals.lang || 'en' %>"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><%= (typeof t === 'function' ? t('verify_consult.page_title', { ns: 'legacy', defaultValue: 'Consultation verification' }) : 'Consultation verification') %></title>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<style>body{font-family:system-ui,sans-serif;max-width:560px;margin:2rem auto;padding:1rem;color:#0f172a;} .ok{border:2px solid #16a34a;background:#f0fdf4;padding:1.5rem;border-radius:12px;} .bad{border:2px solid #dc2626;background:#fef2f2;padding:1.5rem;border-radius:12px;} table{width:100%;border-collapse:collapse;font-size:13px;margin-top:1rem;} th,td{padding:6px 8px;text-align:left;border-bottom:1px solid #e2e8f0;} th{font-size:11px;text-transform:uppercase;color:#64748b;}</style></head><body>
+<% if(!consult){ %><div class="bad"><h2><%= _t('verify_consult.invalid_title', { ns: 'legacy', defaultValue: 'Invalid consultation' }) %></h2><p><%= _t('verify_consult.invalid_body', { ns: 'legacy', defaultValue: 'This QR code is not recognized.' }) %></p></div>
+<% } else { %>
+<div class="ok">
+<h2><%= _t('verify_consult.valid_title', { ns: 'legacy', defaultValue: 'Valid consultation record' }) %></h2>
+<p><strong>#CONSULT-<%=consult.id%></strong> · <%=consult.first_name%> <%=consult.last_name%></p>
+<% if(consult.dob){ %><p><%= _t('verify_consult.dob', { ns: 'legacy', defaultValue: 'DOB:' }) %> <%= fmtDate(consult.dob) %></p><% } %>
+<% if(consult.doc_fn){ %><p><%= _t('verify_consult.doctor', { ns: 'legacy', defaultValue: 'Doctor:' }) %> Dr. <%=consult.doc_fn%> <%=consult.doc_ln%></p><% } %>
+<% if(consult.created_at){ %><p class="small" style="color:#64748b;"><%= _t('verify_consult.recorded', { ns: 'legacy', date: new Date(consult.created_at).toLocaleString(), defaultValue: 'Recorded ' + new Date(consult.created_at).toLocaleString() }) %></p><% } %>
+<% if(items && items.length){ %>
+<table><thead><tr><th><%= _t('verify_consult.col_type', { ns: 'legacy', defaultValue: 'Type' }) %></th><th><%= _t('verify_consult.col_service', { ns: 'legacy', defaultValue: 'Service' }) %></th><th><%= _t('verify_consult.col_code', { ns: 'legacy', defaultValue: 'Code' }) %></th><th><%= _t('verify_consult.col_status', { ns: 'legacy', defaultValue: 'Status' }) %></th></tr></thead><tbody>
+<% items.forEach(function(it){ %>
+<tr><td><%= it.item_type %></td><td><%= it.item_name || '—' %></td><td><%= it.service_code || '—' %></td><td><%= it.status || '—' %></td></tr>
+<% }); %>
+</tbody></table>
+<% } else { %><p style="margin-top:1rem;color:#64748b;"><%= _t('verify_consult.no_items', { ns: 'legacy', defaultValue: 'No order items on file for this consultation.' }) %></p><% } %>
+</div>
+<% } %>
+</body></html>

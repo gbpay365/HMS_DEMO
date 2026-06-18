@@ -1,0 +1,12 @@
+const fs = require('fs');
+const p = require('path').join(__dirname, '../views/portal-doctor.ejs');
+let c = fs.readFileSync(p, 'utf8');
+const marker = "<% if(hasP('clinical.write','prescription.write') && uiVisible('doc.hero.followup')){ %>";
+const start = c.indexOf(marker);
+if (start < 0) throw new Error('modal block not found');
+const scriptEnd = c.indexOf('})();', start);
+const end = c.indexOf('<% } %>', scriptEnd) + '<% } %>'.length;
+const inc = "<%- include('partials/portal-doctor-followup-modal') %>\n\n";
+c = c.slice(0, start) + inc + c.slice(end);
+fs.writeFileSync(p, c);
+console.log('patched portal-doctor.ejs', { start, end });

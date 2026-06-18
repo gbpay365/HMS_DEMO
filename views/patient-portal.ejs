@@ -1,0 +1,232 @@
+<%- include('partials/header') %>
+
+<div class="page-wrapper">
+ <div class="content">
+
+ <%if(locals.flash){%><div class="alert alert-success border-0 shadow-sm mb-3"><i class="fa fa-check-circle mr-2"></i><%=locals.flash%></div><%}%>
+ <%if(locals.error){%><div class="alert alert-danger border-0 shadow-sm mb-3"><i class="fa fa-exclamation-circle mr-2"></i><%=locals.error%></div><%}%>
+
+ <!-- Staff Patient Selector -->
+ <div class="card border-0 shadow-sm mb-4" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);">
+  <div class="card-body p-3 d-flex align-items-center flex-wrap" style="gap:12px;">
+   <div class="text-white-50 small font-weight-bold text-uppercase" style="letter-spacing:.08em;white-space:nowrap;"><i class="fa fa-user-circle mr-1"></i><%= _tl('patient_portal.preview', 'Portal Preview') %></div>
+   <form action="/patient-portal" method="GET" class="d-flex align-items-center" style="gap:8px;flex:1;min-width:220px;">
+    <select name="id" class="form-control form-control-sm" style="max-width:300px;" onchange="this.form.submit()">
+     <% allPatients.forEach(p => { %>
+     <option value="<%= p.id %>" <%- p.id === currentPid ? 'selected' : '' %>><%= p.first_name %> <%= p.last_name %> (#P-<%= p.id %>)</option>
+     <% }) %>
+    </select>
+    <button type="submit" class="btn btn-sm btn-outline-light rounded-pill"><%= _tl('patient_portal.view_portal', 'View Portal') %></button>
+   </form>
+   <a href="/patient-chart/<%= patient.id %>" class="btn btn-sm btn-outline-light rounded-pill ml-auto"><i class="fa fa-folder-open-o mr-1"></i><%= _tl('patient_portal.full_chart', 'Full Chart') %></a>
+  </div>
+ </div>
+
+ <!-- Page heading -->
+ <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+  <div class="card-body p-4" style="background:linear-gradient(135deg,#1e40af,#3b82f6);">
+   <div class="d-flex justify-content-between align-items-start flex-wrap">
+    <div>
+     <h1 class="text-white font-weight-bold mb-1" style="font-size:1.6rem;"><%= _tl('patient_portal.hello', 'Hello, {{name}}!', { name: patient.first_name }) %></h1>
+     <p class="text-white-50 small mb-0"><%= _tl('patient_portal.care_summary', 'Here is your care summary. For urgent matters, please call your clinic.') %></p>
+    </div>
+    <div class="badge badge-light px-3 py-2 mt-2" style="font-size:.8rem;"><%= patient.patient_type %></div>
+   </div>
+  </div>
+ </div>
+
+ <div class="row">
+  <!-- Left column: Patient details + Wallet + Vitals -->
+  <div class="col-lg-4 mb-4">
+
+   <!-- Patient Details -->
+   <div class="card border-0 shadow-sm rounded-xl mb-4">
+    <div class="card-body p-4">
+     <h6 class="text-uppercase text-muted font-weight-bold mb-3 small" style="letter-spacing:.06em;"><%= _tl('patient_portal.your_details', 'Your Details') %></h6>
+     <dl class="row small mb-0">
+      <dt class="col-5 text-muted"><%= _tl('patient_portal.label_name', 'Name') %></dt><dd class="col-7 font-weight-bold"><%= patient.first_name %> <%= patient.last_name %></dd>
+      <dt class="col-5 text-muted"><%= _tl('patient_portal.label_patient_id', 'Patient ID') %></dt><dd class="col-7">#P-<%= patient.id %></dd>
+      <dt class="col-5 text-muted"><%= _tl('patient_portal.label_gender', 'Gender') %></dt><dd class="col-7"><%= patient.gender %></dd>
+      <% if (patient.age_only_registration) { %>
+      <dt class="col-5 text-muted"><%= _tl('patient_portal.label_age', 'Age') %></dt><dd class="col-7"><%= patient.calculated_age_years != null ? patient.calculated_age_years + ' ' + _tl('patient_portal.years', 'years') : '&mdash;' %></dd>
+      <% } else { %>
+      <dt class="col-5 text-muted"><%= _tl('patient_portal.label_dob', 'Date of Birth') %></dt><dd class="col-7"><%= patient.dob || '&mdash;' %></dd>
+      <% } %>
+      <dt class="col-5 text-muted"><%= _tl('patient_portal.label_phone', 'Phone') %></dt><dd class="col-7"><%= patient.phone %></dd>
+      <dt class="col-5 text-muted"><%= _tl('patient_portal.label_email', 'Email') %></dt><dd class="col-7 text-truncate"><%= patient.email || '&mdash;' %></dd>
+      <dt class="col-5 text-muted"><%= _tl('patient_portal.label_type', 'Type') %></dt><dd class="col-7"><%= patient.patient_type %></dd>
+     </dl>
+    </div>
+   </div>
+
+   <!-- Wallet -->
+   <% if (wallet) { %>
+   <div class="card border-0 shadow-sm rounded-xl mb-4 text-center">
+    <div class="card-body p-4">
+     <h6 class="text-uppercase text-muted font-weight-bold mb-2 small" style="letter-spacing:.06em;"><%= _tl('patient_portal.wallet_title', 'Pre-Paid Wallet') %> <span class="badge badge-success ml-1"><%= _tl('patient_portal.wallet_active', 'Active') %></span></h6>
+     <div class="h2 font-weight-bold text-success mb-1"><%= Number(wallet.balance||0).toLocaleString('fr-FR') %> <small class="small text-muted"><%= _tl('patient_portal.currency_fcfa', 'FCFA') %></small></div>
+     <p class="small text-muted mb-3"><%= _tl('patient_portal.wallet_topup', 'Top-up via Hospital Cashier or GBPAY USSD') %></p>
+     <% if (wallet.qr_token) { %>
+     <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=<%= encodeURIComponent(wallet.qr_token) %>" alt="<%= _tl('patient_portal.wallet_qr_alt', 'Wallet QR') %>" class="border p-2 bg-white rounded shadow-sm">
+     <p class="small text-muted mt-2 mb-0"><%= _tl('patient_portal.wallet_qr_hint', 'Show this QR at Pharmacy or Lab for touchless payment') %></p>
+     <% } %>
+    </div>
+   </div>
+   <% } %>
+
+   <!-- Latest Vitals -->
+   <% if (vitals.length > 0) { %>
+   <div class="card border-0 shadow-sm rounded-xl mb-4">
+    <div class="card-body p-4">
+     <h6 class="text-uppercase text-muted font-weight-bold mb-3 small" style="letter-spacing:.06em;"><i class="fa fa-heartbeat mr-1 text-danger"></i><%= _tl('patient_portal.latest_vitals', 'Latest Vitals') %></h6>
+     <% const v = vitals[0]; %>
+     <div class="row text-center">
+      <div class="col-4 mb-3">
+       <div class="font-weight-bold text-dark"><%= v.bp_sys %>/<%= v.bp_dia %></div>
+       <div class="small text-muted"><%= _tl('patient_portal.vitals_bp', 'BP mmHg') %></div>
+      </div>
+      <div class="col-4 mb-3">
+       <div class="font-weight-bold text-dark"><%= v.heart_rate %></div>
+       <div class="small text-muted"><%= _tl('patient_portal.vitals_bpm', 'bpm') %></div>
+      </div>
+      <div class="col-4 mb-3">
+       <div class="font-weight-bold text-dark"><%= v.temp_c %>&deg;C</div>
+       <div class="small text-muted"><%= _tl('patient_portal.vitals_temp', 'Temp') %></div>
+      </div>
+      <div class="col-4">
+       <div class="font-weight-bold text-success"><%= v.spo2 %>%</div>
+       <div class="small text-muted">SpO&#x2082;</div>
+      </div>
+      <div class="col-4">
+       <div class="font-weight-bold text-dark"><%= v.rr %></div>
+       <div class="small text-muted"><%= _tl('patient_portal.vitals_rr', 'RR /min') %></div>
+      </div>
+      <div class="col-4">
+       <div class="small text-muted" style="font-size:.65rem;padding-top:4px;"><%= v.recorded_at ? fmtDate(v.recorded_at) : '' %></div>
+      </div>
+     </div>
+    </div>
+   </div>
+   <% } %>
+
+  </div><!-- /left col -->
+
+  <!-- Right column: Appointments, Results, Prescriptions -->
+  <div class="col-lg-8 mb-4">
+
+   <!-- Appointments -->
+   <div class="card border-0 shadow-sm rounded-xl mb-4">
+    <div class="card-body border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+     <h6 class="mb-0 font-weight-bold text-dark"><i class="fa fa-calendar mr-2 text-primary"></i><%= _tl('patient_portal.appointments', 'Appointments') %></h6>
+     <span class="badge badge-primary-light"><%= appointments.length %></span>
+    </div>
+    <div class="table-responsive">
+     <table class="table mb-0 small">
+      <thead class="thead-light"><tr><th><%= _tl('patient_portal.th_ref', 'Ref') %></th><th><%= _tl('patient_portal.th_department', 'Department') %></th><th><%= _tl('patient_portal.th_doctor', 'Doctor') %></th><th><%= _tl('patient_portal.th_date', 'Date') %></th><th><%= _tl('patient_portal.th_status', 'Status') %></th></tr></thead>
+      <tbody>
+      <% if (appointments.length === 0) { %>
+       <tr><td colspan="5" class="text-center py-4 text-muted"><%= _tl('patient_portal.no_appointments', 'No appointments on file.') %></td></tr>
+      <% } else { appointments.forEach(a => { %>
+       <tr>
+        <td class="font-weight-bold text-primary">#A-<%= a.id %></td>
+        <td><%= a.department_name || a.department || '&mdash;' %></td>
+        <td><%= a.doc_fn ? 'Dr. '+a.doc_fn+' '+a.doc_ln : a.doctor||'&mdash;' %></td>
+        <td><%= a.date ? fmtDate(a.date) : '&mdash;' %></td>
+        <td><span class="badge badge-<%= a.status==1||a.status==='active'?'success':'secondary' %>-light"><%= a.status==1||a.status==='active'?_tl('patient_portal.status_active','Active'):_tl('patient_portal.status_inactive','Inactive') %></span></td>
+       </tr>
+      <% }) } %>
+      </tbody>
+     </table>
+    </div>
+   </div>
+
+   <!-- Consultations -->
+   <% if (consultations.length > 0) { %>
+   <div class="card border-0 shadow-sm rounded-xl mb-4">
+    <div class="card-body border-bottom py-3 px-4">
+     <h6 class="mb-0 font-weight-bold text-dark"><i class="fa fa-stethoscope mr-2 text-info"></i><%= _tl('patient_portal.consultation_history', 'Consultation History') %></h6>
+    </div>
+    <div class="table-responsive">
+     <table class="table mb-0 small">
+      <thead class="thead-light"><tr><th><%= _tl('patient_portal.th_date', 'Date') %></th><th><%= _tl('patient_portal.th_department', 'Department') %></th><th><%= _tl('patient_portal.th_doctor', 'Doctor') %></th><th><%= _tl('patient_portal.th_notes', 'Notes') %></th><th><%= _tl('patient_portal.th_status', 'Status') %></th></tr></thead>
+      <tbody>
+      <% consultations.forEach(c => { %>
+       <tr>
+        <td><%= c.created_at ? fmtDate(c.created_at) : '&mdash;' %></td>
+        <td><%= c.department_name || '&mdash;' %></td>
+        <td><%= c.doc_fn ? 'Dr. '+c.doc_fn+' '+c.doc_ln : '&mdash;' %></td>
+        <td style="max-width:200px;"><%= c.treatment_note ? c.treatment_note.substring(0,80)+'...' : '&mdash;' %></td>
+        <td><span class="badge badge-<%= c.queue_status==='completed'?'success':'warning' %>-light"><%= c.queue_status||'pending' %></span></td>
+       </tr>
+      <% }) %>
+      </tbody>
+     </table>
+    </div>
+   </div>
+   <% } %>
+
+   <!-- Lab & Radiology Results -->
+   <% if (labResults.length > 0 || radResults.length > 0) { %>
+   <div class="card border-0 shadow-sm rounded-xl mb-4">
+    <div class="card-body border-bottom py-3 px-4">
+     <h6 class="mb-0 font-weight-bold text-dark"><i class="fa fa-flask mr-2 text-warning"></i><%= _tl('patient_portal.test_results', 'Test & Imaging Results') %></h6>
+    </div>
+    <div class="table-responsive">
+     <table class="table mb-0 small">
+      <thead class="thead-light"><tr><th><%= _tl('patient_portal.th_type', 'Type') %></th><th><%= _tl('patient_portal.th_test', 'Test') %></th><th><%= _tl('patient_portal.th_result', 'Result / Findings') %></th><th><%= _tl('patient_portal.th_date', 'Date') %></th><th><%= _tl('patient_portal.th_status', 'Status') %></th></tr></thead>
+      <tbody>
+      <% labResults.forEach(l => { %>
+       <tr>
+        <td><span class="badge badge-warning-light"><%= _tl('patient_portal.type_lab', 'Lab') %></span></td>
+        <td class="font-weight-bold"><%= l.test_name||'&mdash;' %></td>
+        <td style="max-width:200px;"><%= l.result_text||l.notes||'&mdash;' %></td>
+        <td><%= l.created_at ? fmtDate(l.created_at) : '&mdash;' %></td>
+        <td><span class="badge badge-<%= l.status==='completed'?'success':'warning' %>-light"><%= l.status||'pending' %></span></td>
+       </tr>
+      <% }) %>
+      <% radResults.forEach(r => { %>
+       <tr>
+        <td><span class="badge badge-info-light"><%= _tl('patient_portal.type_imaging', 'Imaging') %></span></td>
+        <td class="font-weight-bold"><%= r.test_name||r.scan_type||'&mdash;' %></td>
+        <td style="max-width:200px;"><%= r.findings||r.notes||'&mdash;' %></td>
+        <td><%= r.created_at ? fmtDate(r.created_at) : '&mdash;' %></td>
+        <td><span class="badge badge-<%= r.status==='completed'?'success':'warning' %>-light"><%= r.status||'pending' %></span></td>
+       </tr>
+      <% }) %>
+      </tbody>
+     </table>
+    </div>
+   </div>
+   <% } %>
+
+   <!-- Prescriptions -->
+   <% if (prescriptions.length > 0) { %>
+   <div class="card border-0 shadow-sm rounded-xl mb-4">
+    <div class="card-body border-bottom py-3 px-4">
+     <h6 class="mb-0 font-weight-bold text-dark"><i class="fa fa-medkit mr-2 text-success"></i><%= _tl('patient_portal.prescriptions', 'Prescriptions') %></h6>
+    </div>
+    <div class="table-responsive">
+     <table class="table mb-0 small">
+      <thead class="thead-light"><tr><th><%= _tl('patient_portal.th_rx_id', 'Rx ID') %></th><th><%= _tl('patient_portal.th_title', 'Title') %></th><th><%= _tl('patient_portal.th_status', 'Status') %></th><th><%= _tl('patient_portal.th_date', 'Date') %></th><th></th></tr></thead>
+      <tbody>
+      <% prescriptions.forEach(rx => { %>
+       <tr>
+        <td class="font-weight-bold text-primary">#RX-<%= rx.id %></td>
+        <td><%= rx.title||_tl('patient_portal.prescription_default', 'Prescription') %></td>
+        <td><span class="badge badge-indigo-light"><%= rx.status||'active' %></span></td>
+        <td><%= rx.created_at ? fmtDate(rx.created_at) : '&mdash;' %></td>
+        <td><a href="/prescriptions/<%= rx.id %>" class="btn btn-outline-primary btn-sm" style="font-size:.7rem;padding:2px 8px;"><i class="fa fa-eye mr-1"></i><%= _tl('patient_portal.view', 'View') %></a></td>
+       </tr>
+      <% }) %>
+      </tbody>
+     </table>
+    </div>
+   </div>
+   <% } %>
+
+  </div><!-- /right col -->
+ </div><!-- /row -->
+ </div>
+</div>
+
+<%- include('partials/footer') %>

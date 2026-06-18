@@ -1,0 +1,16 @@
+<%- include('partials/header') %>
+<%- include('partials/radiology-odoo-start', {
+  radOdooMenu: 'requests',
+  radOdooTitle: 'Radiology requests',
+  radOdooActions: '<a href="/radiology/workflow" class="o_btn_secondary">Board</a><a href="/radiology/templates" class="o_btn_secondary">Templates</a><a href="/radiology/validate" class="o_btn_primary">+ New request</a>'
+}) %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'radiology',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.radiology', { ns: 'common' }) : 'Loading…')
+}) %>
+<script src="/js/hms-diagnostic-report-print.js?v=3"></script>
+<script src="/js/hms-diagnostic-report-handover.js?v=3"></script>
+
+<%- include('partials/radiology-odoo-end') %>
+<%- include('partials/footer') %>

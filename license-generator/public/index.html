@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZAIZENS License Generator</title>
+  <style>
+    :root { --brand: #0891b2; --ink: #0f172a; --muted: #64748b; --line: #e2e8f0; --ok: #059669; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #f1f5f9; color: var(--ink); }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+    header { margin-bottom: 24px; }
+    h1 { font-size: 1.5rem; margin: 0 0 8px; }
+    p.lead { margin: 0; color: var(--muted); line-height: 1.5; font-size: 0.95rem; }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(15,23,42,.04); }
+    label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 6px; }
+    textarea, input { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font: inherit; }
+    textarea { min-height: 110px; font-family: ui-monospace, monospace; font-size: 12px; resize: vertical; }
+    .row { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+    @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+    button { border: 0; border-radius: 10px; padding: 11px 16px; font-weight: 700; cursor: pointer; background: var(--brand); color: #fff; }
+    button.secondary { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .msg { padding: 10px 12px; border-radius: 10px; font-size: 14px; margin-bottom: 12px; display: none; }
+    .msg.error { display: block; background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .msg.ok { display: block; background: #ecfdf5; color: #047857; border: 1px solid #bbf7d0; }
+    .meta { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .meta strong { color: var(--ink); }
+    .serial { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 12px; font-family: ui-monospace, monospace; font-size: 12px; word-break: break-all; margin-top: 10px; }
+    footer { margin-top: 24px; font-size: 12px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>ZAIZENS License Generator</h1>
+      <p class="lead">Vendor-only tool. Paste a hospital request code to decode it and generate a one-year serial number. Keep private keys offline and secure.</p>
+      <p class="sub" style="margin-top:8px;"><a href="/dashboard" style="color:var(--brand);font-weight:700;">Open License Server Dashboard</a> — manage clients, remote revoke, and auto-deliver serials.</p>
+    </header>
+
+    <div id="flash" class="msg"></div>
+
+    <div class="card">
+      <label for="adminToken">Admin token (if configured on server)</label>
+      <input id="adminToken" type="password" placeholder="Optional LICENSE_GENERATOR_ADMIN_TOKEN" autocomplete="off">
+
+      <label for="requestCode" style="margin-top:14px">Client request code</label>
+      <textarea id="requestCode" placeholder="ZAI1-REQ-…"></textarea>
+
+      <div class="actions">
+        <button type="button" id="btnDecode" class="secondary">Decode request</button>
+        <button type="button" id="btnGenerate">Generate serial (1 year)</button>
+      </div>
+    </div>
+
+    <div class="card" id="decodedPanel" hidden>
+      <h2 style="margin:0 0 10px;font-size:1rem;">Decoded request</h2>
+      <div class="meta" id="decodedMeta"></div>
+    </div>
+
+    <div class="card" id="serialPanel" hidden>
+      <h2 style="margin:0 0 10px;font-size:1rem;color:var(--ok);">Serial number</h2>
+      <p class="meta">Send this serial to the hospital admin. They paste it in <strong>Solution Subscriptions → Activate</strong>.</p>
+      <div class="serial" id="serialOut"></div>
+      <div class="actions">
+        <button type="button" id="btnCopy" class="secondary">Copy serial</button>
+      </div>
+      <div class="meta" id="serialMeta" style="margin-top:12px;"></div>
+    </div>
+
+    <footer>Serial numbers are Ed25519-signed and bound to the hospital installation ID. Request codes expire after 7 days.</footer>
+  </div>
+
+  <script>
+    const flash = document.getElementById('flash');
+    const requestCode = document.getElementById('requestCode');
+    const adminToken = document.getElementById('adminToken');
+    const decodedPanel = document.getElementById('decodedPanel');
+    const decodedMeta = document.getElementById('decodedMeta');
+    const serialPanel = document.getElementById('serialPanel');
+    const serialOut = document.getElementById('serialOut');
+    const serialMeta = document.getElementById('serialMeta');
+
+    function showMsg(text, kind) {
+      flash.textContent = text;
+      flash.className = 'msg ' + (kind || 'ok');
+    }
+
+    function headers() {
+      const h = { 'Content-Type': 'application/json', Accept: 'application/json' };
+      const t = adminToken.value.trim();
+      if (t) h['X-Admin-Token'] = t;
+      return h;
+    }
+
+    async function post(url, body) {
+      const res = await fetch(url, { method: 'POST', headers: headers(), body: JSON.stringify(body) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Request failed');
+      return data;
+    }
+
+    document.getElementById('btnDecode').addEventListener('click', async () => {
+      try {
+        const data = await post('/api/decode-request', { request_code: requestCode.value.trim() });
+        const p = data.payload;
+        decodedMeta.innerHTML =
+          '<strong>Solution:</strong> ' + (data.solution.label || p.sid) + '<br>' +
+          '<strong>Facility:</strong> ' + (p.fac || '—') + '<br>' +
+          '<strong>Installation ID:</strong> ' + p.iid + '<br>' +
+          '<strong>Contact:</strong> ' + (p.email || '—') + '<br>' +
+          '<strong>Request expires:</strong> ' + new Date(p.exp * 1000).toLocaleString();
+        decodedPanel.hidden = false;
+        showMsg('Request decoded successfully.', 'ok');
+      } catch (err) {
+        showMsg(err.message, 'error');
+      }
+    });
+
+    document.getElementById('btnGenerate').addEventListener('click', async () => {
+      try {
+        const data = await post('/api/generate-serial', { request_code: requestCode.value.trim() });
+        serialOut.textContent = data.serial;
+        serialMeta.innerHTML =
+          '<strong>Solution:</strong> ' + data.solution.label + '<br>' +
+          '<strong>Valid until:</strong> ' + new Date(data.expiresAt).toLocaleDateString() + ' (' + data.validDays + ' days)';
+        serialPanel.hidden = false;
+        decodedPanel.hidden = false;
+        decodedMeta.innerHTML =
+          '<strong>Solution:</strong> ' + data.solution.label + '<br>' +
+          '<strong>Facility:</strong> ' + (data.facility || '—') + '<br>' +
+          '<strong>Installation ID:</strong> ' + data.installationId;
+        showMsg('Serial number generated.', 'ok');
+      } catch (err) {
+        showMsg(err.message, 'error');
+      }
+    });
+
+    document.getElementById('btnCopy').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(serialOut.textContent);
+        showMsg('Serial copied to clipboard.', 'ok');
+      } catch (_) {
+        showMsg('Could not copy automatically. Select and copy manually.', 'error');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<%
+if (typeof _sa !== 'function') {
+  var _sa = function (k, d, opts) {
+    if (typeof t !== 'function') return d || k;
+    var o = { ns: 'superAdmin', defaultValue: d || k };
+    if (opts) Object.assign(o, opts);
+    return t(k, o);
+  };
+}
+%>
+<!-- Named deployment profiles (optional; legacy Apply above is the usual control) -->
+<div class="card border-0 shadow-sm mb-4" style="border-radius:14px;overflow:hidden;border-top:4px solid #7c3aed !important;">
+  <div class="card-header bg-white font-weight-bold" style="border-bottom:2px solid #f1f5f9;">
+    <i class="fa fa-cubes mr-2" style="color:#7c3aed;"></i><%= _sa('deployment.named_profiles_title', 'Named deployment profiles') %>
+    <span class="text-muted font-weight-normal small ml-2"><%= _sa('deployment.legacy_optional', '(optional)') %></span>
+  </div>
+  <div class="card-body">
+    <p class="text-muted small mb-3">
+      <%- _sa('deployment.legacy_named_hint', '<strong>Usually use �Hospital-wide deployment mode� above</strong> and click <strong>Apply</strong>. Named profiles are for saved presets with per-profile module overrides. <strong>Activate profile</strong> on a row below switches away from legacy mode � the first row is often <em>Full Suite</em>, which will look like your selection �reset�.') %>
+    </p>
+    <% if (deployment && deployment.source === 'profile') { %>
+    <div class="alert alert-success py-2 small mb-3">
+      <i class="fa fa-check-circle mr-1"></i> <%= _sa('deployment.active_profile', 'Active profile: {{name}} (#{{id}})', { name: deployment.profileName, id: deployment.profileId }) %>
+      <a href="/super-admin/deployment/<%= deployment.profileId %>/modules" class="btn btn-sm btn-outline-success ml-2" style="border-radius:6px;"><%= _sa('deployment.edit_modules', 'Edit modules') %></a>
+    </div>
+    <% } else if (typeof productModeLabel !== 'undefined') { %>
+    <div class="alert alert-secondary py-2 small mb-3">
+      <i class="fa fa-info-circle mr-1"></i> <%= _sa('deployment.legacy_global_mode', 'Legacy global mode: {{mode}}', { mode: productModeLabel }) %>
+      <a href="/super-admin/deployment/legacy/modules" class="btn btn-sm btn-outline-secondary ml-2" style="border-radius:6px;">
+        <i class="fa fa-sliders mr-1"></i><%= _sa('deployment.edit_overrides', 'Edit module overrides') %><% if (typeof legacyOverrideCount !== 'undefined' && legacyOverrideCount) { %> (<%= legacyOverrideCount %>)<% } %>
+      </a>
+    </div>
+    <% } %>
+    <% if (typeof routeGuardCount !== 'undefined') { %>
+    <p class="small text-muted mb-2"><i class="fa fa-shield mr-1"></i> <%= _sa('deployment.route_guard', 'Route guard: {{count}} paths registered.', { count: routeGuardCount }) %></p>
+    <% } %>
+    <% if (!deploymentProfiles || !deploymentProfiles.length) { %>
+    <p class="small text-warning mb-3"><i class="fa fa-warning mr-1"></i> <%= _sa('deployment.no_named_profiles', 'No named profiles in the database yet. They are created automatically on this page load; refresh if the table is empty.') %></p>
+    <% } %>
+    <div class="table-responsive mb-3">
+      <table class="table table-sm mb-0" style="font-size:.85rem;">
+        <thead style="background:#f8fafc;">
+          <tr>
+            <th><%= _sa('deployment.col_profile', 'Profile') %></th>
+            <th><%= _sa('deployment.col_slices', 'Slices') %></th>
+            <th><%= _sa('deployment.col_modules', 'Modules') %></th>
+            <th class="text-right"><%= _sa('deployment.col_action', 'Action') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (deploymentProfiles||[]).forEach(function(p){
+            var modCount = 0;
+            try {
+              var mj = p.modules_json;
+              if (mj) {
+                var o = typeof mj === 'string' ? JSON.parse(mj) : mj;
+                modCount = Object.keys(o || {}).length;
+              }
+            } catch (e) { modCount = 0; }
+            var confirmMsg = _sa('deployment.activate_confirm', 'Activate named profile "{{name}}"? This replaces legacy global mode.', { name: String(p.name).replace(/"/g, '') });
+          %>
+          <tr<% if (activeProfileId && Number(activeProfileId)===Number(p.id)) { %> class="table-success"<% } %>>
+            <td class="font-weight-600"><%= p.name %></td>
+            <td><code class="small"><%= p.slices_json %></code></td>
+            <td>
+              <a href="/super-admin/deployment/<%= p.id %>/modules" class="btn btn-sm btn-outline-secondary" style="border-radius:6px;">
+                <i class="fa fa-sliders mr-1"></i><%= _sa('deployment.edit_row', 'Edit') %><% if (modCount) { %> (<%= modCount %>)<% } %>
+              </a>
+            </td>
+            <td class="text-right">
+              <form method="post" action="/super-admin/deployment/activate" class="d-inline" data-confirm="<%= confirmMsg %>">
+                <input type="hidden" name="profile_id" value="<%= p.id %>">
+                <button type="submit" class="btn btn-sm btn-outline-primary js-deployment-activate" style="border-radius:6px;"<% if (activeProfileId && Number(activeProfileId)===Number(p.id)) { %> disabled<% } %>><%= _sa('deployment.activate_profile', 'Activate profile') %></button>
+              </form>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% if (deployment && deployment.source === 'profile') { %>
+    <form method="post" action="/super-admin/deployment/use-legacy">
+      <button type="submit" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;"><%= _sa('deployment.switch_legacy', 'Switch back to legacy global mode') %></button>
+    </form>
+    <% } %>
+  </div>
+</div>
+<script>
+document.querySelectorAll('form[data-confirm]').forEach(function (f) {
+  f.addEventListener('submit', function (e) {
+    var msg = f.getAttribute('data-confirm');
+    if (msg && !window.confirm(msg)) e.preventDefault();
+  });
+});
+</script>

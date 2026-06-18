@@ -1,0 +1,16 @@
+<%- include('partials/header') %>
+<%- include('partials/laboratory-odoo-start', {
+  labOdooMenu: 'registry',
+  labOdooTitle: (typeof t === 'function' ? t('laboratory.title', { ns: 'ops', defaultValue: 'Laboratory registry' }) : 'Laboratory registry'),
+  labOdooActions: '<a href="/laboratory/validate" class="o_btn_primary"><i class="fa fa-qrcode"></i> Validate code</a>'
+}) %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'laboratory',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.laboratory', { ns: 'common' }) : 'Loading…')
+}) %>
+<script src="/js/hms-diagnostic-report-print.js?v=2"></script>
+<script src="/js/hms-diagnostic-report-handover.js?v=3"></script>
+
+<%- include('partials/laboratory-odoo-end') %>
+<%- include('partials/footer') %>

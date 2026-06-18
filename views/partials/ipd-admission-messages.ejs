@@ -1,0 +1,38 @@
+<% /* locals: ipdMessages (array), compact (optional boolean) */ %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<% if ((ipdMessages || []).length) { %>
+<style>
+.ipd-msg-card{border:1px solid #e2e8f0;border-radius:12px;background:#fff;margin-bottom:14px;overflow:hidden;}
+.ipd-msg-head{padding:10px 14px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-weight:700;font-size:.88rem;}
+.ipd-msg-body{padding:12px 14px;max-height:320px;overflow:auto;}
+.ipd-msg-line{border-left:3px solid #cbd5e1;padding:8px 0 8px 12px;margin-bottom:10px;border-radius:0 8px 8px 0;}
+.ipd-msg-line.from-doc{border-left-color:#0ea5e9;background:#f0f9ff;}
+.ipd-msg-line.from-nurse{border-left-color:#22c55e;background:#f0fdf4;}
+a.ipd-msg-shiftlink{text-decoration:none;color:inherit;display:block;border-radius:0 8px 8px 0;}
+a.ipd-msg-shiftlink:hover .ipd-msg-line{background:#ecfdf5 !important;box-shadow:0 0 0 1px #22c55e;}
+a.ipd-msg-shiftlink .open-hint{font-size:.72rem;color:#15803d;font-weight:600;margin-top:4px;}
+</style>
+<div class="ipd-msg-card">
+  <div class="ipd-msg-head"><i class="fa fa-comments mr-1 text-primary"></i><%= _t('messages.title', { ns: 'ipd', defaultValue: 'Doctor ↔ nursing messages (this admission)' }) %></div>
+  <div class="ipd-msg-body">
+    <% ipdMessages.forEach(function(m){
+         var shiftLink = m.admission_id && m.source === 'shift_report' && m.source_id;
+    %>
+      <% if (shiftLink) { %>
+      <a href="/ipd/shift/<%= m.admission_id %>?report=<%= m.source_id %>" class="ipd-msg-shiftlink" title="<%= _t('messages.open_shift_report', { ns: 'ipd', defaultValue: 'Open shift report' }) %>">
+      <% } %>
+      <div class="ipd-msg-line <%= m.source === 'doctor_reply' ? 'from-doc' : 'from-nurse' %>">
+        <div class="d-flex flex-wrap justify-content-between" style="gap:6px;">
+          <span class="badge badge-<%= m.source === 'doctor_reply' ? 'info' : 'success' %>"><%= m.source === 'doctor_reply' ? _t('messages.badge_doctor', { ns: 'ipd', defaultValue: 'Doctor' }) : _t('messages.badge_nursing', { ns: 'ipd', defaultValue: 'Nursing' }) %></span>
+          <small class="text-muted"><%= m.sent_at ? new Date(m.sent_at).toLocaleString() : '' %></small>
+        </div>
+        <% if (m.subject) { %><div class="font-weight-bold mt-1" style="font-size:.85rem;"><%= m.subject %></div><% } %>
+        <div class="small text-muted"><%= _t('messages.from_to', { ns: 'ipd', from: m.from_name || '—', to: m.to_name || '—', defaultValue: 'From ' + (m.from_name || '—') + ' → ' + (m.to_name || '—') }) %></div>
+        <% if (m.body) { %><div class="mt-1" style="white-space:pre-wrap;font-size:.88rem;"><%= m.body %></div><% } %>
+        <% if (shiftLink) { %><div class="open-hint"><i class="fa fa-clipboard-list mr-1"></i><%= _t('messages.tap_shift', { ns: 'ipd', defaultValue: 'Tap to open shift report' }) %></div><% } %>
+      </div>
+      <% if (shiftLink) { %></a><% } %>
+    <% }) %>
+  </div>
+</div>
+<% } %>

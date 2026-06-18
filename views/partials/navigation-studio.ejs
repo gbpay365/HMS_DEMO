@@ -1,0 +1,357 @@
+<% if (!selRole || ['1','99'].includes(String(selRole))) { %>
+<div class="alert alert-light border text-muted small">
+  <%= _ac('nav_studio.select_role_prompt', 'Select a non-core staff role (not Admin or Super Admin) to design sidebar and top navigation visibility.') %>
+  <a href="/access-control?role=<%= (roles.find(function(r){ return String(r.role)!=='1' && String(r.role)!=='99'; }) || {}).role %>#section-navigation" class="font-weight-bold ml-1"><%= _ac('nav_studio.pick_role', 'Pick a role') %></a>
+</div>
+<% } else { %>
+<div class="nav-studio">
+  <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap" style="gap:12px;">
+    <div style="max-width:640px;">
+      <h5 class="font-weight-bold mb-1" style="color:#1e293b;"><i class="fa fa-compass mr-2 text-primary"></i><%= _ac('legacy_page.nav_studio_title', 'Navigation Studio') %></h5>
+      <p class="text-muted small mb-2">
+        <%= _ac('nav_studio.hint', 'Control HMS hub cards, dashboard widgets, accounting bar, top bar, and sidebar for this role. Unchecking hides a link only — permissions still control URL access.') %>
+      </p>
+      <div class="alert alert-info py-2 px-3 small mb-2" style="border-radius:8px;">
+        <i class="fa fa-lightbulb-o mr-1"></i>
+        <a href="/hms?preview_role=<%= selRole %>" target="_blank" rel="noopener" class="font-weight-bold"><%= _ac('nav_studio.preview_hub', 'Preview HMS hub as this role') %></a>
+        <%= _ac('nav_studio.preview_hub_suffix', '(opens the main clinical hub with their card layout). Grant capabilities on Modules & permissions first.') %>
+      </div>
+      <% if (locals.hmsDeployment && locals.hmsDeployment.slices && locals.hmsDeployment.slices.indexOf('full') === -1) { %>
+      <div class="alert alert-secondary py-2 px-3 small mb-0" style="border-radius:8px;">
+        <i class="fa fa-cubes mr-1"></i>
+        <%= _ac('nav_studio.deployment_hint', 'Hospital deployment {{profile}} also hides modules globally. Configure under', { profile: locals.hmsDeployment.profileName || 'custom' }) %>
+        <a href="/super-admin"><%= _ac('header.super_admin', 'Super Admin') %></a>.
+      </div>
+      <% } %>
+    </div>
+    <div class="d-flex flex-wrap" style="gap:8px;">
+      <% roles.forEach(function(r){ if (['1','99'].includes(String(r.role))) return; %>
+      <a href="/access-control?role=<%= r.role %>#section-navigation"
+         class="btn btn-sm <%= String(r.role)===String(selRole) ? 'btn-primary' : 'btn-outline-secondary' %> font-weight-bold"
+         style="border-radius:20px;"><%= r.title %></a>
+      <% }); %>
+    </div>
+  </div>
+
+  <ul class="nav nav-pills nav-studio-tabs mb-3" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" data-toggle="pill" href="#navstudio-hms-hub" role="tab"><i class="fa fa-hospital-o mr-1"></i><%= _ac('nav_studio.tab_hms_hub', 'HMS Hub') %></a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="pill" href="#navstudio-dashboard" role="tab"><i class="fa fa-dashboard mr-1"></i><%= _ac('nav_studio.tab_dashboard', 'Statistics dashboard') %></a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="pill" href="#navstudio-accounting" role="tab"><i class="fa fa-calculator mr-1"></i><%= _ac('nav_studio.tab_accounting', 'Accounting bar') %></a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="pill" href="#navstudio-topnav" role="tab"><i class="fa fa-navicon mr-1"></i><%= _ac('nav_studio.tab_topnav', 'Hospital top bar') %></a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="pill" href="#navstudio-sidebar" role="tab"><i class="fa fa-bars mr-1"></i><%= _ac('nav_studio.tab_sidebar', 'Sidebar') %></a>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="navstudio-hms-hub" role="tabpanel">
+      <p class="small text-muted mb-2">
+        <%= _ac('nav_studio.hub_desc', 'HMS Clinical Hub (/hms) — main hospital landing: KPI stats, module cards, and today\'s OPD panel. Users still need the underlying module permissions (e.g. lab.read) to see a card; unchecking here hides it for this role only.') %>
+      </p>
+      <div class="d-flex justify-content-end mb-2" style="gap:6px;">
+        <button type="button" class="btn btn-sm btn-outline-success" onclick="navStudioBulk('hms_hub', true)"><i class="fa fa-eye mr-1"></i><%= _ac('nav_studio.show_all', 'Show all') %></button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="navStudioBulk('hms_hub', false)"><i class="fa fa-eye-slash mr-1"></i><%= _ac('nav_studio.hide_all', 'Hide all') %></button>
+      </div>
+      <% var _hub = locals.navStudioHmsHub || { stats: [], cards: [], sections: [] }; %>
+      <% if (!((_hub.stats || []).length) && !((_hub.cards || []).length) && !((_hub.sections || []).length)) { %>
+      <div class="alert alert-warning small"><%= _ac('nav_studio.hub_empty_full', 'HMS Hub widgets are not in the catalogue yet. Restart the app so ACL schema seeds run, then refresh.') %></div>
+      <% } %>
+      <% if ((_hub.stats || []).length) { %>
+      <p class="small text-muted text-uppercase font-weight-bold mt-2 mb-2"><%= _ac('nav_studio.kpi_stats_row', 'KPI stats (top row)') %></p>
+      <div class="row mb-3">
+        <% (_hub.stats || []).forEach(function(st){ %>
+        <div class="col-md-6 col-xl-3 mb-2">
+          <label class="d-flex align-items-center border rounded p-2 mb-0 small<%= st.isHidden ? ' bg-light text-muted' : '' %>">
+            <input type="checkbox" class="nav-studio-toggle mr-2" data-shell="hms_hub" data-code="<%= st.code %>"
+              <%= st.isHidden ? '' : 'checked' %> onchange="navStudioToggle(this)">
+            <span class="font-weight-600"><%= typeof hubLabel === 'function' ? hubLabel(st.code, st.label) : st.label %></span>
+            <code class="ml-auto small"><%= st.code %></code>
+          </label>
+        </div>
+        <% }); %>
+      </div>
+      <% } %>
+      <% if ((_hub.cards || []).length) { %>
+      <p class="small text-muted text-uppercase font-weight-bold mb-2"><%= _ac('nav_studio.clinical_module_cards', 'Clinical module cards') %></p>
+      <div class="row mb-3">
+        <% (_hub.cards || []).forEach(function(card){ %>
+        <div class="col-md-6 col-xl-4 mb-2">
+          <label class="d-flex align-items-center border rounded p-2 mb-0 small<%= card.isHidden ? ' bg-light text-muted' : '' %>">
+            <input type="checkbox" class="nav-studio-toggle mr-2" data-shell="hms_hub" data-code="<%= card.code %>"
+              <%= card.isHidden ? '' : 'checked' %> onchange="navStudioToggle(this)">
+            <span class="font-weight-600"><%= typeof hubLabel === 'function' ? hubLabel(card.code, card.label) : card.label %></span>
+            <code class="ml-auto small"><%= card.code %></code>
+          </label>
+        </div>
+        <% }); %>
+      </div>
+      <% } %>
+      <% if ((_hub.sections || []).length) { %>
+      <p class="small text-muted text-uppercase font-weight-bold mb-2"><%= _ac('nav_studio.side_panels', 'Side panels') %></p>
+      <div class="list-group">
+        <% (_hub.sections || []).forEach(function(sec){ %>
+        <label class="list-group-item d-flex align-items-center mb-0<%= sec.isHidden ? ' bg-light text-muted' : '' %>">
+          <input type="checkbox" class="nav-studio-toggle mr-3" data-shell="hms_hub" data-code="<%= sec.code %>"
+            <%= sec.isHidden ? '' : 'checked' %> onchange="navStudioToggle(this)">
+          <span class="font-weight-600"><%= typeof hubLabel === 'function' ? hubLabel(sec.code, sec.label) : sec.label %></span>
+          <code class="ml-auto small"><%= sec.code %></code>
+        </label>
+        <% }); %>
+      </div>
+      <% } %>
+    </div>
+
+    <div class="tab-pane fade" id="navstudio-dashboard" role="tabpanel">
+      <p class="small text-muted mb-2">
+        <%= _ac('nav_studio.dash_desc', 'Hospital dashboard (/dashboard) — stat cards, toolbar links, and panels. Role must also have Dashboard: view main HMS dashboard (dashboard.read) under Modules & permissions.') %>
+      </p>
+      <div class="d-flex justify-content-end mb-2" style="gap:6px;">
+        <button type="button" class="btn btn-sm btn-outline-success" onclick="navStudioBulk('dashboard', true)"><i class="fa fa-eye mr-1"></i><%= _ac('nav_studio.show_all', 'Show all') %></button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="navStudioBulk('dashboard', false)"><i class="fa fa-eye-slash mr-1"></i><%= _ac('nav_studio.hide_all', 'Hide all') %></button>
+      </div>
+      <% var _dash = locals.navStudioDashboard || { cards: [], buttons: [], sections: [] }; %>
+      <% if (!((_dash.cards || []).length) && !((_dash.buttons || []).length) && !((_dash.sections || []).length)) { %>
+      <div class="alert alert-warning small"><%= _ac('nav_studio.dash_empty_full', 'Dashboard widgets are not in the catalogue yet. Restart the app so ACL schema seeds run, then refresh.') %></div>
+      <% } %>
+      <% if ((_dash.buttons || []).length) { %>
+      <p class="small text-muted text-uppercase font-weight-bold mt-2 mb-2"><%= _ac('nav_studio.toolbar_links_actions', 'Toolbar links & actions') %></p>
+      <div class="list-group mb-3">
+        <% (_dash.buttons || []).forEach(function(lk){ %>
+        <label class="list-group-item d-flex align-items-center mb-0<%= lk.isHidden ? ' bg-light text-muted' : '' %>">
+          <input type="checkbox" class="nav-studio-toggle mr-3" data-shell="dashboard" data-code="<%= lk.code %>"
+            <%= lk.isHidden ? '' : 'checked' %> onchange="navStudioToggle(this)">
+          <span class="font-weight-600"><%= lk.label %></span>
+          <code class="ml-auto small"><%= lk.code %></code>
+        </label>
+        <% }); %>
+      </div>
+      <% } %>
+      <% if ((_dash.cards || []).length) { %>
+      <p class="small text-muted text-uppercase font-weight-bold mb-2"><%= _ac('nav_studio.group_stat_cards', 'Stat cards') %></p>
+      <div class="row mb-3">
+        <% (_dash.cards || []).forEach(function(card){ %>
+        <div class="col-md-6 col-xl-4 mb-2">
+          <label class="d-flex align-items-center border rounded p-2 mb-0 small<%= card.isHidden ? ' bg-light text-muted' : '' %>">
+            <input type="checkbox" class="nav-studio-toggle mr-2" data-shell="dashboard" data-code="<%= card.code %>"
+              <%= card.isHidden ? '' : 'checked' %> onchange="navStudioToggle(this)">
+            <span class="font-weight-600"><%= card.label %></span>
+            <code class="ml-auto small"><%= card.code %></code>
+          </label>
+        </div>
+        <% }); %>
+      </div>
+      <% } %>
+      <% if ((_dash.sections || []).length) { %>
+      <p class="small text-muted text-uppercase font-weight-bold mb-2"><%= _ac('nav_studio.panels_tables', 'Panels & tables') %></p>
+      <div class="list-group">
+        <% (_dash.sections || []).forEach(function(sec){ %>
+        <label class="list-group-item d-flex align-items-center mb-0<%= sec.isHidden ? ' bg-light text-muted' : '' %>">
+          <input type="checkbox" class="nav-studio-toggle mr-3" data-shell="dashboard" data-code="<%= sec.code %>"
+            <%= sec.isHidden ? '' : 'checked' %> onchange="navStudioToggle(this)">
+          <span class="font-weight-600"><%= sec.label %></span>
+          <code class="ml-auto small"><%= sec.code %></code>
+        </label>
+        <% }); %>
+      </div>
+      <% } %>
+    </div>
+
+    <div class="tab-pane fade" id="navstudio-accounting" role="tabpanel">
+      <p class="small text-muted mb-2">
+        <%= _ac('nav_studio.accounting_desc', 'Accounting module bar — Cashier, Billing, and Financials (Dashboard, Customers, Transactions, Reporting, Settings).') %>
+      </p>
+      <div class="d-flex justify-content-end mb-2" style="gap:6px;">
+        <button type="button" class="btn btn-sm btn-outline-success" onclick="navStudioBulk('accounting', true)"><i class="fa fa-eye mr-1"></i><%= _ac('nav_studio.show_all', 'Show all') %></button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="navStudioBulk('accounting', false)"><i class="fa fa-eye-slash mr-1"></i><%= _ac('nav_studio.hide_all', 'Hide all') %></button>
+      </div>
+      <% var _acc = locals.navStudioAccounting || { menus: [], primaryLinks: [] }; %>
+      <% if (!((_acc.menus || []).length) && !((_acc.primaryLinks || []).length)) { %>
+      <div class="alert alert-warning small"><%= _ac('nav_studio.accounting_empty', 'Accounting bar items are not in the catalogue yet. Restart the app so ACL schema seeds run, then refresh.') %></div>
+      <% } %>
+      <div class="row">
+        <% (_acc.menus || []).forEach(function(menu){ %>
+        <div class="col-md-6 col-xl-4 mb-3">
+          <div class="card border h-100 nav-studio-card<%= menu.parent.isHidden ? ' nav-studio-card--off' : '' %>">
+            <div class="card-header py-2 d-flex justify-content-between align-items-center">
+              <span class="font-weight-bold small"><%= menu.parent.label %></span>
+              <label class="mb-0 small">
+                <input type="checkbox" class="nav-studio-toggle nav-studio-parent" data-shell="accounting" data-code="<%= menu.parent.code %>"
+                  <%= menu.parent.isHidden ? '' : 'checked' %> onchange="navStudioToggle(this)"> <%= _ac('nav_studio.menu', 'Menu') %>
+              </label>
+            </div>
+            <div class="card-body py-2">
+              <% (menu.children || []).forEach(function(ch){ %>
+              <label class="d-flex align-items-center mb-1 small<%= ch.isHidden ? ' text-muted' : '' %>">
+                <input type="checkbox" class="nav-studio-toggle mr-2" data-shell="accounting" data-code="<%= ch.code %>"
+                  <%= ch.isHidden ? '' : 'checked' %> onchange="navStudioToggle(this)">
+                <span><%= ch.label %></span>
+              </label>
+              <% }); %>
+            </div>
+            <div class="card-footer py-1 small text-muted"><code><%= menu.parent.code %></code></div>
+          </div>
+        </div>
+        <% }); %>
+      </div>
+      <% if ((_acc.primaryLinks || []).length) { %>
+      <p class="small text-muted text-uppercase font-weight-bold mt-3 mb-2"><%= _ac('nav_studio.module_title_primary_links', 'Module title & primary links') %></p>
+      <div class="list-group">
+        <% _acc.primaryLinks.forEach(function(lk){ %>
+        <label class="list-group-item d-flex align-items-center mb-0<%= lk.isHidden ? ' bg-light text-muted' : '' %>">
+          <input type="checkbox" class="nav-studio-toggle mr-3" data-shell="accounting" data-code="<%= lk.code %>"
+            <%= lk.isHidden ? '' : 'checked' %> onchange="navStudioToggle(this)">
+          <span class="font-weight-600"><%= lk.label %></span>
+          <code class="ml-auto small"><%= lk.code %></code>
+        </label>
+        <% }); %>
+      </div>
+      <% } %>
+    </div>
+
+    <div class="tab-pane fade" id="navstudio-topnav" role="tabpanel">
+      <p class="small text-muted mb-2"><%= _ac('nav_studio.topnav_desc', 'Main hospital shell top bar (Clinical, Operations, HR, Settings).') %></p>
+      <div class="d-flex justify-content-end mb-2" style="gap:6px;">
+        <button type="button" class="btn btn-sm btn-outline-success" onclick="navStudioBulk('topnav', true)"><i class="fa fa-eye mr-1"></i><%= _ac('nav_studio.show_all', 'Show all') %></button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="navStudioBulk('topnav', false)"><i class="fa fa-eye-slash mr-1"></i><%= _ac('nav_studio.hide_all', 'Hide all') %></button>
+      </div>
+      <% var _tn = locals.navStudioTopnav || { menus: [], primaryLinks: [] }; %>
+      <div class="row">
+        <% (_tn.menus || []).forEach(function(menu){ %>
+        <div class="col-md-6 col-xl-3 mb-3">
+          <div class="card border h-100 nav-studio-card<%= menu.parent.isHidden ? ' nav-studio-card--off' : '' %>" data-menu="<%= menu.parent.code %>">
+            <div class="card-header py-2 d-flex justify-content-between align-items-center">
+              <span class="font-weight-bold small"><%= menu.parent.label %></span>
+              <label class="mb-0 small">
+                <input type="checkbox" class="nav-studio-toggle nav-studio-parent" data-shell="topnav" data-code="<%= menu.parent.code %>"
+                  <%= menu.parent.isHidden ? '' : 'checked' %> onchange="navStudioToggle(this)"> <%= _ac('nav_studio.menu', 'Menu') %>
+              </label>
+            </div>
+            <div class="card-body py-2">
+              <% (menu.children || []).forEach(function(ch){ %>
+              <label class="d-flex align-items-center mb-1 small<%= ch.isHidden ? ' text-muted' : '' %>">
+                <input type="checkbox" class="nav-studio-toggle mr-2" data-shell="topnav" data-code="<%= ch.code %>"
+                  <%= ch.isHidden ? '' : 'checked' %> onchange="navStudioToggle(this)">
+                <span><%= ch.label %></span>
+              </label>
+              <% }); %>
+            </div>
+            <div class="card-footer py-1 small text-muted"><code><%= menu.parent.code %></code></div>
+          </div>
+        </div>
+        <% }); %>
+      </div>
+      <% if ((_tn.primaryLinks || []).length) { %>
+      <p class="small text-muted text-uppercase font-weight-bold mt-3 mb-2"><%= _ac('nav_studio.primary_links', 'Primary links') %></p>
+      <div class="list-group">
+        <% _tn.primaryLinks.forEach(function(lk){ %>
+        <label class="list-group-item d-flex align-items-center mb-0<%= lk.isHidden ? ' bg-light text-muted' : '' %>">
+          <input type="checkbox" class="nav-studio-toggle mr-3" data-shell="topnav" data-code="<%= lk.code %>"
+            <%= lk.isHidden ? '' : 'checked' %> onchange="navStudioToggle(this)">
+          <span class="font-weight-600"><%= lk.label %></span>
+          <code class="ml-auto small"><%= lk.code %></code>
+        </label>
+        <% }); %>
+      </div>
+      <% } %>
+    </div>
+
+    <div class="tab-pane fade" id="navstudio-sidebar" role="tabpanel">
+      <div class="d-flex justify-content-end mb-2" style="gap:6px;">
+        <button type="button" class="btn btn-sm btn-outline-success" onclick="navStudioBulk('sidebar', true)"><i class="fa fa-eye mr-1"></i><%= _ac('nav_studio.show_all', 'Show all') %></button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="navStudioBulk('sidebar', false)"><i class="fa fa-eye-slash mr-1"></i><%= _ac('nav_studio.hide_all', 'Hide all') %></button>
+      </div>
+      <% var _sb = locals.navStudioSidebar || { sections: [] }; %>
+      <% (_sb.sections || []).forEach(function(sec){ %>
+      <div class="card border mb-3" style="border-radius:10px;">
+        <div class="card-header py-2 font-weight-bold small text-uppercase" style="background:#f8fafc;"><%= sec.label %></div>
+        <div class="table-responsive">
+          <table class="table table-sm mb-0">
+            <tbody>
+              <% (sec.items || []).forEach(function(it){ %>
+              <tr class="<%= it.isHidden ? 'table-secondary' : '' %>">
+                <td style="width:48px;" class="text-center">
+                  <input type="checkbox" class="nav-studio-toggle" data-shell="sidebar" data-code="<%= it.code %>"
+                    <%= it.isHidden ? '' : 'checked' %> onchange="navStudioToggle(this)">
+                </td>
+                <td>
+                  <i class="fa <%= it.icon || 'fa-link' %> mr-2 text-muted"></i>
+                  <span class="font-weight-600"><%= it.label %></span>
+                  <code class="ml-2 small text-muted"><%= it.code %></code>
+                </td>
+                <td class="small text-muted"><code><%= it.required_perm || '*' %></code></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <% }); %>
+    </div>
+  </div>
+</div>
+
+<style>
+.nav-studio-tabs .nav-link { border-radius: 20px; font-weight: 600; font-size: .85rem; }
+.nav-studio-card--off { opacity: .55; }
+.nav-studio-card--off .card-header { background: #f1f5f9; }
+</style>
+
+<script>
+(function(){
+  var NS_ROLE = '<%= selRole %>';
+  var NS_AJAX_HEADERS = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Accept': 'application/json'
+  };
+  window.navStudioToggle = function(cb) {
+    var code = cb.getAttribute('data-code');
+    var show = cb.checked;
+    cb.disabled = true;
+    fetch('/access-control/api', {
+      method: 'POST',
+      headers: NS_AJAX_HEADERS,
+      body: new URLSearchParams({
+        action: show ? 'ui_show' : 'ui_hide',
+        role_val: NS_ROLE,
+        element_code: code
+      })
+    }).then(function(r){
+      if (!r.ok && r.status === 401) throw new Error('<%= _ac('nav_studio.js_session_expired', 'Session expired — please sign in again.') %>');
+      if (!r.ok && r.status === 403) throw new Error('<%= _ac('nav_studio.js_access_denied', 'Access denied.') %>');
+      return r.json();
+    }).then(function(j){
+      if (!j.ok) { cb.checked = !show; alert(j.error || '<%= _ac('nav_studio.js_save_failed', 'Save failed') %>'); }
+    }).catch(function(e){ cb.checked = !show; cb.disabled = false; alert(e && e.message ? e.message : '<%= _ac('nav_studio.js_network_error', 'Network error — please reload and try again.') %>'); })
+    .finally(function(){ cb.disabled = false; });
+  };
+  window.navStudioBulk = function(shell, show) {
+    fetch('/access-control/api', {
+      method: 'POST',
+      headers: NS_AJAX_HEADERS,
+      body: new URLSearchParams({
+        action: 'ui_bulk_shell',
+        role_val: NS_ROLE,
+        shell: shell,
+        show: show ? '1' : '0'
+      })
+    }).then(function(r){
+      if (!r.ok && r.status === 401) throw new Error('<%= _ac('nav_studio.js_session_expired', 'Session expired — please sign in again.') %>');
+      if (!r.ok && r.status === 403) throw new Error('<%= _ac('nav_studio.js_access_denied', 'Access denied.') %>');
+      return r.json();
+    }).then(function(j){
+      if (j.ok) location.reload();
+      else alert(j.error || '<%= _ac('nav_studio.bulk_failed', 'Bulk update failed') %>');
+    }).catch(function(e){ alert(e && e.message ? e.message : '<%= _ac('nav_studio.js_network_error', 'Network error — please reload and try again.') %>'); });
+  };
+})();
+</script>
+<% } %>
+

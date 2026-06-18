@@ -1,0 +1,314 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+
+<style>
+/* ── KPI Cards  */
+.wlt-kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-bottom:1.75rem;}
+.wlt-kpi{border-radius:18px;padding:1.5rem 1.75rem;color:#fff;position:relative;overflow:hidden;}
+.wlt-kpi::after{content:'';position:absolute;right:-20px;bottom:-20px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.08);}
+.wlt-kpi .kpi-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.8;}
+.wlt-kpi .kpi-val{font-size:1.8rem;font-weight:800;margin-top:.35rem;line-height:1.1;}
+.wlt-kpi .kpi-sub{font-size:.75rem;opacity:.7;margin-top:.25rem;}
+.kpi-trust{background:linear-gradient(135deg,var(--hms-dept-finance),#3b82f6);}
+.kpi-count{background:linear-gradient(135deg,var(--hms-brand-dark),var(--hms-brand));}
+.kpi-today{background:linear-gradient(135deg,var(--hms-dept-laboratory),#a78bfa);}
+.kpi-vol{background:linear-gradient(135deg,#c2410c,var(--hms-warning));}
+
+/* ── Search bar  */
+.wlt-search{background:#fff;border-radius:14px;padding:1rem 1.25rem;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:1.5rem;display:flex;gap:.75rem;align-items:center;}
+.wlt-search input{flex:1;border:1.5px solid #e2e8f0;border-radius:10px;padding:.6rem 1rem;font-size:.88rem;outline:none;transition:border-color .2s;}
+.wlt-search input:focus{border-color:#3b82f6;}
+.wlt-search .btn-find{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:10px;padding:.6rem 1.5rem;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s;}
+.wlt-search .btn-find:hover{transform:translateY(-1px);}
+
+/* ── Wallet table card  */
+.wlt-table-card{background:#fff;border-radius:18px;box-shadow:0 2px 14px rgba(0,0,0,.07);overflow:hidden;}
+.wlt-table-card .tbl-head{background:#f8fafc;padding:1.1rem 1.5rem;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;}
+.wlt-table-card table{margin:0;}
+.wlt-table-card thead th{background:#f8fafc;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:#64748b;font-weight:700;padding:.85rem 1.25rem;border-bottom:2px solid #f1f5f9;}
+.wlt-table-card td{padding:.9rem 1.25rem;vertical-align:middle;border-bottom:1px solid #f8fafc;}
+.wlt-table-card tr:last-child td{border-bottom:none;}
+.wlt-table-card tr:hover td{background:#fafafa;}
+
+/* ── Patient avatar  */
+.pt-avatar{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;flex-shrink:0;}
+
+/* ── Balance display  */
+.bal-display{font-size:1.05rem;font-weight:800;}
+.bal-good{color:#059669;}
+.bal-low{color:#d97706;}
+.bal-empty{color:#dc2626;}
+.bal-meter{height:5px;border-radius:99px;background:#e5e7eb;margin-top:5px;width:100px;}
+.bal-meter-fill{height:100%;border-radius:99px;transition:width .5s;}
+
+/* ── Status badges  */
+.badge-active{background:#d1fae5;color:#065f46;border-radius:20px;padding:3px 10px;font-size:.72rem;font-weight:700;}
+.badge-suspended{background:#fee2e2;color:#991b1b;border-radius:20px;padding:3px 10px;font-size:.72rem;font-weight:700;}
+
+/* ── Action buttons  */
+.btn-topup{background:linear-gradient(135deg,#065f46,#10b981);color:#fff;border:none;border-radius:20px;padding:5px 14px;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-topup:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(16,185,129,.35);}
+.btn-txn{background:#f0f4f8;color:#475569;border:none;border-radius:20px;padding:5px 14px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.wlt-patient-drop{position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid #10b981;border-radius:12px;box-shadow:0 8px 32px rgba(6,95,70,.12);z-index:1060;max-height:260px;overflow-y:auto;}
+.wlt-patient-row{display:flex;align-items:center;gap:.75rem;padding:.65rem 1rem;cursor:pointer;border-bottom:1px solid #f1f5f9;transition:background .12s;}
+.wlt-patient-row:hover{background:#ecfdf5;}
+.wlt-patient-row:last-child{border-bottom:none;}
+.btn-txn:hover{background:#e2e8f0;}
+.btn-qr{background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:.78rem;cursor:pointer;transition:all .2s;}
+
+/* ── Modals  */
+.wlt-modal .modal-content{border-radius:20px;border:none;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.wlt-modal .modal-header{padding:1.25rem 1.5rem;}
+.wlt-modal .modal-body{padding:1.5rem;}
+.wlt-modal .modal-footer{background:#f8fafc;padding:1rem 1.5rem;border-top:1px solid #f1f5f9;}
+.grad-header-topup{background:linear-gradient(135deg,#065f46,#10b981);}
+.grad-header-txn{background:linear-gradient(135deg,#1d4ed8,#3b82f6);}
+.grad-header-qr{background:linear-gradient(135deg,#7c3aed,#a78bfa);}
+
+/* ── Transaction history  */
+.txn-row{display:flex;align-items:center;gap:.85rem;padding:.75rem 0;border-bottom:1px solid #f1f5f9;}
+.txn-row:last-child{border-bottom:none;}
+.txn-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.txn-icon.cr{background:#d1fae5;color:#059669;}
+.txn-icon.dr{background:#fee2e2;color:#dc2626;}
+.txn-amt.cr{color:#059669;font-weight:800;}
+.txn-amt.dr{color:#dc2626;font-weight:800;}
+
+/* ── GBPay info card  */
+.gbpay-info{background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:18px;padding:1.5rem;color:#fff;margin-bottom:1.5rem;}
+.gbpay-info h6{font-weight:800;font-size:.95rem;}
+.gbpay-channel{display:flex;align-items:center;gap:.75rem;background:rgba(255,255,255,.06);border-radius:12px;padding:.75rem 1rem;margin-top:.75rem;}
+.gbpay-channel-icon{font-size:1.4rem;}
+.gbpay-channel-name{font-weight:700;font-size:.85rem;}
+ .gbpay-channel-desc{font-size:.75rem;opacity:.65;}
+
+/* ── Create wallet prompt  */
+.wlt-create-banner{background:#fffbeb;border:1.5px solid #fcd34d;border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.25rem;}
+.wlt-create-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.65rem 0;border-bottom:1px solid #fde68a;}
+.wlt-create-row:last-child{border-bottom:none;padding-bottom:0;}
+.btn-create-wallet{background:linear-gradient(135deg,#065f46,#10b981);color:#fff;border:none;border-radius:10px;padding:.45rem 1rem;font-size:.78rem;font-weight:700;}
+ .btn-skip-wallet{background:#fff;color:#64748b;border:1.5px solid #e2e8f0;border-radius:10px;padding:.45rem 1rem;font-size:.78rem;font-weight:600;}
+
+/* Modals must sit above Odoo shell */
+.wlt-modal{z-index:10050!important;}
+.modal-backdrop{z-index:10040!important;}
+.wlt-actions button{position:relative;z-index:2;cursor:pointer;}
+</style>
+
+<div class="page-wrapper">
+  <div class="content">
+
+ <!-- Flash / Error -->
+ <% if(locals.flash){ %>
+ <div class="hms-flash hms-flash--success border-0 shadow-sm mb-4" style="border-radius:12px;"><i class="fa fa-check-circle mr-2"></i><%= locals.flash %></div>
+ <% } %>
+ <% if(locals.err){ %>
+ <div class="hms-flash hms-flash--error border-0 shadow-sm mb-4" style="border-radius:12px;"><i class="fa fa-exclamation-triangle mr-2"></i><%= locals.err %></div>
+ <% } %>
+
+ <!-- Page Header -->
+ <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap" style="gap:.75rem;">
+ <div>
+ <h4 class="font-weight-bold mb-1" style="color:#0f172a;">👛 <%= _t('wallet_page.title', { ns: 'legacy', defaultValue: 'Patient Wallet & Cashless HUB' }) %></h4>
+ <p class="text-muted small mb-0"><%= _t('wallet_page.subtitle', { ns: 'legacy', defaultValue: 'Pre-paid virtual wallets · Cash & MoMo top-ups · Instant service deductions' }) %></p>
+ </div>
+ <button type="button" class="hms-btn hms-btn-primary rounded-pill px-4 font-weight-bold shadow-sm" id="btnOpenTopupModal">
+ <i class="fa fa-plus mr-2"></i><%= _t('wallet_page.cash_topup', { ns: 'legacy', defaultValue: 'Cash Top-up' }) %>
+ </button>
+ </div>
+
+ <!-- KPI Grid -->
+ <div class="wlt-kpi-grid">
+ <div class="wlt-kpi kpi-trust">
+ <div class="kpi-label"><%= _t('wallet_page.kpi_total_trust', { ns: 'legacy', defaultValue: 'Total Held in Trust' }) %></div>
+ <div class="kpi-val"><%= Number(stats.total_trust || 0).toLocaleString('fr-FR') %> <small style="font-size:.9rem;">FCFA</small></div>
+ <div class="kpi-sub"><%= _t('wallet_page.kpi_total_trust_sub', { ns: 'legacy', defaultValue: 'Across all active wallets' }) %></div>
+ </div>
+ <div class="wlt-kpi kpi-count">
+ <div class="kpi-label"><%= _t('wallet_page.kpi_active_wallets', { ns: 'legacy', defaultValue: 'Active Wallets' }) %></div>
+ <div class="kpi-val"><%= stats.total_wallets || 0 %></div>
+ <div class="kpi-sub"><%= stats.funded_wallets || 0 %> <%= _t('wallet_page.kpi_funded_sub', { ns: 'legacy', defaultValue: 'with positive balance' }) %></div>
+ </div>
+ <div class="wlt-kpi kpi-today">
+ <div class="kpi-label"><%= _t('wallet_page.kpi_today_txn', { ns: 'legacy', defaultValue: "Today's Transactions" }) %></div>
+ <div class="kpi-val"><%= stats.txn_today || 0 %></div>
+ <div class="kpi-sub"><%= _t('wallet_page.kpi_volume', { ns: 'legacy', defaultValue: 'Volume:' }) %> <%= Number(stats.vol_today || 0).toLocaleString('fr-FR') %> FCFA</div>
+ </div>
+ <div class="wlt-kpi kpi-vol">
+ <div class="kpi-label"><%= _t('wallet_page.kpi_gbpay', { ns: 'legacy', defaultValue: 'GBPay / MoMo' }) %></div>
+ <div class="kpi-val" style="font-size:1.1rem;margin-top:.5rem;"><%= _t('wallet_page.kpi_auto_topup', { ns: 'legacy', defaultValue: 'Auto Top-up' }) %></div>
+ <div class="kpi-sub"><%= _t('wallet_page.kpi_webhook', { ns: 'legacy', defaultValue: 'Webhook: /api/gbpay/callback' }) %></div>
+ </div>
+ </div>
+
+ <!-- GBPay Info Bar -->
+ <div class="gbpay-info mb-4">
+ <h6><i class="fa fa-bolt mr-2" style="color:#fbbf24;"></i><%= _t('wallet_page.gbpay_title', { ns: 'legacy', defaultValue: 'Mobile Money Auto Top-up Active' }) %></h6>
+ <p class="small mb-0" style="opacity:.7;"><%= _t('wallet_page.gbpay_desc', { ns: 'legacy', defaultValue: 'When a patient sends MoMo/OM to their wallet QR code via GBPay, the balance is credited automatically within seconds. No manual intervention needed.' }) %></p>
+ <div class="row mt-2">
+ <div class="col-md-4">
+ <div class="gbpay-channel">
+ <div class="gbpay-channel-icon">📱</div>
+ <div><div class="gbpay-channel-name"><%= _t('wallet_page.channel_mtn', { ns: 'legacy', defaultValue: 'MTN Mobile Money' }) %></div><div class="gbpay-channel-desc"><%= _t('wallet_page.channel_mtn_desc', { ns: 'legacy', defaultValue: 'Instant credit via GBPay IPN' }) %></div></div>
+ </div>
+ </div>
+ <div class="col-md-4">
+ <div class="gbpay-channel">
+ <div class="gbpay-channel-icon">🟠</div>
+ <div><div class="gbpay-channel-name"><%= _t('wallet_page.channel_orange', { ns: 'legacy', defaultValue: 'Orange Money' }) %></div><div class="gbpay-channel-desc"><%= _t('wallet_page.channel_orange_desc', { ns: 'legacy', defaultValue: 'Instant credit via GBPay IPN' }) %></div></div>
+ </div>
+ </div>
+ <div class="col-md-4">
+ <div class="gbpay-channel">
+ <div class="gbpay-channel-icon">💵</div>
+ <div><div class="gbpay-channel-name"><%= _t('wallet_page.channel_cash', { ns: 'legacy', defaultValue: 'Cash Deposit' }) %></div><div class="gbpay-channel-desc"><%= _t('wallet_page.channel_cash_desc', { ns: 'legacy', defaultValue: 'Cashier manual top-up' }) %></div></div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Search -->
+ <form method="GET" action="/wallet">
+ <div class="wlt-search">
+ <label for="wlt-search-q" class="sr-only"><%= _t('wallet_page.search_ph', { ns: 'legacy' }) %></label>
+ <i class="fa fa-search" style="color:#94a3b8;" aria-hidden="true"></i>
+ <input type="search" id="wlt-search-q" name="q" class="hms-input" value="<%= q || '' %>" placeholder="<%= _t('wallet_page.search_ph', { ns: 'legacy' }) %>" autofocus>
+ <button type="submit" class="btn-find"><i class="fa fa-search mr-1"></i><%= _t('wallet_page.find', { ns: 'legacy', defaultValue: 'Find' }) %></button>
+ <% if(q){ %><a href="/wallet" class="btn btn-link text-muted small ml-2"><%= _t('wallet_page.clear', { ns: 'legacy', defaultValue: 'Clear' }) %></a><% } %>
+ </div>
+ </form>
+
+ <% if ((typeof pendingCreate !== 'undefined') && pendingCreate && pendingCreate.length) { %>
+ <div class="wlt-create-banner" id="wltCreateBanner">
+  <div class="d-flex justify-content-between align-items-start flex-wrap mb-2" style="gap:.5rem;">
+   <div>
+    <strong style="color:#92400e;"><i class="fa fa-exclamation-circle mr-1"></i><%= pendingCreate.length !== 1 ? _t('wallet_page.patients_no_wallet_plural', { ns: 'legacy', defaultValue: 'Patients found without a wallet' }) : _t('wallet_page.patients_no_wallet_singular', { ns: 'legacy', defaultValue: 'Patient found without a wallet' }) %></strong>
+    <div class="small text-muted mt-1"><%= _t('wallet_page.create_wallet_hint', { ns: 'legacy', defaultValue: 'Create a wallet to enable top-ups, or skip if not needed.' }) %></div>
+   </div>
+   <button type="button" class="btn btn-link btn-sm text-muted p-0" id="wltDismissBanner" title="<%= _t('wallet_page.dismiss', { ns: 'legacy', defaultValue: 'Hide this notice' }) %>"><%= _t('wallet_page.dismiss', { ns: 'legacy', defaultValue: 'Dismiss' }) %></button>
+  </div>
+  <% pendingCreate.forEach(function(p){ %>
+  <div class="wlt-create-row">
+   <div>
+    <div class="font-weight-bold" style="color:#1e293b;"><%= p.name %></div>
+    <div class="small text-muted"><%= p.pt_label %><% if(p.phone){ %> · <%= p.phone %><% } %></div>
+   </div>
+   <div class="text-nowrap">
+    <form method="POST" action="/wallet/create" class="d-inline">
+     <input type="hidden" name="patient_id" value="<%= p.patient_id %>">
+     <input type="hidden" name="q" value="<%= q || '' %>">
+     <button type="submit" class="btn-create-wallet mr-1"><i class="fa fa-plus mr-1"></i><%= _t('wallet_page.create_wallet', { ns: 'legacy', defaultValue: 'Create wallet' }) %></button>
+    </form>
+   </div>
+  </div>
+  <% }); %>
+ </div>
+ <% } %>
+
+ <!-- Wallet Table -->
+ <div class="wlt-table-card">
+ <div class="tbl-head">
+ <span class="font-weight-bold" style="color:#0f172a;"><%= _t('wallet_page.active_wallets', { ns: 'legacy', defaultValue: 'Active Patient Wallets' }) %></span>
+ <span class="small text-muted"><%= wallets.length %> <%= wallets.length !== 1 ? _t('wallet_page.wallets_shown_plural', { ns: 'legacy', defaultValue: 'wallets shown' }) : _t('wallet_page.wallets_shown_singular', { ns: 'legacy', defaultValue: 'wallet shown' }) %></span>
+ </div>
+ <div data-hms-table-paginate data-hms-page-size="5">
+ <div class="table-responsive">
+ <table class="table mb-0">
+ <thead><tr>
+ <th><%= _t('wallet_page.col_patient', { ns: 'legacy', defaultValue: 'Patient' }) %></th>
+ <th><%= _t('wallet_page.col_wallet', { ns: 'legacy', defaultValue: 'Wallet' }) %></th>
+ <th><%= _t('wallet_page.col_balance', { ns: 'legacy', defaultValue: 'Balance' }) %></th>
+ <th><%= _t('wallet_page.col_status', { ns: 'legacy', defaultValue: 'Status' }) %></th>
+ <th><%= _t('wallet_page.col_last_activity', { ns: 'legacy', defaultValue: 'Last Activity' }) %></th>
+ <th class="text-right"><%= _t('wallet_page.col_actions', { ns: 'legacy', defaultValue: 'Actions' }) %></th>
+ </tr></thead>
+ <tbody id="wltTableBody">
+ <% if(wallets.length === 0){ %>
+ <tr><td colspan="6" class="text-center text-muted py-5">
+ <i class="fa fa-wallet fa-2x mb-2 d-block opacity-50"></i>
+ <% if(q){ %>
+ <% if ((typeof pendingCreate !== 'undefined') && pendingCreate && pendingCreate.length && wallets.length === 0){ %>
+ <%= _t('wallet_page.empty_matched_no_wallet', { ns: 'legacy', defaultValue: 'Patient(s) matched your search but have no wallet yet. Use the prompt above to create one, or search again.' }) %>
+ <% } else if (wallets.length === 0) { %>
+ <%= _t('wallet_page.empty_no_match', { ns: 'legacy', defaultValue: 'No patients matched "{{q}}". Try another name, phone, or patient ID.', q: q }) %>
+ <% } %>
+ <% } else { %>
+ <%= _t('wallet_page.empty_no_wallets', { ns: 'legacy', defaultValue: 'No wallets yet. Search for a patient by name above — you can choose whether to create a wallet.' }) %>
+ <% } %>
+ </td></tr>
+ <% } %>
+ <% wallets.forEach(function(w){ %>
+ <%
+ var bal = parseFloat(w.balance || 0);
+ var balClass = bal > 10000 ? 'bal-good' : (bal > 0 ? 'bal-low' : 'bal-empty');
+ var meterW = Math.min(100, (bal / 50000) * 100).toFixed(0);
+ var meterColor = bal > 10000 ? '#10b981' : (bal > 0 ? '#f59e0b' : '#ef4444');
+ %>
+ <tr>
+ <td>
+ <div class="d-flex align-items-center" style="gap:.75rem;">
+ <div class="pt-avatar"><%= (w.first_name||'?')[0].toUpperCase() %></div>
+ <div>
+ <div class="font-weight-bold" style="color:#1e293b;font-size:.9rem;"><%= w.first_name %> <%= w.last_name %></div>
+ <div class="small text-muted"><%= w.pt_label %> <% if(w.phone){ %> · <%= w.phone %><% } %></div>
+ </div>
+ </div>
+ </td>
+ <td><code style="font-size:.78rem;background:#f1f5f9;padding:2px 8px;border-radius:6px;color:#475569;">#WLT-<%= String(w.id).padStart(4,'0') %></code></td>
+ <td>
+ <div class="<%= balClass %> bal-display"><%= bal.toLocaleString('fr-FR') %> <small style="font-size:.7rem;font-weight:600;">FCFA</small></div>
+ <div class="bal-meter"><div class="bal-meter-fill" style="width:<%= meterW %>%;background:<%= meterColor %>;"></div></div>
+ </td>
+ <td>
+ <% if(w.status === 'active'){ %>
+ <span class="badge-active"><i class="fa fa-circle" style="font-size:.5rem;"></i> <%= _t('wallet_page.status_active', { ns: 'legacy', defaultValue: 'Active' }) %></span>
+ <% } else { %>
+ <span class="badge-suspended"><%= w.status %></span>
+ <% } %>
+ </td>
+ <td class="small text-muted"><%= w.updated_at ? new Date(w.updated_at).toLocaleString() : '—' %></td>
+ <td class="text-right text-nowrap wlt-actions">
+ <button type="button" class="btn-qr mr-1" data-wlt-qr data-token="<%= w.qr_token || '' %>" data-name="<%= ((w.first_name || '') + ' ' + (w.last_name || '')).trim() %>" title="<%= _t('wallet_page.show_qr_title', { ns: 'legacy', defaultValue: 'Show QR Code' }) %>">
+ <i class="fa fa-qrcode"></i>
+ </button>
+ <button type="button" class="btn-txn mr-1" data-wlt-history data-wallet-id="<%= w.id %>" data-name="<%= ((w.first_name || '') + ' ' + (w.last_name || '')).trim() %>" title="<%= _t('wallet_page.txn_history_title', { ns: 'legacy', defaultValue: 'Transaction History' }) %>">
+ <i class="fa fa-history mr-1"></i><%= _t('wallet_page.history', { ns: 'legacy', defaultValue: 'History' }) %>
+ </button>
+ <button type="button" class="btn-topup" data-wlt-topup data-wallet-id="<%= w.id %>" data-name="<%= ((w.first_name || '') + ' ' + (w.last_name || '')).trim() %>" data-balance="<%= bal %>" data-phone="<%= w.phone || '' %>" data-pt-label="<%= w.pt_label || '' %>">
+ <i class="fa fa-plus mr-1"></i><%= _t('wallet_page.topup', { ns: 'legacy', defaultValue: 'Top-up' }) %>
+ </button>
+ </td>
+ </tr>
+ <% }); %>
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+
+  </div>
+</div>
+
+<%- include('partials/hms-wallet-modals-mount') %>
+
+<script type="application/json" id="wlt-page-data"><%- JSON.stringify({
+  wallets: (wallets || []).map(function(w) {
+    return {
+      id: w.id,
+      patient_id: w.patient_id,
+      first_name: w.first_name || '',
+      last_name: w.last_name || '',
+      phone: w.phone || '',
+      pt_label: w.pt_label || ('#PT' + String(w.patient_id || w.id || '').padStart(4, '0')),
+      balance: parseFloat(w.balance || 0) || 0,
+      qr_token: w.qr_token || '',
+      status: w.status || 'active'
+    };
+  }),
+  q: q || '',
+  err: locals.err || null,
+  pendingCreate: (typeof pendingCreate !== 'undefined' && pendingCreate) ? pendingCreate : []
+}) %></script>
+<script src="/js/wallet-page.js?v=3"></script>
+
+<%- include('partials/footer') %>

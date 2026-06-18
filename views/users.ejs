@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--users'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'users',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.users', { ns: 'common', defaultValue: 'Loading System Users…' }) : 'Loading System Users…')
+}) %>
+
+<%- include('partials/footer') %>

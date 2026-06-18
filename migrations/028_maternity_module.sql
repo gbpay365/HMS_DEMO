@@ -1,0 +1,2 @@
+-- HMS Maternity module (MySQL) — also applied at boot via lib/ensureMaternitySchema.js
+-- See lib/ensureMaternitySchema.js for canonical DDL.

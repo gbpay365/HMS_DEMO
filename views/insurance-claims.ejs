@@ -1,0 +1,149 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<div class="page-wrapper"><div class="content">
+
+<%if(locals.flash){%><div class="alert alert-success border-0 shadow-sm mb-3"><i class="fa fa-check-circle mr-2"></i><%=locals.flash%></div><%}%>
+<%if(locals.error){%><div class="alert alert-danger border-0 shadow-sm mb-3"><i class="fa fa-exclamation-circle mr-2"></i><%=locals.error%></div><%}%>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+ <div>
+  <h4 class="font-weight-bold text-dark mb-1"><i class="fa fa-file-text mr-2 text-primary"></i><%= _t('insurance_claims.title', { ns: 'legacy', defaultValue: 'Insurance Claims Scrubber' }) %></h4>
+  <p class="text-muted small mb-0"><%= _t('insurance_claims.subtitle', { ns: 'legacy', defaultValue: 'Automated claim scrubber & X12/837 clearing house export.' }) %></p>
+ </div>
+ <div class="d-flex" style="gap:8px;">
+  <span class="badge badge-light border d-flex align-items-center px-3 py-2 shadow-sm rounded-pill text-muted">
+   <span style="width:8px;height:8px;border-radius:50%;background:#28a745;display:inline-block;margin-right:6px;animation:pulse 2s infinite;"></span><%= _t('insurance_claims.scrubber_active', { ns: 'legacy', defaultValue: 'Scrubber Active' }) %>
+  </span>
+  <a href="/insurance-claims/export.x12" class="btn btn-primary rounded-pill px-4"><i class="fa fa-cloud-download mr-2"></i><%= _t('insurance_claims.generate_x12', { ns: 'legacy', defaultValue: 'Generate X12' }) %></a>
+  <button class="btn btn-outline-primary rounded-pill" data-toggle="modal" data-target="#newClaimModal"><i class="fa fa-plus mr-1"></i><%= _t('insurance_claims.new_claim', { ns: 'legacy', defaultValue: 'New Claim' }) %></button>
+ </div>
+</div>
+
+<style>
+@keyframes pulse {
+ 0%,100%{box-shadow:0 0 0 0 rgba(40,167,69,.4);}
+ 70%{box-shadow:0 0 0 8px rgba(40,167,69,0);}
+}
+</style>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+ <div class="col-md-3 mb-3">
+  <div class="card border-0 shadow-sm rounded-xl">
+   <div class="card-body d-flex align-items-center" style="gap:16px;">
+    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:52px;height:52px;background:#dcfce7;color:#16a34a;font-size:1.4rem;flex-shrink:0;"><i class="fa fa-check-circle"></i></div>
+    <div><div class="h3 font-weight-bold mb-0"><%= stats.clean %></div><div class="small text-muted"><%= _t('insurance_claims.stat_clean', { ns: 'legacy', defaultValue: 'Clean Claims' }) %></div></div>
+   </div>
+  </div>
+ </div>
+ <div class="col-md-3 mb-3">
+  <div class="card border-0 shadow-sm rounded-xl">
+   <div class="card-body d-flex align-items-center" style="gap:16px;">
+    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:52px;height:52px;background:#fef9c3;color:#d97706;font-size:1.4rem;flex-shrink:0;"><i class="fa fa-exclamation-triangle"></i></div>
+    <div><div class="h3 font-weight-bold mb-0"><%= stats.warning %></div><div class="small text-muted"><%= _t('insurance_claims.stat_warnings', { ns: 'legacy', defaultValue: 'Warnings' }) %></div></div>
+   </div>
+  </div>
+ </div>
+ <div class="col-md-3 mb-3">
+  <div class="card border-0 shadow-sm rounded-xl">
+   <div class="card-body d-flex align-items-center" style="gap:16px;">
+    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:52px;height:52px;background:#fee2e2;color:#dc2626;font-size:1.4rem;flex-shrink:0;"><i class="fa fa-times-circle"></i></div>
+    <div><div class="h3 font-weight-bold mb-0"><%= stats.rejected %></div><div class="small text-muted"><%= _t('insurance_claims.stat_rejected', { ns: 'legacy', defaultValue: 'Rejected' }) %></div></div>
+   </div>
+  </div>
+ </div>
+ <div class="col-md-3 mb-3">
+  <div class="card border-0 shadow-sm rounded-xl">
+   <div class="card-body d-flex align-items-center" style="gap:16px;">
+    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:52px;height:52px;background:#e0f2fe;color:#0284c7;font-size:1.4rem;flex-shrink:0;"><i class="fa fa-clock-o"></i></div>
+    <div><div class="h3 font-weight-bold mb-0"><%= stats.pending %></div><div class="small text-muted"><%= _t('insurance_claims.stat_pending', { ns: 'legacy', defaultValue: 'Pending' }) %></div></div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- Claims Table -->
+<div class="card border-0 shadow-sm rounded-xl overflow-hidden">
+ <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+  <h6 class="font-weight-bold text-uppercase text-muted mb-0" style="font-size:.75rem;letter-spacing:.06em;"><i class="fa fa-list mr-1"></i><%= _t('insurance_claims.batch_queue', { ns: 'legacy', defaultValue: 'Current Batch Queue' }) %></h6>
+  <span class="badge badge-light border"><%= _t('insurance_claims.claims_count', { ns: 'legacy', count: claims.length, defaultValue: claims.length + ' claims' }) %></span>
+ </div>
+ <div class="table-responsive">
+  <table class="table table-hover mb-0 small">
+   <thead class="thead-light">
+    <tr><th><%= _t('insurance_claims.col_claim_id', { ns: 'legacy', defaultValue: 'Claim ID' }) %></th><th><%= _t('insurance_claims.col_patient', { ns: 'legacy', defaultValue: 'Patient' }) %></th><th><%= _t('insurance_claims.col_payer', { ns: 'legacy', defaultValue: 'Payer / Insurer' }) %></th><th><%= _t('insurance_claims.col_diagnosis', { ns: 'legacy', defaultValue: 'Diagnosis' }) %></th><th class="text-right"><%= _t('insurance_claims.col_billed', { ns: 'legacy', defaultValue: 'Billed Amount' }) %></th><th><%= _t('insurance_claims.col_scrubber_status', { ns: 'legacy', defaultValue: 'Scrubber Status' }) %></th><th><%= _t('insurance_claims.col_actions', { ns: 'legacy', defaultValue: 'Actions' }) %></th></tr>
+   </thead>
+   <tbody>
+   <% if (claims.length === 0) { %>
+    <tr><td colspan="7" class="text-center text-muted py-4"><%- _t('insurance_claims.empty_queue', { ns: 'legacy', defaultValue: 'No claims in the queue. Click <strong>New Claim</strong> to submit one.' }) %></td></tr>
+   <% } else { claims.forEach(cl => {
+     const sc = cl.status||'pending';
+     const badgeClass = sc==='clean'?'badge-success':sc==='rejected'?'badge-danger':sc==='warning'?'badge-warning text-dark':'badge-secondary';
+     var statusLabel = sc==='clean' ? _t('insurance_claims.status_clean', { ns: 'legacy', defaultValue: 'Clean' })
+       : sc==='rejected' ? _t('insurance_claims.status_rejected', { ns: 'legacy', defaultValue: 'Rejected' })
+       : sc==='warning' ? _t('insurance_claims.status_warning', { ns: 'legacy', defaultValue: 'Warning' })
+       : _t('insurance_claims.status_pending', { ns: 'legacy', defaultValue: 'Pending' });
+   %>
+    <tr>
+     <td class="font-weight-bold text-muted">CLM-<%= String(cl.id).padStart(3,'0') %></td>
+     <td><%= cl.first_name ? cl.first_name+' '+cl.last_name : '#P-'+cl.patient_id %></td>
+     <td><%= cl.insurer_name||'—' %></td>
+     <td class="text-muted"><%= cl.diagnosis||'—' %></td>
+     <td class="text-right font-weight-bold"><%= parseFloat(cl.billed_amount||0).toLocaleString('fr-FR') %> FCFA</td>
+     <td><span class="badge <%= badgeClass %> px-2 py-1"><%= statusLabel %></span></td>
+     <td>
+      <button class="btn btn-sm btn-outline-info" title="<%= _t('insurance_claims.action_review', { ns: 'legacy', defaultValue: 'Review' }) %>"><i class="fa fa-eye"></i></button>
+      <button class="btn btn-sm btn-outline-secondary ml-1" title="<%= _t('insurance_claims.action_edit', { ns: 'legacy', defaultValue: 'Edit' }) %>"><i class="fa fa-pencil"></i></button>
+     </td>
+    </tr>
+   <% }) } %>
+   </tbody>
+  </table>
+ </div>
+</div>
+
+</div></div>
+
+<!-- New Claim Modal -->
+<div class="modal fade" id="newClaimModal" tabindex="-1" role="dialog" aria-labelledby="newClaimModalTitle">
+ <div class="modal-dialog" role="document">
+  <div class="modal-content border-0 shadow-lg rounded-xl">
+   <form method="POST" action="/insurance-claims/add">
+    <div class="modal-header border-0 pb-0">
+     <h5 class="modal-title font-weight-bold" id="newClaimModalTitle"><i class="fa fa-plus text-primary mr-2" aria-hidden="true"></i><%= _t('insurance_claims.modal_title', { ns: 'legacy' }) %></h5>
+     <button type="button" class="close" data-dismiss="modal" aria-label="<%= _t('insurance_claims.close', { ns: 'legacy', defaultValue: 'Close' }) %>"><span aria-hidden="true">&times;</span></button>
+    </div>
+    <div class="modal-body">
+     <div class="form-group">
+      <label class="small font-weight-bold"><%= _t('insurance_claims.col_patient', { ns: 'legacy' }) %> <span class="text-danger">*</span></label>
+      <select name="patient_id" class="hms-input w-full" required>
+       <option value=""><%= _t('insurance_claims.select_patient', { ns: 'legacy' }) %></option>
+       <% patients.forEach(p => { %><option value="<%= p.id %>"><%= p.first_name %> <%= p.last_name %> (#P-<%= p.id %>)</option><% }) %>
+      </select>
+     </div>
+     <div class="form-group">
+      <label class="small font-weight-bold"><%= _t('insurance_claims.carrier_label', { ns: 'legacy' }) %> <span class="text-danger">*</span></label>
+      <select name="carrier_id" class="hms-input w-full" required>
+       <option value=""><%= _t('insurance_claims.select_carrier', { ns: 'legacy' }) %></option>
+       <% carriers.forEach(c => { %><option value="<%= c.id %>"><%= c.name %></option><% }) %>
+      </select>
+     </div>
+     <div class="form-group">
+      <label class="small font-weight-bold"><%= _t('insurance_claims.diagnosis_label', { ns: 'legacy' }) %></label>
+      <input type="text" name="diagnosis" class="hms-input w-full" placeholder="<%= _t('insurance_claims.diagnosis_ph', { ns: 'legacy' }) %>">
+     </div>
+     <div class="form-group mb-0">
+      <label class="small font-weight-bold"><%= _t('insurance_claims.billed_label', { ns: 'legacy' }) %> <span class="text-danger">*</span></label>
+      <input type="number" name="billed_amount" class="hms-input w-full" step="1" min="0" required placeholder="<%= _t('insurance_claims.billed_ph', { ns: 'legacy' }) %>">
+     </div>
+    </div>
+    <div class="modal-footer border-0">
+     <button type="button" class="hms-btn hms-btn-secondary" data-dismiss="modal"><%= _t('employee_edit.cancel', { ns: 'legacy' }) %></button>
+     <button type="submit" class="hms-btn hms-btn-primary"><i class="fa fa-paper-plane mr-1" aria-hidden="true"></i><%= _t('insurance_claims.submit_claim', { ns: 'legacy' }) %></button>
+    </div>
+   </form>
+  </div>
+ </div>
+</div>
+
+<%- include('partials/footer') %>

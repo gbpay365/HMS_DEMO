@@ -1,0 +1,45 @@
+<%- include('partials/header') %>
+
+<div class="page-wrapper">
+ <div class="content">
+ <% if(locals.flash){ %><div class="alert alert-success border-0 shadow-sm mb-3"><%= flash %></div><% } %>
+ <% if(locals.error){ %><div class="alert alert-danger border-0 shadow-sm mb-3"><%= error %></div><% } %>
+
+ <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+  <div>
+   <h4 class="page-title font-weight-bold text-dark mb-1">Edit PO <%= po.po_number %></h4>
+   <p class="text-muted small mb-0">Status: <strong><%= po.status %></strong><% if (po.recall_reason) { %> · Recalled: <%= po.recall_reason %><% } %></p>
+  </div>
+  <a href="/procurement/purchase-orders/<%= po.id %>" class="btn btn-outline-secondary btn-sm rounded-pill">Back to PO</a>
+ </div>
+
+ <form method="post" action="/procurement/purchase-orders/<%= po.id %>/update">
+  <%- include('partials/procurement-po-edit-form') %>
+  <button type="submit" class="btn btn-primary">Save changes</button>
+ </form>
+
+ <% if ((attachments||[]).length) { %>
+ <div class="card border-0 shadow-sm rounded-xl mt-4">
+  <div class="card-header bg-white font-weight-bold">Attachments — generate lines</div>
+  <div class="card-body">
+   <% attachments.forEach(function(att){ %>
+   <div class="d-flex flex-wrap align-items-center gap-2 mb-2 border-bottom pb-2">
+    <i class="fa fa-paperclip text-muted"></i>
+    <a href="/procurement/purchase-orders/<%= po.id %>/attachments/<%= att.id %>/download"><%= att.original_name %></a>
+    <span class="badge badge-light"><%= att.doc_type %></span>
+    <% if (!att.import_parsed) { %>
+    <form method="post" action="/procurement/purchase-orders/<%= po.id %>/generate-lines" class="d-inline ml-auto">
+     <input type="hidden" name="attachment_id" value="<%= att.id %>">
+     <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Replace PO lines from this file?');">Generate lines</button>
+    </form>
+    <% } else { %><span class="small text-success ml-auto">Lines imported</span><% } %>
+   </div>
+   <% }); %>
+  </div>
+ </div>
+ <% } %>
+ </div>
+</div>
+
+<%- include('partials/procurement-po-edit-scripts') %>
+<%- include('partials/footer') %>

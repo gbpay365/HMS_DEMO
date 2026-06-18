@@ -1,0 +1,7 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--death-registry'; %>
+<%- include('partials/header') %>
+<%- include('partials/react-page-mount', {
+  reactPage: 'death-registry',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.death_registry', { ns: 'common', defaultValue: 'Loading death registry…' }) : 'Loading…')
+}) %>
+<%- include('partials/footer') %>

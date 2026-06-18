@@ -1,0 +1,56 @@
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<div class="o_apps_overlay" id="hmsOdooAppsOverlay" aria-hidden="true">
+  <div class="o_apps_panel" role="dialog" aria-label="<%= _t('hms_odoo_apps.aria_applications', { ns: 'legacy', defaultValue: 'Applications' }) %>">
+    <h2><i class="fa fa-hospital-o mr-2"></i><%= (locals.brand && locals.brand.appsLauncherTitle) || _t('hms_odoo_apps.launcher_title', { ns: 'legacy', defaultValue: 'ZAIZENS Applications' }) %></h2>
+    <div class="o_apps_grid">
+      <% if(canHospitalDashboard()){ %>
+      <a href="/dashboard" class="o_app_tile"><span class="o_app_icon" data-accent="sky"><i class="fa fa-dashboard"></i></span><%= _t('hms_odoo_apps.dashboard', { ns: 'legacy', defaultValue: 'Dashboard' }) %></a>
+      <% } %>
+      <% if(uiVisible('sb.hms_hub')){ %>
+      <a href="/hms" class="o_app_tile"><span class="o_app_icon" data-accent="brand"><i class="fa fa-hospital-o"></i></span><%= _t('hms_nav.app_tile', { ns: 'legacy', defaultValue: 'HMS Clinical' }) %></a>
+      <% } %>
+      <% if(hasP('patient.read','patient.write') && !sbHidden('sb.patients')){ %>
+      <a href="/patients" class="o_app_tile"><span class="o_app_icon" data-accent="brand"><i class="fa fa-user"></i></span><%= _t('hms_odoo_apps.patients', { ns: 'legacy', defaultValue: 'Patients' }) %></a>
+      <% } %>
+      <% if(hasP('scheduling.read','scheduling.write','opd.read') && !sbHidden('sb.appointments')){ %>
+      <a href="/appointments" class="o_app_tile"><span class="o_app_icon" data-accent="sky"><i class="fa fa-calendar"></i></span><%= _t('hms_odoo_apps.appointments', { ns: 'legacy', defaultValue: 'Appointments' }) %></a>
+      <% } %>
+      <% if(hasP('opd.read','clinical.read','clinical.write','scheduling.read') && !sbHidden('sb.opd')){ %>
+      <a href="/opd-queue" class="o_app_tile"><span class="o_app_icon" data-accent="amber"><i class="fa fa-list-alt"></i></span><%= _t('hms_odoo_apps.opd', { ns: 'legacy', defaultValue: 'OPD' }) %></a>
+      <% } %>
+      <% if(hasP('maternity.read','maternity.write','clinical.read','clinical.write','nursing.read','nursing.write') && !sbHidden('sb.maternity')){ %>
+      <a href="/maternity" class="o_app_tile"><span class="o_app_icon" data-accent="pink"><i class="fa fa-female"></i></span><%= _t('hms_odoo_apps.maternity', { ns: 'legacy', defaultValue: 'Maternity' }) %></a>
+      <% } %>
+      <% if((hasP('emergency.read','clinical.write','adt.read') || isAdminOrSuper) && !sbHidden('sb.emergency')){ %>
+      <a href="/emergency" class="o_app_tile"><span class="o_app_icon" data-accent="red"><i class="fa fa-ambulance"></i></span><%= _t('hms_odoo_apps.emergency', { ns: 'legacy', defaultValue: 'Emergency' }) %></a>
+      <% } %>
+      <% if(hasP('adt.read','adt.write','nursing.read') && !sbHidden('sb.wards')){ %>
+      <a href="/wards" class="o_app_tile"><span class="o_app_icon" data-accent="indigo"><i class="fa fa-bed"></i></span><%= _t('hms_odoo_apps.inpatient', { ns: 'legacy', defaultValue: 'Inpatient' }) %></a>
+      <% } %>
+      <% if(hasP('lab.read','lab.write') && !sbHidden('sb.lab')){ %>
+      <a href="/lims" class="o_app_tile"><span class="o_app_icon" data-accent="violet"><i class="fa fa-flask"></i></span><%= _t('hms_odoo_apps.laboratory', { ns: 'legacy', defaultValue: 'Laboratory' }) %></a>
+      <% } %>
+      <% if(hasP('pharmacy.read','pharmacy.write','prescription.read') && !sbHidden('sb.pharmacy')){ %>
+      <a href="/pharmacy" class="o_app_tile"><span class="o_app_icon" data-accent="emerald"><i class="fa fa-medkit"></i></span><%= _t('hms_odoo_apps.pharmacy', { ns: 'legacy', defaultValue: 'Pharmacy' }) %></a>
+      <% } %>
+      <% if(hasP('radiology.read','radiology.write') && !sbHidden('sb.radiology')){ %>
+      <a href="/radiology" class="o_app_tile"><span class="o_app_icon" data-accent="sky"><i class="fa fa-film"></i></span><%= _t('hms_odoo_apps.radiology', { ns: 'legacy', defaultValue: 'Radiology' }) %></a>
+      <% } %>
+      <% if(hasP('cashier.read','cashier.write') && !sbHidden('sb.cashier')){ %>
+      <a href="/cashier" class="o_app_tile"><span class="o_app_icon" data-accent="amber"><i class="fa fa-money"></i></span><%= _t('hms_odoo_apps.cashier', { ns: 'legacy', defaultValue: 'Cashier' }) %></a>
+      <% } %>
+      <% if(hasP('inventory.read','inventory.write') && !sbHidden('sb.inventory')){ %>
+      <a href="/inventory" class="o_app_tile"><span class="o_app_icon" data-accent="inventory"><i class="fa fa-cubes"></i></span><%= _t('hms_odoo_apps.inventory', { ns: 'legacy', defaultValue: 'Inventory' }) %></a>
+      <% } %>
+      <% if((hasP('payroll.read','payroll.write') || isAdminOrSuper) && !sbHidden('sb.payroll')){ %>
+      <a href="/payroll" class="o_app_tile"><span class="o_app_icon" data-accent="indigo"><i class="fa fa-money"></i></span><%= _t('hms_odoo_apps.payroll', { ns: 'legacy', defaultValue: 'Payroll' }) %></a>
+      <% } %>
+      <% if((hasP('accounting.read','accounting.write','billing.write','financials.read') || isAdminOrSuper) && !sbHidden('sb.financials')){ %>
+      <a href="/financials" class="o_app_tile"><span class="o_app_icon" data-accent="finance"><i class="fa fa-line-chart"></i></span><%= _t('hms_odoo_apps.accounting', { ns: 'legacy', defaultValue: 'Accounting' }) %></a>
+      <% } %>
+      <% if(isAdminOrSuper && !sbHidden('sb.access')){ %>
+      <a href="/access-control" class="o_app_tile"><span class="o_app_icon" data-accent="slate"><i class="fa fa-lock"></i></span><%= _t('hms_odoo_apps.settings', { ns: 'legacy', defaultValue: 'Settings' }) %></a>
+      <% } %>
+    </div>
+  </div>
+</div>

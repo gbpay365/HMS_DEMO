@@ -1,0 +1,96 @@
+<%- include('partials/header') %>
+<% var _sa = function(k, d, opts) {
+  if (typeof t !== 'function') return d || k;
+  var o = { ns: 'superAdmin', defaultValue: d || k };
+  if (opts) Object.assign(o, opts);
+  return t(k, o);
+}; %>
+<div class="page-wrapper"><div class="content hms-module">
+
+<% if(locals.flash){%><div class="alert alert-success border-0 shadow-sm mb-3 py-2"><i class="fa fa-check-circle mr-2"></i><%=locals.flash%></div><%}%>
+<% if(locals.error){%><div class="alert alert-danger border-0 shadow-sm mb-3 py-2"><i class="fa fa-exclamation-circle mr-2"></i><%=locals.error%></div><%}%>
+
+<% var _postUrl = formPostUrl || ('/super-admin/deployment/' + profile.id + '/modules'); %>
+<% var _isLegacy = !!locals.isLegacy; %>
+
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap" style="gap:12px;">
+  <div>
+    <a href="/super-admin" class="btn btn-outline-secondary btn-sm mb-2" style="border-radius:8px;"><i class="fa fa-arrow-left mr-1"></i><%= _sa('deployModules.back', 'Super Admin') %></a>
+    <h1 class="h4 font-weight-bold mb-1" style="color:#1b2559;">
+      <i class="fa fa-sliders mr-2" style="color:#7c3aed;"></i><%= _sa('deployModules.title', 'Module overrides — {{name}}', { name: profile.name }) %>
+    </h1>
+    <% if (_isLegacy) { %>
+    <p class="text-muted small mb-2"><%= _sa('deployModules.legacy_desc', 'legacy_modules_json on tbl_app_settings — applies when legacy global deployment is active (no named profile). Overrides hospital-wide nav and route guard for all users except Super Admin.') %></p>
+    <% } else { %>
+    <p class="text-muted small mb-2"><%= _sa('deployModules.profile_desc', 'Per-profile modules_json overrides hospital-wide nav and route guard (all users except Super Admin). Inherit follows deployment slices; Force show/hide overrides slice rules for that nav code.') %></p>
+    <% } %>
+    <div class="d-flex flex-wrap" style="gap:8px;">
+      <% if (_isLegacy) { %>
+      <span class="badge badge-light border text-dark"><%= _sa('deployModules.global_mode', 'Global mode:') %> <strong><%= productMode || 'full' %></strong></span>
+      <% } else { %>
+      <span class="badge badge-light border text-dark"><%= _sa('deployModules.profile_id', 'Profile #{{id}}', { id: profile.id }) %></span>
+      <% } %>
+      <span class="badge badge-light border text-dark"><code><%= profile.slices_json %></code></span>
+      <% if (overrideCount) { %>
+      <span class="badge badge-purple" style="background:#7c3aed;color:#fff;"><%= _sa('deployModules.overrides_count', '{{count}} override(s)', { count: overrideCount }) %></span>
+      <% } %>
+      <% if (_isLegacy && legacyActive) { %>
+      <span class="badge badge-success"><i class="fa fa-check mr-1"></i><%= _sa('deployModules.legacy_active', 'Legacy mode active') %></span>
+      <% } else if (_isLegacy && activeProfileId) { %>
+      <span class="badge badge-warning text-dark"><%= _sa('deployModules.named_active', 'Named profile #{{id}} is active', { id: activeProfileId }) %></span>
+      <% } else if (!_isLegacy && activeProfileId && Number(activeProfileId) === Number(profile.id)) { %>
+      <span class="badge badge-success"><i class="fa fa-check mr-1"></i><%= _sa('deployModules.active_profile', 'Active profile') %></span>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<% if (_isLegacy && activeProfileId) { %>
+<div class="alert alert-warning py-2 small mb-3">
+  <i class="fa fa-exclamation-triangle mr-1"></i>
+  <%= _sa('deployModules.named_warning', 'A named deployment profile is currently active. Overrides saved here take effect after you switch to legacy global mode (or check the option below when saving).') %>
+</div>
+<% } %>
+
+<form method="post" action="<%= _postUrl %>" id="deploymentModulesForm">
+  <div class="card border-0 shadow-sm mb-3" style="border-radius:14px;">
+    <div class="card-body py-3 d-flex flex-wrap align-items-center justify-content-between" style="gap:10px;">
+      <div class="d-flex flex-wrap" style="gap:6px;">
+        <button type="button" class="btn btn-sm btn-outline-success" id="depModShowAll"><i class="fa fa-eye mr-1"></i><%= _sa('deployModules.force_show', 'Force show hidden-by-slice') %></button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="depModHideAll"><i class="fa fa-eye-slash mr-1"></i><%= _sa('deployModules.force_hide', 'Force hide shown-by-slice') %></button>
+        <button type="button" class="btn btn-sm btn-outline-primary" id="depModResetAll"><i class="fa fa-undo mr-1"></i><%= _sa('deployModules.reset_inherit', 'Reset to inherit') %></button>
+      </div>
+      <div class="d-flex align-items-center flex-wrap" style="gap:12px;">
+        <% if (_isLegacy && activeProfileId) { %>
+        <label class="mb-0 small">
+          <input type="checkbox" name="use_legacy" value="1"> <%= _sa('deployModules.switch_legacy_after', 'Switch to legacy global mode after save') %>
+        </label>
+        <% } else if (!_isLegacy && !(activeProfileId && Number(activeProfileId) === Number(profile.id))) { %>
+        <label class="mb-0 small">
+          <input type="checkbox" name="activate_after" value="1"> <%= _sa('deployModules.activate_after', 'Activate this profile after save') %>
+        </label>
+        <% } %>
+        <button type="submit" class="btn btn-primary btn-sm font-weight-bold" style="border-radius:8px;"><i class="fa fa-save mr-1"></i><%= _sa('deployModules.save_overrides', 'Save overrides') %></button>
+      </div>
+    </div>
+  </div>
+
+<%- include('partials/deployment-modules-form-body') %>
+
+  <div class="card border-0 shadow-sm mt-3" style="border-radius:14px;">
+    <div class="card-body d-flex flex-wrap justify-content-between align-items-center" style="gap:10px;">
+      <button type="submit" formaction="<%= _postUrl %>" name="action" value="clear_all"
+        class="btn btn-sm btn-outline-danger" style="border-radius:8px;"
+        onclick="return confirm('<%= _isLegacy ? _sa('deployModules.clear_confirm_legacy', 'Clear all module overrides for legacy global mode?') : _sa('deployModules.clear_confirm_profile', 'Clear all module overrides for this profile?') %>');">
+        <i class="fa fa-trash-o mr-1"></i><%= _sa('deployModules.clear_overrides', 'Clear all overrides') %>
+      </button>
+      <button type="submit" class="btn btn-primary font-weight-bold" style="border-radius:8px;"><i class="fa fa-save mr-1"></i><%= _sa('deployModules.save_overrides', 'Save overrides') %></button>
+    </div>
+  </div>
+</form>
+
+<script>window.__DEP_MOD_I18N = { visible: <%- JSON.stringify(_sa('deployModules.form.visible', 'Visible')) %>, hidden: <%- JSON.stringify(_sa('deployModules.form.hidden', 'Hidden')) %> };</script>
+<%- include('partials/deployment-modules-form-script') %>
+
+</div></div>
+<%- include('partials/footer') %>

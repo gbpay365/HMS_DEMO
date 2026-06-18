@@ -1,0 +1,31 @@
+<%- include('partials/hms-date-helpers') %>
+<% locals.hmsSurfaceBodyClass = ' hms-body--maternity-chart'; %>
+<%- include('partials/header') %>
+<%
+var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+var p = (summary && summary.patient) ? summary.patient : {};
+var _pageData = {
+  summary: summary || {},
+  billing: typeof billing !== 'undefined' ? billing : null,
+  tab: tab || 'anc',
+  deliveryId: delivery_id || null,
+  flash: flash || null,
+  error: error || null
+};
+%>
+<%- include('partials/maternity-odoo-start', {
+  matOdooMenu: 'patients',
+  matOdooTitle: (p.antenatal_number || '') + ' — ' + (p.first_name || '') + ' ' + (p.last_name || ''),
+  matOdooActions: '<a href="/maternity/patients" class="hms-btn hms-btn-secondary hms-btn-sm">' + _t('maternity_chart.back_registry', { ns: 'legacy', defaultValue: 'Back to registry' }) + '</a>'
+}) %>
+<div class="o_content">
+  <div id="hms-react-root" class="hms-ui" data-page="maternity-chart">
+    <div class="content px-4 py-10 text-center text-muted" id="hms-react-fallback">
+      <div class="spinner-border text-success mb-2" role="status" aria-hidden="true"></div>
+      <p class="small mb-0"><%= _t('loading_pages.default', { ns: 'common', defaultValue: 'Loading…' }) %></p>
+    </div>
+  </div>
+  <script id="hms-page-data" type="application/json"><%- JSON.stringify(_pageData).replace(/</g, '\\u003c') %></script>
+</div>
+<%- include('partials/maternity-odoo-end') %>
+<%- include('partials/footer') %>

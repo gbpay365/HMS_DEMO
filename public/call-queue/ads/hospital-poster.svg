@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" role="img" aria-label="ZAIZENS Hospital">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0c4a6e"/>
+      <stop offset="100%" style="stop-color:#134e4a"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="520" fill="url(#bg)"/>
+  <rect x="120" y="140" width="660" height="280" rx="16" fill="#f8fafc" opacity="0.95"/>
+  <rect x="420" y="80" width="60" height="80" rx="4" fill="#ef4444"/>
+  <rect x="435" y="95" width="30" height="50" fill="#fff"/>
+  <rect x="445" y="105" width="10" height="30" fill="#ef4444"/>
+  <rect x="430" y="120" width="40" height="10" fill="#ef4444"/>
+  <text x="450" y="260" text-anchor="middle" fill="#0f172a" font-family="Arial,sans-serif" font-size="42" font-weight="700">ZAIZENS</text>
+  <text x="450" y="310" text-anchor="middle" fill="#475569" font-family="Arial,sans-serif" font-size="22">ZAIZENS Integrated HMS</text>
+  <text x="450" y="350" text-anchor="middle" fill="#64748b" font-family="Arial,sans-serif" font-size="18">Compassionate care � Cameroon</text>
+</svg>

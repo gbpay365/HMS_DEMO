@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="<%= locals.lang || 'en' %>"><head><meta charset="utf-8"><title><%= (typeof t === 'function' ? t('verify_rx.page_title', { ns: 'legacy', defaultValue: 'Rx verification' }) : 'Rx verification') %></title>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<style>body{font-family:system-ui;max-width:520px;margin:2rem auto;padding:1rem;} .ok{border:2px solid #16a34a;background:#f0fdf4;padding:1.5rem;border-radius:12px;} .bad{border:2px solid #dc2626;background:#fef2f2;padding:1.5rem;border-radius:12px;} .qr{text-align:center;margin:1rem 0;}</style></head><body>
+<% if(!rx){ %><div class="bad"><h2><%= _t('verify_rx.invalid_title', { ns: 'legacy', defaultValue: 'Invalid prescription' }) %></h2><p><%= _t('verify_rx.invalid_body', { ns: 'legacy', defaultValue: 'This QR code is not recognized.' }) %></p></div>
+<% } else { %>
+<div class="<%= rx.verified_at ? 'ok' : 'ok' %>">
+<h2><%= rx.verified_at ? _t('verify_rx.verified_title', { ns: 'legacy', defaultValue: 'Verified prescription' }) : _t('verify_rx.valid_title', { ns: 'legacy', defaultValue: 'Valid prescription' }) %></h2>
+<p><strong>#RX-<%=rx.id%></strong> · <%=rx.first_name%> <%=rx.last_name%></p>
+<p class="small text-muted"><%= _t('verify_rx.issued', { ns: 'legacy', date: rx.created_at ? new Date(rx.created_at).toLocaleString() : '', defaultValue: 'Issued ' + (rx.created_at ? new Date(rx.created_at).toLocaleString() : '') }) %></p>
+<% if(rx.doc_fn){ %><p><%= _t('verify_rx.prescriber', { ns: 'legacy', name: 'Dr. ' + rx.doc_fn + ' ' + rx.doc_ln, defaultValue: 'Prescriber: Dr. ' + rx.doc_fn + ' ' + rx.doc_ln }) %></p><% } %>
+<p><%= rx.title || _t('verify_rx.default_title', { ns: 'legacy', defaultValue: 'Prescription' }) %></p>
+<% if(rx.verified_at){ %><p class="text-success font-weight-bold"><%= _t('verify_rx.pharmacy_verified', { ns: 'legacy', date: new Date(rx.verified_at).toLocaleString(), defaultValue: 'Pharmacy verified ' + new Date(rx.verified_at).toLocaleString() }) %></p>
+<% } else if (typeof locals.canVerify !== 'undefined' && canVerify) { %>
+<form method="POST" action="/verify/rx/<%=token%>/confirm"><button type="submit" class="btn btn-success"><%= _t('verify_rx.mark_verified', { ns: 'legacy', defaultValue: 'Mark verified at pharmacy' }) %></button></form>
+<% } %>
+</div>
+<% } %>
+</body></html>

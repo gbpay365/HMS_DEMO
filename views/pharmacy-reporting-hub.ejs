@@ -1,0 +1,69 @@
+<%- include('partials/header') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _tl = function (key, fallback, opts) {
+  var o = { ns: 'legacy', defaultValue: fallback };
+  if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+  return _t(key, o);
+};
+var _reportCount = (catalog || []).length;
+var _exportUrls = (typeof exportUrls !== 'undefined' && exportUrls) || (locals && locals.exportUrls) || {
+  pdf: '/pharmacy/reporting/print?preset=last30',
+  csv: '/pharmacy/reporting/export/csv?preset=last30',
+  xlsx: '/pharmacy/reporting/export/xlsx?preset=last30',
+};
+var _periodPresetOptions = (typeof periodPresetOptions !== 'undefined' && periodPresetOptions) || (locals && locals.periodPresetOptions) || [];
+var _activeCategory = (typeof activeCategory !== 'undefined' && activeCategory) || (locals && locals.activeCategory) || 'all';
+var _activePreset = (typeof activePreset !== 'undefined' && activePreset) || (locals && locals.activePreset) || 'last30';
+var _reportRange = (typeof reportRange !== 'undefined' && reportRange) || (locals && locals.reportRange) || { label: 'Last 30 days', preset: 'last30' };
+%>
+<link rel="stylesheet" href="/css/pharmacy-reports.css?v=4">
+<%- include('partials/pharmacy-odoo-start', { phaOdooMenu: 'reporting', phaOdooTitle: _tl('pharmacy_reports.hub_title', 'Pharmacy Intelligence Reports'), nursingSupplyPending, flash, error }) %>
+
+<div class="o_content p-3 pha-report-screen hms-surface-module">
+  <div class="pha-report-hero">
+    <div class="pha-report-hero-badge"><i class="fa fa-bar-chart"></i> <%= _tl('pharmacy_reports.badge', 'Analytics Suite') %></div>
+    <h1><i class="fa fa-pie-chart" style="opacity:0.85;margin-right:0.35rem;"></i><%= _tl('pharmacy_reports.hub_title', 'Pharmacy Intelligence Reports') %></h1>
+    <p><%= _tl('pharmacy_reports.hub_sub', 'Professional pharmacy analytics — stock, dispensing, velocity, and compliance.') %></p>
+    <div class="pha-report-quick-stats">
+      <span class="pha-report-quick-stat"><i class="fa fa-file-text-o"></i> <%= _reportCount %> <%= _tl('pharmacy_reports.reports', 'reports') %></span>
+      <span class="pha-report-quick-stat"><i class="fa fa-calendar"></i> <%= _tl('pharmacy_reports.periods', 'Daily → Yearly') %></span>
+      <span class="pha-report-quick-stat"><i class="fa fa-print"></i> <%= _tl('pharmacy_reports.print_ready', 'Print-ready') %></span>
+    </div>
+  </div>
+
+  <%- include('partials/pharmacy-report-export-toolbar', {
+    toolbarMode: 'hub',
+    exportUrls: _exportUrls,
+    periodPresetOptions: _periodPresetOptions,
+    activeCategory: _activeCategory,
+    activePreset: _activePreset,
+    categories: categories || [],
+    reportRange: _reportRange,
+    typeOptions: [],
+    rowtype: 'all'
+  }) %>
+
+  <% (categories || []).forEach(function(cat){ %>
+  <% var catReports = (catalog || []).filter(function(r){ return r.category === cat.key; }); %>
+  <% if (catReports.length) { %>
+  <div data-report-category="<%= cat.key %>">
+  <h2 class="pha-report-section-title"><i class="fa <%= cat.icon %>"></i> <%= cat.label %></h2>
+  <div class="pha-report-grid">
+    <% catReports.forEach(function(r){ %>
+    <a href="/pharmacy/reporting/<%= r.id %>?period=month" data-report-href="/pharmacy/reporting/<%= r.id %>" class="pha-report-card" style="--card-accent:<%= r.accent %>;--card-soft:<%= r.soft %>;">
+      <div class="pha-report-card-icon"><i class="fa <%= r.icon %>"></i></div>
+      <div class="pha-report-card-title"><%= r.title %></div>
+      <div class="pha-report-card-sub"><%= r.subtitle %></div>
+      <div class="pha-report-card-cta"><%= _tl('pharmacy_reports.open_report', 'Open report') %> <i class="fa fa-chevron-right"></i></div>
+    </a>
+    <% }); %>
+  </div>
+  </div>
+  <% } %>
+  <% }); %>
+</div>
+<%- include('partials/pharmacy-odoo-end') %>
+<%- include('partials/footer') %>

@@ -1,0 +1,20 @@
+<%
+  var _page = locals.reactPage || '';
+  var _loadingLabel = locals.reactLoadingLabel || (typeof t === 'function' ? t('loading_pages.default', { ns: 'common', defaultValue: t('loading', { ns: 'common', defaultValue: 'Loading…' }) }) : 'Loading…');
+  var _pageLang = locals.lang || 'en';
+  var _pageData = Object.assign({ lang: _pageLang, locale: _pageLang }, locals.pageData || {});
+%>
+<div class="page-wrapper hms-react-page">
+  <div id="hms-react-root" class="hms-ui hms-react-root" data-page="<%= _page %>">
+    <div class="content px-4 py-10 text-center text-muted" id="hms-react-fallback">
+      <div class="spinner-border text-success mb-2" role="status" aria-hidden="true"></div>
+      <p class="small mb-0"><%= _loadingLabel %></p>
+    </div>
+  </div>
+</div>
+<script id="hms-page-data" type="application/json"><%- JSON.stringify(_pageData).replace(/</g, '\\u003c') %></script>
+<% if (locals.hmsUiMissing) { %>
+<div class="alert alert-warning mx-4 mt-3 border-0 shadow-sm" style="border-radius:12px;">
+  <strong><%= typeof t === 'function' ? t('shell.ui_bundle_missing', { ns: 'common', defaultValue: 'UI bundle missing.' }) : 'UI bundle missing.' %></strong> <%= typeof t === 'function' ? t('shell.ui_bundle_missing_hint', { ns: 'common', defaultValue: 'Run npm run build:ui from the project root, then refresh this page.' }) : 'Run npm run build:ui from the project root, then refresh this page.' %>
+</div>
+<% } %>

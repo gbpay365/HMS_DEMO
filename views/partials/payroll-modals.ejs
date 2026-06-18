@@ -1,0 +1,8 @@
+<% if (typeof months !== 'undefined' && months && typeof cy !== 'undefined') {
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+%>
+<script type="application/json" id="hms-payroll-modals-data"><%- JSON.stringify({ months: months, currentYear: cy }).replace(/</g, '\\u003c') %></script>
+<div id="hms-payroll-modals-root" class="hms-ui" aria-hidden="true"></div>
+<% } %>

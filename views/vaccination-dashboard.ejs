@@ -1,0 +1,65 @@
+<%- include('partials/hms-date-helpers') %>
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<%- include('partials/vaccination-odoo-start', {
+  vacOdooMenu: 'dashboard',
+  vacOdooTitle: _t('vaccination_dashboard.title', { ns: 'legacy', defaultValue: 'Vaccination module' }),
+  vacOdooActions: '<a href="/vaccination/administer" class="o_btn_primary"><i class="fa fa-plus"></i> ' + _t('vaccination_dashboard.administer', { ns: 'legacy', defaultValue: 'Administer dose' }) + '</a>'
+}) %>
+<div class="o_content">
+
+<div class="hms-surface-hero mb-4">
+ <div class="hms-icon-chip mb-2"><i class="fa fa-medkit" aria-hidden="true"></i> <%= _t('vaccination_dashboard.module_label', { ns: 'legacy', defaultValue: 'Immunization services' }) %></div>
+ <h1 class="hms-surface-hero-title"><%= _t('vaccination_dashboard.title', { ns: 'legacy', defaultValue: 'Vaccination module' }) %></h1>
+ <p><%= _t('vaccination_dashboard.subtitle', { ns: 'legacy', defaultValue: 'EPI schedule · dose administration · follow-up reminders · immunization registry' }) %></p>
+</div>
+
+<% const s = stats || {}; %>
+<section class="hms-stat-section">
+ <h2 class="hms-stat-section__title"><%= _t('vaccination_dashboard.overview', { ns: 'legacy', defaultValue: 'Overview' }) %></h2>
+ <div class="hms-stat-grid">
+  <%- include('partials/hms-stat-link', { href: '/vaccination/administer', label: _t('vaccination_dashboard.stat_today', { ns: 'legacy', defaultValue: 'Doses today' }), value: s.doses_today || 0, icon: 'fa-plus-circle', color: '#14b8a6' }) %>
+  <%- include('partials/hms-stat-link', { href: '/vaccination/patients', label: _t('vaccination_dashboard.stat_week', { ns: 'legacy', defaultValue: 'This week' }), value: s.doses_week || 0, icon: 'fa-calendar', color: '#10b981' }) %>
+  <%- include('partials/hms-stat-link', { href: '/vaccination/patients?filter=due', label: _t('vaccination_dashboard.stat_due', { ns: 'legacy', defaultValue: 'Due follow-ups' }), value: s.due_followups || 0, icon: 'fa-bell', color: '#f59e0b' }) %>
+  <%- include('partials/hms-stat-link', { href: '/vaccination/patients', label: _t('vaccination_dashboard.stat_patients', { ns: 'legacy', defaultValue: 'Patients immunized' }), value: s.patients_immunized || 0, icon: 'fa-users', color: '#0ea5e9' }) %>
+ </div>
+</section>
+
+<div class="row">
+ <div class="col-lg-6 mb-4">
+  <div class="hms-surface-card">
+   <div class="p-3 border-bottom font-weight-bold d-flex justify-content-between"><span><%= _t('vaccination_dashboard.due_patients', { ns: 'legacy', defaultValue: 'Patients due for follow-up' }) %></span><span class="badge badge-warning"><%= s.due_followups || 0 %></span></div>
+   <div class="p-3">
+    <% if (!duePatients || !duePatients.length) { %><p class="text-muted small mb-0"><%= _t('vaccination_dashboard.no_due', { ns: 'legacy', defaultValue: 'No patients due for follow-up doses.' }) %></p><% } %>
+    <% (duePatients || []).forEach(function(r){ %>
+    <a href="/vaccination/chart/<%= r.id %>" class="d-block py-2 border-bottom text-dark">
+     <strong><%= r.first_name %> <%= r.last_name %></strong>
+     <span class="small text-muted"> · <%= r.vaccine_name %> dose <%= r.dose_number + 1 %></span>
+     <span class="status-pill due float-right"><%= fmtDate(r.next_dose_due) %></span>
+    </a>
+    <% }) %>
+   </div>
+  </div>
+ </div>
+ <div class="col-lg-6 mb-4">
+  <div class="hms-surface-card">
+   <div class="p-3 border-bottom font-weight-bold d-flex justify-content-between"><span><%= _t('vaccination_dashboard.queue', { ns: 'legacy', defaultValue: 'Vaccination queue' }) %></span><span class="badge badge-info"><%= s.queue_waiting || 0 %></span></div>
+   <div class="p-3">
+    <% if (!queue || !queue.length) { %><p class="text-muted small mb-0"><%= _t('vaccination_dashboard.no_queue', { ns: 'legacy', defaultValue: 'No patients waiting in queue.' }) %></p><% } %>
+    <% (queue || []).forEach(function(r){ %>
+    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+     <a href="/vaccination/administer?patient_id=<%= r.patient_id %>" class="text-dark">
+      <strong><%= r.first_name %> <%= r.last_name %></strong>
+      <span class="small text-muted"> · <%= r.patient_code || ('#' + r.patient_id) %></span>
+     </a>
+     <a href="/vaccination/administer?patient_id=<%= r.patient_id %>" class="hms-btn hms-btn-primary btn-sm"><%= _t('vaccination_dashboard.serve', { ns: 'legacy', defaultValue: 'Serve' }) %></a>
+    </div>
+    <% }) %>
+   </div>
+  </div>
+ </div>
+</div>
+
+</div>
+<%- include('partials/vaccination-odoo-end') %>
+<%- include('partials/footer') %>

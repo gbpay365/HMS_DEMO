@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="<%= locals.lang || 'en' %>">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<% var b = locals.brand || {}; %>
+<%
+  var _lang = locals.lang || 'en';
+  var _t = locals.t || function (k, o) { return (o && o.defaultValue) || k; };
+  function _tp(key, fallback, opts) {
+    var o = { ns: 'portal', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { o[pk] = opts[pk]; } }
+    return _t(key, o);
+  }
+%>
+<title><%= title %></title>
+<link rel="icon" type="image/svg+xml" href="<%= b.faviconPath || '/img/zaizens-favicon.svg' %>">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/font-awesome.min.css">
+<style>
+  * { box-sizing: border-box; }
+  html { font-size: 120%; }
+  body { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0f4c81 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Segoe UI', sans-serif; }
+  .pp-wrap { width: 100%; max-width: 420px; padding: 20px; }
+  .pp-card { background: rgba(255,255,255,0.06); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 40px 36px 32px; box-shadow: 0 24px 60px rgba(0,0,0,0.4); }
+  .pp-icon { width: 88px; height: 88px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4); border: 3px solid rgba(255,255,255,0.4); }
+  .pp-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pp-title { color: #fff; font-size: 1.6rem; font-weight: 700; text-align: center; margin-bottom: 6px; }
+  .pp-sub { color: rgba(255,255,255,0.55); font-size: .82rem; text-align: center; margin-bottom: 28px; line-height: 1.5; }
+  .pp-label { color: rgba(255,255,255,0.75); font-size: .8rem; font-weight: 600; letter-spacing: .04em; margin-bottom: 6px; display: block; }
+  .pp-input { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: #fff; padding: 11px 16px; width: 100%; font-size: .9rem; outline: none; transition: border .2s; }
+  .pp-input::placeholder { color: rgba(255,255,255,0.3); }
+  .pp-input:focus { border-color: #3b82f6; background: rgba(255,255,255,0.12); }
+  .pp-btn { background: linear-gradient(135deg,#3b82f6,#1d4ed8); color: #fff; border: none; border-radius: 10px; padding: 13px; width: 100%; font-size: .95rem; font-weight: 600; cursor: pointer; margin-top: 8px; transition: opacity .2s, transform .15s; }
+  .pp-btn:hover { opacity: .9; transform: translateY(-1px); }
+  .pp-foot { color: rgba(255,255,255,0.35); font-size: .75rem; text-align: center; margin-top: 22px; line-height: 1.6; }
+  .pp-staff { text-align: center; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.12); font-size: .82rem; color: rgba(255,255,255,0.45); }
+  .pp-staff a { color: #93c5fd; font-weight: 600; text-decoration: none; }
+  .pp-staff a:hover { text-decoration: underline; }
+  .pp-err { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; color: #fca5a5; font-size: .83rem; padding: 10px 14px; margin-bottom: 18px; }
+  .pp-ok { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); border-radius: 10px; color: #86efac; font-size: .83rem; padding: 10px 14px; margin-bottom: 18px; }
+  .form-group { margin-bottom: 18px; }
+  .pp-lang { display: flex; justify-content: center; gap: 8px; margin-bottom: 16px; }
+  .pp-lang button { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); border-radius: 8px; padding: 4px 12px; font-size: .75rem; cursor: pointer; }
+  .pp-lang button.is-active { background: rgba(59,130,246,0.35); border-color: #3b82f6; color: #fff; }
+</style>
+</head>
+<body>
+<div class="pp-wrap">
+ <div class="pp-card">
+  <form method="post" action="/set-lang" class="pp-lang">
+   <button type="submit" name="lang" value="en" class="<%= _lang === 'en' ? 'is-active' : '' %>">EN</button>
+   <button type="submit" name="lang" value="fr" class="<%= _lang === 'fr' ? 'is-active' : '' %>">FR</button>
+  </form>
+  <div class="pp-icon"><img src="<%= b.faviconPath || '/img/zaizens-favicon.svg' %>" alt="Zaizens"/></div>
+  <h1 class="pp-title"><%= b.name || 'ZAIZENS' %> · <%= _tp('login.title_suffix', 'Patient Portal') %></h1>
+  <p class="pp-sub"><%= _tp('login.subtitle', 'Sign in with the email we have on file and the portal password your clinic provided.') %></p>
+
+  <% if (locals.error) { %><div class="pp-err"><i class="fa fa-exclamation-circle mr-1"></i><%= locals.error %></div><% } %>
+  <% if (locals.flash) { %><div class="pp-ok"><i class="fa fa-check-circle mr-1"></i><%= locals.flash %></div><% } %>
+
+  <form method="POST" action="/portal/login">
+   <div class="form-group">
+    <label class="pp-label" for="pp_email"><%= _tp('login.email', 'Email address') %></label>
+    <input id="pp_email" class="pp-input" type="email" name="email" required autocomplete="email" autofocus placeholder="<%= _tp('login.email_ph', 'you@example.com') %>">
+   </div>
+   <div class="form-group">
+    <label class="pp-label" for="pp_pass"><%= _tp('login.password', 'Portal password') %></label>
+    <input id="pp_pass" class="pp-input" type="password" name="password" required autocomplete="current-password" placeholder="<%= _tp('login.password_ph', 'Enter your portal password') %>">
+   </div>
+   <button type="submit" class="pp-btn"><i class="fa fa-sign-in mr-2"></i><%= _tp('login.submit', 'Sign in to My Care') %></button>
+  </form>
+
+  <p class="pp-foot"><i class="fa fa-lock mr-1"></i><%= _tp('login.foot', 'For account help or a new password, contact your clinic. Do not use this portal for emergencies — call your hospital directly.') %></p>
+  <p class="pp-staff"><%= _tp('login.staff_prompt', 'Hospital staff?') %> <a href="/"><%= _tp('login.staff_link', 'Staff sign in') %></a></p>
+ </div>
+</div>
+</body>
+</html>

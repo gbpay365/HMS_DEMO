@@ -1,0 +1,113 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--assets'; %>
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<% var isEdit = !!(asset && asset.id); %>
+
+<div class="page-wrapper hms-surface-module">
+ <div class="content">
+  <% if(locals.error){ %><div class="hms-flash hms-flash--error"><%= error %></div><% } %>
+
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+   <div>
+    <h4 class="page-title font-weight-bold text-dark mb-1"><%= isEdit ? _t('assets_form.edit_title', { ns: 'legacy', defaultValue: 'Edit asset' }) : _t('assets_form.new_title', { ns: 'legacy', defaultValue: 'Register asset' }) %></h4>
+    <p class="text-muted small mb-0"><%= _t('assets_form.subtitle', { ns: 'legacy', defaultValue: 'Tag is assigned automatically on save.' }) %></p>
+   </div>
+   <a href="<%= isEdit ? '/assets/registry/' + asset.id : '/assets/registry' %>" class="hms-btn hms-btn-secondary btn-sm"><i class="fa fa-arrow-left mr-1"></i><%= _t('assets_form.back', { ns: 'legacy', defaultValue: 'Back' }) %></a>
+  </div>
+
+  <form method="post" action="<%= isEdit ? '/assets/registry/' + asset.id : '/assets/registry' %>" class="card border-0 shadow-sm p-4" style="border-radius:14px;">
+   <div class="row">
+    <div class="col-md-8 form-group">
+     <label class="font-weight-bold small" for="assetName"><%= _t('assets_form.name', { ns: 'legacy', defaultValue: 'Asset name' }) %> *</label>
+     <input type="text" id="assetName" name="name" class="hms-input w-full" required value="<%= asset ? asset.name : '' %>">
+    </div>
+    <% if (isEdit) { %>
+    <div class="col-md-4 form-group">
+     <label class="font-weight-bold small"><%= _t('assets_form.tag', { ns: 'legacy', defaultValue: 'Asset tag' }) %></label>
+     <input type="text" class="hms-input w-full" value="<%= asset.asset_tag %>" readonly>
+    </div>
+    <% } %>
+    <div class="col-md-4 form-group">
+     <label class="font-weight-bold small" for="assetType"><%= _t('assets_form.type', { ns: 'legacy', defaultValue: 'Type' }) %></label>
+     <select id="assetType" name="asset_type" class="hms-input w-full">
+      <% assetTypes.forEach(function(tp) { %>
+      <option value="<%= tp %>" <%= asset && asset.asset_type === tp ? 'selected' : '' %>><%= tp %></option>
+      <% }); %>
+     </select>
+    </div>
+    <div class="col-md-4 form-group">
+     <label class="font-weight-bold small" for="assetCategory"><%= _t('assets_form.category', { ns: 'legacy', defaultValue: 'Category' }) %></label>
+     <select id="assetCategory" name="category_id" class="hms-input w-full">
+      <option value=""><%= _t('assets_form.no_category', { ns: 'legacy', defaultValue: '— None —' }) %></option>
+      <% categories.forEach(function(c) { %>
+      <option value="<%= c.id %>" <%= asset && String(asset.category_id) === String(c.id) ? 'selected' : '' %>><%= c.name %></option>
+      <% }); %>
+     </select>
+    </div>
+    <div class="col-md-4 form-group">
+     <label class="font-weight-bold small" for="assetStatus"><%= _t('assets_form.status', { ns: 'legacy', defaultValue: 'Status' }) %></label>
+     <select id="assetStatus" name="status" class="hms-input w-full">
+      <% assetStatuses.forEach(function(st) { %>
+      <option value="<%= st %>" <%= asset && asset.status === st ? 'selected' : (!asset && st === 'active' ? 'selected' : '') %>><%= st %></option>
+      <% }); %>
+     </select>
+    </div>
+    <div class="col-md-6 form-group">
+     <label class="font-weight-bold small" for="assetLocation"><%= _t('assets_form.location', { ns: 'legacy', defaultValue: 'Location' }) %></label>
+     <input type="text" id="assetLocation" name="location" class="hms-input w-full" value="<%= asset && asset.location ? asset.location : '' %>">
+    </div>
+    <div class="col-md-6 form-group">
+     <label class="font-weight-bold small" for="assetDepartment"><%= _t('assets_form.department', { ns: 'legacy', defaultValue: 'Department' }) %></label>
+     <input type="text" id="assetDepartment" name="department" class="hms-input w-full" value="<%= asset && asset.department ? asset.department : '' %>">
+    </div>
+    <div class="col-md-4 form-group">
+     <label class="font-weight-bold small" for="assetSerial"><%= _t('assets_form.serial', { ns: 'legacy', defaultValue: 'Serial number' }) %></label>
+     <input type="text" id="assetSerial" name="serial_number" class="hms-input w-full" value="<%= asset && asset.serial_number ? asset.serial_number : '' %>">
+    </div>
+    <div class="col-md-4 form-group">
+     <label class="font-weight-bold small" for="assetModel"><%= _t('assets_form.model', { ns: 'legacy', defaultValue: 'Model' }) %></label>
+     <input type="text" id="assetModel" name="model" class="hms-input w-full" value="<%= asset && asset.model ? asset.model : '' %>">
+    </div>
+    <div class="col-md-4 form-group">
+     <label class="font-weight-bold small" for="assetManufacturer"><%= _t('assets_form.manufacturer', { ns: 'legacy', defaultValue: 'Manufacturer' }) %></label>
+     <input type="text" id="assetManufacturer" name="manufacturer" class="hms-input w-full" value="<%= asset && asset.manufacturer ? asset.manufacturer : '' %>">
+    </div>
+    <div class="col-md-4 form-group">
+     <label class="font-weight-bold small" for="assetPurchaseDate"><%= _t('assets_form.purchase_date', { ns: 'legacy', defaultValue: 'Purchase date' }) %></label>
+     <input type="date" id="assetPurchaseDate" name="purchase_date" class="hms-input w-full" value="<%= asset && asset.purchase_date ? String(asset.purchase_date).slice(0,10) : '' %>">
+    </div>
+    <div class="col-md-4 form-group">
+     <label class="font-weight-bold small" for="assetPurchaseCost"><%= _t('assets_form.purchase_cost', { ns: 'legacy', defaultValue: 'Purchase cost' }) %></label>
+     <input type="number" step="0.01" id="assetPurchaseCost" name="purchase_cost" class="hms-input w-full" value="<%= asset && asset.purchase_cost != null ? asset.purchase_cost : '' %>">
+    </div>
+    <div class="col-md-4 form-group">
+     <label class="font-weight-bold small" for="assetWarranty"><%= _t('assets_form.warranty', { ns: 'legacy', defaultValue: 'Warranty expires' }) %></label>
+     <input type="date" id="assetWarranty" name="warranty_expires" class="hms-input w-full" value="<%= asset && asset.warranty_expires ? String(asset.warranty_expires).slice(0,10) : '' %>">
+    </div>
+    <div class="col-md-6 form-group">
+     <label class="font-weight-bold small" for="assetAssigned"><%= _t('assets_form.assigned', { ns: 'legacy', defaultValue: 'Assigned to' }) %></label>
+     <select id="assetAssigned" name="assigned_to" class="hms-input w-full">
+      <option value=""><%= _t('assets_form.unassigned', { ns: 'legacy', defaultValue: '— Unassigned —' }) %></option>
+      <% employees.forEach(function(e) { %>
+      <option value="<%= e.id %>" <%= asset && String(asset.assigned_to) === String(e.id) ? 'selected' : '' %>><%= e.first_name %> <%= e.last_name %><% if (e.department) { %> — <%= e.department %><% } %></option>
+      <% }); %>
+     </select>
+    </div>
+    <div class="col-12 form-group">
+     <label class="font-weight-bold small" for="assetDescription"><%= _t('assets_form.description', { ns: 'legacy', defaultValue: 'Description' }) %></label>
+     <textarea id="assetDescription" name="description" class="hms-input w-full" rows="2"><%= asset && asset.description ? asset.description : '' %></textarea>
+    </div>
+    <div class="col-12 form-group mb-0">
+     <label class="font-weight-bold small" for="assetNotes"><%= _t('assets_form.notes', { ns: 'legacy', defaultValue: 'Notes' }) %></label>
+     <textarea id="assetNotes" name="notes" class="hms-input w-full" rows="2"><%= asset && asset.notes ? asset.notes : '' %></textarea>
+    </div>
+   </div>
+   <div class="mt-4 d-flex flex-wrap" style="gap:10px;">
+    <button type="submit" class="hms-btn hms-btn-primary font-weight-bold"><%= isEdit ? _t('assets_form.save', { ns: 'legacy', defaultValue: 'Save changes' }) : _t('assets_form.create', { ns: 'legacy', defaultValue: 'Register asset' }) %></button>
+    <a href="<%= isEdit ? '/assets/registry/' + asset.id : '/assets/registry' %>" class="hms-btn hms-btn-secondary"><%= _t('assets_form.cancel', { ns: 'legacy', defaultValue: 'Cancel' }) %></a>
+   </div>
+  </form>
+ </div>
+</div>
+
+<%- include('partials/footer') %>

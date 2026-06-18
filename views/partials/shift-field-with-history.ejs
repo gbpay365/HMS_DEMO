@@ -1,0 +1,17 @@
+<% /* locals: fieldName, label, placeholder, rows, value, strikes (object of arrays), canEdit */ %>
+<% var fname = fieldName; var list = (strikes && strikes[fname]) ? strikes[fname] : []; var r = parseInt(rows,10)||3; %>
+<div class="form-group">
+  <label class="small font-weight-bold text-muted"><%= label %></label>
+  <% if (list.length) { %>
+    <div class="sr-strike-stack small mb-2 pl-1" style="border-left:3px solid #fecaca;background:#fffafa;border-radius:0 6px 6px 0;padding:6px 8px;">
+      <% list.forEach(function(t){ %>
+        <div class="sr-struck"><%= t %></div>
+      <% }); %>
+    </div>
+  <% } %>
+  <% if (canEdit) { %>
+    <textarea class="form-control" name="<%= fname %>" rows="<%= r %>" placeholder="<%= placeholder || '' %>"><%= value != null ? value : '' %></textarea>
+  <% } else { %>
+    <textarea class="form-control bg-light" rows="<%= r %>" readonly style="resize:vertical;"><%= value != null ? value : '' %></textarea>
+  <% } %>
+</div>

@@ -1,0 +1,60 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+
+<div class="page-wrapper">
+ <div class="content" style="max-width:720px;margin:0 auto;">
+  <div class="card border-0 shadow-lg rounded-xl overflow-hidden mb-4">
+   <div class="card-body p-4 p-md-5">
+    <div class="d-flex align-items-start mb-4" style="gap:1rem;">
+     <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:56px;height:56px;background:#fee2e2;color:#b91c1c;font-size:1.5rem;">
+      <i class="fa fa-exclamation-triangle"></i>
+     </div>
+     <div>
+      <h4 class="font-weight-bold text-dark mb-1"><%= _t('follow_up_opd_blocked.title', { ns: 'legacy', defaultValue: 'Follow-up consultation not allowed' }) %></h4>
+      <p class="text-muted mb-0 small">
+       <%= _t('follow_up_opd_blocked.intro_prefix', { ns: 'legacy', defaultValue: 'For' }) %>
+       <strong><%= patient.first_name %> <%= patient.last_name %></strong>
+       (PT-<%= String(patient.id).padStart(5,'0') %>).
+       <%= _t('follow_up_opd_blocked.intro_suffix', { ns: 'legacy', defaultValue: 'The patient must obtain a new consultation payment at the cashier before you can consult again.' }) %>
+      </p>
+     </div>
+    </div>
+
+    <ul class="list-unstyled mb-4">
+     <% (errors || []).forEach(function(msg) { %>
+     <li class="d-flex align-items-start mb-3 p-3 rounded-lg" style="background:#fff7ed;border:1px solid #fed7aa;gap:.75rem;">
+      <i class="fa fa-info-circle text-warning mt-1"></i>
+      <span class="small text-dark mb-0"><%= msg %></span>
+     </li>
+     <% }); %>
+     <% if (!(errors && errors.length)) { %>
+     <li class="small text-muted"><%= _t('follow_up_opd_blocked.no_errors', { ns: 'legacy', defaultValue: 'No follow-up visit could be registered under the current rules.' }) %></li>
+     <% } %>
+    </ul>
+
+    <div class="p-3 rounded-lg mb-4 small" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+     <strong class="text-success d-block mb-1"><i class="fa fa-check-circle mr-1"></i><%= _t('follow_up_opd_blocked.what_next', { ns: 'legacy', defaultValue: 'What to do next' }) %></strong>
+     <ol class="mb-0 pl-3 text-muted">
+      <li><%= _t('follow_up_opd_blocked.step1', { ns: 'legacy', defaultValue: 'Ask the patient to pay for a new consultation at the cashier (or emergency desk if applicable).' }) %></li>
+      <li><%= _t('follow_up_opd_blocked.step2', { ns: 'legacy', defaultValue: 'After payment, register the visit on the OPD queue and proceed with vitals as usual.' }) %></li>
+      <li><%= _t('follow_up_opd_blocked.step3', { ns: 'legacy', defaultValue: 'To allow follow-up under the same payment code later, end a consultation with “Patient may return for a follow-up consultation…” checked.' }) %></li>
+     </ol>
+    </div>
+
+    <div class="d-flex flex-wrap" style="gap:.5rem;">
+     <a href="/patient-chart/<%= patientId || patient.id %>" class="btn btn-primary rounded-pill px-4 font-weight-bold">
+      <i class="fa fa-folder-open-o mr-1"></i><%= _t('follow_up_opd_blocked.patient_chart', { ns: 'legacy', defaultValue: 'Patient chart' }) %>
+     </a>
+     <a href="/opd-queue" class="btn btn-outline-secondary rounded-pill px-4">
+      <i class="fa fa-list mr-1"></i><%= _t('follow_up_opd_blocked.opd_queue', { ns: 'legacy', defaultValue: 'OPD queue' }) %>
+     </a>
+     <a href="/patients" class="btn btn-light rounded-pill px-4 border">
+      <%= _t('follow_up_opd_blocked.all_patients', { ns: 'legacy', defaultValue: 'All patients' }) %>
+     </a>
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<%- include('partials/footer') %>

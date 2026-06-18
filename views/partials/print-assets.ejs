@@ -1,0 +1,5 @@
+<% var _printV = (typeof hmsPrintAssetV !== 'undefined' && hmsPrintAssetV) ? hmsPrintAssetV : 40; %>
+<% if (typeof hmsPrintIncludeEpsonCss !== 'undefined' && hmsPrintIncludeEpsonCss !== false) { %>
+<link rel="stylesheet" href="/css/print-epson-lq.css?v=<%= _printV %>" media="print">
+<% } %>
+<script src="/dist/hms-print.js?v=<%= _printV %>" defer></script>

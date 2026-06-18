@@ -1,0 +1,168 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _tl = function (key, fallback, opts) {
+  var o = { ns: 'legacy', defaultValue: fallback };
+  if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+  return _t(key, o);
+};
+var _mode = typeof toolbarMode !== 'undefined' ? toolbarMode : 'view';
+var _exportUrls = (typeof exportUrls !== 'undefined' && exportUrls) ? exportUrls : { pdf: '#', csv: '#', xlsx: '#' };
+var _pdfBase = String(_exportUrls.pdf || '').split('?')[0];
+var _presetOptions = (typeof periodPresetOptions !== 'undefined' && periodPresetOptions) ? periodPresetOptions : [];
+var _reportRange = (typeof reportRange !== 'undefined') ? reportRange : null;
+var _reportMeta = (typeof reportMeta !== 'undefined') ? reportMeta : null;
+var _categories = (typeof categories !== 'undefined' && categories) ? categories : [];
+var _activePreset = typeof activePreset !== 'undefined' ? activePreset : (_reportRange && _reportRange.preset) || '';
+var _activeCategory = typeof activeCategory !== 'undefined' ? activeCategory : 'all';
+var _typeOptions = (typeof typeOptions !== 'undefined' && typeOptions) ? typeOptions : [];
+var _rowtype = typeof rowtype !== 'undefined' ? rowtype : 'all';
+var _basePath = _mode === 'hub' ? '/pharmacy/reporting' : ('/pharmacy/reporting/' + (_reportMeta && _reportMeta.id ? _reportMeta.id : ''));
+%>
+<div class="pha-report-toolbar-v2 no-print" data-pha-toolbar="<%= _mode %>">
+  <i class="fa fa-filter pha-report-toolbar-v2__icon" aria-hidden="true"></i>
+
+  <% if (_mode === 'hub') { %>
+  <label class="sr-only" for="pha-hub-category"><%= _tl('pharmacy_reports.filter_type', 'Report type') %></label>
+  <select id="pha-hub-category" class="pha-report-toolbar-v2__select" data-pha-hub-filter="category">
+    <option value="all"<%= _activeCategory === 'all' ? ' selected' : '' %>><%= _tl('pharmacy_reports.all_types', 'All types') %></option>
+    <% _categories.forEach(function(cat){ %>
+    <option value="<%= cat.key %>"<%= _activeCategory === cat.key ? ' selected' : '' %>><%= cat.label %></option>
+    <% }); %>
+  </select>
+  <% } else if (_typeOptions.length > 1) { %>
+  <label class="sr-only" for="pha-rowtype"><%= _tl('pharmacy_reports.filter_type', 'Type') %></label>
+  <select id="pha-rowtype" class="pha-report-toolbar-v2__select" data-pha-filter="rowtype">
+    <% _typeOptions.forEach(function(opt){ %>
+    <option value="<%= opt %>"<%= _rowtype === opt ? ' selected' : '' %>><%= opt === 'all' ? _tl('pharmacy_reports.all_types', 'All types') : opt %></option>
+    <% }); %>
+  </select>
+  <% } %>
+
+  <label class="sr-only" for="pha-period-preset"><%= _tl('pharmacy_reports.filter_period', 'Period') %></label>
+  <select id="pha-period-preset" class="pha-report-toolbar-v2__select" data-pha-filter="preset">
+    <% _presetOptions.forEach(function(p){ %>
+    <option value="<%= p.key %>"<%= (_activePreset || '') === p.key ? ' selected' : '' %>><%= p.label %></option>
+    <% }); %>
+    <% if (_mode === 'view' && !_activePreset) { %>
+    <option value="" selected><%= _reportRange ? _reportRange.label : _tl('pharmacy_reports.custom_period', 'Custom period') %></option>
+    <% } %>
+  </select>
+
+  <div class="pha-report-toolbar-v2__export-wrap">
+    <button type="button" class="pha-report-toolbar-v2__export-btn" id="phaExportToggle" aria-haspopup="true" aria-expanded="false">
+      <i class="fa fa-download" aria-hidden="true"></i>
+      <%= _tl('pharmacy_reports.export', 'Export') %>
+      <i class="fa fa-chevron-down pha-report-toolbar-v2__caret" aria-hidden="true"></i>
+    </button>
+    <div class="pha-report-toolbar-v2__export-menu" id="phaExportMenu" hidden>
+      <a href="<%= _exportUrls.pdf || '#' %>" class="pha-report-toolbar-v2__export-item" data-export="pdf" target="_blank" rel="noopener">
+        <i class="fa fa-file-pdf-o"></i> <%= _tl('pharmacy_reports.export_pdf', 'PDF') %>
+      </a>
+      <a href="<%= _exportUrls.xlsx || '#' %>" class="pha-report-toolbar-v2__export-item" data-export="xlsx">
+        <i class="fa fa-file-excel-o"></i> <%= _tl('pharmacy_reports.export_excel', 'Excel') %>
+      </a>
+      <a href="<%= _exportUrls.csv || '#' %>" class="pha-report-toolbar-v2__export-item" data-export="csv">
+        <i class="fa fa-file-text-o"></i> <%= _tl('pharmacy_reports.export_csv', 'CSV') %>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var toolbar = document.querySelector('[data-pha-toolbar="<%= _mode %>"]');
+  if (!toolbar) return;
+  var basePath = '<%= _basePath %>';
+  var exportMenu = document.getElementById('phaExportMenu');
+  var exportToggle = document.getElementById('phaExportToggle');
+  var presetSel = document.getElementById('pha-period-preset');
+  var categorySel = document.getElementById('pha-hub-category');
+  var rowtypeSel = document.getElementById('pha-rowtype');
+
+  function buildQs() {
+    var p = new URLSearchParams(window.location.search);
+    if (presetSel && presetSel.value) {
+      p.set('preset', presetSel.value);
+      p.delete('period'); p.delete('date'); p.delete('week'); p.delete('month'); p.delete('quarter'); p.delete('year');
+    }
+    if (categorySel) {
+      if (categorySel.value && categorySel.value !== 'all') p.set('category', categorySel.value);
+      else p.delete('category');
+    }
+    if (rowtypeSel) {
+      if (rowtypeSel.value && rowtypeSel.value !== 'all') p.set('rowtype', rowtypeSel.value);
+      else p.delete('rowtype');
+    }
+    return p.toString();
+  }
+
+  function applyHubCategoryFilter() {
+    if (!categorySel) return;
+    var cat = categorySel.value;
+    document.querySelectorAll('[data-report-category]').forEach(function (section) {
+      var show = cat === 'all' || section.getAttribute('data-report-category') === cat;
+      section.style.display = show ? '' : 'none';
+    });
+  }
+
+  function navigateWithFilters() {
+    var qs = buildQs();
+    window.location.href = basePath + (qs ? '?' + qs : '');
+  }
+
+  function updateExportLinks() {
+    var qs = buildQs();
+    var pdfBase = '<%= _pdfBase %>';
+    toolbar.querySelectorAll('[data-export]').forEach(function (a) {
+      var kind = a.getAttribute('data-export');
+      if (kind === 'pdf') {
+        a.href = pdfBase + (qs ? '?' + qs : '');
+        return;
+      }
+      var path = '<%= _mode %>' === 'hub'
+        ? '/pharmacy/reporting/export/' + (kind === 'xlsx' ? 'xlsx' : 'csv')
+        : basePath + '/export/' + (kind === 'xlsx' ? 'xlsx' : 'csv');
+      a.href = path + (qs ? '?' + qs : '');
+    });
+  }
+
+  if (exportToggle && exportMenu) {
+    exportToggle.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var open = !exportMenu.hidden;
+      exportMenu.hidden = open;
+      exportToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+    });
+    document.addEventListener('click', function () {
+      exportMenu.hidden = true;
+      exportToggle.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  if (presetSel) presetSel.addEventListener('change', navigateWithFilters);
+  if (rowtypeSel) rowtypeSel.addEventListener('change', navigateWithFilters);
+  if (categorySel) {
+    categorySel.addEventListener('change', function () {
+      applyHubCategoryFilter();
+      updateExportLinks();
+      var qs = buildQs();
+      history.replaceState(null, '', basePath + (qs ? '?' + qs : ''));
+      document.querySelectorAll('.pha-report-card[data-report-href]').forEach(function (card) {
+        var href = card.getAttribute('data-report-href');
+        card.setAttribute('href', href + (qs ? '?' + qs : ''));
+      });
+    });
+  }
+
+  applyHubCategoryFilter();
+  updateExportLinks();
+
+  document.querySelectorAll('.pha-report-card[data-report-href]').forEach(function (card) {
+    var href = card.getAttribute('data-report-href');
+    var qs = buildQs();
+    card.setAttribute('href', href + (qs ? '?' + qs : ''));
+  });
+})();
+</script>

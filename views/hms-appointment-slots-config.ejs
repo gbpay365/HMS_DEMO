@@ -1,0 +1,52 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+   var _daysFallback = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+%>
+<div class="page-wrapper"><div class="content">
+<p class="mb-2"><a href="/hms"><%= _t('hms_appointment_slots.back_hub', { ns: 'legacy', defaultValue: 'HMS hub' }) %></a> · <a href="/appointments"><%= _t('hms_appointment_slots.appointments_link', { ns: 'legacy', defaultValue: 'Appointments' }) %></a></p>
+<h4 class="font-weight-bold mb-3"><%= _t('hms_appointment_slots.title', { ns: 'legacy', defaultValue: 'Appointment slots configuration' }) %></h4>
+<% if(flash){%><div class="hms-flash hms-flash--success"><%=flash%></div><%}%>
+<div class="row">
+<div class="col-md-5">
+<form method="POST" action="/hms/appointments/slots-config/settings" class="card p-3 mb-3">
+<h6><%= _t('hms_appointment_slots.global_hours', { ns: 'legacy', defaultValue: 'Global hours' }) %></h6>
+<div class="form-group"><label class="small"><%= _t('hms_appointment_slots.start_hour', { ns: 'legacy', defaultValue: 'Start hour' }) %></label><input name="slot_start_hour" class="hms-input w-full text-sm" value="<%=settings.slotStartHour%>"></div>
+<div class="form-group"><label class="small"><%= _t('hms_appointment_slots.end_hour', { ns: 'legacy', defaultValue: 'End hour' }) %></label><input name="slot_end_hour" class="hms-input w-full text-sm" value="<%=settings.slotEndHour%>"></div>
+<div class="form-group"><label class="small"><%= _t('hms_appointment_slots.interval', { ns: 'legacy', defaultValue: 'Interval (min)' }) %></label><input name="slot_interval_minutes" class="hms-input w-full text-sm" value="<%=settings.slotInterval%>"></div>
+<div class="form-group"><label class="small"><%= _t('hms_appointment_slots.max_days', { ns: 'legacy', defaultValue: 'Max days ahead' }) %></label><input name="max_days_ahead" class="hms-input w-full text-sm" value="<%=settings.maxDaysAhead%>"></div>
+<div class="form-group"><label class="small"><%= _t('hms_appointment_slots.min_notice', { ns: 'legacy', defaultValue: 'Min notice (hours)' }) %></label><input name="min_hours_notice" class="hms-input w-full text-sm" value="<%=settings.minHoursNotice%>"></div>
+<button class="hms-btn hms-btn-primary btn-sm"><%= _t('hms_appointment_slots.save_global', { ns: 'legacy', defaultValue: 'Save global' }) %></button>
+</form>
+<form method="POST" action="/hms/appointments/slots-config/availability" class="card p-3">
+<h6><%= _t('hms_appointment_slots.doctor_window', { ns: 'legacy', defaultValue: 'Doctor weekly window' }) %></h6>
+<select name="doctor_id" class="hms-input w-full text-sm mb-2" required><% doctors.forEach(function(d){ %><option value="<%=d.id%>">Dr. <%=d.first_name%> <%=d.last_name%></option><% }); %></select>
+<select name="weekday" class="hms-input w-full text-sm mb-2">
+<option value="1"><%= _t('hms_appointment_slots.day_mon', { ns: 'legacy', defaultValue: 'Monday' }) %></option>
+<option value="2"><%= _t('hms_appointment_slots.day_tue', { ns: 'legacy', defaultValue: 'Tuesday' }) %></option>
+<option value="3"><%= _t('hms_appointment_slots.day_wed', { ns: 'legacy', defaultValue: 'Wednesday' }) %></option>
+<option value="4"><%= _t('hms_appointment_slots.day_thu', { ns: 'legacy', defaultValue: 'Thursday' }) %></option>
+<option value="5"><%= _t('hms_appointment_slots.day_fri', { ns: 'legacy', defaultValue: 'Friday' }) %></option>
+<option value="6"><%= _t('hms_appointment_slots.day_sat', { ns: 'legacy', defaultValue: 'Saturday' }) %></option>
+</select>
+<input type="time" name="start_time" class="hms-input w-full text-sm mb-2" value="08:00" required>
+<input type="time" name="end_time" class="hms-input w-full text-sm mb-2" value="17:00" required>
+<input type="number" name="slot_minutes" class="hms-input w-full text-sm mb-2" value="30" min="10">
+<button class="hms-btn hms-btn-outline-primary btn-sm"><%= _t('hms_appointment_slots.add_window', { ns: 'legacy', defaultValue: 'Add window' }) %></button>
+</form>
+</div>
+<div class="col-md-7">
+<table class="table table-sm card shadow-sm"><thead><tr>
+<th><%= _t('hms_appointment_slots.col_doctor', { ns: 'legacy', defaultValue: 'Doctor' }) %></th>
+<th><%= _t('hms_appointment_slots.col_day', { ns: 'legacy', defaultValue: 'Day' }) %></th>
+<th><%= _t('hms_appointment_slots.col_hours', { ns: 'legacy', defaultValue: 'Hours' }) %></th>
+<th><%= _t('hms_appointment_slots.col_slot', { ns: 'legacy', defaultValue: 'Slot' }) %></th>
+</tr></thead><tbody>
+<% availability.forEach(function(a){
+   var dayLabel = _t('hms_appointment_slots.day_' + a.weekday, { ns: 'legacy', defaultValue: _daysFallback[a.weekday] || a.weekday });
+%>
+<tr><td>Dr. <%=a.first_name%> <%=a.last_name%></td><td><%=dayLabel%></td><td><%=String(a.start_time).slice(0,5)%>–<%=String(a.end_time).slice(0,5)%></td><td><%=a.slot_minutes%>m</td></tr>
+<% }); %>
+</tbody></table>
+</div>
+</div>
+</div></div><%- include('partials/footer') %>

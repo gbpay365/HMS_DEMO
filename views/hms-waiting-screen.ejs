@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="<%= (typeof lang !== 'undefined' && lang) || 'en' %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<title><%= _t('hms_waiting_screen.title', { ns: 'legacy', defaultValue: 'Waiting room' }) %> — <%= (locals.brand && locals.brand.name) || 'ZAIZENS' %></title>
+<meta name="theme-color" content="#047857">
+<link rel="stylesheet" href="/css/hms-waiting-screen.css?v=1">
+</head>
+<body class="hms-body--waiting-screen">
+<div class="ws-wrap">
+ <div class="ws-hdr">
+  <h1 id="wsWelcome"><%= _t('hms_waiting_screen.welcome_default', { ns: 'legacy', defaultValue: 'Welcome' }) %></h1>
+  <p id="wsClock"></p>
+ </div>
+ <div class="ws-now-serving" id="wsNowServing" style="display:none;">
+  <div class="label"><%= _t('hms_waiting_screen.now_consult', { ns: 'legacy', defaultValue: 'Now in consultation' }) %></div>
+  <div class="name" id="wsNowName">—</div>
+  <div class="meta" id="wsNowMeta"></div>
+ </div>
+ <div class="ws-queue" id="wsQueue"></div>
+ <div class="ws-foot"><%= _t('hms_waiting_screen.foot', { ns: 'legacy', defaultValue: 'Display refreshes automatically' }) %></div>
+</div>
+<script>
+window.__WS_I18N = <%- JSON.stringify({
+  welcomeDefault: _t('hms_waiting_screen.welcome_default', { ns: 'legacy', defaultValue: 'Welcome' }),
+  patient: _t('hms_waiting_screen.patient', { ns: 'legacy', defaultValue: 'Patient' }),
+  next: _t('hms_waiting_screen.next', { ns: 'legacy', defaultValue: 'Next' }),
+  queue: _t('hms_waiting_screen.queue', { ns: 'legacy', defaultValue: 'Queue' }),
+  empty: _t('hms_waiting_screen.empty', { ns: 'legacy', defaultValue: 'No patients waiting' }),
+  locale: (typeof lang !== 'undefined' && lang) || 'en'
+}) %>;
+(function(){
+ var I = window.__WS_I18N || {};
+ function tickClock(){
+  var loc = I.locale === 'fr' ? 'fr-FR' : undefined;
+  document.getElementById('wsClock').textContent = new Date().toLocaleString(loc);
+ }
+ function esc(s){ var d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+ var lastNextVisitId = null;
+ var audioCtx = null;
+ function playChime(){
+  try {
+   audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+   var t = audioCtx.currentTime;
+   [523.25, 659.25, 783.99].forEach(function(freq, i){
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t + i * 0.12);
+    g.gain.exponentialRampToValueAtTime(0.22, t + i * 0.12 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.12 + 0.35);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t + i * 0.12);
+    o.stop(t + i * 0.12 + 0.4);
+   });
+  } catch(e) {}
+ }
+ function render(data){
+  var cfg = data.config || {};
+  var nextId = data.nextVisitId != null ? data.nextVisitId : null;
+  if (cfg.chime_enabled !== 0 && lastNextVisitId !== null && nextId !== lastNextVisitId) playChime();
+  lastNextVisitId = nextId;
+  document.getElementById('wsWelcome').textContent = cfg.welcome_message || I.welcomeDefault || 'Welcome';
+  var refresh = (parseInt(cfg.refresh_seconds,10)||5) * 1000;
+  window._wsRefresh = refresh;
+
+  var inc = data.inConsult;
+  var nowEl = document.getElementById('wsNowServing');
+  if(inc){
+   nowEl.style.display = 'block';
+   var nm = (inc.first_name||'')+' '+(inc.last_name||'');
+   if(!cfg.show_patient_name) nm = I.patient || 'Patient';
+   document.getElementById('wsNowName').textContent = nm.trim() || '—';
+   var meta = [];
+   if(cfg.show_ticket_number && inc.ticket_number) meta.push('#'+inc.ticket_number);
+   if(cfg.show_doctor_name && inc.doc_fn) meta.push('Dr. '+inc.doc_fn+' '+inc.doc_ln);
+   if(cfg.show_room && inc.room_name) meta.push(inc.room_name);
+   document.getElementById('wsNowMeta').textContent = meta.join(' · ');
+  } else { nowEl.style.display = 'none'; }
+
+  var list = data.waiting || [];
+  var html = '';
+  list.forEach(function(v,i){
+   var nm = (v.first_name||'')+' '+(v.last_name||'');
+   if(!cfg.show_patient_name) nm = (I.patient || 'Patient')+' '+(i+1);
+   var sub = [];
+   if(cfg.show_ticket_number && v.ticket_number) sub.push(v.ticket_number);
+   if(cfg.show_doctor_name && v.doc_fn) sub.push('Dr. '+v.doc_fn);
+   if(cfg.show_room && v.room_name) sub.push(v.room_name);
+   html += '<div class="ws-qcard'+(i===0?' next':'')+'">'+
+     '<div class="num">'+(i===0?(I.next||'Next'):(I.queue||'Queue'))+'</div>'+
+     '<div class="nm'+(v.priority==='urgent'?' ws-urgent':'')+'">'+esc(nm)+'</div>'+
+     '<div class="sub">'+esc(sub.join(' · '))+'</div></div>';
+  });
+  if(!html) html = '<div class="ws-qcard"><div class="nm">'+(I.empty||'No patients waiting')+'</div></div>';
+  document.getElementById('wsQueue').innerHTML = html;
+ }
+ function poll(){
+  fetch('/hms/api/waiting-screen').then(function(r){return r.json();}).then(render).catch(function(){});
+ }
+ function schedulePoll(){
+  var ms = window._wsRefresh || 5000;
+  setTimeout(function(){ poll(); schedulePoll(); }, ms);
+ }
+ tickClock(); setInterval(tickClock, 1000);
+ poll();
+ schedulePoll();
+ document.body.addEventListener('click', function once(){
+  if(!audioCtx) try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  document.body.removeEventListener('click', once);
+ });
+})();
+</script>
+</body>
+</html>

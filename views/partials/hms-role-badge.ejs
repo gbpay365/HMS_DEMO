@@ -1,0 +1,7 @@
+<%
+// role — staff role id (1, 2, …)
+// label — optional override title
+var __ui = (typeof hmsListUi !== 'undefined') ? hmsListUi : null;
+var __meta = __ui ? __ui.roleMeta(typeof role !== 'undefined' ? role : '', typeof label !== 'undefined' ? label : '') : { label: label || role || '—', color: '#64748b', bg: '#f1f5f9' };
+%>
+<span class="hms-role-badge" style="background:<%= __meta.bg %>;color:<%= __meta.color %>;border:1px solid <%= __meta.color %>30;"><%= __meta.label %></span>

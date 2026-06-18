@@ -1,0 +1,96 @@
+<%- include('partials/header') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _tl = function (key, fallback, opts) {
+  var o = { ns: 'legacy', defaultValue: fallback };
+  if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+  return _t(key, o);
+};
+var _period = reportRange.period;
+var _base = '/pharmacy/reporting/' + reportMeta.id;
+var _periodOptions = periodOptions || [];
+var _exportUrls = (typeof exportUrls !== 'undefined' && exportUrls) || (locals && locals.exportUrls) || {
+  pdf: _base + '/print?' + (typeof reportQueryString !== 'undefined' ? reportQueryString : ''),
+  csv: _base + '/export/csv?' + (typeof reportQueryString !== 'undefined' ? reportQueryString : ''),
+  xlsx: _base + '/export/xlsx?' + (typeof reportQueryString !== 'undefined' ? reportQueryString : ''),
+};
+var _periodPresetOptions = (typeof periodPresetOptions !== 'undefined' && periodPresetOptions) || (locals && locals.periodPresetOptions) || [];
+var _typeOptions = (typeof typeOptions !== 'undefined' && typeOptions) || (locals && locals.typeOptions) || [];
+var _rowtype = (typeof rowtype !== 'undefined' && rowtype) || (locals && locals.rowtype) || 'all';
+function _periodHref(p) {
+  var q = { period: p };
+  if (p === 'day') q.date = reportRange.start;
+  else if (p === 'week') q.week = reportRange.anchor;
+  else if (p === 'month') q.month = reportRange.start.slice(0, 7);
+  else if (p === 'quarter') q.quarter = reportRange.anchor;
+  else if (p === 'year') q.year = reportRange.anchor;
+  if (typeof expiryDays !== 'undefined' && expiryDays) q.days = expiryDays;
+  var parts = [];
+  for (var k in q) { if (Object.prototype.hasOwnProperty.call(q, k)) parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(q[k])); }
+  return _base + '?' + parts.join('&');
+}
+%>
+<link rel="stylesheet" href="/css/pharmacy-reports.css?v=4">
+<%- include('partials/pharmacy-odoo-start', { phaOdooMenu: 'reporting', phaOdooTitle: reportMeta.title, nursingSupplyPending, flash, error }) %>
+
+<div class="o_content p-3 pha-report-screen" style="--report-accent:<%= reportMeta.accent %>;">
+  <div class="pha-report-hero no-print">
+    <nav class="pha-report-bc">
+      <a href="/pharmacy/reporting"><i class="fa fa-arrow-left"></i> <%= _tl('pharmacy_reports.hub', 'Pharmacy Intelligence Reports') %></a>
+      <span> / <%= reportMeta.title %></span>
+    </nav>
+    <div class="pha-report-hero-badge"><i class="fa <%= reportMeta.icon %>"></i> <%= reportMeta.title %></div>
+    <h1><i class="fa <%= reportMeta.icon %>" style="opacity:0.85;margin-right:0.35rem;"></i><%= reportMeta.title %></h1>
+    <p><%= reportMeta.subtitle %> · <strong><%= reportRange.label %></strong></p>
+  </div>
+
+  <%- include('partials/pharmacy-report-export-toolbar', {
+    toolbarMode: 'view',
+    exportUrls: _exportUrls,
+    periodPresetOptions: _periodPresetOptions,
+    typeOptions: _typeOptions,
+    rowtype: _rowtype,
+    reportMeta: reportMeta,
+    reportRange: reportRange
+  }) %>
+
+  <% if ((reportData.kpis || []).length) { %>
+  <div class="pha-report-kpis no-print">
+    <% reportData.kpis.forEach(function(k){ %>
+    <div class="pha-report-kpi">
+      <div class="pha-report-kpi-label"><%= k.label %></div>
+      <div class="pha-report-kpi-value<%= k.tone ? ' tone-' + k.tone : '' %>"><%= k.value %></div>
+    </div>
+    <% }); %>
+  </div>
+  <% } %>
+
+  <div class="pha-report-table-wrap">
+    <table class="pha-report-table">
+      <thead>
+        <tr>
+          <% (reportData.columns || []).forEach(function(col){ %>
+          <th<%= col.align === 'right' ? ' style="text-align:right;"' : '' %>><%= col.label %></th>
+          <% }); %>
+        </tr>
+      </thead>
+      <tbody>
+        <% if ((reportData.rows || []).length) { %>
+        <% reportData.rows.forEach(function(row){ %>
+        <tr>
+          <% (reportData.columns || []).forEach(function(col){ %>
+          <td<%= col.align === 'right' ? ' style="text-align:right;"' : '' %>><%= row[col.key] != null ? row[col.key] : '—' %></td>
+          <% }); %>
+        </tr>
+        <% }); %>
+        <% } else { %>
+        <tr><td colspan="<%= (reportData.columns||[]).length || 1 %>"><div class="pha-report-empty"><i class="fa fa-inbox fa-2x mb-2 d-block"></i><%= _tl('pharmacy_reports.no_rows', 'No records for this period.') %></div></td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('partials/pharmacy-odoo-end') %>
+<%- include('partials/footer') %>

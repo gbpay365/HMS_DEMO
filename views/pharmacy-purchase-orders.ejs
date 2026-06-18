@@ -1,0 +1,54 @@
+<%- include('partials/header') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    var o = { ns: 'legacy', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+    return _t(key, o);
+  };
+}
+%>
+<%- include('partials/pharmacy-odoo-start', { phaOdooMenu: 'purchase', phaOdooTitle: _tl('pharmacy_purchase_orders.title', 'Purchase orders'), nursingSupplyPending, flash, error }) %>
+<div class="o_control_panel">
+  <a href="/pharmacy/purchase-orders/new" class="o_cp_new"><i class="fa fa-plus"></i> <%= _tl('pharmacy_shared.new', 'New') %></a>
+  <div class="o_cp_breadcrumb"><span><%= _tl('pharmacy_purchase_orders.title', 'Purchase orders') %></span></div>
+</div>
+<div class="o_content p-3">
+  <div class="o_list_renderer">
+    <table class="o_list_table">
+      <thead>
+        <tr>
+          <th><%= _tl('pharmacy_purchase_orders.col_po_number', 'PO number') %></th>
+          <th><%= _tl('pharmacy_purchase_orders.col_supplier', 'Supplier') %></th>
+          <th><%= _tl('pharmacy_shared.status', 'Status') %></th>
+          <th style="text-align:right;"><%= _tl('pharmacy_purchase_orders.col_total', 'Total') %></th>
+          <th><%= _tl('pharmacy_purchase_orders.col_created', 'Created') %></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if ((pos||[]).length) { pos.forEach(function(po){
+             var st = String(po.status||'draft').toLowerCase();
+             var pill = st==='received'?'o_status_sales':(st==='approved'||st==='issued'?'o_status_preparing':'o_status_pending');
+             var dt = po.created_at ? fmtDate(po.created_at) : _tl('pharmacy_shared.em_dash', '—');
+        %>
+        <tr>
+          <td class="font-weight-bold"><a href="/pharmacy/purchase-orders/<%= po.id %>"><%= po.po_number %></a></td>
+          <td><%= po.supplier_name %></td>
+          <td><span class="o_status_pill <%= pill %>"><%= st %></span></td>
+          <td style="text-align:right;"><%= parseFloat(po.total_amount||0).toFixed(2) %> FCFA</td>
+          <td class="text-muted small"><%= dt %></td>
+          <td><a href="/pharmacy/purchase-orders/<%= po.id %>" class="o_btn_link"><%= _tl('pharmacy_shared.open', 'Open') %></a></td>
+        </tr>
+        <% }); } else { %>
+        <tr><td colspan="6"><div class="o_list_empty"><i class="fa fa-shopping-cart"></i><%= _tl('pharmacy_purchase_orders.empty_prefix', 'No purchase orders yet.') %> <a href="/pharmacy/purchase-orders/new"><%= _tl('pharmacy_purchase_orders.create_one', 'Create one') %></a>.</div></td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('partials/pharmacy-odoo-end') %>
+<%- include('partials/footer') %>

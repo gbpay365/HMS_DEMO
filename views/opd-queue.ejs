@@ -1,0 +1,11 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--opd-queue'; %>
+<%- include('partials/header') %>
+<%- include('partials/doctor-er-alerts-strip') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'opd-queue',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.opd_queue', { ns: 'common' }) : 'Loading…')
+}) %>
+<%- include('partials/hms-invoice-modal-mount') %>
+
+<%- include('partials/footer') %>

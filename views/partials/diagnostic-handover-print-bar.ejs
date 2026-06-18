@@ -1,0 +1,45 @@
+<%
+var _dhMod = (typeof handoverModule !== 'undefined' ? handoverModule : 'laboratory');
+var _dhRad = _dhMod === 'radiology';
+var _dhPayload = typeof printPayload !== 'undefined' ? printPayload : null;
+var _dhCan = _dhPayload && _dhPayload.canPrint;
+var _dhShell = _dhPayload && _dhPayload.shellOnly;
+var _dhPending = row && Number(row.revision_pending) === 1;
+%>
+<link rel="stylesheet" href="/css/diagnostic-handover.css?v=1">
+<div class="dh-handover-bar<%= _dhRad ? ' dh-handover-bar--rad' : '' %><%= (!_dhCan || _dhPending) ? ' dh-handover-bar--muted' : '' %>">
+  <div class="d-flex align-items-center" style="gap:12px;flex:1;min-width:200px;">
+    <div class="dh-handover-icon"><i class="fa fa-print"></i></div>
+    <div class="dh-handover-text">
+      <h2><%= _tl('diag_handover.title', 'Patient handover copy') %></h2>
+      <% if (_dhPending) { %>
+      <p><%= _tl('diag_handover.pending_correction', 'This result is unlocked for correction — print after the corrected version is saved.') %></p>
+      <% } else if (_dhCan) { %>
+      <p><%= _tl('diag_handover.ready_hint', 'Print the official formatted report and give it to the patient at collection.') %></p>
+      <% } else if (_dhShell) { %>
+      <p><%= _tl('diag_handover.empty_fields_hint', 'Template saved but result fields are still empty — open templates, complete findings / impression, and save again to enable printing.') %></p>
+      <% } else { %>
+      <p><%= _tl('diag_handover.no_result_hint', 'Enter and save results in the template workbench before printing for the patient.') %></p>
+      <% } %>
+    </div>
+  </div>
+  <div class="dh-handover-actions">
+    <% if (_dhCan && !_dhPending) { %>
+    <button type="button" class="dh-btn-print" data-diag-print="<%= _dhMod %>">
+      <i class="fa fa-print"></i> <%= _tl('diag_handover.print_btn', 'Print patient copy') %>
+    </button>
+    <% } else { %>
+    <button type="button" class="dh-btn-print disabled" disabled>
+      <i class="fa fa-print"></i> <%= _tl('diag_handover.print_btn', 'Print patient copy') %>
+    </button>
+    <% } %>
+    <% if (typeof handoverTemplatesPath !== 'undefined' && handoverTemplatesPath) { %>
+    <a href="<%= handoverTemplatesPath %>" class="dh-btn-secondary-link<%= _dhShell ? ' font-weight-bold text-primary' : '' %>"><%= _tl('diag_handover.open_templates', 'Open templates') %><%= _dhShell ? ' →' : '' %></a>
+    <% } %>
+  </div>
+</div>
+<% if (_dhPayload) { %>
+<script>window.__DIAG_PRINT_PAYLOAD = <%- JSON.stringify(_dhPayload) %>;</script>
+<% } %>
+<script src="/js/hms-diagnostic-report-print.js?v=2"></script>
+<script src="/js/hms-diagnostic-report-handover.js?v=3"></script>

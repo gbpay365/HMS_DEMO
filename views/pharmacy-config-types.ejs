@@ -1,0 +1,68 @@
+<%- include('partials/header') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    var o = { ns: 'legacy', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+    return _t(key, o);
+  };
+}
+%>
+<%- include('partials/pharmacy-odoo-start', { phaOdooMenu: 'config', phaOdooTitle: _tl('pharmacy_config_types.title', 'Medicine types'), nursingSupplyPending, flash, error }) %>
+<div class="o_control_panel">
+  <button type="button" class="o_cp_new" data-toggle="modal" data-target="#typeModal"><i class="fa fa-plus"></i> <%= _tl('pharmacy_shared.new', 'New') %></button>
+  <div class="o_cp_breadcrumb"><span><%= _tl('pharmacy_config_types.title', 'Medicine types') %></span></div>
+  <a href="/pharmacy/config/medicine-categories" class="o_btn_link"><%= _tl('pharmacy_config_types.categories_link', 'Categories') %></a>
+</div>
+<div class="o_content p-3">
+  <div class="o_list_renderer">
+    <table class="o_list_table">
+      <thead><tr><th><%= _tl('pharmacy_shared.name', 'Name') %></th><th><%= _tl('pharmacy_shared.description', 'Description') %></th><th><%= _tl('pharmacy_shared.status', 'Status') %></th><th></th></tr></thead>
+      <tbody>
+        <% (types||[]).forEach(function(t){ if(!t.is_active) return; %>
+        <tr>
+          <td class="font-weight-bold"><%= t.name %></td>
+          <td class="text-muted small"><%= t.description || _tl('pharmacy_shared.em_dash', '—') %></td>
+          <td><span class="o_status_pill o_status_sales"><%= _tl('pharmacy_shared.active', 'Active') %></span></td>
+          <td class="text-right">
+            <button type="button" class="btn btn-sm btn-outline-secondary pha-edit-type" data-id="<%= t.id %>" data-name="<%= t.name %>" data-desc="<%= t.description || '' %>"><%= _tl('pharmacy_shared.edit', 'Edit') %></button>
+            <form method="post" action="/pharmacy/config/medicine-types" class="d-inline" onsubmit="return confirm('<%= _tl('pharmacy_config_types.confirm_archive', 'Archive this type?').replace(/'/g, "\\'") %>');">
+              <input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<%= t.id %>">
+              <button type="submit" class="btn btn-sm btn-outline-danger"><%= _tl('pharmacy_shared.archive', 'Archive') %></button>
+            </form>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="modal fade" id="typeModal" tabindex="-1" role="dialog" aria-labelledby="typeModalTitle">
+  <div class="modal-dialog"><div class="modal-content">
+    <form method="post" action="/pharmacy/config/medicine-types" id="typeForm">
+      <div class="modal-header"><h5 class="modal-title" id="typeModalTitle"><%= _tl('pharmacy_config_types.modal_title', 'Medicine type') %></h5><button type="button" class="close" data-dismiss="modal" aria-label="<%= _tl('pharmacy_shared.cancel', 'Cancel') %>"><span aria-hidden="true">&times;</span></button></div>
+      <div class="modal-body">
+        <input type="hidden" name="id" id="typeId" value="">
+        <div class="form-group"><label class="small font-weight-bold"><%= _tl('pharmacy_shared.name', 'Name') %></label><input name="name" id="typeName" class="hms-input w-full" required></div>
+        <div class="form-group mb-0"><label class="small font-weight-bold"><%= _tl('pharmacy_shared.description', 'Description') %></label><textarea name="description" id="typeDesc" class="hms-input w-full" rows="2"></textarea></div>
+      </div>
+      <div class="modal-footer"><button type="button" class="hms-btn hms-btn-secondary" data-dismiss="modal"><%= _tl('pharmacy_shared.cancel', 'Cancel') %></button><button type="submit" class="hms-btn hms-btn-primary"><%= _tl('pharmacy_shared.save', 'Save') %></button></div>
+    </form>
+  </div></div>
+</div>
+<%- include('partials/pharmacy-odoo-end') %>
+<script>
+document.querySelectorAll('.pha-edit-type').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.getElementById('typeId').value = btn.getAttribute('data-id');
+    document.getElementById('typeName').value = btn.getAttribute('data-name');
+    document.getElementById('typeDesc').value = btn.getAttribute('data-desc');
+    $('#typeModal').modal('show');
+  });
+});
+$('#typeModal').on('hidden.bs.modal', function(){ document.getElementById('typeForm').reset(); document.getElementById('typeId').value=''; });
+</script>
+<%- include('partials/footer') %>

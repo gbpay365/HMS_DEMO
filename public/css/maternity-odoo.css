@@ -1,0 +1,34 @@
+/**
+ * Maternity — dept shell accent (nav: hms-dept-nav.css)
+ */
+.maternity-odoo-app {
+  --o-brand: var(--hms-dept-maternity);
+  --o-brand-hover: #db2777;
+  --o-brand-soft: rgba(236, 72, 153, 0.12);
+}
+
+.maternity-odoo-app .o_nav_module--maternity::before {
+  content: '\f182';
+  font-family: FontAwesome;
+  margin-right: 6px;
+  font-weight: normal;
+}
+
+.maternity-odoo-app .o_btn_primary {
+  background: linear-gradient(135deg, var(--hms-dept-maternity), #db2777);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.maternity-odoo-app .o_btn_primary:hover {
+  color: #fff;
+  opacity: 0.92;
+}

@@ -1,0 +1,665 @@
+/**
+ * Director reports — unified executive UI (daily, weekly, monthly P&L, annual).
+ * Uses HMS design tokens; aligns with hms-app-surface / hms-surface-hero.
+ */
+.hms-director-report {
+  --hms-dr-hero-from: #0f172a;
+  --hms-dr-hero-mid: #1e3a5f;
+  --hms-dr-hero-to: #047857;
+  --hms-dr-accent: var(--hms-brand);
+  --hms-dr-accent-soft: var(--hms-brand-soft);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: var(--hms-ink);
+  margin: -0.5rem -1rem 0;
+  min-height: 70vh;
+  width: calc(100% + 2rem);
+  max-width: none;
+}
+
+@media (min-width: 640px) {
+  .hms-director-report {
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    width: calc(100% + 3rem);
+  }
+}
+
+.hms-director-report--weekly {
+  --hms-dr-hero-mid: #4c1d95;
+  --hms-dr-hero-to: #7c3aed;
+  --hms-dr-accent: var(--hms-dept-laboratory);
+}
+
+.hms-director-report--monthly {
+  --hms-dr-hero-mid: #134e4a;
+  --hms-dr-hero-to: var(--hms-brand-dark);
+  --hms-dr-accent: var(--hms-brand-dark);
+}
+
+.hms-director-report--annual {
+  --hms-dr-hero-mid: #312e81;
+  --hms-dr-hero-to: var(--hms-dept-finance);
+  --hms-dr-accent: var(--hms-dept-finance);
+}
+
+/* Portal report switcher — full bleed with report shells */
+.hms-dr-portal-nav {
+  margin-bottom: 1rem;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  width: calc(100% + 2rem);
+  border-radius: var(--hms-surface-radius);
+  background: var(--hms-surface-card);
+  border: 1px solid var(--hms-surface-border);
+  box-shadow: var(--hms-shadow-sm);
+  padding: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .hms-dr-portal-nav {
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    width: calc(100% + 3rem);
+  }
+}
+
+.hms-dr-portal-nav__label {
+  padding: 0.25rem 0.5rem 0.35rem;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hms-ink-muted);
+}
+
+.hms-dr-portal-nav__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.hms-dr-portal-tab {
+  border: 1px solid var(--hms-surface-border);
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--hms-ink-muted);
+  background: var(--hms-bg);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.hms-dr-portal-tab:hover {
+  background: var(--hms-brand-soft);
+  color: var(--hms-brand-hover);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.hms-dr-portal-tab.is-active {
+  background: linear-gradient(135deg, var(--hms-brand) 0%, var(--hms-brand-dark) 100%);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 14px var(--hms-brand-glow);
+}
+
+/* Hero header */
+.hms-dr-hero {
+  background: linear-gradient(135deg, var(--hms-dr-hero-from) 0%, var(--hms-dr-hero-mid) 48%, var(--hms-dr-hero-to) 100%);
+  color: #fff;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+}
+
+@media (min-width: 640px) {
+  .hms-dr-hero {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+.hms-dr-hero__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.hms-dr-hero__icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.hms-dr-hero__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.hms-dr-hero__sub {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.72);
+  margin-top: 2px;
+}
+
+.hms-dr-hero__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.hms-dr-live {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.hms-dr-live__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--hms-brand);
+  box-shadow: 0 0 8px var(--hms-brand);
+}
+
+/* Inner tabs (daily dashboard) */
+.hms-dr-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid var(--hms-surface-border);
+  background: var(--hms-surface-card);
+  overflow-x: auto;
+}
+
+.hms-dr-tab {
+  padding: 10px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--hms-ink-muted);
+  white-space: nowrap;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.hms-dr-tab.is-active {
+  color: var(--hms-brand-hover);
+  border-bottom-color: var(--hms-brand);
+  font-weight: 600;
+}
+
+.hms-dr-tab__badge {
+  margin-left: 6px;
+  font-size: 10px;
+  background: #fee2e2;
+  color: var(--hms-danger);
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-weight: 700;
+}
+
+/* Body */
+.hms-dr-body {
+  padding: 1.25rem 1.5rem 2.5rem;
+  background: transparent;
+}
+
+.hms-dr-body--flush {
+  padding: 0;
+}
+
+.hms-dr-inner {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 1.25rem 1.25rem 2.5rem;
+}
+
+@media (min-width: 640px) {
+  .hms-dr-inner {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+/* Period pills */
+.hms-dr-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.hms-dr-pill {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.88);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.hms-dr-pill:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.hms-dr-pill.is-active {
+  background: #fff;
+  border-color: #fff;
+  color: var(--hms-brand-hover);
+  font-weight: 700;
+}
+
+.hms-dr-pills--surface .hms-dr-pill {
+  border-color: var(--hms-surface-border);
+  background: var(--hms-bg);
+  color: var(--hms-ink-muted);
+}
+
+.hms-dr-pills--surface .hms-dr-pill.is-active {
+  background: var(--hms-brand-soft);
+  border-color: var(--hms-brand);
+  color: var(--hms-brand-hover);
+}
+
+/* KPI grid */
+.hms-dr-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.hms-dr-kpi {
+  background: var(--hms-surface-card);
+  border: 1px solid var(--hms-surface-border);
+  border-radius: var(--hms-surface-radius);
+  padding: 16px 18px;
+  box-shadow: var(--hms-shadow-sm);
+  border-top: 3px solid var(--hms-dr-kpi-accent, var(--hms-brand));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hms-dr-kpi__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.hms-dr-kpi__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--hms-ink-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.hms-dr-kpi__icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  background: var(--hms-dr-kpi-accent-soft, var(--hms-brand-soft));
+  color: var(--hms-dr-kpi-accent, var(--hms-brand));
+  flex-shrink: 0;
+}
+
+.hms-dr-kpi__value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--hms-ink);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.hms-dr-kpi__sub {
+  font-size: 12px;
+  color: var(--hms-ink-muted);
+}
+
+.hms-dr-kpi__delta {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.hms-dr-kpi__delta.is-good { color: var(--hms-brand-hover); }
+.hms-dr-kpi__delta.is-bad { color: var(--hms-danger); }
+.hms-dr-kpi__delta.is-neutral { color: var(--hms-text-tertiary); }
+
+/* Panels */
+.hms-dr-panel {
+  background: var(--hms-surface-card);
+  border: 1px solid var(--hms-surface-border);
+  border-radius: var(--hms-surface-radius);
+  padding: 18px 20px;
+  box-shadow: var(--hms-shadow-sm);
+  margin-bottom: 1rem;
+}
+
+.hms-dr-panel-grid {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.hms-dr-panel-grid--2 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+/* Section headers */
+.hms-dr-section {
+  margin-bottom: 1rem;
+}
+
+.hms-dr-section__eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hms-dr-section-accent, var(--hms-brand));
+  margin-bottom: 2px;
+}
+
+.hms-dr-section__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--hms-ink);
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--hms-dr-section-accent, var(--hms-brand));
+  margin-bottom: 14px;
+}
+
+.hms-dr-section__sub {
+  font-size: 11px;
+  color: var(--hms-ink-muted);
+  margin-top: -10px;
+  margin-bottom: 12px;
+}
+
+/* Period headline */
+.hms-dr-period-head {
+  margin-bottom: 1.25rem;
+}
+
+.hms-dr-period-head__title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--hms-ink);
+}
+
+.hms-dr-period-head__sub {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--hms-ink-muted);
+}
+
+/* Tables */
+.hms-dr-table-wrap {
+  overflow-x: auto;
+}
+
+.hms-dr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.hms-dr-table thead th {
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--hms-ink-muted);
+  border-bottom: 1px solid var(--hms-surface-border);
+}
+
+.hms-dr-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--hms-surface-border);
+  color: var(--hms-ink);
+}
+
+.hms-dr-table tbody tr.is-highlight {
+  background: var(--hms-brand-light);
+}
+
+/* Legend */
+.hms-dr-legend {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.hms-dr-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--hms-ink-muted);
+}
+
+.hms-dr-legend__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+/* Ward cards (daily) */
+.hms-dr-ward-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.hms-dr-ward-card {
+  background: var(--hms-bg);
+  border: 1px solid var(--hms-surface-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.hms-dr-ward-card__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hms-ink);
+  margin-bottom: 6px;
+}
+
+.hms-dr-ward-card__track {
+  height: 4px;
+  background: var(--hms-surface-border);
+  border-radius: 2px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+.hms-dr-ward-card__fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s;
+}
+
+.hms-dr-ward-card__meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--hms-ink-muted);
+}
+
+.hms-dr-ward-pills {
+  display: flex;
+  gap: 4px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+.hms-dr-tag {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.hms-dr-tag--green { background: var(--hms-brand-light); color: var(--hms-brand-hover); }
+.hms-dr-tag--amber { background: #fef3c7; color: #b45309; }
+.hms-dr-tag--muted { background: var(--hms-bg); color: var(--hms-text-tertiary); }
+
+/* Alerts & rows */
+.hms-dr-alert-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--hms-surface-border);
+  background: var(--hms-bg);
+}
+
+.hms-dr-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* P&L rows */
+.hms-dr-pl-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 12px;
+  font-size: 13px;
+}
+
+.hms-dr-pl-row.is-bold {
+  padding: 10px 12px;
+  font-weight: 600;
+}
+
+.hms-dr-pl-row.is-highlight-green {
+  background: var(--hms-brand-light);
+  border-radius: 6px;
+  color: var(--hms-brand-hover);
+  font-weight: 700;
+}
+
+.hms-dr-pl-row.is-highlight-blue {
+  background: #dbeafe;
+  border-radius: 6px;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.hms-dr-pl-row.is-highlight-amber {
+  background: #fef3c7;
+  border-radius: 6px;
+  color: #b45309;
+  font-weight: 700;
+}
+
+.hms-dr-pl-row.has-border {
+  border-top: 1px solid var(--hms-surface-border);
+}
+
+/* Annual score ring panel */
+.hms-dr-score-hero {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.hms-dr-domain-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hms-dr-domain-row__bar {
+  width: 120px;
+  height: 5px;
+  background: var(--hms-surface-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.hms-dr-domain-row__fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+/* States */
+.hms-dr-error {
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  background: #fee2e2;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #b91c1c;
+}
+
+.hms-dr-loading {
+  padding: 4rem 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--hms-ink-muted);
+}
+
+.hms-dr-chart-svg {
+  display: block;
+}
+
+.hms-dr-print-btn {
+  padding: 5px 14px;
+  font-size: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: transparent;
+  color: #fff;
+}
+
+.hms-dr-print-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+@media print {
+  .hms-dr-no-print { display: none !important; }
+  .hms-director-report { margin: 0; }
+  .hms-dr-hero { position: static; box-shadow: none; }
+}

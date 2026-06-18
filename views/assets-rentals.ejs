@@ -1,0 +1,188 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--assets'; %>
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+
+<div class="page-wrapper hms-surface-module">
+ <div class="content">
+  <% if(locals.flash){ %><div class="hms-flash hms-flash--success"><%= flash %></div><% } %>
+  <% if(locals.error){ %><div class="hms-flash hms-flash--error"><%= error %></div><% } %>
+
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+   <div>
+    <h4 class="page-title font-weight-bold text-dark mb-1"><%= _t('assets_rentals.title', { ns: 'legacy', defaultValue: 'Rentals & contracts' }) %></h4>
+    <p class="text-muted small mb-0"><%= _t('assets_rentals.subtitle', { ns: 'legacy', defaultValue: 'Staff housing, apartments, and third-party rental agreements.' }) %></p>
+   </div>
+   <a href="/assets" class="hms-btn hms-btn-secondary btn-sm"><i class="fa fa-arrow-left mr-1"></i><%= _t('assets_registry.back_hub', { ns: 'legacy', defaultValue: 'Assets hub' }) %></a>
+  </div>
+
+  <div class="row">
+   <div class="col-lg-5 mb-4">
+    <div class="card border-0 shadow-sm" style="border-radius:14px;">
+     <div class="card-header bg-white font-weight-bold d-flex justify-content-between align-items-center">
+      <span><%= _t('assets_rentals.units', { ns: 'legacy', defaultValue: 'Rental units' }) %></span>
+      <span class="badge badge-light"><%= units.length %></span>
+     </div>
+     <% if (canWrite) { %>
+     <div class="card-body border-bottom">
+      <form method="post" action="/assets/rentals/units">
+       <div class="form-group mb-2">
+        <label class="font-weight-bold small" for="unitLabel"><%= _t('assets_rentals.unit_label', { ns: 'legacy', defaultValue: 'Unit label' }) %> *</label>
+        <input type="text" id="unitLabel" name="label" class="hms-input w-full" required placeholder="<%= _t('assets_rentals.unit_label_ph', { ns: 'legacy', defaultValue: 'e.g. Block A — Apt 12' }) %>">
+       </div>
+       <div class="row">
+        <div class="col-6 form-group mb-2">
+         <label class="font-weight-bold small" for="unitLocation"><%= _t('assets_form.location', { ns: 'legacy', defaultValue: 'Location' }) %></label>
+         <input type="text" id="unitLocation" name="location" class="hms-input w-full">
+        </div>
+        <div class="col-6 form-group mb-2">
+         <label class="font-weight-bold small" for="unitRent"><%= _t('assets_rentals.monthly_rent', { ns: 'legacy', defaultValue: 'Monthly rent' }) %></label>
+         <input type="number" step="0.01" id="unitRent" name="monthly_rent" class="hms-input w-full">
+        </div>
+       </div>
+       <button type="submit" class="hms-btn hms-btn-primary btn-sm font-weight-bold w-100"><i class="fa fa-plus mr-1"></i><%= _t('assets_rentals.add_unit', { ns: 'legacy', defaultValue: 'Add unit' }) %></button>
+      </form>
+     </div>
+     <% } %>
+     <div class="list-group list-group-flush" style="max-height:420px;overflow:auto;">
+      <% if (!units.length) { %>
+      <div class="list-group-item text-muted small text-center py-4"><%= _t('assets_rentals.no_units', { ns: 'legacy', defaultValue: 'No rental units yet.' }) %></div>
+      <% } %>
+      <% units.forEach(function(u) { %>
+      <div class="list-group-item">
+       <div class="d-flex justify-content-between align-items-start">
+        <div>
+         <div class="font-weight-bold"><%= u.label %></div>
+         <div class="small text-muted"><code><%= u.unit_code %></code><% if (u.location) { %> · <%= u.location %><% } %></div>
+         <% if (u.monthly_rent != null) { %><div class="small mt-1"><%= Number(u.monthly_rent).toLocaleString() %> / <%= _t('assets_rentals.month', { ns: 'legacy', defaultValue: 'month' }) %></div><% } %>
+        </div>
+        <span class="badge badge-<%= statusBadge(u.status) %> text-uppercase extra-small"><%= u.status %></span>
+       </div>
+      </div>
+      <% }); %>
+     </div>
+    </div>
+   </div>
+
+   <div class="col-lg-7 mb-4">
+    <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+     <div class="card-header bg-white font-weight-bold"><%= _t('assets_rentals.contracts', { ns: 'legacy', defaultValue: 'Contracts' }) %></div>
+     <% if (canWrite) { %>
+     <div class="card-body border-bottom">
+      <form method="post" action="/assets/rentals/contracts" class="row">
+       <div class="col-md-6 form-group mb-2">
+        <label class="font-weight-bold small" for="contractUnit"><%= _t('assets_rentals.unit', { ns: 'legacy', defaultValue: 'Unit' }) %> *</label>
+        <select id="contractUnit" name="rental_unit_id" class="hms-input w-full" required>
+         <option value=""><%= _t('assets_rentals.select_unit', { ns: 'legacy', defaultValue: '— Select unit —' }) %></option>
+         <% units.forEach(function(u) { %>
+         <option value="<%= u.id %>"><%= u.unit_code %> — <%= u.label %></option>
+         <% }); %>
+        </select>
+       </div>
+       <div class="col-md-6 form-group mb-2">
+        <label class="font-weight-bold small" for="contractTenant"><%= _t('assets_rentals.tenant', { ns: 'legacy', defaultValue: 'Tenant' }) %> *</label>
+        <input type="text" id="contractTenant" name="tenant_name" class="hms-input w-full" required>
+       </div>
+       <div class="col-md-4 form-group mb-2">
+        <label class="font-weight-bold small" for="contractStart"><%= _t('assets_rentals.start_date', { ns: 'legacy', defaultValue: 'Start date' }) %> *</label>
+        <input type="date" id="contractStart" name="start_date" class="hms-input w-full" required>
+       </div>
+       <div class="col-md-4 form-group mb-2">
+        <label class="font-weight-bold small" for="contractEnd"><%= _t('assets_rentals.end_date', { ns: 'legacy', defaultValue: 'End date' }) %></label>
+        <input type="date" id="contractEnd" name="end_date" class="hms-input w-full">
+       </div>
+       <div class="col-md-4 form-group mb-2">
+        <label class="font-weight-bold small" for="contractAmount"><%= _t('assets_rentals.monthly_amount', { ns: 'legacy', defaultValue: 'Monthly amount' }) %> *</label>
+        <input type="number" step="0.01" id="contractAmount" name="monthly_amount" class="hms-input w-full" required>
+       </div>
+       <div class="col-12">
+        <button type="submit" class="hms-btn hms-btn-primary btn-sm font-weight-bold"><i class="fa fa-file-text-o mr-1"></i><%= _t('assets_rentals.create_contract', { ns: 'legacy', defaultValue: 'Create contract' }) %></button>
+       </div>
+      </form>
+     </div>
+     <% } %>
+     <div class="table-responsive">
+      <table class="table table-sm mb-0">
+       <thead class="bg-light"><tr>
+        <th><%= _t('assets_rentals.unit', { ns: 'legacy', defaultValue: 'Unit' }) %></th>
+        <th><%= _t('assets_rentals.tenant', { ns: 'legacy', defaultValue: 'Tenant' }) %></th>
+        <th><%= _t('assets_rentals.period', { ns: 'legacy', defaultValue: 'Period' }) %></th>
+        <th><%= _t('assets_rentals.monthly_amount', { ns: 'legacy', defaultValue: 'Monthly' }) %></th>
+        <th><%= _t('assets_registry.col_status', { ns: 'legacy', defaultValue: 'Status' }) %></th>
+        <th class="text-right"><%= _t('assets_registry.col_actions', { ns: 'legacy', defaultValue: 'Actions' }) %></th>
+       </tr></thead>
+       <tbody>
+        <% if (!contracts.length) { %>
+        <tr><td colspan="6" class="text-center text-muted py-3"><%= _t('assets_rentals.no_contracts', { ns: 'legacy', defaultValue: 'No contracts yet.' }) %></td></tr>
+        <% } %>
+        <% contracts.forEach(function(c) { %>
+        <tr class="<%= selectedContractId === c.id ? 'table-active' : '' %>">
+         <td><code><%= c.unit_code %></code><div class="small text-muted"><%= c.unit_label %></div></td>
+         <td><%= c.tenant_name %></td>
+         <td class="small"><%= String(c.start_date).slice(0,10) %><% if (c.end_date) { %> → <%= String(c.end_date).slice(0,10) %><% } %></td>
+         <td><%= Number(c.monthly_amount).toLocaleString() %></td>
+         <td><span class="badge badge-<%= statusBadge(c.status) %> text-uppercase extra-small"><%= c.status %></span></td>
+         <td class="text-right text-nowrap">
+          <a href="/assets/rentals?contract=<%= c.id %>" class="hms-btn hms-btn-secondary btn-sm"><%= _t('assets_rentals.payments', { ns: 'legacy', defaultValue: 'Payments' }) %></a>
+          <% if (canWrite && c.status === 'active') { %>
+          <form method="post" action="/assets/rentals/contracts/<%= c.id %>/end" class="d-inline" onsubmit="return confirm('<%= _t('assets_rentals.confirm_end', { ns: 'legacy', defaultValue: 'End this contract?' }) %>');">
+           <button type="submit" class="hms-btn hms-btn-secondary btn-sm"><%= _t('assets_rentals.end_contract', { ns: 'legacy', defaultValue: 'End' }) %></button>
+          </form>
+          <% } %>
+         </td>
+        </tr>
+        <% }); %>
+       </tbody>
+      </table>
+     </div>
+    </div>
+
+    <% if (selectedContractId > 0) { %>
+    <div class="card border-0 shadow-sm" style="border-radius:14px;">
+     <div class="card-header bg-white font-weight-bold"><%= _t('assets_rentals.payment_history', { ns: 'legacy', defaultValue: 'Payment history' }) %></div>
+     <% if (canWrite) { %>
+     <div class="card-body border-bottom">
+      <form method="post" action="/assets/rentals/payments" class="row align-items-end">
+       <input type="hidden" name="contract_id" value="<%= selectedContractId %>">
+       <div class="col-md-3 form-group mb-0">
+        <label class="font-weight-bold small" for="payDate"><%= _t('assets_rentals.paid_date', { ns: 'legacy', defaultValue: 'Paid date' }) %></label>
+        <input type="date" id="payDate" name="paid_at" class="hms-input w-full" required>
+       </div>
+       <div class="col-md-3 form-group mb-0">
+        <label class="font-weight-bold small" for="payAmount"><%= _t('assets_rentals.amount', { ns: 'legacy', defaultValue: 'Amount' }) %></label>
+        <input type="number" step="0.01" id="payAmount" name="amount" class="hms-input w-full" required>
+       </div>
+       <div class="col-md-4 form-group mb-0">
+        <label class="font-weight-bold small" for="payRef"><%= _t('assets_rentals.reference', { ns: 'legacy', defaultValue: 'Reference' }) %></label>
+        <input type="text" id="payRef" name="reference" class="hms-input w-full">
+       </div>
+       <div class="col-md-2 form-group mb-0">
+        <button type="submit" class="hms-btn hms-btn-primary font-weight-bold w-100"><%= _t('assets_rentals.record_payment', { ns: 'legacy', defaultValue: 'Record' }) %></button>
+       </div>
+      </form>
+     </div>
+     <% } %>
+     <div class="table-responsive">
+      <table class="table table-sm mb-0">
+       <thead class="bg-light"><tr><th><%= _t('assets_rentals.paid_date', { ns: 'legacy', defaultValue: 'Paid date' }) %></th><th><%= _t('assets_rentals.amount', { ns: 'legacy', defaultValue: 'Amount' }) %></th><th><%= _t('assets_rentals.reference', { ns: 'legacy', defaultValue: 'Reference' }) %></th></tr></thead>
+       <tbody>
+        <% if (!payments || !payments.length) { %>
+        <tr><td colspan="3" class="text-center text-muted py-3"><%= _t('assets_rentals.no_payments', { ns: 'legacy', defaultValue: 'No payments recorded.' }) %></td></tr>
+        <% } %>
+        <% (payments || []).forEach(function(p) { %>
+        <tr>
+         <td><%= String(p.paid_at).slice(0,10) %></td>
+         <td><%= Number(p.amount).toLocaleString() %></td>
+         <td><%= p.reference || '—' %></td>
+        </tr>
+        <% }); %>
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <% } %>
+   </div>
+  </div>
+ </div>
+</div>
+
+<%- include('partials/footer') %>

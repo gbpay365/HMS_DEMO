@@ -1,0 +1,71 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _tf = function (key, fallback) {
+  return _t(key, { ns: 'financials', defaultValue: fallback });
+};
+var _up = locals.userPerms || [];
+function finHasP() {
+  if (_up.includes('*')) return true;
+  for (var i = 0; i < arguments.length; i++) {
+    if (_up.includes(arguments[i])) return true;
+  }
+  return false;
+}
+var _finNav = locals.finNav || locals.finNavActive || '';
+var _finNavPath = locals.finNavPath || '';
+var _finRailCompact = !!locals.finRailCompact;
+%>
+<div class="fin-rail" role="navigation" aria-label="<%= _tf('rail.aria_label', 'Accounting navigation') %>">
+  <% if (!_finRailCompact) { %>
+  <div class="fin-rail-brand">
+    <%= _tf('rail.brand', 'Accounting') %>
+    <small><%= _tf('rail.brand_sub', 'Books & GL · XAF') %></small>
+  </div>
+  <% } else { %>
+  <div class="fin-rail-brand fin-rail-brand--compact"><%= _tf('rail.brand_compact', 'Accounting · XAF') %></div>
+  <% } %>
+  <div class="fin-rail-section"><%= _tf('rail.section_company', 'Company') %></div>
+  <a href="/financials" class="<%= _finNav==='dashboard'?'active':'' %>"><i class="fa fa-dashboard"></i> <%= _tf('rail.dashboard', 'Dashboard') %></a>
+  <% if(finHasP('billing.read','billing.write','accounting.read','accounting.write')){ %>
+  <a href="/billing" class="<%= _finNav==='billing'?'active':'' %>"><i class="fa fa-credit-card"></i> <%= _tf('rail.billing', 'Billing workspace') %></a>
+  <% } %>
+  <div class="fin-rail-section"><%= _tf('rail.section_money', 'Money in / out') %></div>
+  <a href="/financials/journal" class="<%= _finNav==='journal'?'active':'' %>"><i class="fa fa-exchange"></i> <%= _tf('rail.journal', 'Journal') %></a>
+  <a href="/financials/expenses" class="<%= _finNav==='expenses'?'active':'' %>"><i class="fa fa-credit-card"></i> <%= _tf('rail.expenses', 'Expenses') %></a>
+  <% if(finHasP('cashier.read','cashier.write')){ %>
+  <a href="/cashier" class="<%= _finNav==='cashier'?'active':'' %>"><i class="fa fa-money"></i> <%= _tf('rail.receive_payment', 'Receive payment') %></a>
+  <% } %>
+  <a href="/financials/treasury" class="<%= _finNav==='banking'?'active':'' %>"><i class="fa fa-university"></i> <%= _tf('rail.banking', 'Banking') %></a>
+  <a href="/financials/bank-reconciliation" class="<%= _finNav==='reconcile'?'active':'' %>"><i class="fa fa-check-square-o"></i> <%= _tf('rail.reconcile', 'Reconcile') %></a>
+  <div class="fin-rail-section"><%= _tf('rail.section_books', 'Books') %></div>
+  <a href="/financials/accounts" class="<%= _finNav==='coa'?'active':'' %>"><i class="fa fa-sitemap"></i> <%= _tf('rail.coa', 'Chart of accounts') %></a>
+  <a href="/financials/general-ledger" class="<%= _finNav==='gl'?'active':'' %>"><i class="fa fa-book"></i> <%= _tf('rail.gl', 'General ledger') %></a>
+  <a href="/financials/trial-balance" class="<%= _finNav==='tb'?'active':'' %>"><i class="fa fa-balance-scale"></i> <%= _tf('rail.trial_balance', 'Trial balance') %></a>
+  <div class="fin-rail-section"><%= _tf('rail.section_reports', 'Reports') %></div>
+  <a href="/financials/balance-sheet" class="<%= _finNav==='bs'?'active':'' %>"><i class="fa fa-pie-chart"></i> <%= _tf('rail.balance_sheet', 'Balance sheet') %></a>
+  <a href="/financials/cash-flow" class="<%= _finNav==='cf'?'active':'' %>"><i class="fa fa-line-chart"></i> <%= _tf('rail.cash_flow', 'Cash flow') %></a>
+  <a href="/financials/accounts-receivable" class="<%= _finNav==='ar'?'active':'' %>"><i class="fa fa-user"></i> <%= _tf('rail.receivables', 'Receivables') %></a>
+  <a href="/financials/accounts-payable" class="<%= _finNav==='ap'?'active':'' %>"><i class="fa fa-file-text"></i> <%= _tf('rail.payables', 'Payables') %></a>
+  <a href="/financials/statement-monthly" class="<%= _finNav==='reports'?'active':'' %>"><i class="fa fa-file-text-o"></i> <%= _tf('rail.monthly_statement', 'Monthly statement') %></a>
+  <a href="/financials/year-end" class="<%= _finNav==='reports'?'active':'' %>"><i class="fa fa-calendar"></i> <%= _tf('rail.year_end', 'Year-end') %></a>
+  <a href="/financials/tax" class="<%= _finNav==='reports'?'active':'' %>"><i class="fa fa-percent"></i> <%= _tf('rail.tax_worksheets', 'Tax worksheets') %></a>
+  <% if(finHasP('accounting.read','accounting.write')){ %>
+  <a href="/tax" class="<%= _finNav==='tax_hub'?'active':'' %>"><i class="fa fa-institution"></i> <%= _tf('rail.tax_compliance', 'Tax & compliance') %></a>
+  <% } %>
+  <div class="fin-rail-section"><%= _tf('rail.section_tools', 'Tools') %></div>
+  <a href="/financials/sync-gl" class="<%= _finNav==='sync'?'active':'' %>"><i class="fa fa-refresh"></i> <%= _tf('rail.sync_gl', 'Sync to GL') %></a>
+  <a href="/financials/journal-loader" class="<%= _finNav==='journal'?'active':'' %>"><i class="fa fa-upload"></i> <%= _tf('rail.journal_loader', 'Journal loader') %></a>
+  <a href="/financials/journal-diagnostics" class="<%= _finNav==='diag'?'active':'' %>"><i class="fa fa-stethoscope"></i> <%= _tf('rail.diagnostics', 'Diagnostics') %></a>
+  <a href="/financials/platform-overview" class="<%= _finNav==='setup'?'active':'' %>"><i class="fa fa-wrench"></i> <%= _tf('rail.help_setup', 'Help & setup') %></a>
+  <div class="fin-rail-section"><%= _tf('rail.section_planned', 'Planned') %></div>
+  <a href="/financials/sync-billing" class="fin-rail-link--planned <%= _finNav==='planned' && _finNavPath==='sync-billing'?'active':'' %>"><i class="fa fa-link"></i> <%= _tf('rail.sync_billing', 'Sync billing to GL') %> <span class="fin-rail-badge"><%= _tf('rail.badge_soon', 'Soon') %></span></a>
+  <a href="/financials/gl-repair" class="fin-rail-link--planned <%= _finNav==='planned' && _finNavPath==='gl-repair'?'active':'' %>"><i class="fa fa-wrench"></i> <%= _tf('rail.gl_repair', 'GL repair') %> <span class="fin-rail-badge"><%= _tf('rail.badge_soon', 'Soon') %></span></a>
+  <a href="/financials/cost-centers" class="fin-rail-link--planned <%= _finNav==='planned' && _finNavPath==='cost-centers'?'active':'' %>"><i class="fa fa-sitemap"></i> <%= _tf('rail.cost_centers', 'Cost centers') %> <span class="fin-rail-badge"><%= _tf('rail.badge_soon', 'Soon') %></span></a>
+  <a href="/financials/statement-annual" class="fin-rail-link--planned <%= _finNav==='planned' && _finNavPath==='statement-annual'?'active':'' %>"><i class="fa fa-file-text-o"></i> <%= _tf('rail.statement_annual', 'Annual statement') %> <span class="fin-rail-badge"><%= _tf('rail.badge_soon', 'Soon') %></span></a>
+  <a href="/financials/month-end" class="fin-rail-link--planned <%= _finNav==='planned' && _finNavPath==='month-end'?'active':'' %>"><i class="fa fa-calendar-check-o"></i> <%= _tf('rail.month_end', 'Month-end P&L') %> <span class="fin-rail-badge"><%= _tf('rail.badge_soon', 'Soon') %></span></a>
+  <% if(finHasP('payroll.read','payroll.write')){ %>
+  <a href="/payroll" class="<%= _finNav==='payroll'?'active':'' %>"><i class="fa fa-money"></i> <%= _tf('rail.payroll_hr', 'Payroll & HR') %></a>
+  <% } %>
+</div>

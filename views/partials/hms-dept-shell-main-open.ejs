@@ -1,0 +1,12 @@
+    </nav>
+    <%- include('hms-dept-nav-right', { deptNavUser: typeof deptNavUser !== 'undefined' ? deptNavUser : undefined }) %>
+  </header>
+  <main class="o_action_manager">
+    <% if (typeof flash === 'string' && flash) { %><div class="o_flash o_flash_success"><%= flash %></div><% } %>
+    <% if (typeof error === 'string' && error) { %><div class="o_flash o_flash_error"><%= error %></div><% } %>
+    <% if (typeof deptPageTitle !== 'undefined' && deptPageTitle) { %>
+    <div class="o_control_panel">
+      <div class="o_cp_title"><h1><%= deptPageTitle %></h1></div>
+      <% if (typeof deptPageActions !== 'undefined' && deptPageActions) { %><div class="o_cp_actions"><%- deptPageActions %></div><% } %>
+    </div>
+    <% } %>

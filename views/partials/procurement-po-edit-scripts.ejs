@@ -1,0 +1,47 @@
+<%
+var _pfx = (typeof poEditPrefix !== 'undefined' && poEditPrefix) ? poEditPrefix : '';
+var _poModeId = _pfx ? _pfx + 'PoMode' : 'poMode';
+var _summaryId = _pfx ? _pfx + 'SummaryBlock' : 'summaryBlock';
+var _linesId = _pfx ? _pfx + 'LinesBlock' : 'linesBlock';
+var _linesBodyId = _pfx ? _pfx + 'PoLinesBody' : 'poLinesBody';
+var _addLineId = _pfx ? _pfx + 'AddLineBtn' : 'addLineBtn';
+%>
+<script>
+(function(){
+  var mode = document.getElementById('<%= _poModeId %>');
+  var summaryBlock = document.getElementById('<%= _summaryId %>');
+  var linesBlock = document.getElementById('<%= _linesId %>');
+  if (!mode || !summaryBlock || !linesBlock) return;
+  function syncMode(){
+    var isSummary = mode.value === 'summary';
+    summaryBlock.style.display = isSummary ? 'block' : 'none';
+    linesBlock.style.display = isSummary ? 'none' : 'block';
+  }
+  mode.addEventListener('change', syncMode);
+  syncMode();
+  var body = document.getElementById('<%= _linesBodyId %>');
+  var addBtn = document.getElementById('<%= _addLineId %>');
+  if (!body || !addBtn) return;
+  var tpl = body.querySelector('.po-line-row');
+  if (!tpl) return;
+  addBtn.addEventListener('click', function(){
+    var row = tpl.cloneNode(true);
+    row.querySelectorAll('input').forEach(function(i){
+      if (i.name === 'line_quantity') i.value = '1 Pack';
+      else if (i.name === 'line_unit_price') i.value = '0';
+      else if (i.name === 'line_description') i.value = '';
+    });
+    row.querySelectorAll('select').forEach(function(s){ s.selectedIndex = 0; });
+    var rm = document.createElement('button');
+    rm.type = 'button';
+    rm.className = 'btn btn-link text-danger btn-sm po-rm';
+    rm.textContent = '×';
+    rm.onclick = function(){ row.remove(); };
+    row.cells[3].appendChild(rm);
+    body.appendChild(row);
+  });
+  body.addEventListener('click', function(e){
+    if (e.target.classList.contains('po-rm')) e.target.closest('tr').remove();
+  });
+})();
+</script>

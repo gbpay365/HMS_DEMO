@@ -1,0 +1,27 @@
+<%
+/**
+ * Clickable KPI tile — mirrors React SurfaceStatLink.
+ * Locals: href, label, value, icon, color, valueless, hint, shortcutLabel
+ */
+var _color = (typeof color !== 'undefined' && color) ? color : '#475569';
+var _icon = (typeof icon !== 'undefined' && icon) ? String(icon).trim() : 'fa-bar-chart';
+if (_icon.indexOf('fa-') !== 0) _icon = 'fa-' + _icon;
+var _href = (typeof href !== 'undefined' && href) ? href : '#';
+var _valueless = typeof valueless !== 'undefined' && !!valueless;
+var _label = (typeof label !== 'undefined') ? label : '';
+var _hint = (typeof hint !== 'undefined' && hint) ? hint : '';
+var _shortcut = (typeof shortcutLabel !== 'undefined' && shortcutLabel) ? shortcutLabel : 'Open →';
+%>
+<a href="<%= _href %>" class="hms-stat-link" style="--hms-stat-accent: <%= _color %>;">
+ <span class="hms-stat-link__orb" aria-hidden="true"></span>
+ <span class="hms-stat-link__icon"><i class="fa <%= _icon %>" aria-hidden="true"></i></span>
+ <span class="hms-stat-link__body">
+  <span class="hms-stat-link__label"><%= _label %></span>
+  <% if (_valueless) { %>
+  <span class="hms-stat-link__shortcut"><%= _shortcut %></span>
+  <% } else { %>
+  <span class="hms-stat-link__value"><%= (typeof value !== 'undefined' && value != null) ? value : 0 %></span>
+  <% } %>
+  <% if (_hint) { %><span class="hms-stat-link__hint"><%= _hint %></span><% } %>
+ </span>
+</a>

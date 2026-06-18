@@ -1,0 +1,200 @@
+<%- include('partials/header') %>
+
+<div class="page-wrapper">
+ <div class="content">
+ <% if(locals.flash){ %><div class="alert alert-success border-0 shadow-sm mb-3"><%= flash %></div><% } %>
+ <% if(locals.error){ %><div class="alert alert-danger border-0 shadow-sm mb-3"><%= error %></div><% } %>
+
+ <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+  <div>
+   <h4 class="page-title font-weight-bold text-dark mb-1">Purchase order <%= po.po_number %></h4>
+   <p class="text-muted small mb-0">
+    Status: <span class="badge badge-<%= po.status==='draft'?'warning':(po.status==='approved'?'success':'info') %>-light text-uppercase"><%= po.status %></span>
+    · Total: <strong><%= Number(po.total_amount || 0).toLocaleString() %> XAF</strong>
+    <% if (po.po_mode === 'summary') { %> · <span class="badge badge-secondary">Summary PO</span><% } %>
+   </p>
+   <% if (po.recall_reason) { %><p class="small text-warning mb-0 mt-1"><i class="fa fa-undo mr-1"></i>Recalled for correction: <%= po.recall_reason %></p><% } %>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+   <a href="/procurement/purchase-orders" class="btn btn-outline-secondary btn-sm rounded-pill"><i class="fa fa-arrow-left mr-1"></i>All POs</a>
+   <% if (locals.poEditable) { %>
+   <button type="button" class="btn btn-outline-warning btn-sm rounded-pill font-weight-bold" data-toggle="modal" data-target="#poEditModal">
+    <i class="fa fa-pencil mr-1"></i><%= ['approved','issued','received'].includes(String(po.status)) ? 'Recall & edit' : 'Edit PO' %>
+   </button>
+   <% } %>
+  </div>
+ </div>
+
+ <div class="card border-0 shadow-sm rounded-xl mb-3">
+  <div class="card-body">
+   <div class="row small">
+    <div class="col-md-4"><strong>Supplier</strong><br><%= po.supplier_name || '—' %></div>
+    <div class="col-md-4"><strong>Created</strong><br><%= po.created_at ? new Date(po.created_at).toLocaleString() : '—' %></div>
+    <div class="col-md-4"><strong>Sent to vendor</strong><br><%= po.sent_to_vendor_at ? new Date(po.sent_to_vendor_at).toLocaleString() : '—' %></div>
+   </div>
+   <% if (po.summary_description) { %>
+   <div class="mt-3 p-3 bg-light rounded"><strong>Description</strong><br><%= po.summary_description %></div>
+   <% } %>
+   <% if (po.po_notes) { %><p class="small mt-3 mb-0"><strong>Notes:</strong> <%= po.po_notes %></p><% } %>
+  </div>
+ </div>
+
+ <% if (canWrite) { %>
+ <div class="card border-0 shadow-sm rounded-xl mb-3">
+  <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+   <% if (String(po.status) === 'draft') { %>
+   <button type="button" class="btn btn-outline-primary btn-sm font-weight-bold" data-toggle="modal" data-target="#poEditModal"><i class="fa fa-pencil mr-1"></i>Edit</button>
+   <form method="post" action="/procurement/purchase-orders/<%= po.id %>/approve" class="d-inline">
+    <button type="submit" class="btn btn-success font-weight-bold btn-sm">Approve PO</button>
+   </form>
+   <% } %>
+   <% if (['approved','issued'].includes(String(po.status))) { %>
+   <button type="button" class="btn btn-outline-warning btn-sm font-weight-bold" data-toggle="modal" data-target="#poEditModal">
+    <i class="fa fa-undo mr-1"></i>Recall &amp; edit
+   </button>
+   <a href="/procurement/purchase-orders/<%= po.id %>/print?print=1" class="btn btn-outline-secondary btn-sm font-weight-bold" target="_blank"><i class="fa fa-print mr-1"></i>Print / PDF</a>
+   <form method="post" action="/procurement/purchase-orders/<%= po.id %>/send" class="d-inline-flex flex-wrap align-items-center gap-2">
+    <input type="email" name="vendor_email" class="form-control form-control-sm" style="width:220px;" placeholder="Vendor email" value="<%= po.vendor_email || '' %>">
+    <input type="text" name="cover_note" class="form-control form-control-sm" style="width:200px;" placeholder="Cover note">
+    <button type="submit" class="btn btn-primary btn-sm font-weight-bold">Send to vendor</button>
+   </form>
+   <% if (!smtpReady) { %><span class="small text-muted">SMTP not configured — use Print/PDF.</span><% } %>
+   <form method="post" action="/procurement/purchase-orders/<%= po.id %>/receive" class="d-inline" onsubmit="return confirm('Receive goods and update inventory?');">
+    <button type="submit" class="btn btn-indigo btn-sm font-weight-bold">Receive goods</button>
+   </form>
+   <% } %>
+   <% if (String(po.status) === 'received' && locals.poEditable) { %>
+   <button type="button" class="btn btn-outline-warning btn-sm font-weight-bold" data-toggle="modal" data-target="#poEditModal">
+    <i class="fa fa-pencil mr-1"></i>Recall &amp; edit
+   </button>
+   <% } %>
+  </div>
+ </div>
+ <% } %>
+
+ <div class="card border-0 shadow-sm rounded-xl mb-3">
+  <div class="card-header bg-white border-bottom font-weight-bold">Lines</div>
+  <div class="table-responsive">
+   <table class="table table-hover mb-0 hms-table-v3">
+    <thead class="bg-light">
+     <tr>
+      <th>SKU</th>
+      <th>Item</th>
+      <th class="text-right">Unit price</th>
+      <th class="text-right">Qty</th>
+      <th class="text-right">Line total</th>
+     </tr>
+    </thead>
+    <tbody>
+     <% (lines || []).forEach(function(ln){ %>
+     <tr>
+      <td><code><%= ln.sku || '—' %></code></td>
+      <td><%= ln.item_name || ln.description || ('#' + (ln.inventory_item_id || '—')) %></td>
+      <td class="text-right"><%= Number(ln.unit_price || 0).toLocaleString() %></td>
+      <td class="text-right"><%= typeof fmtPoQty === 'function' ? fmtPoQty(ln.quantity, ln.uom) : ln.quantity %></td>
+      <td class="text-right font-weight-bold"><%= (Number(ln.quantity||0) * Number(ln.unit_price||0)).toLocaleString() %></td>
+     </tr>
+     <% }) %>
+     <% if (!(lines || []).length) { %>
+     <tr><td colspan="6" class="text-center text-muted py-4">No line items — summary PO or attach documents to generate lines.</td></tr>
+     <% } %>
+    </tbody>
+   </table>
+  </div>
+ </div>
+
+ <div class="row">
+  <div class="col-lg-6">
+   <div class="card border-0 shadow-sm rounded-xl mb-3">
+    <div class="card-header bg-white font-weight-bold">Attachments</div>
+    <div class="card-body">
+     <% if ((attachments||[]).length) { %>
+      <% attachments.forEach(function(att){ %>
+      <div class="d-flex align-items-center mb-2 pb-2 border-bottom">
+       <i class="fa fa-file-o mr-2 text-muted"></i>
+       <a href="/procurement/purchase-orders/<%= po.id %>/attachments/<%= att.id %>/download"><%= att.original_name %></a>
+       <span class="badge badge-light ml-2"><%= att.doc_type %></span>
+       <% if (canWrite && !att.import_parsed && ['draft','approved','issued'].includes(String(po.status))) { %>
+       <form method="post" action="/procurement/purchase-orders/<%= po.id %>/generate-lines" class="ml-auto">
+        <input type="hidden" name="attachment_id" value="<%= att.id %>">
+        <button type="submit" class="btn btn-xs btn-outline-success btn-sm" onclick="return confirm('Generate PO lines from this file?');">→ Lines</button>
+       </form>
+       <% } %>
+      </div>
+      <% }); %>
+     <% } else { %><p class="text-muted small mb-0">No attachments yet.</p><% } %>
+     <% if (canWrite) { %>
+     <form method="post" action="/procurement/purchase-orders/<%= po.id %>/attachments" enctype="multipart/form-data" class="mt-3">
+      <div class="form-row align-items-end">
+       <div class="form-group col-md-6 mb-0">
+        <input type="file" name="attachment" class="form-control-file" accept=".csv,.xlsx,.xls,.pdf,.doc,.docx,.png,.jpg,.jpeg" required>
+       </div>
+       <div class="form-group col-md-4 mb-0">
+        <select name="doc_type" class="form-control form-control-sm">
+         <option value="quotation">Quotation</option>
+         <option value="bl">Bill of lading</option>
+         <option value="invoice">Invoice</option>
+         <option value="import_source">Import / spreadsheet</option>
+         <option value="other">Other</option>
+        </select>
+       </div>
+       <div class="form-group col-md-2 mb-0">
+        <button type="submit" class="btn btn-sm btn-primary btn-block">Upload</button>
+       </div>
+      </div>
+     </form>
+     <% } %>
+    </div>
+   </div>
+  </div>
+  <div class="col-lg-6">
+   <div class="card border-0 shadow-sm rounded-xl mb-3">
+    <div class="card-header bg-white font-weight-bold">Audit trail</div>
+    <div class="card-body p-0" style="max-height:280px;overflow:auto;">
+     <% if ((audit||[]).length) { %>
+     <ul class="list-group list-group-flush small">
+      <% audit.forEach(function(a){ %>
+      <li class="list-group-item">
+       <strong class="text-uppercase"><%= a.action %></strong>
+       <% if (a.from_status || a.to_status) { %> · <%= a.from_status || '—' %> → <%= a.to_status || '—' %><% } %>
+       <div class="text-muted"><%= a.performed_at ? new Date(a.performed_at).toLocaleString() : '' %> · <%= a.performed_by_name || ('User #' + a.performed_by) %></div>
+       <% if (a.note) { %><div><%= a.note %></div><% } %>
+      </li>
+      <% }); %>
+     </ul>
+     <% } else { %><p class="text-muted small p-3 mb-0">No audit events yet.</p><% } %>
+    </div>
+   </div>
+  </div>
+ </div>
+ </div>
+</div>
+
+<% if (locals.poEditable) { %>
+<div class="modal fade" id="poEditModal" tabindex="-1" role="dialog" aria-labelledby="poEditModalLabel">
+ <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+  <form method="post" action="/procurement/purchase-orders/<%= po.id %>/update" class="modal-content">
+   <div class="modal-header">
+    <h5 class="modal-title font-weight-bold" id="poEditModalLabel">Edit PO <%= po.po_number %></h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+   </div>
+   <div class="modal-body">
+    <%- include('partials/procurement-po-edit-form', { poEditPrefix: 'modal' }) %>
+   </div>
+   <div class="modal-footer">
+    <button type="button" class="hms-btn hms-btn-secondary" data-dismiss="modal">Cancel</button>
+    <button type="submit" class="hms-btn hms-btn-primary font-weight-bold">Save changes</button>
+   </div>
+  </form>
+ </div>
+</div>
+<% } %>
+
+<style>.extra-small{font-size:0.65rem;}</style>
+<% if (locals.poEditable) { %>
+<%- include('partials/procurement-po-edit-scripts', { poEditPrefix: 'modal' }) %>
+<% if (locals.openEditModal) { %>
+<script>$(function(){ $('#poEditModal').modal('show'); });</script>
+<% } %>
+<% } %>
+<%- include('partials/footer') %>

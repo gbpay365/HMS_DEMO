@@ -1,0 +1,19 @@
+[2026-05-16T01:00:19.877Z] === HMS patch.js starting ===
+[2026-05-16T01:00:19.889Z] cwd: C:\HMS_JS
+[2026-05-16T01:00:19.889Z] __dirname: C:\HMS_JS
+[2026-05-16T01:00:19.889Z] Node.js: v24.12.0
+[2026-05-16T01:00:19.889Z] Checking for broken nested mysql2 at: C:\HMS_JS\node_modules\express-mysql-session\node_modules\mysql2
+[2026-05-16T01:00:19.890Z] FOUND broken nested mysql2. Deleting...
+[2026-05-16T01:00:19.961Z] SUCCESS: Deleted broken nested mysql2 folder.
+[2026-05-16T01:00:19.962Z] INFO: No lock file at: C:\Users\Souleman\nodevenv\HMS_JS\.lock
+[2026-05-16T01:00:19.962Z] INFO: No lock file at: C:\HMS_JS\.lock
+[2026-05-16T01:00:19.962Z] INFO: No lock file at: C:\HMS_JS\tmp\.lock
+[2026-05-16T01:00:20.191Z] SUCCESS: Top-level mysql2 loads OK (will be used by express-mysql-session).
+[2026-05-16T01:00:20.227Z] SUCCESS: express-mysql-session loads OK after fix! Sessions will use MySQL.
+[2026-05-16T01:00:20.227Z] 
+[2026-05-16T01:00:20.227Z] === Patch complete. Next steps: ===
+[2026-05-16T01:00:20.228Z]   1. Click STOP in cPanel Setup Node.js App
+[2026-05-16T01:00:20.228Z]   2. Change startup file from patch.js back to: app.js
+[2026-05-16T01:00:20.228Z]   3. Click SAVE, then click START
+[2026-05-16T01:00:20.228Z]   4. Visit https://localhost:3004/ to confirm it works
+[2026-05-16T01:00:20.228Z] 

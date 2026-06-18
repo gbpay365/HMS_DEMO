@@ -1,0 +1,534 @@
+/**
+ * Accounting module — Odoo 17-style views (OHADA / XAF context)
+ * Scoped under .acc-odoo inside .hms-module-odoo-app
+ */
+.acc-odoo {
+  --acc-brand: #714b67;
+  --acc-brand-dark: #5c3d54;
+  --acc-accent: #1e3a5f;
+  --acc-ohada: #0f766e;
+  --acc-border: #dee2e6;
+  --acc-muted: #6c757d;
+  --acc-bg: #f8f9fa;
+  --acc-surface: #ffffff;
+  --acc-success: #198754;
+  --acc-danger: #dc3545;
+}
+
+/* OHADA context strip */
+.acc-ohada-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 8px 14px;
+  margin-bottom: 14px;
+  background: linear-gradient(90deg, #ecfdf5 0%, #f0f9ff 100%);
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #134e4a;
+}
+.acc-ohada-strip strong { color: #0f766e; }
+.acc-ohada-strip .acc-ohada-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 10px;
+  background: #fff;
+  border: 1px solid #99f6e4;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.72rem;
+}
+
+/* Control panel (Odoo list/form header) */
+.acc-odoo .o_control_panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 0;
+  background: var(--acc-surface);
+  border: 1px solid var(--acc-border);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+}
+.acc-odoo .o_cp_left { flex: 1; min-width: 200px; }
+.acc-odoo .o_cp_title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #212529;
+  margin: 0 0 2px;
+  line-height: 1.3;
+}
+.acc-odoo .o_cp_subtitle {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--acc-muted);
+}
+.acc-odoo .o_cp_right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.acc-odoo .o_btn_primary {
+  background: var(--acc-brand);
+  border: 1px solid var(--acc-brand-dark);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 6px 14px;
+  border-radius: 4px;
+  text-decoration: none !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.acc-odoo .o_btn_primary:hover {
+  background: var(--acc-brand-dark);
+  color: #fff;
+}
+.acc-odoo .o_btn_secondary {
+  background: #fff;
+  border: 1px solid var(--acc-border);
+  color: #495057;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 4px;
+  text-decoration: none !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.acc-odoo .o_btn_secondary:hover {
+  background: var(--acc-bg);
+}
+
+/* Primary create action (matches hms-odoo .o_cp_new in module shell) */
+.acc-odoo .o_cp_new,
+.hms-module-odoo-app .acc-nav-new-journal.o_cp_new {
+  background: var(--o-brand, var(--acc-brand));
+  border: 1px solid var(--o-brand-hover, var(--acc-brand-dark));
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 6px 14px;
+  border-radius: 4px;
+  text-decoration: none !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.acc-odoo .o_cp_new:hover,
+.hms-module-odoo-app .acc-nav-new-journal.o_cp_new:hover {
+  background: var(--o-brand-hover, var(--acc-brand-dark));
+  color: #fff;
+}
+.hms-module-odoo-app .o_web_navbar .acc-nav-new-journal {
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+/* Search bar */
+.acc-odoo .o_searchview {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--acc-border);
+  border-radius: 4px;
+  background: #fff;
+  overflow: hidden;
+  min-width: 200px;
+}
+.acc-odoo .o_searchview input {
+  border: none;
+  box-shadow: none;
+  font-size: 0.85rem;
+  padding: 6px 10px;
+  flex: 1;
+  min-width: 120px;
+}
+.acc-odoo .o_searchview .o_search_icon {
+  padding: 0 10px;
+  color: var(--acc-muted);
+  border-right: 1px solid var(--acc-border);
+}
+
+/* List view */
+.acc-odoo .o_content {
+  background: var(--acc-surface);
+  border: 1px solid var(--acc-border);
+  border-radius: 0 0 6px 6px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.acc-odoo .o_list_view {
+  width: 100%;
+  margin: 0;
+  font-size: 0.85rem;
+}
+.acc-odoo .o_list_view thead {
+  background: #f8f9fa;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.acc-odoo .o_list_view thead th {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--acc-muted);
+  border-bottom: 2px solid var(--acc-border);
+  padding: 10px 12px;
+  white-space: nowrap;
+}
+.acc-odoo .o_list_view tbody td {
+  padding: 10px 12px;
+  vertical-align: middle;
+  border-top: 1px solid #f1f3f5;
+}
+.acc-odoo .o_list_row {
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.acc-odoo .o_list_row:hover {
+  background: #f8f4f8;
+}
+.acc-odoo .o_list_row.o_selected {
+  background: #ede9fe;
+}
+.acc-odoo .o_list_empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--acc-muted);
+}
+.acc-odoo .o_list_empty i {
+  font-size: 2rem;
+  opacity: 0.35;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Dashboard — block layout (override hms-odoo.css grid on .o_dashboard) */
+.hms-module-odoo-app .acc-odoo .o_dashboard,
+.acc-odoo .o_dashboard {
+  display: block !important;
+  padding: 0 !important;
+  grid-template-columns: none !important;
+  gap: 0 !important;
+}
+
+/* Legacy QuickBooks rail must not appear in Odoo accounting shell */
+.fin-module--odoo .fin-rail,
+.fin-module--odoo .fin-layout .fin-rail {
+  display: none !important;
+}
+.fin-module--odoo .fin-layout {
+  display: block !important;
+}
+.fin-module--odoo .fin-main,
+.fin-module--odoo .fin-main--odoo {
+  padding-left: 0 !important;
+  width: 100% !important;
+}
+
+/* Compact OHADA context (horizontal, not sidebar) */
+.acc-odoo .acc-ohada-strip {
+  margin-bottom: 12px;
+}
+
+/* Dashboard quick nav (horizontal tabs under control panel) */
+.acc-odoo .acc-dash-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 0 14px;
+  margin: 0;
+  list-style: none;
+  border-bottom: 1px solid var(--acc-border);
+  margin-bottom: 16px;
+}
+.acc-odoo nav.acc-dash-nav {
+  display: flex;
+  flex-wrap: wrap;
+}
+.acc-odoo .acc-dash-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #495057;
+  text-decoration: none !important;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+.acc-odoo .acc-dash-nav a:hover {
+  background: #f3f4f6;
+  color: var(--acc-brand);
+}
+.acc-odoo .acc-dash-nav a.is-active {
+  background: #faf5f9;
+  border-color: var(--acc-border);
+  color: var(--acc-brand);
+}
+.acc-odoo .o_stat_row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.acc-odoo .o_stat_card {
+  background: var(--acc-surface);
+  border: 1px solid var(--acc-border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  text-decoration: none !important;
+  color: inherit;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.acc-odoo .o_stat_card:hover {
+  border-color: var(--acc-brand);
+  box-shadow: 0 4px 12px rgba(113, 75, 103, 0.12);
+}
+.acc-odoo .o_stat_label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--acc-muted);
+  margin-bottom: 4px;
+}
+.acc-odoo .o_stat_value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #212529;
+  line-height: 1.2;
+}
+.acc-odoo .o_stat_value small {
+  font-size: 0.55em;
+  font-weight: 600;
+  color: var(--acc-muted);
+}
+.acc-odoo .o_stat_value.positive { color: var(--acc-success); }
+.acc-odoo .o_stat_value.negative { color: var(--acc-danger); }
+.acc-odoo .o_stat_hint {
+  font-size: 0.75rem;
+  color: var(--acc-muted);
+  margin-top: 6px;
+}
+.acc-odoo .o_dash_grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 992px) {
+  .acc-odoo .o_dash_grid { grid-template-columns: 1fr; }
+}
+.acc-odoo .o_panel {
+  background: var(--acc-surface);
+  border: 1px solid var(--acc-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.acc-odoo .o_panel_hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--acc-border);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.acc-odoo .o_panel_bd { padding: 0; }
+.acc-odoo .o_app_tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+  padding: 14px;
+}
+.acc-odoo .o_app_tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 14px 8px;
+  border: 1px solid var(--acc-border);
+  border-radius: 6px;
+  text-decoration: none !important;
+  color: #495057;
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: background 0.12s, border-color 0.12s;
+}
+.acc-odoo .o_app_tile:hover {
+  background: #faf5f9;
+  border-color: var(--acc-brand);
+  color: var(--acc-brand);
+}
+.acc-odoo .o_app_tile i {
+  font-size: 1.35rem;
+  margin-bottom: 8px;
+  color: var(--acc-brand);
+}
+
+/* Form view (journal entry, settings) */
+.acc-odoo .o_form_view {
+  background: var(--acc-surface);
+  border: 1px solid var(--acc-border);
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+.acc-odoo .o_form_status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #faf5f9;
+  border-bottom: 1px solid var(--acc-border);
+  font-size: 0.8rem;
+}
+.acc-odoo .o_form_sheet {
+  padding: 16px 20px 20px;
+}
+.acc-odoo .o_form_label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--acc-muted);
+  margin-bottom: 4px;
+}
+.acc-odoo .o_form_footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 12px 16px;
+  border-top: 1px solid var(--acc-border);
+  background: #fafafa;
+}
+
+/* OHADA class badges in COA */
+.acc-odoo .acc-class-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+/* Odoo modals */
+.acc-odoo-modal .modal-content {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+.acc-odoo-modal .modal-header {
+  background: var(--acc-brand);
+  color: #fff;
+  border-radius: 8px 8px 0 0;
+  padding: 12px 16px;
+}
+.acc-odoo-modal .modal-header .close {
+  color: #fff;
+  opacity: 0.9;
+  text-shadow: none;
+}
+.acc-odoo-modal .modal-title {
+  font-weight: 700;
+  font-size: 1rem;
+}
+.acc-odoo-modal .o_modal_action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--acc-border);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  text-decoration: none !important;
+  color: #212529;
+  transition: background 0.12s, border-color 0.12s;
+}
+.acc-odoo-modal .o_modal_action:hover {
+  background: #faf5f9;
+  border-color: var(--acc-brand);
+}
+.acc-odoo-modal .o_modal_action i {
+  width: 32px;
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--acc-brand);
+}
+
+/* Legacy fin-* harmonization inside Odoo shell */
+.fin-module--odoo .fin-hero { display: none; }
+.fin-module--odoo .fin-card,
+.acc-odoo .fin-card {
+  border: 1px solid var(--acc-border);
+  border-radius: 6px;
+  background: var(--acc-surface);
+  box-shadow: none;
+  margin-bottom: 14px;
+}
+.fin-module--odoo .fin-kpi-row { display: none; }
+
+/* Settings hub inside Odoo shell */
+.acc-odoo .fin-settings__rail {
+  border-color: var(--acc-border);
+}
+.acc-odoo .fin-settings__link.is-active {
+  background: #faf5f9;
+  color: var(--acc-brand);
+  border-left-color: var(--acc-brand);
+}
+.acc-odoo .fin-settings__hd h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+/* Printable statutory / management reports inside Odoo shell */
+.acc-odoo .acc-odoo-report,
+.acc-odoo .hms-fin-report {
+  border: 1px solid var(--acc-border);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.acc-odoo .o_panel_simple {
+  background: var(--acc-surface);
+  border: 1px solid var(--acc-border);
+  border-radius: 6px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.acc-odoo .o_panel_simple .o_panel_hd {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--acc-border);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.acc-odoo .o_panel_simple .o_panel_bd {
+  padding: 14px 16px;
+}
+.acc-odoo .fin-cf-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+@media print {
+  .acc-odoo .acc-ohada-strip,
+  .acc-odoo .o_control_panel,
+  .acc-odoo .o_content.no-print { display: none !important; }
+}

@@ -1,0 +1,117 @@
+<%- include('partials/header') %>
+<link rel="stylesheet" href="/css/appointments-booking-config.css?v=1">
+
+<div class="page-wrapper">
+ <div class="content abk-wrap">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4" style="gap:12px;">
+   <div>
+    <h4 class="page-title font-weight-bold mb-1"><%= _tl('appointments_online_booking.title', 'Online booking configuration') %></h4>
+    <p class="text-muted small mb-0"><%= _tl('appointments_online_booking.subtitle', 'Clinic-wide slot rules and per-doctor weekly availability for the patient portal.') %></p>
+   </div>
+   <a href="/appointments" class="hms-btn hms-btn-secondary btn-sm"><i class="fa fa-arrow-left"></i> <%= _tl('appointments_online_booking.appointments_list', 'Appointments list') %></a>
+  </div>
+
+  <% if (flash) { %><div class="hms-flash hms-flash--success"><%= flash %></div><% } %>
+  <% if (error) { %><div class="hms-flash hms-flash--error"><%= error %></div><% } %>
+
+  <div class="abk-tabs">
+   <a href="/appointments/online-booking?tab=settings" class="abk-tab<%= tab === 'settings' ? ' active' : '' %>"><%= _tl('appointments_online_booking.tab_settings', 'Global settings') %></a>
+   <a href="/appointments/online-booking?tab=doctors" class="abk-tab<%= tab === 'doctors' ? ' active' : '' %>"><%= _tl('appointments_online_booking.tab_doctors', 'Doctor schedules') %></a>
+  </div>
+
+  <% if (tab === 'settings') { %>
+  <div class="abk-card">
+   <h5><i class="fa fa-sliders mr-2 text-primary"></i> <%= _tl('appointments_online_booking.clinic_defaults', 'Clinic slot defaults') %></h5>
+   <p class="text-muted small"><%= _tl('appointments_online_booking.clinic_defaults_hint', 'Used when a doctor has no custom weekly schedule, and for "any physician" bookings.') %></p>
+   <form method="post" action="/appointments/online-booking/settings">
+    <div class="abk-grid">
+     <div class="form-group">
+      <label class="small font-weight-bold"><%= _tl('appointments_online_booking.label_day_starts', 'Day starts (hour)') %></label>
+      <input type="number" name="slot_start_hour" class="hms-input w-full" min="0" max="23" value="<%= settings.slotStartHour %>" required>
+     </div>
+     <div class="form-group">
+      <label class="small font-weight-bold"><%= _tl('appointments_online_booking.label_day_ends', 'Day ends (hour)') %></label>
+      <input type="number" name="slot_end_hour" class="hms-input w-full" min="1" max="24" value="<%= settings.slotEndHour %>" required>
+     </div>
+     <div class="form-group">
+      <label class="small font-weight-bold"><%= _tl('appointments_online_booking.label_slot_interval', 'Slot interval (minutes)') %></label>
+      <input type="number" name="slot_interval_minutes" class="hms-input w-full" min="10" max="120" step="5" value="<%= settings.slotInterval %>" required>
+     </div>
+     <div class="form-group">
+      <label class="small font-weight-bold"><%= _tl('appointments_online_booking.label_book_ahead', 'Book up to (days ahead)') %></label>
+      <input type="number" name="max_days_ahead" class="hms-input w-full" min="1" max="365" value="<%= settings.maxDaysAhead %>" required>
+     </div>
+     <div class="form-group">
+      <label class="small font-weight-bold"><%= _tl('appointments_online_booking.label_min_notice', 'Minimum notice (hours)') %></label>
+      <input type="number" name="min_hours_notice" class="hms-input w-full" min="0" max="72" value="<%= settings.minHoursNotice %>" required>
+     </div>
+     <div class="form-group">
+      <label class="small font-weight-bold"><%= _tl('appointments_online_booking.label_same_day', 'Allow same-day booking') %></label>
+      <select name="allow_same_day" class="hms-input w-full">
+       <option value="1"<%= settings.allowSameDay ? ' selected' : '' %>><%= _tl('appointments_online_booking.yes', 'Yes') %></option>
+       <option value="0"<%= !settings.allowSameDay ? ' selected' : '' %>><%= _tl('appointments_online_booking.no', 'No') %></option>
+      </select>
+     </div>
+    </div>
+    <button type="submit" class="hms-btn hms-btn-primary mt-3"><i class="fa fa-save"></i> <%= _tl('appointments_online_booking.save_settings', 'Save settings') %></button>
+   </form>
+  </div>
+  <% } else { %>
+  <div class="abk-card">
+   <h5><i class="fa fa-user-md mr-2 text-primary"></i> <%= _tl('appointments_online_booking.doctor_hours', 'Per-doctor weekly hours') %></h5>
+   <form method="get" action="/appointments/online-booking" class="form-inline mb-4">
+    <input type="hidden" name="tab" value="doctors">
+    <label class="mr-2 font-weight-bold small"><%= _tl('appointments_online_booking.label_physician', 'Physician') %></label>
+    <select name="doctor_id" class="hms-input w-full mr-2" onchange="this.form.submit()">
+     <option value=""><%= _tl('appointments_online_booking.select_doctor', '— Select doctor —') %></option>
+     <% doctors.forEach(function(d){ %>
+     <option value="<%= d.id %>"<%= String(selectedDoctorId) === String(d.id) ? ' selected' : '' %>>
+      Dr. <%= d.first_name %> <%= d.last_name %><% if (d.primary_department) { %> — <%= d.primary_department %><% } %>
+     </option>
+     <% }) %>
+    </select>
+   </form>
+
+   <% if (!selectedDoctorId) { %>
+    <p class="text-muted mb-0"><%= _tl('appointments_online_booking.select_doctor_hint', 'Select a doctor to edit their weekly online booking windows. Unchecked days are treated as closed when a custom schedule is saved.') %></p>
+   <% } else { %>
+    <p class="text-muted small mb-3"><%= _tl('appointments_online_booking.doctor_schedule_hint', 'Check the days this doctor accepts online bookings and set hours. Saving replaces any previous schedule for this doctor.') %></p>
+    <form method="post" action="/appointments/online-booking/doctor/<%= selectedDoctorId %>/schedule">
+     <table class="abk-schedule-table">
+      <thead>
+       <tr>
+        <th><%= _tl('appointments_online_booking.col_day', 'Day') %></th>
+        <th><%= _tl('appointments_online_booking.col_open', 'Open') %></th>
+        <th><%= _tl('appointments_online_booking.col_from', 'From') %></th>
+        <th><%= _tl('appointments_online_booking.col_to', 'To') %></th>
+        <th><%= _tl('appointments_online_booking.col_slot_min', 'Slot (min)') %></th>
+       </tr>
+      </thead>
+      <tbody>
+       <% scheduleDays.forEach(function(day){ %>
+       <tr>
+        <td class="font-weight-bold"><%= day.label %></td>
+        <td>
+         <input type="checkbox" name="active[]" value="<%= day.weekday %>"<%= day.active ? ' checked' : '' %>
+          onchange="this.closest('tr').querySelectorAll('input:not([type=checkbox])').forEach(function(i){ i.disabled = !this.checked; }.bind(this))">
+         <input type="hidden" name="weekday[]" value="<%= day.weekday %>">
+        </td>
+        <td><input type="time" name="start_time" class="hms-input w-full text-sm" value="<%= day.start_time %>"<%= day.active ? '' : ' disabled' %>></td>
+        <td><input type="time" name="end_time" class="hms-input w-full text-sm" value="<%= day.end_time %>"<%= day.active ? '' : ' disabled' %>></td>
+        <td><input type="number" name="slot_minutes" class="hms-input w-full text-sm" min="10" max="120" step="5" value="<%= day.slot_minutes %>"<%= day.active ? '' : ' disabled' %>></td>
+       </tr>
+       <% }) %>
+      </tbody>
+     </table>
+     <button type="submit" class="hms-btn hms-btn-primary mt-3"><i class="fa fa-save"></i> <%= _tl('appointments_online_booking.save_doctor_schedule', 'Save doctor schedule') %></button>
+     <button type="submit" formaction="/appointments/online-booking/doctor/<%= selectedDoctorId %>/schedule/clear" class="hms-btn hms-btn-outline-danger mt-3 ml-2" onclick="return confirm(<%= JSON.stringify(_tl('appointments_online_booking.confirm_clear_schedule', 'Clear custom schedule? This doctor will use clinic defaults.')) %>);">
+      <%= _tl('appointments_online_booking.use_clinic_defaults', 'Use clinic defaults') %>
+     </button>
+    </form>
+   <% } %>
+  </div>
+  <% } %>
+ </div>
+</div>
+
+<%- include('partials/footer') %>

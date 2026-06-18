@@ -1,0 +1,7 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--admin'; %>
+<%- include('partials/header') %>
+<%- include('partials/react-page-mount', {
+  reactPage: 'ui-kit',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.ui_kit', { ns: 'common' }) : 'Loading…')
+}) %>
+<%- include('partials/footer') %>

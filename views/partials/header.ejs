@@ -1,0 +1,694 @@
+<%- include('hms-date-helpers') %>
+<%
+var _hdrUser = locals.user || null;
+var _hdrRole = _hdrUser ? String(_hdrUser.role || '0') : '';
+var isFinanceStaff = !!locals.isFinanceStaff;
+if (_hdrUser && _hdrRole !== '1' && _hdrRole !== '99') {
+  if (!isFinanceStaff && locals.aclLayout && typeof locals.aclLayout.homePortal === 'function' && locals.aclLayout.homePortal(_hdrRole) === 'accountant') {
+    isFinanceStaff = true;
+  }
+}
+locals.isFinanceStaff = isFinanceStaff;
+var hrSelfServiceOnly = String(locals.paySelfServiceOnly || '').toLowerCase();
+var isHrSelfService = hrSelfServiceOnly === 'leave' || hrSelfServiceOnly === 'payslips';
+var pharmacyOdooApp = !!locals.pharmacyOdooApp;
+var radiologyOdooApp = !!locals.radiologyOdooApp;
+var laboratoryOdooApp = !!locals.laboratoryOdooApp;
+var maternityOdooApp = !!locals.maternityOdooApp;
+var vaccinationOdooApp = !!locals.vaccinationOdooApp;
+var deptOdooApp = pharmacyOdooApp || radiologyOdooApp || laboratoryOdooApp || maternityOdooApp || vaccinationOdooApp;
+var hmsOdooModule = String(locals.hmsOdooModule || '').toLowerCase();
+var isModuleOdoo = !!hmsOdooModule && !!locals.user;
+locals.hmsOdooModule = hmsOdooModule;
+locals.isModuleOdoo = isModuleOdoo;
+var useFinanceSidebar = isFinanceStaff && !isModuleOdoo;
+var useHrSelfSidebar = isHrSelfService && !isModuleOdoo;
+var useOdooShell = !!locals.user && !pharmacyOdooApp && !radiologyOdooApp && !laboratoryOdooApp && !maternityOdooApp && !vaccinationOdooApp && !isModuleOdoo;
+locals.useOdooShell = useOdooShell;
+%><%- include('hms-perm-helpers') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    var o = { ns: 'legacy', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+    return _t(key, o);
+  };
+}
+%>
+<!DOCTYPE html>
+<html lang="<%= locals.lang || 'en' %>" id="hmsHtml">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+<meta name="hms-lang" content="<%= locals.lang || 'en' %>">
+<title><%= title %></title>
+<% var _brand = locals.brand || {}; var _logo = _brand.logoPath || '/img/zaizens-brand.svg'; var _favicon = _brand.faviconPath || '/img/zaizens-favicon.svg'; var _brandName = _brand.name || 'ZAIZENS'; var _brandTag = _brand.tagline || 'Digital Intelligence. Redefined.'; %>
+<link rel="icon" type="image/svg+xml" href="<%= _favicon %>">
+<link rel="shortcut icon" href="<%= _favicon %>">
+<link rel="apple-touch-icon" href="<%= _logo %>">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/font-awesome.min.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/hms-tokens.css?v=1">
+<% if (deptOdooApp) { %><link rel="stylesheet" href="/css/hms-dept-nav.css?v=1"><% } %>
+<link rel="stylesheet" href="/css/hms-components.css?v=1">
+<link rel="stylesheet" href="/css/hms-app-surface.css?v=7">
+<link rel="stylesheet" href="/css/hms-command-center.css?v=2">
+<link rel="stylesheet" href="/css/hms-director-reports.css?v=2">
+<link rel="stylesheet" href="/css/hms-premium-v3.css?v=2">
+<link rel="stylesheet" href="/css/hms-fonts-local.css">
+<% if (useOdooShell || isModuleOdoo) { %><link rel="stylesheet" href="/css/hms-odoo.css?v=10"><% } %>
+<% if (radiologyOdooApp) { %><link rel="stylesheet" href="/css/radiology-odoo.css?v=1"><% } %>
+<% if (laboratoryOdooApp) { %><link rel="stylesheet" href="/css/laboratory-odoo.css?v=1"><% } %>
+<% if (maternityOdooApp) { %><link rel="stylesheet" href="/css/maternity-odoo.css?v=1"><% } %>
+<% if (vaccinationOdooApp) { %><link rel="stylesheet" href="/css/vaccination-odoo.css?v=1"><% } %>
+<% if (isModuleOdoo) { %><link rel="stylesheet" href="/css/hms-module-odoo.css?v=1"><% } %>
+<link rel="stylesheet" href="/css/hms-clinical-theme.css?v=1">
+<link rel="stylesheet" href="/css/hms-clinical-buttons.css?v=3">
+<link rel="stylesheet" href="/css/hms-notify.css?v=2">
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="/vendor/sweetalert2/sweetalert2.min.css">
+<script src="/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body,html{font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;height:100%;}
+
+/* ?? THEME VARIABLES ?? */
+:root{
+  --sb-bg:#ffffff;--sb-border:#e5e7eb;--sb-text:#374151;--sb-muted:#6b7280;
+  --sb-label:#374151;--sb-hover-bg:#f3f4f6;
+  --sb-section-line:#d1d5db;
+  --sb-search-bg:#f3f4f6;--sb-search-border:#e5e7eb;
+  --main-bg:#f9fafb;--topbar-bg:rgba(249,250,251,.92);--topbar-border:#e5e7eb;
+  --hms-content-max:min(1720px, calc(100vw - var(--sb-width) - 24px));
+}
+html.dark{
+  --main-bg:var(--hms-bg);
+}
+
+/* ?? SIDEBAR ?? */
+#hms-sidebar{
+  position:fixed;top:0;left:0;width:var(--sb-width);height:100vh;
+  background:var(--sb-bg);border-right:1px solid var(--sb-border);
+  display:flex;flex-direction:column;z-index:1050;
+  transition:background .3s,border-color .3s;
+}
+
+/* Logo */
+.sb-logo{display:flex;align-items:center;gap:10px;padding:14px 14px 12px;}
+.sb-logo-mark{
+  width:46px;height:46px;border-radius:50%;flex-shrink:0;
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;border:1px solid var(--sb-border);
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
+}
+.sb-logo-mark img{width:100%;height:100%;object-fit:cover;display:block;}
+html.dark .sb-logo-mark{background:#fff;border-color:#1e293b;}
+.sb-logo-info{min-width:0;}
+.sb-logo-name{font-weight:800;font-size:1.02rem;color:var(--sb-text);line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-logo-sub{font-size:.7rem;color:var(--sb-muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-top:1px;}
+.sb-logo-status{display:flex;align-items:center;gap:5px;font-size:.74rem;color:var(--sb-muted);margin-top:2px;}
+.sb-logo-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;}
+
+/* Search */
+.sb-search{padding:6px 12px 10px;}
+.sb-search input{
+  width:100%;padding:8px 10px 8px 32px;border-radius:8px;
+  border:1px solid var(--sb-search-border);background:var(--sb-search-bg);
+  color:var(--sb-text);font-size:.9rem;font-family:'Inter',sans-serif;
+  outline:none;transition:border-color .2s;
+}
+.sb-search input::placeholder{color:var(--sb-muted);}
+.sb-search{position:relative;}
+.sb-search-icon{position:absolute;left:22px;top:50%;transform:translateY(-55%);color:var(--sb-muted);font-size:.82rem;}
+
+/* Theme toggle row */
+.sb-theme-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 14px 10px;border-bottom:1px solid var(--sb-border);
+}
+.sb-theme-label{display:flex;align-items:center;gap:7px;font-size:.9rem;font-weight:500;color:var(--sb-muted);}
+.toggle-sw{position:relative;display:inline-block;width:38px;height:21px;}
+.toggle-sw input{opacity:0;width:0;height:0;}
+.toggle-knob{
+  position:absolute;inset:0;border-radius:21px;background:#d1d5db;cursor:pointer;
+  transition:background .3s;
+}
+.toggle-knob::before{
+  content:'';position:absolute;width:15px;height:15px;border-radius:50%;
+  background:#fff;top:3px;left:3px;transition:transform .3s;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+.toggle-sw input:checked + .toggle-knob{background:#16a34a;}
+.toggle-sw input:checked + .toggle-knob::before{transform:translateX(17px);}
+
+/* Nav scroll area */
+.sb-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 0 10px;}
+.sb-nav::-webkit-scrollbar{width:3px;}
+.sb-nav::-webkit-scrollbar-thumb{background:var(--sb-border);border-radius:2px;}
+
+/* Section label */
+.sb-section{
+  display:flex;align-items:center;gap:8px;
+  padding:14px 14px 5px;font-size:.73rem;font-weight:700;
+  color:var(--sb-label);text-transform:uppercase;letter-spacing:.08em;
+}
+.sb-section::after{content:'';flex:1;height:1px;background:var(--sb-section-line);}
+
+/* Nav item */
+.sb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px 10px 14px;margin:1px 8px;border-radius:9px;
+  color:var(--sb-text);font-size:.93rem;font-weight:500;
+  text-decoration:none;cursor:pointer;
+  transition:background .18s,color .18s;
+  position:relative;
+}
+.sb-item:hover{background:var(--sb-hover-bg);text-decoration:none;color:var(--sb-text);}
+.sb-item.active{
+  background:var(--sb-active-bg);color:var(--sb-active-text);font-weight:700;
+}
+.sb-item.active::before{
+  content:'';position:absolute;left:-8px;top:15%;bottom:15%;
+  width:3px;border-radius:0 3px 3px 0;background:var(--sb-active-border);
+}
+.sb-item-icon{font-size:.95rem;width:22px;text-align:center;flex-shrink:0;}
+.sb-item.active .sb-item-icon{color:var(--sb-active-text);}
+.sb-item-label{flex:1;}
+.sb-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:22px;height:22px;border-radius:11px;padding:0 7px;
+  font-size:.74rem;font-weight:700;background:var(--badge-bg);color:var(--badge-text);
+}
+.sb-badge.gray{background:#e5e7eb;color:#374151;}
+html.dark .sb-badge.gray{background:#334155;color:#cbd5e1;}
+
+/* Emergency badge */
+.sb-item.emg{color:#dc2626 !important;}
+.sb-item.emg .sb-item-icon{color:#dc2626;}
+.sb-emg-dot{
+  width:7px;height:7px;border-radius:50%;background:#ef4444;
+  flex-shrink:0;animation:emgBlink 1.5s infinite;
+}
+@keyframes emgBlink{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5);}70%{box-shadow:0 0 0 5px rgba(239,68,68,0);}}
+
+/* Submenu */
+.sb-sub-wrap{overflow:hidden;max-height:0;transition:max-height .3s ease;}
+.sb-sub-wrap.open{max-height:500px;}
+.sb-sub-item{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 12px 8px 44px;margin:1px 8px;border-radius:8px;
+  color:var(--sb-muted);font-size:.89rem;font-weight:500;
+  text-decoration:none;transition:background .15s,color .15s;
+}
+.sb-sub-item:hover{background:var(--sb-hover-bg);color:var(--sb-text);text-decoration:none;}
+.sb-sub-item.active{color:var(--sb-active-text);font-weight:600;}
+.sb-chevron{
+  margin-left:auto;font-size:.68rem;color:var(--sb-muted);
+  transition:transform .3s;flex-shrink:0;
+}
+.sb-item.open .sb-chevron{transform:rotate(90deg);}
+
+/* User card at bottom */
+.sb-user-card{
+  margin:8px 8px 8px;padding:10px 10px;border-radius:12px;
+  background:var(--sb-user-bg);border:1px solid var(--sb-border);
+  display:flex;flex-direction:column;gap:2px;
+  transition:background .3s;
+}
+.sb-user-top{display:flex;align-items:center;gap:9px;}
+.sb-avatar{
+  width:72px;height:72px;border-radius:14px;flex-shrink:0;
+  background:transparent;display:flex;align-items:center;
+  justify-content:center;position:relative;padding:0;
+}
+.hms-user-avatar{
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+  overflow:hidden;
+  border-radius:10px;background:linear-gradient(145deg,#f0fdf4,#ecfdf5);
+  border:2px solid #e2e8f0;font-size:1.15rem;line-height:1;
+  box-shadow:0 1px 4px rgba(15,23,42,.08);
+}
+.hms-user-avatar--sm{width:44px;height:44px;font-size:1.25rem;border-radius:10px;}
+.hms-user-avatar--md{width:52px;height:52px;font-size:1.5rem;}
+.hms-user-avatar--lg{width:72px;height:72px;font-size:2rem;border-radius:16px;}
+.sb-avatar-dot{
+  position:absolute;bottom:-2px;right:-2px;width:9px;height:9px;
+  border-radius:50%;background:#22c55e;border:2px solid var(--sb-bg);
+}
+.sb-user-meta{flex:1;overflow:hidden;}
+.sb-user-name{font-weight:700;font-size:.9rem;color:var(--sb-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-user-role{font-size:.76rem;color:var(--sb-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-logout-btn{
+  width:30px;height:30px;border-radius:7px;border:none;
+  background:rgba(0,0,0,.05);color:var(--sb-muted);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:.88rem;transition:background .2s,color .2s;flex-shrink:0;
+  text-decoration:none;
+}
+html.dark .sb-logout-btn{background:rgba(255,255,255,.06);}
+.sb-logout-btn:hover{background:#fee2e2;color:#dc2626;}
+.sb-user-email{font-size:.74rem;color:var(--sb-muted);padding-left:2px;word-break:break-all;}
+
+/* Main area */
+.main-wrapper{margin-left:var(--sb-width);min-height:100vh;background:var(--main-bg);transition:background .3s,margin .3s;}
+.hms-topbar{
+  position:sticky;top:0;z-index:900;background:var(--topbar-bg);
+  border-bottom:1px solid var(--topbar-border);
+  padding:10px 24px;display:flex;align-items:center;justify-content:space-between;
+  backdrop-filter:blur(10px);
+}
+.topbar-title{font-weight:700;font-size:.9rem;color:var(--sb-text);}
+.topbar-right{display:flex;align-items:center;gap:8px;margin-right:4px;}
+.topbar-home-btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;padding:5px 13px;border-radius:20px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;font-size:.73rem;font-weight:700;border:1px solid rgba(15,23,42,.2);transition:opacity .2s,transform .15s;white-space:nowrap;}
+.topbar-home-btn:hover{color:#fff;opacity:.92;text-decoration:none;transform:translateY(-1px);}
+.topbar-user-name{font-size:.78rem;font-weight:600;color:var(--sb-text);white-space:nowrap;max-width:min(220px,28vw);}
+.hms-page-nav-bar{width:100%;padding:12px 16px 0;display:flex;justify-content:flex-start;}
+/* Default page shell padding (symmetric); main column centering scoped below */
+.page-wrapper{padding:22px 8px;box-sizing:border-box;}
+/*
+ * App shell: cancel legacy style.css .page-wrapper { margin-left:230px } (sidebar offset is on .main-wrapper).
+ * Center content like Patient Directory: max-width column + auto margins + tight horizontal padding.
+ */
+.main-wrapper .page-wrapper{
+  max-width:var(--hms-content-max);
+  width:100%;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+body.hms-body--odoo .main-wrapper .page-wrapper{
+  max-width:none !important;
+  width:100% !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+}
+.main-wrapper .page-wrapper > .content{
+  width:100%;
+  max-width:100%;
+  padding-top:30px !important;
+  padding-bottom:30px !important;
+  padding-left:12px !important;
+  padding-right:12px !important;
+}
+/* Uniform full-width cards on each page (siblings share the same column width) */
+.main-wrapper .page-wrapper > .content > .card,
+.main-wrapper .page-wrapper > .content > form > .card{
+  width:100%;
+  max-width:100%;
+}
+.main-wrapper .page-wrapper > .content > .row{
+  width:100%;
+  margin-left:0;
+  margin-right:0;
+}
+.main-wrapper .page-wrapper > .content > .row > [class*="col-"] > .card{
+  width:100%;
+  max-width:100%;
+}
+/* Wide data tables: natural column width + horizontal scroll when needed */
+.main-wrapper .card .table-responsive{
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  width:100%;
+}
+.main-wrapper .card .table-responsive > .table{
+  width:100%;
+}
+.main-wrapper .card.hms-data-table-card .table-responsive > .table{
+  width:max-content;
+  min-width:100%;
+}
+body{background:var(--main-bg);}
+
+/* ?? Scrollbars (wider vertical bar for readability) ?? */
+html{
+  scrollbar-gutter:stable;
+}
+/* Firefox ? avoid ?thin? overlay feel */
+*{scrollbar-width:auto;scrollbar-color:#a8b0bf #eef0f5;}
+html.dark *,html.dark{
+  scrollbar-color:#475569 #1e293b;
+}
+/* Chromium / Edge / Safari */
+::-webkit-scrollbar{width:14px;height:14px;}
+::-webkit-scrollbar-track{background:#eef0f5;border-radius:8px;}
+::-webkit-scrollbar-thumb{
+  background:#a8b0bf;border-radius:8px;border:3px solid #eef0f5;
+}
+::-webkit-scrollbar-thumb:hover{background:#8b929e;}
+html.dark ::-webkit-scrollbar-track{background:#1e293b;}
+html.dark ::-webkit-scrollbar-thumb{
+  background:#475569;border-color:#1e293b;
+}
+html.dark ::-webkit-scrollbar-thumb:hover{background:#64748b;}
+</style>
+<% if (isFinanceStaff && !isModuleOdoo) { %>
+<link rel="stylesheet" href="/css/financials.css">
+<% } %>
+<% if (isHrSelfService && !isModuleOdoo) { %>
+<link rel="stylesheet" href="/css/payroll.css">
+<% } %>
+</head>
+<body class="<%= useFinanceSidebar ? 'hms-body--finance-staff' : '' %><%= useHrSelfSidebar ? ' hms-body--hr-self' : '' %><%= deptOdooApp ? ' hms-body--dept-odoo' : '' %><%= pharmacyOdooApp ? ' hms-body--pharmacy-odoo' : '' %><%= radiologyOdooApp ? ' hms-body--radiology-odoo' : '' %><%= laboratoryOdooApp ? ' hms-body--laboratory-odoo' : '' %><%= maternityOdooApp ? ' hms-body--maternity-odoo' : '' %><%= vaccinationOdooApp ? ' hms-body--vaccination-odoo' : '' %><%= isModuleOdoo ? ('hms-body--module-odoo hms-body--odoo-' + hmsOdooModule) : '' %><%= useOdooShell ? ' hms-body--odoo' : '' %><%= locals.hmsSurfaceBodyClass || '' %>">
+<% if (locals.user) { %>
+<aside id="hms-sidebar" class="<%= useFinanceSidebar ? 'hms-sidebar--finance' : '' %><%= useHrSelfSidebar ? ' hms-sidebar--hr-self' : '' %>">
+
+  <!-- Logo -->
+  <div class="sb-logo">
+    <div class="sb-logo-mark">
+      <img src="<%= _favicon %>" alt="<%= _brandName %> logo" />
+    </div>
+    <div class="sb-logo-info">
+      <div class="sb-logo-name"><%= _brandName %></div>
+      <div class="sb-logo-sub"><%= _brandTag %></div>
+      <div class="sb-logo-status"><span class="sb-logo-dot"></span> <%= typeof t === 'function' ? t('shell.online', { ns: 'common', defaultValue: 'Online' }) : 'Online' %></div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <% if (!useFinanceSidebar && !useHrSelfSidebar && !isModuleOdoo) { %>
+  <div class="sb-search">
+    <i class="fa fa-search sb-search-icon"></i>
+    <label for="sbSearch" class="sr-only"><%= typeof t === 'function' ? t('shell.menu_filter_ph', { ns: 'common', defaultValue: 'Filter menu…' }) : 'Filter menu…' %></label>
+    <input type="text" id="sbSearch" aria-label="<%= typeof t === 'function' ? t('shell.menu_filter_ph', { ns: 'common', defaultValue: 'Filter menu…' }) : 'Filter menu…' %>" placeholder="<%= typeof t === 'function' ? t('shell.menu_filter_ph', { ns: 'common', defaultValue: 'Filter menu…' }) : 'Filter menu…' %>" autocomplete="off">
+  </div>
+  <% } %>
+
+  <!-- Theme toggle -->
+  <% if (!useFinanceSidebar && !useHrSelfSidebar && !isModuleOdoo) { %>
+  <div class="sb-theme-row">
+    <div class="sb-theme-label">
+      <i class="fa fa-sun-o"></i> <%= typeof t === 'function' ? t('shell.theme', { ns: 'common', defaultValue: 'Theme' }) : 'Theme' %>
+    </div>
+    <label class="toggle-sw">
+      <input type="checkbox" id="themeToggle">
+      <span class="toggle-knob"></span>
+    </label>
+  </div>
+  <% } %>
+
+  <!-- Nav -->
+  <nav class="sb-nav <%= useFinanceSidebar ? 'sb-nav--finance' : '' %><%= useHrSelfSidebar ? ' sb-nav--hr-self' : '' %>">
+
+<%
+if (useFinanceSidebar && !locals.finNav) {
+  locals.finNav = locals.finNavActive || '';
+}
+%>
+
+<% if (useFinanceSidebar) { %>
+<div class="hms-sidebar-fin-rail">
+<%- include('financials-rail', { finRailCompact: true }) %>
+</div>
+<% } else if (useHrSelfSidebar) { %>
+<div class="hms-sidebar-hr-self-rail">
+<%- include('hr-self-rail') %>
+</div>
+<% } else { %>
+
+    <%
+    var homeUrl = '/hms';
+    var homeLabel = typeof t === 'function' ? t('hms_hub', { ns: 'nav', defaultValue: 'Medical Center' }) : 'Medical Center';
+    if (!isAdminOrSuper || locals.previewRole) {
+      var _aclHome = locals.aclLayout || (typeof _acl !== 'undefined' ? _acl : null);
+      var _effRole = locals.navRole || role;
+      var _homeSpec = locals.staffSpecialisation;
+      var _homeOpts = _homeSpec !== undefined ? { specialisation: _homeSpec } : {};
+      var _hu = locals.staffLandingUrlResolved
+        || locals.staffHomeUrlResolved
+        || ((_aclHome && typeof _aclHome.staffHomeUrl === 'function') ? _aclHome.staffHomeUrl(_effRole, _homeOpts) : null);
+      homeUrl = _hu || ('/profile?err=' + encodeURIComponent('No home portal assigned. Configure Role Portals in Access Control.'));
+      homeLabel = typeof t === 'function' ? t('my_home', { ns: 'nav', defaultValue: 'My Home' }) : 'My Home';
+    }
+    locals.navHomeUrl = homeUrl;
+    locals.navHomeLabel = homeLabel;
+    if (locals.previewRole) {
+    %>
+    <div class="alert alert-warning border-0 shadow-sm mx-3 mb-2 py-2 small" style="border-radius:8px;">
+      <i class="fa fa-eye mr-1"></i> Previewing navigation as role <strong>#<%= locals.previewRole %></strong>.
+      <a href="<%= (locals.hmsPath || '').split('?')[0] %>" class="font-weight-bold ml-1"><%= typeof t === 'function' ? t('exit_preview', { ns: 'nav', defaultValue: 'Exit preview' }) : 'Exit preview' %></a>
+    </div>
+    <% } %>
+    <% var _hmsDep = locals.hmsDeployment; %>
+    <% if (_hmsDep && role !== '99' && _hmsDep.slices && _hmsDep.slices.indexOf('full') === -1) { %>
+    <div class="alert alert-info border-0 shadow-sm mx-3 mb-2 py-2 small" style="border-radius:8px;">
+      <i class="fa fa-hospital-o mr-1"></i>
+      Deployment: <strong><%= _hmsDep.profileName || _hmsDep.productMode || 'custom' %></strong>
+      ? only enabled modules are shown.
+    </div>
+    <% } %>
+    <%- include('hms-nav-sidebar') %>
+<% } /* end hospital nav (non?finance staff) */ %>
+
+  </nav>
+
+<%
+var _hmsShortName = locals.userDisplayName || (typeof hmsFormatDisplayName === 'function' ? hmsFormatDisplayName(locals.user && locals.user.name) : (locals.user && locals.user.name)) || 'Staff';
+var _hmsNavName = locals.userNavDisplayName || (typeof hmsFormatNavDisplayName === 'function' ? hmsFormatNavDisplayName(locals.user && locals.user.name) : _hmsShortName);
+var _hmsTopTitle = typeof hmsFormatTopbarTitle === 'function' ? hmsFormatTopbarTitle(title) : title;
+%>
+
+  <!-- User card -->
+  <div class="sb-user-card">
+    <div class="sb-user-top">
+      <div class="sb-avatar">
+        <%- include('hms-user-avatar', { avatarClass: 'hms-user-avatar hms-user-avatar--lg', userProfileEmoji: locals.userProfileEmoji }) %>
+        <span class="sb-avatar-dot"></span>
+      </div>
+      <div class="sb-user-meta">
+        <div class="sb-user-name"><%= _hmsShortName %></div>
+        <div class="sb-user-role"><%= locals.user.role_name || (typeof t === 'function' ? t('user', { ns: 'nav', defaultValue: 'User' }) : 'User') %></div>
+      </div>
+      <a href="/logout" class="sb-logout-btn" title="Logout"><i class="fa fa-sign-out"></i></a>
+    </div>
+    <div class="sb-user-email"><%= locals.user.email || '' %></div>
+  </div>
+
+</aside>
+
+<% if (useOdooShell) { %>
+<div class="hms-odoo-app" id="hmsOdooApp">
+<%- include('hms-odoo-nav') %>
+<% } %>
+<!-- Main -->
+<div class="main-wrapper" id="mainWrapper">
+<% if (useOdooShell) { %><main class="o_action_manager"><% } %>
+  <div class="hms-topbar">
+    <div class="topbar-title" id="topbarPageTitle"><%= _hmsTopTitle %></div>
+    <div class="topbar-right">
+      <a href="<%= locals.navHomeUrl || '/dashboard' %>" class="topbar-home-btn" id="topbarHomeBtn">
+        <i class="fa fa-home"></i> <%= locals.navHomeLabel || (typeof t === 'function' ? t('home', { ns: 'nav', defaultValue: 'Home' }) : 'Home') %>
+      </a>
+      <%- include('hms-lang-switcher') %>
+      <div class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="topbarUserDrop" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+          <%- include('hms-user-avatar', { avatarClass: 'hms-user-avatar hms-user-avatar--md', userProfileEmoji: locals.userProfileEmoji }) %>
+          <span id="topbarUser" class="topbar-user-name"><%= _hmsNavName %></span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-right shadow-sm border-0 mt-1" style="border-radius:10px;min-width:180px;">
+          <div class="px-3 py-2 border-bottom">
+            <div class="d-flex align-items-center" style="gap:8px;">
+              <%- include('hms-user-avatar', { avatarClass: 'hms-user-avatar hms-user-avatar--md', userProfileEmoji: locals.userProfileEmoji }) %>
+              <div>
+                <div class="font-weight-bold small" style="color:#1e293b;"><%= _hmsShortName %></div>
+                <div class="small text-muted"><%=locals.user.username||''%></div>
+              </div>
+            </div>
+          </div>
+          <a class="dropdown-item py-2" href="/profile"><i class="fa fa-user-circle mr-2 text-primary"></i><%= typeof t === 'function' ? t('my_profile', { ns: 'nav', defaultValue: 'My Profile' }) : 'My Profile' %></a>
+          <a class="dropdown-item py-2" href="/my-profile"><i class="fa fa-cog mr-2 text-muted"></i><%= typeof t === 'function' ? t('account_settings', { ns: 'nav', defaultValue: 'Account Settings' }) : 'Account Settings' %></a>
+          <% if (!isAdminOrSuper && (!sbHidden('sb.guides') || !sbHidden('sb.manual'))) { %>
+          <div class="dropdown-divider"></div>
+          <div class="px-3 py-1 small text-muted text-uppercase" style="font-size:.65rem;font-weight:700;letter-spacing:.06em;"><%= typeof t === 'function' ? t('help', { ns: 'nav', defaultValue: 'Help' }) : 'Help' %></div>
+          <% if (!sbHidden('sb.guides')) { %>
+          <a class="dropdown-item py-2" href="/workflow-guides"><i class="fa fa-sitemap mr-2" style="color:#f59e0b;"></i><%= typeof t === 'function' ? t('workflow_guides', { ns: 'nav', defaultValue: 'Workflow Guides' }) : 'Workflow Guides' %></a>
+          <% } %>
+          <% if (!sbHidden('sb.manual')) { %>
+          <a class="dropdown-item py-2" href="/user-manual"><i class="fa fa-book mr-2 text-primary"></i><%= typeof t === 'function' ? t('user_manual', { ns: 'nav', defaultValue: 'User Manual' }) : 'User Manual' %></a>
+          <% } %>
+          <% } %>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item py-2 text-danger" href="/logout"><i class="fa fa-sign-out mr-2"></i><%= typeof t === 'function' ? t('logout', { ns: 'nav', defaultValue: 'Logout' }) : 'Logout' %></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<% if (locals.user && locals.showPageNav !== false && !useOdooShell) { %>
+  <%- include('page-nav-data', { pageNav: locals.pageNav || {} }) %>
+  <div class="hms-page-nav-bar">
+    <%- include('page-nav-react', { pageNav: locals.pageNav || {} }) %>
+  </div>
+<% } %>
+
+<script>
+(function(){
+  // Define HMS first so page scripts (e.g. Patient Directory) always have alerts even if later UI init throws.
+  window.HMS = {
+    toast: Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    }),
+    confirm: function(title, text, icon, btnText, color) {
+      var isDark = document.documentElement.classList.contains('dark');
+      return Swal.fire({
+        title: title || 'Are you sure?',
+        text: text || '',
+        icon: icon || 'warning',
+        showCancelButton: true,
+        confirmButtonColor: color || '#15803d',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: btnText || 'Yes, proceed',
+        background: isDark ? '#0f172a' : '#fff',
+        color: isDark ? '#f8fafc' : '#1e293b'
+      });
+    },
+    alert: function(title, text, icon) {
+      var isDark = document.documentElement.classList.contains('dark');
+      return Swal.fire({
+        title: title || 'Information',
+        text: text || '',
+        icon: icon || 'info',
+        confirmButtonColor: '#1a6bd8',
+        background: isDark ? '#0f172a' : '#fff',
+        color: isDark ? '#f8fafc' : '#1e293b'
+      });
+    },
+    /**
+     * Animated replacement for window.prompt().
+     * Usage:
+     *   HMS.prompt({ title, text, placeholder, defaultValue, inputType, required, icon, confirmText })
+     *     .then(function(r){ if(r.isConfirmed) ... r.value ... });
+     */
+    prompt: function(opts) {
+      opts = opts || {};
+      var isDark = document.documentElement.classList.contains('dark');
+      return Swal.fire({
+        title: opts.title || 'Enter value',
+        text: opts.text || '',
+        input: opts.inputType || 'text',
+        inputPlaceholder: opts.placeholder || '',
+        inputValue: opts.defaultValue || '',
+        icon: opts.icon || 'question',
+        showCancelButton: true,
+        confirmButtonText: opts.confirmText || 'OK',
+        cancelButtonText: opts.cancelText || 'Cancel',
+        confirmButtonColor: opts.color || '#15803d',
+        cancelButtonColor: '#6c757d',
+        background: isDark ? '#0f172a' : '#fff',
+        color: isDark ? '#f8fafc' : '#1e293b',
+        inputValidator: opts.required
+          ? function(v){ return (!v || !String(v).trim()) ? (opts.requiredMsg || 'Required') : null; }
+          : undefined
+      });
+    },
+    /**
+     * Drop-in animated replacement for `onsubmit="return confirm(...)"` on forms.
+     * Usage:
+     *   <form onsubmit="return HMS.confirmForm(this, 'Title', 'Body', 'Yes', '#dc2626', 'warning')">
+     */
+    confirmForm: function(form, title, text, btnText, color, icon) {
+      if (!form || form.__hmsConfirmed) return true;
+      this.confirm(title, text, icon || 'warning', btnText || 'Yes', color || '#dc2626')
+        .then(function(r){ if (r.isConfirmed) { form.__hmsConfirmed = true; form.submit(); } });
+      return false;
+    },
+    /**
+     * Drop-in animated replacement for `onclick="return confirm(...)"` on links
+     * or anchor-style submit buttons. Falls back to navigating href if confirmed.
+     * Usage:
+     *   <a onclick="return HMS.confirmHref(this, 'Title', 'Body')">?</a>
+     */
+    confirmHref: function(el, title, text, btnText, color, icon) {
+      if (!el || el.__hmsConfirmed) return true;
+      var href = el.getAttribute('href');
+      this.confirm(title, text, icon || 'warning', btnText || 'Yes', color || '#dc2626')
+        .then(function(r){ if (r.isConfirmed && href) { el.__hmsConfirmed = true; window.location.href = href; } });
+      return false;
+    }
+  };
+
+  var html  = document.getElementById('hmsHtml');
+  var tog   = document.getElementById('themeToggle');
+  if (html && tog) {
+    var saved = localStorage.getItem('hmsTheme') || 'light';
+    if(saved === 'dark'){ html.classList.add('dark'); tog.checked = true; }
+    tog.addEventListener('change', function(){
+      if(this.checked){ html.classList.add('dark'); localStorage.setItem('hmsTheme','dark'); }
+      else            { html.classList.remove('dark'); localStorage.setItem('hmsTheme','light'); }
+    });
+  }
+
+  // Submenu toggle
+  document.querySelectorAll('.sb-item[data-sub]').forEach(function(el){
+    el.addEventListener('click', function(){
+      var id  = this.getAttribute('data-sub');
+      var sub = document.getElementById(id);
+      if (!sub) return;
+      var was = sub.classList.contains('open');
+      document.querySelectorAll('.sb-sub-wrap').forEach(function(s){s.classList.remove('open');});
+      document.querySelectorAll('.sb-item[data-sub]').forEach(function(e){e.classList.remove('open');});
+      if(!was){ sub.classList.add('open'); this.classList.add('open'); }
+    });
+  });
+
+  // Active state
+  var path = window.location.pathname;
+  document.querySelectorAll('.sb-item[href], .sb-sub-item').forEach(function(a){
+    var href = a.getAttribute('href');
+    if(href && href!=='/' && (path===href || path.startsWith(href+'/'))){
+      a.classList.add('active');
+      var wrap = a.closest('.sb-sub-wrap');
+      if(wrap){
+        wrap.classList.add('open');
+        var par = document.querySelector('[data-sub="'+wrap.id+'"]');
+        if(par) par.classList.add('open');
+      }
+    }
+  });
+
+  // Search filter
+  var sbSearchEl = document.getElementById('sbSearch');
+  if (sbSearchEl) {
+    function hmsFilterSidebarNav(q) {
+      q = String(q || '').toLowerCase().trim();
+      document.querySelectorAll('.sb-item[href]').forEach(function(a) {
+        var txt = (a.getAttribute('data-label') || a.textContent || '').toLowerCase();
+        a.style.display = (!q || txt.indexOf(q) !== -1) ? '' : 'none';
+      });
+      document.querySelectorAll('.sb-section').forEach(function(sec) {
+        var el = sec.nextElementSibling;
+        var anyVisible = false;
+        while (el && !el.classList.contains('sb-section')) {
+          if (el.classList && el.classList.contains('sb-item') && el.style.display !== 'none') {
+            anyVisible = true;
+            break;
+          }
+          el = el.nextElementSibling;
+        }
+        sec.style.display = (!q || anyVisible) ? '' : 'none';
+      });
+      if (!q) {
+        document.querySelectorAll('.sb-section,.sb-item[href]').forEach(function(e) { e.style.display = ''; });
+      }
+    }
+    sbSearchEl.addEventListener('input', function() { hmsFilterSidebarNav(this.value); });
+    sbSearchEl.addEventListener('keydown', function(ev) {
+      if (ev.key === 'Escape') { this.value = ''; hmsFilterSidebarNav(''); this.blur(); }
+    });
+  }
+
+  <% if(locals.flash){ %> HMS.toast.fire({ icon: 'success', title: <%- JSON.stringify(String(locals.flash)) %> }); <% } %>
+  <% if(locals.error){ %> HMS.toast.fire({ icon: 'error', title: <%- JSON.stringify(String(locals.error)) %> }); <% } %>
+})();
+</script>
+
+<% } %>

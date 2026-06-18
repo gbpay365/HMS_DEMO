@@ -1,0 +1,81 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--assets'; %>
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+
+<div class="page-wrapper hms-surface-module">
+ <div class="content">
+  <% if(locals.flash){ %><div class="hms-flash hms-flash--success"><%= flash %></div><% } %>
+  <% if(locals.error){ %><div class="hms-flash hms-flash--error"><%= error %></div><% } %>
+
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+   <div>
+    <h4 class="page-title font-weight-bold text-dark mb-1"><%= _t('assets_registry.title', { ns: 'legacy', defaultValue: 'Asset registry' }) %></h4>
+    <p class="text-muted small mb-0"><%= _t('assets_registry.subtitle', { ns: 'legacy', defaultValue: 'Hospital equipment, vehicles, buildings, and fixed assets.' }) %></p>
+   </div>
+   <div class="d-flex flex-wrap gap-2" style="gap:8px;">
+    <a href="/assets" class="hms-btn hms-btn-secondary btn-sm"><i class="fa fa-arrow-left mr-1"></i><%= _t('assets_registry.back_hub', { ns: 'legacy', defaultValue: 'Assets hub' }) %></a>
+    <% if (canWrite) { %>
+    <a href="/assets/registry/new" class="hms-btn hms-btn-primary btn-sm font-weight-bold"><i class="fa fa-plus mr-1"></i><%= _t('assets_registry.register', { ns: 'legacy', defaultValue: 'Register asset' }) %></a>
+    <% } %>
+   </div>
+  </div>
+
+  <form method="get" action="/assets/registry" class="hms-filter-bar mb-3">
+   <input type="search" name="q" class="hms-input hms-filter-bar__search" value="<%= filters.q %>" placeholder="<%= _t('assets_registry.search_ph', { ns: 'legacy', defaultValue: 'Search tag, name, serial, location…' }) %>">
+   <select name="status" class="hms-input" style="max-width:160px;">
+    <option value=""><%= _t('assets_registry.all_statuses', { ns: 'legacy', defaultValue: 'All statuses' }) %></option>
+    <% assetStatuses.forEach(function(s) { %>
+    <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option>
+    <% }); %>
+   </select>
+   <select name="category" class="hms-input" style="max-width:200px;">
+    <option value=""><%= _t('assets_registry.all_categories', { ns: 'legacy', defaultValue: 'All categories' }) %></option>
+    <% categories.forEach(function(c) { %>
+    <option value="<%= c.id %>" <%= String(filters.category) === String(c.id) ? 'selected' : '' %>><%= c.name %></option>
+    <% }); %>
+   </select>
+   <button type="submit" class="hms-btn hms-btn-secondary"><%= _t('assets_registry.filter', { ns: 'legacy', defaultValue: 'Filter' }) %></button>
+  </form>
+
+  <div class="hms-surface-card">
+   <div class="table-responsive">
+    <table class="table table-hover mb-0 hms-table-v3" data-hms-table-paginate="15">
+     <thead class="bg-light"><tr>
+      <th><%= _t('assets_registry.col_tag', { ns: 'legacy', defaultValue: 'Tag' }) %></th>
+      <th><%= _t('assets_registry.col_name', { ns: 'legacy', defaultValue: 'Name' }) %></th>
+      <th><%= _t('assets_registry.col_type', { ns: 'legacy', defaultValue: 'Type' }) %></th>
+      <th><%= _t('assets_registry.col_category', { ns: 'legacy', defaultValue: 'Category' }) %></th>
+      <th><%= _t('assets_registry.col_location', { ns: 'legacy', defaultValue: 'Location' }) %></th>
+      <th><%= _t('assets_registry.col_assigned', { ns: 'legacy', defaultValue: 'Assigned to' }) %></th>
+      <th><%= _t('assets_registry.col_status', { ns: 'legacy', defaultValue: 'Status' }) %></th>
+      <th class="text-right"><%= _t('assets_registry.col_actions', { ns: 'legacy', defaultValue: 'Actions' }) %></th>
+     </tr></thead>
+     <tbody>
+      <% if (!rows || !rows.length) { %>
+      <tr><td colspan="8" class="text-center text-muted py-4"><%= _t('assets_registry.empty', { ns: 'legacy', defaultValue: 'No assets registered yet.' }) %></td></tr>
+      <% } %>
+      <% (rows || []).forEach(function(a) { %>
+      <tr>
+       <td><code><%= a.asset_tag %></code></td>
+       <td><a href="/assets/registry/<%= a.id %>" class="font-weight-bold text-dark"><%= a.name %></a></td>
+       <td><span class="badge badge-light text-uppercase extra-small"><%= a.asset_type %></span></td>
+       <td><%= a.category_name || '—' %></td>
+       <td><%= a.location || '—' %></td>
+       <td><%= a.assigned_name || '—' %></td>
+       <td><span class="badge badge-<%= statusBadge(a.status) %> text-uppercase extra-small"><%= a.status %></span></td>
+       <td class="text-right text-nowrap">
+        <a href="/assets/registry/<%= a.id %>" class="hms-btn hms-btn-secondary btn-sm"><%= _t('assets_registry.view', { ns: 'legacy', defaultValue: 'View' }) %></a>
+        <% if (canWrite) { %>
+        <a href="/assets/registry/<%= a.id %>/edit" class="hms-btn hms-btn-secondary btn-sm"><%= _t('assets_registry.edit', { ns: 'legacy', defaultValue: 'Edit' }) %></a>
+        <% } %>
+       </td>
+      </tr>
+      <% }); %>
+     </tbody>
+    </table>
+   </div>
+  </div>
+ </div>
+</div>
+
+<%- include('partials/footer') %>

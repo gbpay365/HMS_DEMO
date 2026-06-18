@@ -1,0 +1,15 @@
+<%
+  var _dm = locals.doctorMulti || {};
+  var _dmPayload = {
+    formId: _dm.formId || 'hms-employee-form',
+    doctorRoleIds: (_dm.doctorRoleIds || []).map(String),
+    departments: _dm.departments || [],
+    specialisationsCatalog: _dm.specialisationsCatalog || [],
+    initialDepartments: _dm.initialDepartments || [],
+    initialSpecialisations: _dm.initialSpecialisations || [],
+    deptWrapId: _dm.deptWrapId || 'primaryDepartmentWrap',
+    legacySpecWrapId: _dm.legacySpecWrapId || 'doctorSpecialisationWrap'
+  };
+%>
+<div id="hms-employee-doctor-multi-root" class="hms-ui row w-100"></div>
+<script id="hms-employee-doctor-multi-data" type="application/json"><%- JSON.stringify(_dmPayload).replace(/</g, '\\u003c') %></script>

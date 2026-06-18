@@ -1,0 +1,291 @@
+<%- include('partials/header') %>
+
+<div class="page-wrapper hms-surface-module">
+ <div class="content">
+ <% if(locals.flash){ %>
+ <div class="hms-flash hms-flash--success"><%= flash %></div>
+ <% } %>
+ <% if(locals.error){ %>
+ <div class="hms-flash hms-flash--error"><%= error %></div>
+ <% } %>
+
+ <% if(!rfqReady){ %>
+ <div class="hms-flash hms-flash--error border-0 shadow-sm"><%- _tl('procurement_rfq.migration_warning', 'Run database migration <code>046_procurement_module.sql</code> to enable RFQs.') %></div>
+ <p class="mb-0"><a href="/procurement" class="hms-btn hms-btn-secondary btn-sm"><%= _tl('procurement_rfq.back_to_hub', 'Back to procurement hub') %></a></p>
+ <% } else if (!rfq && !rfqNotFound) { %>
+ <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+ <div>
+ <h4 class="page-title font-weight-bold text-dark mb-1"><%= _tl('procurement_rfq.list_title', 'Requests for quotation') %></h4>
+ <p class="text-muted small mb-0"><%= _tl('procurement_rfq.list_subtitle', 'Create RFQs, add lines, issue to vendors, then record quotations (PHP parity).') %></p>
+ </div>
+ <a href="/procurement" class="hms-btn hms-btn-secondary btn-sm rounded-pill"><i class="fa fa-arrow-left mr-1"></i><%= _tl('procurement_rfq.procurement_hub', 'Procurement hub') %></a>
+ </div>
+
+ <% if (canWrite) { %>
+ <div class="card border-0 shadow-sm mb-4">
+ <div class="card-header bg-white font-weight-bold"><%= _tl('procurement_rfq.start_rfq', 'Start an RFQ') %></div>
+ <div class="card-body">
+ <form method="post" action="/procurement/rfq" class="form-row align-items-end">
+ <input type="hidden" name="rfq_action" value="create">
+ <div class="form-group col-md-5 mb-0">
+ <label class="small font-weight-bold"><%= _tl('procurement_rfq.label_title_scope', 'Title / scope') %></label>
+ <input type="text" name="title" class="hms-input w-full" placeholder="<%= _tl('procurement_rfq.title_placeholder', 'e.g. Surgical consumables — Q2 replenishment') %>" maxlength="255">
+ </div>
+ <div class="form-group col-md-3 mb-0">
+ <label class="small font-weight-bold"><%= _tl('procurement_rfq.label_needed_by', 'Needed by (optional)') %></label>
+ <input type="date" name="needed_by" class="hms-input w-full" value="">
+ </div>
+ <div class="form-group col-md-4 mb-0">
+ <button type="submit" class="hms-btn hms-btn-primary font-weight-bold btn-block"><i class="fa fa-plus mr-1"></i><%= _tl('procurement_rfq.create_draft', 'Create draft') %></button>
+ </div>
+ </form>
+ </div>
+ </div>
+ <% } %>
+
+ <% var _rf = locals.rfqFilter || ''; var _rs = locals.rfqStats || { total: 0, draft: 0, issued: 0, closed: 0 }; var _search = locals.rfqSearch || ''; %>
+
+ <div class="hms-stat-grid">
+  <div class="hms-stat-card hms-stat-card--procurement"><div class="hms-stat-card__value"><%= _rs.total %></div><div class="hms-stat-card__label"><%= _tl('procurement_rfq.stat_total', 'Total RFQs') %></div></div>
+  <div class="hms-stat-card hms-stat-card--warning"><div class="hms-stat-card__value"><%= _rs.draft %></div><div class="hms-stat-card__label"><%= _tl('procurement_rfq.stat_draft', 'Draft') %></div></div>
+  <div class="hms-stat-card hms-stat-card--info"><div class="hms-stat-card__value"><%= _rs.issued %></div><div class="hms-stat-card__label"><%= _tl('procurement_rfq.stat_issued', 'Issued') %></div></div>
+  <div class="hms-stat-card hms-stat-card--success"><div class="hms-stat-card__value"><%= _rs.closed %></div><div class="hms-stat-card__label"><%= _tl('procurement_rfq.stat_closed', 'Closed') %></div></div>
+ </div>
+
+ <form method="get" action="/procurement/rfq" class="hms-filter-bar">
+  <input type="search" name="q" class="hms-input w-full hms-filter-bar__search" value="<%= _search %>" placeholder="<%= _tl('procurement_rfq.search_ph', 'Search RFQ # or title') %>">
+  <% if (_rf) { %><input type="hidden" name="status" value="<%= _rf %>"><% } %>
+  <button type="submit" class="hms-btn hms-btn-secondary"><%= _tl('procurement_rfq.search', 'Search') %></button>
+  <% if (_search || _rf) { %><a href="/procurement/rfq" class="btn btn-link"><%= _tl('procurement_rfq.reset', 'Reset') %></a><% } %>
+ </form>
+
+ <div class="hms-chip-row">
+  <a href="/procurement/rfq<%= _search ? ('?q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= !_rf ? ' active' : '' %>"><%= _tl('procurement_rfq.chip_all', 'All') %></a>
+  <a href="/procurement/rfq?status=draft<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _rf === 'draft' ? ' active' : '' %>">Draft</a>
+  <a href="/procurement/rfq?status=issued<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _rf === 'issued' ? ' active' : '' %>">Issued</a>
+  <a href="/procurement/rfq?status=closed<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _rf === 'closed' ? ' active' : '' %>">Closed</a>
+ </div>
+
+ <div class="hms-surface-card">
+ <div class="table-responsive">
+ <table class="table table-hover mb-0 hms-table-v3">
+ <thead class="bg-light">
+ <tr>
+ <th><%= _tl('procurement_rfq.col_number', 'Number') %></th>
+ <th><%= _tl('procurement_rfq.col_title', 'Title') %></th>
+ <th><%= _tl('procurement_rfq.col_status', 'Status') %></th>
+ <th><%= _tl('procurement_rfq.col_created', 'Created') %></th>
+ </tr>
+ </thead>
+ <tbody>
+ <% (rfqList || []).forEach(function(r){ %>
+ <tr>
+ <td><a class="font-weight-bold" href="/procurement/rfq/<%= r.id %>"><%= r.rfq_number %></a></td>
+ <td><%= r.title %></td>
+ <td>
+ <span class="badge <%= badgeClass(r.status) %> px-2 py-1 text-uppercase small"><%= r.status %></span>
+ </td>
+ <td class="small text-muted"><%= r.created_at ? new Date(r.created_at).toLocaleString() : '' %></td>
+ </tr>
+ <% }) %>
+ <% if (!(rfqList || []).length) { %>
+ <tr><td colspan="4" class="text-center py-5 text-muted"><%= _tl('procurement_rfq.no_rfqs', 'No RFQs yet.') %></td></tr>
+ <% } %>
+ </tbody>
+ </table>
+ </div>
+ </div>
+
+ <% } else if (rfqNotFound) { %>
+ <div class="hms-flash hms-flash--error"><%= _tl('procurement_rfq.not_found', 'RFQ not found.') %></div>
+ <p><a href="/procurement/rfq"><%= _tl('procurement_rfq.back_to_list', 'Back to list') %></a></p>
+
+ <% } else { %>
+ <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+ <div>
+ <h4 class="page-title font-weight-bold text-dark mb-0"><%= _tl('procurement_rfq.detail_title', 'RFQ {{number}}', { number: rfq.rfq_number }) %></h4>
+ <p class="text-muted small mb-0"><%= rfq.title %></p>
+ </div>
+ <div class="d-flex flex-wrap align-items-center gap-2">
+ <a href="/procurement/rfq" class="btn btn-sm btn-outline-secondary font-weight-bold"><i class="fa fa-arrow-left mr-1"></i><%= _tl('procurement_rfq.all_rfqs', 'All RFQs') %></a>
+ <span class="badge <%= badgeClass(rfq.status) %> px-2 py-1 text-uppercase small"><%= rfq.status %></span>
+ </div>
+ </div>
+
+ <div class="row">
+ <div class="col-lg-7 mb-4">
+ <div class="card border-0 shadow-sm">
+ <div class="card-header bg-white font-weight-bold"><%= _tl('procurement_rfq.line_items', 'Line items') %></div>
+ <div class="card-body p-0">
+ <div class="table-responsive">
+ <table class="table mb-0">
+ <thead class="bg-light"><tr><th><%= _tl('procurement_rfq.col_hash', '#') %></th><th><%= _tl('procurement_rfq.col_description', 'Description') %></th><th><%= _tl('procurement_rfq.col_inventory_sku', 'Inventory SKU') %></th><th class="text-right"><%= _tl('procurement_rfq.col_qty', 'Qty') %></th></tr></thead>
+ <tbody>
+ <% (lines || []).forEach(function(ln, idx){ %>
+ <tr>
+ <td><%= idx + 1 %></td>
+ <td><%= ln.description %></td>
+ <td class="small text-muted"><%= ln.inv_sku ? (ln.inv_sku + ' · ' + (ln.inv_name || '')) : (ln.suggested_inventory_id ? _tl('procurement_rfq.sku_suggested', '(suggested at quote)') : '—') %></td>
+ <td class="text-right"><%= typeof fmtPoQty === 'function' ? fmtPoQty(ln.quantity, ln.uom) : ln.quantity %></td>
+ </tr>
+ <% }) %>
+ <% if (!(lines || []).length) { %>
+ <tr><td colspan="4" class="text-center text-muted py-4"><%= _tl('procurement_rfq.no_lines_draft', 'No lines yet. Add items while this RFQ is in draft.') %></td></tr>
+ <% } %>
+ </tbody>
+ </table>
+ </div>
+ </div>
+ <% if (canWrite && String(rfq.status) === 'draft') { %>
+ <div class="card-footer bg-white">
+ <form method="post" action="/procurement/rfq" class="form-row align-items-end">
+ <input type="hidden" name="rfq_action" value="add_line">
+ <input type="hidden" name="rfq_id" value="<%= rfq.id %>">
+ <div class="form-group col-md-4 mb-0">
+ <label class="small"><%= _tl('procurement_rfq.col_description', 'Description') %></label>
+ <input type="text" name="line_desc" class="hms-input w-full" required maxlength="512" placeholder="<%= _tl('procurement_rfq.line_desc_placeholder', 'Item or service description') %>">
+ </div>
+ <div class="form-group col-md-3 mb-0">
+ <label class="small"><%= _tl('procurement_rfq.col_inventory_sku', 'Inventory SKU') %></label>
+ <select name="line_inventory_item_id" class="hms-input w-full">
+ <option value=""><%= _tl('procurement_rfq.sku_optional', '— Optional link —') %></option>
+ <% (inventoryItems || []).forEach(function(inv){ %>
+ <option value="<%= inv.id %>"><%= inv.sku %> · <%= inv.name %></option>
+ <% }) %>
+ </select>
+ </div>
+ <div class="form-group col-md-3 mb-0">
+ <label class="small"><%= _tl('procurement_rfq.col_qty', 'Qty') %></label>
+ <input type="text" name="line_qty" class="hms-input w-full" value="1 Pack" placeholder="e.g. 50 Cartons">
+ </div>
+ <div class="form-group col-md-2 mb-0">
+ <button type="submit" class="hms-btn hms-btn-primary btn-block font-weight-bold"><%= _tl('procurement_rfq.add_line', 'Add line') %></button>
+ </div>
+ </form>
+ </div>
+ <% } %>
+ </div>
+ </div>
+
+ <div class="col-lg-5 mb-4">
+ <div class="card border-0 shadow-sm mb-3">
+ <div class="card-header bg-white font-weight-bold"><%= _tl('procurement_rfq.workflow', 'Workflow') %></div>
+ <div class="card-body small text-muted">
+ <ol class="pl-3 mb-0" style="line-height:1.65;">
+ <li class="mb-1"><%- _tl('procurement_rfq.workflow_step1', 'Draft — add lines, then <strong>Issue RFQ</strong>.') %></li>
+ <li class="mb-1"><%- _tl('procurement_rfq.workflow_step2', 'Issued — record <strong>quotations</strong> from vendors (PHP <code>procurement-quotation.php</code> or future Node).') %></li>
+ <li class="mb-1"><%= _tl('procurement_rfq.workflow_step3', 'Raise PO from inventory when ready.') %></li>
+ <li class="mb-0"><%= _tl('procurement_rfq.workflow_step4', 'Close RFQ when sourcing ends.') %></li>
+ </ol>
+ </div>
+ <% if (canWrite) { %>
+ <div class="card-footer bg-white">
+ <% if (String(rfq.status) === 'draft') { %>
+ <form method="post" action="/procurement/rfq" class="d-inline" onsubmit="return confirm(<%= JSON.stringify(_tl('procurement_rfq.confirm_issue', 'Issue this RFQ to vendors?')) %>);">
+ <input type="hidden" name="rfq_action" value="issue">
+ <input type="hidden" name="rfq_id" value="<%= rfq.id %>">
+ <button type="submit" class="hms-btn hms-btn-success font-weight-bold"><%= _tl('procurement_rfq.issue_rfq', 'Issue RFQ') %></button>
+ </form>
+ <% } %>
+ <% if (['draft','issued'].indexOf(String(rfq.status)) >= 0) { %>
+ <form method="post" action="/procurement/rfq" class="d-inline ml-2" onsubmit="return confirm(<%= JSON.stringify(_tl('procurement_rfq.confirm_close', 'Close this RFQ?')) %>);">
+ <input type="hidden" name="rfq_action" value="close">
+ <input type="hidden" name="rfq_id" value="<%= rfq.id %>">
+ <button type="submit" class="hms-btn hms-btn-secondary"><%= _tl('procurement_rfq.close_rfq', 'Close RFQ') %></button>
+ </form>
+ <% } %>
+ </div>
+ <% } %>
+ </div>
+
+ <div class="card border-0 shadow-sm">
+ <div class="card-header bg-white font-weight-bold"><%= _tl('procurement_rfq.quotations_received', 'Quotations received') %></div>
+ <div class="list-group list-group-flush">
+ <% (quotes || []).forEach(function(q){ %>
+ <div class="list-group-item">
+ <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+ <span class="font-weight-bold mr-2"><%= q.vendor_name || (_tl('procurement_rfq.vendor_prefix', 'Vendor #') + q.vendor_id) %></span>
+ <span class="d-flex align-items-center flex-wrap gap-2">
+ <span class="badge <%= badgeClass(q.status) %> px-2 py-1 text-uppercase small"><%= q.status %></span>
+ <span class="small text-muted"><%= Number(q.total_amount || 0).toLocaleString() %> <%= q.currency || 'XAF' %></span>
+ </span>
+ </div>
+ <% if (canWrite && String(q.status) === 'submitted') { %>
+ <form method="post" action="/procurement/rfq" class="d-inline">
+ <input type="hidden" name="rfq_action" value="accept_quote">
+ <input type="hidden" name="rfq_id" value="<%= rfq.id %>">
+ <input type="hidden" name="quotation_id" value="<%= q.id %>">
+ <button type="submit" class="btn btn-sm btn-success font-weight-bold">Accept quotation</button>
+ </form>
+ <% } %>
+ <% if (canWrite && String(q.status) === 'accepted') { %>
+ <form method="post" action="/procurement/rfq" class="d-inline ml-2">
+ <input type="hidden" name="rfq_action" value="create_po">
+ <input type="hidden" name="rfq_id" value="<%= rfq.id %>">
+ <input type="hidden" name="quotation_id" value="<%= q.id %>">
+ <button type="submit" class="hms-btn hms-btn-primary hms-btn-sm font-weight-bold">Create draft PO</button>
+ </form>
+ <% } %>
+ </div>
+ <% }) %>
+ <% if (!(quotes || []).length) { %>
+ <div class="list-group-item text-center text-muted py-4"><%= _tl('procurement_rfq.no_quotations', 'No quotations yet.') %></div>
+ <% } %>
+ </div>
+ <% if (canWrite && String(rfq.status) === 'issued' && (lines || []).length) { %>
+ <div class="card-footer bg-white">
+ <div class="font-weight-bold mb-2 small">Record vendor quotation</div>
+ <form method="post" action="/procurement/rfq">
+ <input type="hidden" name="rfq_action" value="add_quotation">
+ <input type="hidden" name="rfq_id" value="<%= rfq.id %>">
+ <div class="form-row mb-2">
+ <div class="col-md-5 form-group mb-2">
+ <label class="small mb-0">Vendor</label>
+ <select name="vendor_id" class="hms-input w-full text-sm" required>
+ <option value="">— Select —</option>
+ <% (vendors || []).forEach(function(v){ %>
+ <option value="<%= v.id %>"><%= v.name %></option>
+ <% }) %>
+ </select>
+ </div>
+ <div class="col-md-4 form-group mb-2">
+ <label class="small mb-0">Vendor quote ref</label>
+ <input type="text" name="vendor_ref" class="hms-input w-full text-sm" placeholder="Optional">
+ </div>
+ </div>
+ <div class="table-responsive mb-2">
+ <table class="table table-sm mb-0">
+ <thead><tr><th>Line</th><th><%= _tl('procurement_rfq.col_inventory_sku', 'Inventory SKU') %></th><th class="text-right">Qty</th><th class="text-right">Unit price (XAF)</th></tr></thead>
+ <tbody>
+ <% (lines || []).forEach(function(ln, idx){
+   var pickId = ln.inventory_item_id || ln.suggested_inventory_id || '';
+ %>
+ <tr>
+ <td class="small"><%= ln.description %></td>
+ <td>
+ <select name="line_inventory_item_id" class="hms-input w-full text-sm">
+ <option value=""><%= _tl('procurement_rfq.sku_none', '— No SKU —') %></option>
+ <% (inventoryItems || []).forEach(function(inv){ %>
+ <option value="<%= inv.id %>" <%= String(pickId) === String(inv.id) ? 'selected' : '' %>><%= inv.sku %> · <%= inv.name %></option>
+ <% }) %>
+ </select>
+ </td>
+ <td class="text-right small"><%= ln.quantity %></td>
+ <td class="text-right"><input type="text" name="line_unit_price" class="hms-input w-full text-sm text-right" placeholder="0" required></td>
+ </tr>
+ <% }) %>
+ </tbody>
+ </table>
+ </div>
+ <button type="submit" class="btn btn-sm btn-indigo font-weight-bold">Save quotation</button>
+ </form>
+ </div>
+ <% } %>
+ </div>
+ </div>
+ </div>
+ <% } %>
+ </div>
+</div>
+
+<%- include('partials/footer') %>

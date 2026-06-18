@@ -1,0 +1,90 @@
+<%
+var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+%>
+<!-- Transaction detail -->
+<div class="modal fade acc-modal" id="accTxnModal" tabindex="-1" role="dialog" aria-hidden="true">
+ <div class="modal-dialog modal-dialog-centered" role="document">
+  <div class="modal-content">
+   <div class="modal-header">
+    <h5 class="modal-title"><i class="fa fa-exchange mr-2"></i><%= _t('portal_accountant.modal_txn_detail', { ns: 'legacy', defaultValue: 'Transaction detail' }) %></h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="<%= _t('portal_accountant.modal_close_aria', { ns: 'legacy', defaultValue: 'Close' }) %>"><span>&times;</span></button>
+   </div>
+   <div class="modal-body">
+    <p class="acc-amount-hero mb-1" id="accTxnAmount">—</p>
+    <p class="small text-muted mb-3" id="accTxnMeta">—</p>
+    <div class="acc-detail-row"><span class="acc-detail-label"><%= _t('portal_accountant.modal_patient', { ns: 'legacy', defaultValue: 'Patient' }) %></span><span id="accTxnPatient" class="font-weight-bold text-right">—</span></div>
+    <div class="acc-detail-row"><span class="acc-detail-label"><%= _t('portal_accountant.modal_payment_method', { ns: 'legacy', defaultValue: 'Payment method' }) %></span><span id="accTxnMethod" class="text-right">—</span></div>
+    <div class="acc-detail-row"><span class="acc-detail-label"><%= _t('portal_shared.date', { ns: 'legacy', defaultValue: 'Date' }) %></span><span id="accTxnDate" class="text-right">—</span></div>
+    <div class="acc-detail-row"><span class="acc-detail-label"><%= _t('portal_accountant.modal_description', { ns: 'legacy', defaultValue: 'Description' }) %></span><span id="accTxnRef" class="text-right small">—</span></div>
+    <div class="acc-detail-row"><span class="acc-detail-label"><%= _t('portal_shared.status', { ns: 'legacy', defaultValue: 'Status' }) %></span><span id="accTxnStatus" class="text-right">—</span></div>
+    <div class="acc-detail-row"><span class="acc-detail-label"><%= _t('portal_accountant.modal_txn_id', { ns: 'legacy', defaultValue: 'Transaction ID' }) %></span><span id="accTxnId" class="text-right font-monospace small">—</span></div>
+   </div>
+   <div class="modal-footer">
+    <button type="button" class="hms-btn hms-btn-secondary" data-dismiss="modal"><%= _t('portal_shared.close', { ns: 'legacy' }) %></button>
+    <a href="#" id="accTxnBillingLink" class="hms-btn hms-btn-primary font-bold"><%= _t('portal_accountant.modal_open_billing', { ns: 'legacy' }) %></a>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- Month-end / period close checklist -->
+<div class="modal fade acc-modal" id="accPeriodModal" tabindex="-1" role="dialog" aria-hidden="true">
+ <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+  <div class="modal-content">
+   <div class="modal-header">
+    <h5 class="modal-title"><i class="fa fa-calendar-check-o mr-2"></i><%= _t('portal_accountant.modal_period_close', { ns: 'legacy', defaultValue: 'Period close checklist' }) %></h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="<%= _t('portal_accountant.modal_close_aria', { ns: 'legacy', defaultValue: 'Close' }) %>"><span>&times;</span></button>
+   </div>
+   <div class="modal-body">
+    <p class="small text-muted mb-3"><%= _t('portal_accountant.modal_period_intro', { ns: 'legacy', defaultValue: 'Use this list before month-end or audit. Links open the Node financial screens.' }) %></p>
+    <div class="acc-checklist-item">
+     <span class="acc-step-num">1</span>
+     <div><strong><%= _t('portal_accountant.modal_cash_billing', { ns: 'legacy', defaultValue: 'Cash & billing' }) %></strong><br><span class="small text-muted"><%= _t('portal_accountant.modal_cash_billing_hint', { ns: 'legacy', defaultValue: 'Reconcile cashier activity with GL class 5.' }) %></span><br>
+      <a href="/billing/transactions">Transactions</a> · <a href="/financials/cash-flow">Cash flow</a> · <a href="/financials/bank-reconciliation">Bank reconciliation</a></div>
+    </div>
+    <div class="acc-checklist-item">
+     <span class="acc-step-num">2</span>
+     <div><strong><%= _t('portal_accountant.modal_gl', { ns: 'legacy', defaultValue: 'General ledger' }) %></strong><br><span class="small text-muted"><%= _t('portal_accountant.modal_gl_hint', { ns: 'legacy', defaultValue: 'Trial balance, journals, sync if needed.' }) %></span><br>
+      <a href="/financials/trial-balance">Trial balance</a> · <a href="/financials/journal-diagnostics">Journal diagnostics</a> · <a href="/financials/sync-gl">Sync to GL</a></div>
+    </div>
+    <div class="acc-checklist-item">
+     <span class="acc-step-num">3</span>
+     <div><strong><%= _t('portal_accountant.modal_ar_ap', { ns: 'legacy', defaultValue: 'Receivables & payables' }) %></strong><br>
+      <a href="/financials/accounts-receivable">Accounts receivable</a> · <a href="/financials/accounts-payable">Accounts payable</a> · <a href="/credit-receivables">Credit &amp; receivables</a></div>
+    </div>
+    <div class="acc-checklist-item">
+     <span class="acc-step-num">4</span>
+     <div><strong><%= _t('portal_accountant.modal_statements_tax', { ns: 'legacy', defaultValue: 'Statements & tax' }) %></strong><br>
+      <a href="/financials/statement-monthly">Statement (monthly)</a> · <a href="/financials/year-end">Year-end</a> · <a href="/financials/tax">Tax worksheets</a> · <a href="/tax">Tax hub</a></div>
+    </div>
+    <div class="acc-checklist-item mb-0">
+     <span class="acc-step-num">5</span>
+     <div><strong><%= _t('portal_accountant.modal_expenses', { ns: 'legacy', defaultValue: 'Expenses' }) %></strong><br>
+      <a href="/financials/expenses">Expense management</a> · <a href="/financials/expenses/new">New expense</a></div>
+    </div>
+   </div>
+   <div class="modal-footer">
+    <button type="button" class="btn btn-light" data-dismiss="modal"><%= _t('portal_shared.close', { ns: 'legacy', defaultValue: 'Close' }) %></button>
+    <a href="/financials" class="btn btn-primary font-weight-bold"><%= _t('portal_accountant.modal_financial_centre', { ns: 'legacy', defaultValue: 'Financial control centre' }) %></a>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- Quick financial links (optional; populated when accQuickLinks passed) -->
+<div class="modal fade acc-modal" id="accQuickModal" tabindex="-1" role="dialog" aria-hidden="true">
+ <div class="modal-dialog modal-dialog-centered" role="document">
+  <div class="modal-content">
+   <div class="modal-header">
+    <h5 class="modal-title"><i class="fa fa-bolt mr-2"></i><%= _t('portal_accountant.modal_quick_actions', { ns: 'legacy', defaultValue: 'Quick actions' }) %></h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="<%= _t('portal_accountant.modal_close_aria', { ns: 'legacy', defaultValue: 'Close' }) %>"><span>&times;</span></button>
+   </div>
+   <div class="modal-body p-0">
+    <div class="list-group list-group-flush" id="accQuickList"></div>
+   </div>
+   <div class="modal-footer">
+    <button type="button" class="btn btn-light" data-dismiss="modal"><%= _t('portal_shared.close', { ns: 'legacy', defaultValue: 'Close' }) %></button>
+   </div>
+  </div>
+ </div>
+</div>

@@ -1,0 +1,24 @@
+<% var _selected = Array.isArray(selectedIds) ? selectedIds.map(function(x){ return String(x); }) : []; %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    var o = { ns: 'legacy', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+    return _t(key, o);
+  };
+}
+%>
+<div class="border rounded p-2 bg-white" style="max-height:180px;overflow-y:auto;">
+  <% if (!doctors || !doctors.length) { %>
+  <p class="text-muted small mb-0"><%= _tl('admin_consultation_rooms.no_doctors', 'No active doctors found. Add doctors under Staff first.') %></p>
+  <% } else { doctors.forEach(function(d){ %>
+  <label class="d-flex align-items-center mb-1 small" style="gap:8px;cursor:pointer;">
+    <input type="checkbox" name="assigned_doctor_ids" value="<%= d.id %>" <%= _selected.indexOf(String(d.id)) >= 0 ? 'checked' : '' %>>
+    <span><%= d.last_name %>, <%= d.first_name %><% if (d.primary_department) { %> <span class="text-muted">· <%= d.primary_department %></span><% } %></span>
+  </label>
+  <% }); } %>
+</div>
+<p class="text-muted small mb-0 mt-1"><%= _tl('admin_consultation_rooms.checkbox_hint', 'Check all doctors who use this room. Uncheck to remove a doctor from the room.') %></p>

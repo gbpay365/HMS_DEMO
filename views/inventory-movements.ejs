@@ -1,0 +1,95 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--inventory'; %>
+<%- include('partials/header') %>
+<% var _tl = function (key, fallback, opts) {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+  var o = { ns: 'legacy', defaultValue: fallback };
+  if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+  return _t(key, o);
+}; %>
+
+<div class="page-wrapper hms-surface-module">
+ <div class="content">
+  <div class="hms-surface-hero mb-4">
+   <div class="hms-surface-hero-icon"><i class="fa fa-exchange"></i></div>
+   <h1 class="hms-surface-hero-title"><%= _tl('inventory_movements.title', 'Stock movements') %></h1>
+   <p>
+    <a href="<%= typeof backUrl === 'string' && backUrl ? backUrl : '/inventory' %>" class="text-white font-weight-bold"><i class="fa fa-arrow-left mr-1"></i><%= typeof backLabel === 'string' && backLabel ? backLabel : _tl('inventory_movements.back_inventory', 'Back to inventory') %></a>
+    <span class="mx-2 opacity-75">·</span>
+    <span class="font-weight-bold"><%= item.name %></span>
+    <span class="opacity-75">(<%= _tl('inventory_movements.sku_label', 'SKU') %> <%= item.sku %>)</span>
+    <span class="mx-2 opacity-75">·</span>
+    <%= _tl('inventory_movements.current_units', 'Current: {{qty}} units', { qty: item.quantity != null ? item.quantity : 0 }) %>
+   </p>
+  </div>
+
+  <% if (typeof flash === 'string' && flash) { %><div class="alert alert-success alert-dismissible border-0 shadow-sm"><%= flash %><button type="button" class="close" data-dismiss="alert"><span>&times;</span></button></div><% } %>
+  <% if (typeof error === 'string' && error) { %><div class="alert alert-danger alert-dismissible border-0 shadow-sm"><%= error %><button type="button" class="close" data-dismiss="alert"><span>&times;</span></button></div><% } %>
+
+  <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
+   <span class="small font-weight-bold text-muted mr-2"><i class="fa fa-filter mr-1"></i><%= _tl('inventory_movements.filter_reason', 'Filter:') %></span>
+   <% var filters = ['', 'dispense', 'po_receive', 'pharmacy_receive', 'adjust', 'create']; %>
+   <% filters.forEach(function(f) {
+     var label = f ? f.replace(/_/g, ' ') : _tl('inventory_movements.filter_all', 'All');
+     var active = (reasonFilter || '') === f;
+   %>
+     <% var mvBase = (typeof movementsBase === 'string' && movementsBase) ? movementsBase : '/inventory/item'; %>
+     <a href="<%= mvBase %>/<%= item.id %>/movements<%= f ? '?reason=' + encodeURIComponent(f) : '' %>"
+      class="btn btn-sm <%= active ? 'btn-primary' : 'btn-outline-secondary' %>"><%= label %></a>
+   <% }) %>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-xl overflow-hidden hms-surface-card">
+   <div class="card-header bg-white py-3 font-weight-bold"><i class="fa fa-history mr-2 text-muted"></i><%= _tl('inventory_movements.history_title', 'History (newest first)') %></div>
+   <div class="table-responsive">
+    <table class="table table-hover mb-0">
+     <thead class="bg-light small font-weight-bold">
+      <tr>
+       <th><%= _tl('inventory_movements.th_when', 'When') %></th>
+       <th><%= _tl('inventory_movements.th_change', 'Change') %></th>
+       <th class="text-right"><%= _tl('inventory_movements.th_before', 'Before') %></th>
+       <th class="text-right"><%= _tl('inventory_movements.th_after', 'After') %></th>
+       <th><%= _tl('inventory_movements.th_reason', 'Reason') %></th>
+       <th><%= _tl('inventory_movements.th_note', 'Note') %></th>
+       <th><%= _tl('inventory_movements.th_user', 'User') %></th>
+      </tr>
+     </thead>
+     <tbody>
+      <% if (!movements || !movements.length) { %>
+      <tr><td colspan="7" class="text-center text-muted py-5"><%= _tl('inventory_movements.empty', 'No movement records yet. Adjustments, new SKUs, and pharmacy receipts appear here.') %></td></tr>
+      <% } else { %>
+      <% movements.forEach(function(m) { %>
+      <tr>
+       <td class="small text-nowrap">
+        <% try { %>
+         <%= m.created_at ? new Date(m.created_at).toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : _tl('inventory_movements.dash', '—') %>
+        <% } catch (e) { %><%= _tl('inventory_movements.dash', '—') %><% } %>
+       </td>
+       <td class="font-weight-bold <%= (m.change_qty||0) < 0 ? 'text-danger' : 'text-success' %>"><%= (m.change_qty||0) > 0 ? '+' : '' %><%= m.change_qty %></td>
+       <td class="text-right"><%= m.qty_before %></td>
+       <td class="text-right font-weight-bold"><%= m.qty_after %></td>
+       <td class="small">
+        <% var r = String(m.reason||''); %>
+        <span class="badge badge-<%= r==='dispense'?'danger':(r==='po_receive'||r==='pharmacy_receive'?'success':'secondary') %>-light text-uppercase extra-small"><%= r.replace(/_/g,' ') || '—' %></span>
+       </td>
+       <td class="small text-muted"><%= m.note || _tl('inventory_movements.dash', '—') %></td>
+       <td class="small">
+        <% if (m.emp_fn || m.emp_ln) { %> <%= m.emp_fn %> <%= m.emp_ln %><% } else { %><span class="text-muted"><%= _tl('inventory_movements.dash', '—') %></span><% } %>
+       </td>
+      </tr>
+      <% }); %>
+      <% } %>
+     </tbody>
+    </table>
+   </div>
+  </div>
+ </div>
+</div>
+
+<style>
+ .extra-small { font-size: 0.65rem; }
+ .badge-danger-light { background: #fee2e2; color: #991b1b; }
+ .badge-success-light { background: #dcfce7; color: #166534; }
+ .badge-secondary-light { background: #f1f5f9; color: #475569; }
+</style>
+
+<%- include('partials/footer') %>

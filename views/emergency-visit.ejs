@@ -1,0 +1,14 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--emergency-visit'; %>
+<%- include('partials/header') %>
+<%- include('partials/react-page-mount', {
+  reactPage: 'emergency-visit',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.emergency_visit', { ns: 'common' }) : 'Loading…'),
+  pageData: locals.pageData || {}
+}) %>
+<%- include('partials/hms-add-charge-mount', {
+  chargeFormAction: '/emergency/add-charge',
+  chargeContextName: 'visit_id',
+  chargeContextValue: visit.id,
+  chargeSubmitLabel: (typeof t === 'function' ? t('charge_modal.submit', { ns: 'ipd', defaultValue: 'Add to running bill' }) : 'Add to running bill')
+}) %>
+<%- include('partials/footer') %>

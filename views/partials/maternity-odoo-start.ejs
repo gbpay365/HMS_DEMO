@@ -1,0 +1,37 @@
+<%- include('hms-perm-helpers') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _top = function (key, fallback, opts) {
+  return _t(key, Object.assign({ ns: 'ops', defaultValue: fallback }, opts || {}));
+};
+var _matMenu = locals.matOdooMenu || 'dashboard';
+var _matTitle = locals.matOdooTitle || _top('maternity_odoo.default_title', 'Maternity module');
+var _matUser = locals.userDisplayName || (locals.user && locals.user.name) || _top('maternity_odoo.user_fallback', 'User');
+function _matActive(m) { return _matMenu === m ? ' active' : ''; }
+%>
+<%- include('hms-dept-shell-open', {
+  deptAppClass: 'maternity-odoo-app',
+  deptAppId: 'matOdooApp',
+  deptModuleHref: '/maternity',
+  deptModuleLabel: _top('maternity_odoo.module', 'Maternity'),
+  deptModuleIcon: 'maternity',
+  deptExtraCss: ['/css/maternity-odoo.css?v=1', '/css/maternity.css?v=1'],
+  deptNavUser: _matUser
+}) %>
+      <a href="/maternity" class="o_nav_link<%= _matActive('dashboard') %>"><i class="fa fa-tachometer hms-dept-nav-ico" aria-hidden="true"></i><%= _top('maternity_odoo.dashboard', 'Dashboard') %></a>
+      <a href="/maternity/patients" class="o_nav_link<%= _matActive('patients') %>"><i class="fa fa-list-alt hms-dept-nav-ico" aria-hidden="true"></i><%= _top('maternity_odoo.registry', 'ANC registry') %></a>
+      <a href="/maternity/register" class="o_nav_link<%= _matActive('register') %>"><i class="fa fa-plus-circle hms-dept-nav-ico" aria-hidden="true"></i><%= _top('maternity_odoo.book_anc', 'Book ANC') %></a>
+      <a href="/maternity/labor" class="o_nav_link<%= _matActive('labor') %>"><i class="fa fa-heartbeat hms-dept-nav-ico" aria-hidden="true"></i><%= _top('maternity_odoo.labor_ward', 'Labor ward') %></a>
+      <div class="o_nav_dropdown<%= _matActive('operations') || _matActive('death') ? ' active' : '' %>">
+        <button type="button" class="o_nav_link o_nav_drop_btn"><i class="fa fa-cogs hms-dept-nav-ico" aria-hidden="true"></i><%= _top('maternity_odoo.operations', 'Operations') %> <i class="fa fa-caret-down" aria-hidden="true"></i></button>
+        <div class="o_nav_drop_panel">
+          <a href="/death-registry?source=maternity"><i class="fa fa-heartbeat hms-dept-nav-ico" aria-hidden="true"></i><%= _top('maternity_odoo.death_registry', 'Death registry') %></a>
+        </div>
+      </div>
+<%- include('hms-dept-shell-main-open', {
+  deptPageTitle: locals.matOdooTitle ? _matTitle : null,
+  deptPageActions: locals.matOdooActions || null,
+  deptNavUser: _matUser
+}) %>

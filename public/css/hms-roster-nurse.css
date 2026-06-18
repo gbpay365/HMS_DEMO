@@ -1,0 +1,463 @@
+/* Nurse shift roster — ward operations theme (day / relay / night / off) */
+
+#copyRosterModal .modal-content {
+  overflow: visible !important;
+}
+
+#copyRosterModal .modal-footer {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 1rem 1.25rem 1.25rem !important;
+  overflow: visible !important;
+}
+
+#copyRosterModal .nr-copy-submit-btn {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: auto !important;
+  min-width: 132px !important;
+  min-height: 42px !important;
+  padding: 0.5rem 1.25rem !important;
+  margin: 0 !important;
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+  line-height: 1.45 !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0d9488, #14b8a6) !important;
+  background-image: none !important;
+  border: 2px solid #065f46 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 14px rgba(6, 95, 70, 0.35) !important;
+  cursor: pointer !important;
+  -webkit-appearance: button !important;
+  appearance: button !important;
+}
+
+#copyRosterModal .nr-copy-submit-btn:hover {
+  background: #0f766e !important;
+  color: #ffffff !important;
+}
+
+.nr-roster-page {
+  --nr-bg: #f8fafc;
+  --nr-card: #ffffff;
+  --nr-primary: #0d9488;
+  --nr-primary-dark: #0f766e;
+  --nr-day: #f59e0b;
+  --nr-day-soft: #fef3c7;
+  --nr-day-border: #fcd34d;
+  --nr-relay: #ea580c;
+  --nr-relay-soft: #ffedd5;
+  --nr-relay-border: #fdba74;
+  --nr-night: #4f46e5;
+  --nr-night-soft: #e0e7ff;
+  --nr-night-border: #a5b4fc;
+  --nr-off: #94a3b8;
+  --nr-off-soft: #f1f5f9;
+  --nr-border: #cbd5e1;
+  --nr-hero: linear-gradient(135deg, #0f766e 0%, #0d9488 35%, #6366f1 100%);
+  background: linear-gradient(180deg, #f0fdfa 0%, var(--nr-bg) 120px, var(--nr-bg) 100%);
+  min-height: 100%;
+}
+
+.nr-roster-page .nr-hero {
+  background: var(--nr-hero);
+  color: #fff;
+  border-radius: 22px;
+  padding: 1.5rem 1.65rem;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(15, 118, 110, 0.28);
+}
+
+.nr-roster-page .nr-hero::before {
+  content: '';
+  position: absolute;
+  left: -40px;
+  bottom: -50px;
+  width: 180px;
+  height: 180px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+}
+
+.nr-roster-page .nr-hero::after {
+  content: '';
+  position: absolute;
+  right: -20px;
+  top: -40px;
+  width: 160px;
+  height: 160px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.nr-hero-main {
+  position: relative;
+  z-index: 1;
+}
+
+.nr-hero-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  margin-right: 0.35rem;
+}
+
+.nr-coverage-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.nr-coverage-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.nr-stat-day { background: rgba(245, 158, 11, 0.25); color: #fffbeb; }
+.nr-stat-relay { background: rgba(234, 88, 12, 0.28); color: #fff7ed; }
+.nr-stat-night { background: rgba(79, 70, 229, 0.3); color: #eef2ff; }
+
+.nr-shift-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.65rem;
+}
+
+.nr-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+.nr-legend-item i {
+  font-size: 1.1rem;
+  width: 2rem;
+  text-align: center;
+}
+
+.nr-legend-item strong {
+  display: block;
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
+.nr-legend-item span {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.nr-legend-day { border-color: var(--nr-day-border); background: linear-gradient(135deg, #fff 0%, var(--nr-day-soft) 100%); }
+.nr-legend-day i { color: var(--nr-day); }
+.nr-legend-relay { border-color: var(--nr-relay-border); background: linear-gradient(135deg, #fff 0%, var(--nr-relay-soft) 100%); }
+.nr-legend-relay i { color: var(--nr-relay); }
+.nr-legend-night { border-color: var(--nr-night-border); background: linear-gradient(135deg, #fff 0%, var(--nr-night-soft) 100%); }
+.nr-legend-night i { color: var(--nr-night); }
+.nr-legend-off { border-color: #e2e8f0; background: linear-gradient(135deg, #fff 0%, var(--nr-off-soft) 100%); }
+.nr-legend-off i { color: var(--nr-off); }
+
+.nr-roster-page .nr-toolbar {
+  background: var(--nr-card);
+  border: 2px solid var(--nr-border);
+  border-radius: 18px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+}
+
+.nr-roster-page .nr-view-pills .btn {
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  border: 2px solid transparent;
+}
+
+.nr-roster-page .nr-view-pills .btn.active {
+  background: linear-gradient(135deg, var(--nr-primary-dark), var(--nr-primary));
+  color: #fff;
+  border-color: var(--nr-primary-dark);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+}
+
+.nr-go-btn,
+.nr-save-btn {
+  background: linear-gradient(135deg, var(--nr-primary-dark), var(--nr-primary)) !important;
+  border: none;
+}
+
+.nr-nav-btn:hover {
+  background: var(--nr-day-soft);
+  border-color: var(--nr-day-border);
+}
+
+.nr-nurse-tile {
+  border: 2px solid var(--nr-border);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+  position: relative;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.nr-nurse-tile:hover {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.nr-nurse-tile::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  border-radius: 18px 0 0 18px;
+  background: var(--nr-primary);
+}
+
+.nr-nurse-tile.shift-day::before { background: var(--nr-day); }
+.nr-nurse-tile.shift-relay::before { background: var(--nr-relay); }
+.nr-nurse-tile.shift-night::before { background: var(--nr-night); }
+.nr-nurse-tile.shift-off::before { background: #cbd5e1; }
+
+.nr-nurse-tile.shift-day { border-color: var(--nr-day-border); background: linear-gradient(180deg, #fff 0%, var(--nr-day-soft) 100%); }
+.nr-nurse-tile.shift-relay { border-color: var(--nr-relay-border); background: linear-gradient(180deg, #fff 0%, var(--nr-relay-soft) 100%); }
+.nr-nurse-tile.shift-night { border-color: var(--nr-night-border); background: linear-gradient(180deg, #fff 0%, var(--nr-night-soft) 100%); }
+.nr-nurse-tile.shift-off { border-color: #e2e8f0; background: linear-gradient(180deg, #fff 0%, var(--nr-off-soft) 100%); }
+
+.nr-initials {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin: 0 auto 0.5rem;
+  background: var(--nr-day-soft);
+  color: var(--nr-primary-dark);
+  border: 3px solid #fff;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2);
+}
+
+.shift-day-avatar { background: var(--nr-day-soft); color: #b45309; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25); }
+.shift-relay-avatar { background: var(--nr-relay-soft); color: #c2410c; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25); }
+.shift-night-avatar { background: var(--nr-night-soft); color: #4338ca; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25); }
+.shift-off-avatar { background: var(--nr-off-soft); color: #64748b; box-shadow: 0 4px 12px rgba(148, 163, 184, 0.2); }
+
+.nr-shift-lanes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  padding: 4px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.nr-shift-lanes label {
+  margin: 0;
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 0.35rem 0.15rem;
+  border-radius: 10px;
+  color: #64748b;
+}
+
+.nr-shift-lanes label span {
+  display: block;
+  line-height: 1.25;
+}
+
+.nr-shift-lanes label span i {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.15rem;
+}
+
+.nr-shift-lanes input { display: none; }
+
+.nr-shift-lanes input:checked + span {
+  border-radius: 10px;
+  padding: 0.4rem 0.15rem;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.nr-lane-day input:checked + span { background: var(--nr-day-soft); color: #b45309; }
+.nr-lane-relay input:checked + span { background: var(--nr-relay-soft); color: #c2410c; }
+.nr-lane-night input:checked + span { background: var(--nr-night-soft); color: #4338ca; }
+.nr-lane-off input:checked + span { background: var(--nr-off-soft); color: #64748b; }
+
+.nr-time-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+}
+
+.nr-time-row.is-hidden {
+  display: none;
+}
+
+.nr-time-field label {
+  font-size: 0.68rem;
+  color: #475569;
+}
+
+.nr-time-input {
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.nr-view-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.shift-day-badge { background: var(--nr-day-soft); color: #b45309; }
+.shift-relay-badge { background: var(--nr-relay-soft); color: #c2410c; }
+.shift-night-badge { background: var(--nr-night-soft); color: #4338ca; }
+.shift-off-badge { background: var(--nr-off-soft); color: #64748b; }
+
+.nr-week-board {
+  border: 2px solid var(--nr-border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+}
+
+.nr-week-board th {
+  background: linear-gradient(180deg, #f8fafc, #f1f5f9);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #334155;
+}
+
+.nr-week-cell {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.nr-week-cell.day { background: var(--nr-day-soft); color: #b45309; }
+.nr-week-cell.relay { background: var(--nr-relay-soft); color: #c2410c; }
+.nr-week-cell.night { background: var(--nr-night-soft); color: #4338ca; }
+.nr-week-cell.off { background: var(--nr-off-soft); color: #94a3b8; }
+
+.nr-month-shift-block {
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nr-month-shift-block.day-shift { background: var(--nr-day-soft); color: #92400e; }
+.nr-month-shift-block.relay-shift { background: var(--nr-relay-soft); color: #9a3412; }
+.nr-month-shift-block.night-shift { background: var(--nr-night-soft); color: #3730a3; }
+
+.nr-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.nr-month-dow {
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #475569;
+  padding: 0.35rem 0;
+}
+
+.nr-month-cell {
+  min-height: 96px;
+  border: 2px solid var(--nr-border);
+  border-radius: 12px;
+  padding: 0.35rem;
+  background: #fff;
+  font-size: 0.65rem;
+  transition: border-color 0.15s ease;
+}
+
+.nr-month-cell:hover {
+  border-color: var(--nr-primary);
+}
+
+.nr-month-cell.outside { background: #f8fafc; opacity: 0.55; }
+.nr-month-cell.today { border-color: var(--nr-primary); box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.2); }
+.nr-month-cell.weekend { background: #fafafa; }
+
+.nr-month-cell .day-num {
+  font-weight: 800;
+  font-size: 0.78rem;
+  color: #334155;
+  margin-bottom: 0.2rem;
+}
+
+.nr-month-cell a.day-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.nr-month-cell a.day-link:hover .day-num {
+  text-decoration: underline;
+  color: var(--nr-primary-dark);
+}
+
+.nr-modal {
+  border-radius: 18px !important;
+  overflow: hidden;
+}
+
+@media (max-width: 575px) {
+  .nr-shift-lanes label {
+    font-size: 0.55rem;
+  }
+  .nr-shift-lanes label span i {
+    font-size: 0.75rem;
+  }
+}

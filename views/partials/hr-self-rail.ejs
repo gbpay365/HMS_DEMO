@@ -1,0 +1,32 @@
+<%
+var _t = typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue) || k; };
+var mode = String(locals.paySelfServiceOnly || paySelfServiceOnly || '').toLowerCase();
+var homeUrl = '/dashboard';
+var homeLabel = _t('my_home', { ns: 'nav', defaultValue: 'My Home' });
+var _hdrRole = String((locals.user && locals.user.role) || '0');
+if (_hdrRole !== '1' && _hdrRole !== '99') {
+  var _hu = locals.staffHomeUrlResolved;
+  if (!_hu && locals.aclLayout && typeof locals.aclLayout.staffHomeUrl === 'function') {
+    var _spec = locals.staffSpecialisation;
+    var _opts = _spec !== undefined ? { specialisation: _spec } : {};
+    _hu = locals.aclLayout.staffHomeUrl(_hdrRole, _opts);
+  }
+  if (_hu) { homeUrl = _hu; homeLabel = _t('my_home', { ns: 'nav', defaultValue: 'My Home' }); }
+}
+var brandTitle = mode === 'payslips' ? _t('my_payslips', { ns: 'payroll', defaultValue: 'My payslips' }) : _t('request_leave', { ns: 'nav', defaultValue: 'Request leave' });
+var brandSub = mode === 'payslips' ? _t('self_service_payslips', { ns: 'payroll', defaultValue: 'Payroll self-service' }) : _t('leave_self_service', { ns: 'nav', defaultValue: 'Leave self-service' });
+%>
+<nav class="hr-self-rail" aria-label="<%= _t('hr_self_service', { ns: 'nav', defaultValue: 'HR self-service' }) %>">
+  <div class="hr-self-rail-brand">
+    <%= brandTitle %>
+    <small><%= brandSub %></small>
+  </div>
+  <div class="hr-self-rail-section"><%= _t('navigation', { ns: 'nav', defaultValue: 'Navigation' }) %></div>
+  <a href="<%= homeUrl %>" class="<%= '' %>"><i class="fa fa-home"></i> <%= homeLabel %></a>
+  <% if (mode === 'leave') { %>
+  <a href="/hr/request-leave" class="active"><i class="fa fa-paper-plane"></i> <%= _t('request_leave', { ns: 'nav', defaultValue: 'Request leave' }) %></a>
+  <a href="/hr/my-leave-balance"><i class="fa fa-leaf"></i> <%= _t('my_leave_balance', { ns: 'nav', defaultValue: 'My leave balance' }) %></a>
+  <% } else if (mode === 'payslips') { %>
+  <a href="/hr/my-payslips" class="active"><i class="fa fa-file-text-o"></i> <%= _t('my_payslips', { ns: 'payroll', defaultValue: 'My payslips' }) %></a>
+  <% } %>
+</nav>

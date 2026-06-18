@@ -1,0 +1,97 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<div class="page-wrapper"><div class="content">
+
+<%if(locals.flash){%><div class="alert alert-success border-0 shadow-sm mb-3"><i class="fa fa-check-circle mr-2"></i><%=locals.flash%></div><%}%>
+<%if(locals.error){%><div class="alert alert-danger border-0 shadow-sm mb-3"><i class="fa fa-exclamation-circle mr-2"></i><%=locals.error%></div><%}%>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+ <div>
+  <h4 class="font-weight-bold text-dark mb-1"><i class="fa fa-shield mr-2 text-primary"></i><%= _t('insurance_page.title', { ns: 'legacy', defaultValue: 'Insurance Carriers' }) %></h4>
+  <p class="text-muted small mb-0"><%= _t('insurance_page.subtitle', { ns: 'legacy', defaultValue: 'Payers and coverage — link policies from patient registration workflows.' }) %></p>
+ </div>
+ <a href="/billing" class="btn btn-sm btn-outline-secondary rounded-pill"><i class="fa fa-arrow-left mr-1"></i><%= _t('insurance_page.billing', { ns: 'legacy', defaultValue: 'Billing' }) %></a>
+</div>
+
+<!-- Add Carrier -->
+<div class="card border-0 shadow-sm rounded-xl mb-4">
+ <div class="card-header bg-white font-weight-bold py-3"><%= _t('insurance_page.add_carrier_title', { ns: 'legacy', defaultValue: 'Add Carrier (This Site)' }) %></div>
+ <div class="card-body">
+  <form method="POST" action="/insurance/add" class="form-row align-items-end">
+   <div class="form-group col-md-7 mb-0">
+    <label class="small font-weight-bold"><%= _t('insurance_page.carrier_name', { ns: 'legacy', defaultValue: 'Carrier Name' }) %> <span class="text-danger">*</span></label>
+    <select id="carrier_choice" name="carrier_choice" class="form-control" required onchange="onCarrierChange()">
+     <option value=""><%= _t('insurance_page.select_carrier', { ns: 'legacy', defaultValue: '— Select a carrier —' }) %></option>
+     <% catalog.forEach(c => { %>
+     <option value="<%= c.code %>"><%= c.name %></option>
+     <% }) %>
+    </select>
+    <small class="text-muted"><%= _t('insurance_page.carrier_hint', { ns: 'legacy', defaultValue: 'Choose from the Cameroon insurance catalog or select "Other" for unlisted payers.' }) %></small>
+   </div>
+   <div class="form-group col-md-3 mb-0" id="other_wrap" style="display:none;">
+    <label class="small font-weight-bold"><%= _t('insurance_page.other_carrier_name', { ns: 'legacy', defaultValue: 'Other Carrier Name' }) %> <span class="text-danger">*</span></label>
+    <input type="text" name="other_name" id="other_name" class="form-control" maxlength="200" placeholder="<%= _t('insurance_page.other_name_ph', { ns: 'legacy', defaultValue: 'Full legal name' }) %>">
+   </div>
+   <div class="form-group col-md-2 mb-0">
+    <label class="d-none d-md-block">&nbsp;</label>
+    <button type="submit" class="btn btn-primary btn-block"><i class="fa fa-plus mr-1"></i><%= _t('insurance_page.save', { ns: 'legacy', defaultValue: 'Save' }) %></button>
+   </div>
+  </form>
+ </div>
+</div>
+
+<!-- Carriers Table -->
+<div class="card border-0 shadow-sm rounded-xl overflow-hidden">
+ <div class="card-header bg-white py-3">
+  <h6 class="font-weight-bold text-uppercase text-muted mb-0" style="font-size:.75rem;letter-spacing:.06em;"><%= _t('insurance_page.registered_carriers', { ns: 'legacy', defaultValue: 'Registered Carriers' }) %> — <%= carriers.length %></h6>
+ </div>
+ <div class="table-responsive">
+  <table class="table mb-0">
+   <thead class="thead-light">
+    <tr><th><%= _t('insurance_page.col_code', { ns: 'legacy', defaultValue: 'Code' }) %></th><th><%= _t('insurance_page.col_carrier_name', { ns: 'legacy', defaultValue: 'Carrier Name' }) %></th><th><%= _t('insurance_page.col_phone', { ns: 'legacy', defaultValue: 'Phone' }) %></th><th><%= _t('insurance_page.col_email', { ns: 'legacy', defaultValue: 'Email' }) %></th><th><%= _t('insurance_page.col_status', { ns: 'legacy', defaultValue: 'Status' }) %></th><th><%= _t('insurance_page.col_actions', { ns: 'legacy', defaultValue: 'Actions' }) %></th></tr>
+   </thead>
+   <tbody>
+   <% if (carriers.length === 0) { %>
+    <tr><td colspan="6" class="text-center text-muted py-4"><%= _t('insurance_page.empty', { ns: 'legacy', defaultValue: 'No carriers added yet. Use the form above to add your first insurance carrier.' }) %></td></tr>
+   <% } else { carriers.forEach(c => { %>
+    <tr>
+     <td><code><%= c.code %></code></td>
+     <td class="font-weight-bold"><%= c.name %></td>
+     <td class="small text-muted"><%= c.phone||'—' %></td>
+     <td class="small text-muted"><%= c.email||'—' %></td>
+     <td><span class="badge badge-<%= parseInt(c.status)===1?'success':'secondary' %>"><%= parseInt(c.status)===1 ? _t('insurance_page.active', { ns: 'legacy', defaultValue: 'Active' }) : _t('insurance_page.inactive', { ns: 'legacy', defaultValue: 'Inactive' }) %></span></td>
+     <td>
+      <form method="POST" action="/insurance/toggle/<%= c.id %>" style="display:inline;">
+       <button type="submit" class="btn btn-sm btn-outline-<%= parseInt(c.status)===1?'danger':'success' %>" style="font-size:.72rem;padding:2px 8px;border-radius:6px;">
+        <i class="fa fa-<%= parseInt(c.status)===1?'ban':'check' %> mr-1"></i><%= parseInt(c.status)===1 ? _t('insurance_page.deactivate', { ns: 'legacy', defaultValue: 'Deactivate' }) : _t('insurance_page.activate', { ns: 'legacy', defaultValue: 'Activate' }) %>
+       </button>
+      </form>
+     </td>
+    </tr>
+   <% }) } %>
+   </tbody>
+  </table>
+ </div>
+</div>
+
+<p class="text-muted small mt-3 mb-0"><i class="fa fa-info-circle mr-1"></i><%= _t('insurance_page.footer_hint', { ns: 'legacy', defaultValue: 'Patient-level policies are linked from the patient registration form or clinical chart.' }) %></p>
+
+</div></div>
+
+<script>
+function onCarrierChange() {
+ var v = document.getElementById('carrier_choice').value;
+ var wrap = document.getElementById('other_wrap');
+ var inp = document.getElementById('other_name');
+ if (v === 'OTHER') {
+  wrap.style.display = 'block';
+  inp.required = true;
+ } else {
+  wrap.style.display = 'none';
+  inp.required = false;
+  inp.value = '';
+ }
+}
+</script>
+
+<%- include('partials/footer') %>

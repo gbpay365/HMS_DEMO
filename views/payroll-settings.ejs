@@ -1,0 +1,23 @@
+<%- include('partials/payroll-layout-start', { payNavActive: 'settings', canPayrollSettings: true }) %>
+<%
+var _pageData = {
+  current: current || {},
+  brackets: brackets || [],
+  canEdit: !!canEdit,
+  allowanceSettings: locals.allowanceSettings || [],
+  allowanceDefaultsByCode: locals.allowanceDefaultsByCode || {},
+  activeSector: locals.activeSector || 'medical',
+  allSectors: locals.allSectors || {},
+  flash: flash || null,
+  error: error || null,
+  initialTab: (typeof query !== 'undefined' && query && query.tab) ? query.tab : (locals.activeSector ? 'allowances' : 'employer')
+};
+%>
+<div id="hms-react-root" class="hms-ui" data-page="payroll-settings">
+  <div class="content px-4 py-10 text-center text-muted" id="hms-react-fallback">
+    <div class="spinner-border text-success mb-2" role="status" aria-hidden="true"></div>
+    <p class="small mb-0"><%= _t('loading_pages.default', { ns: 'common', defaultValue: 'Loading…' }) %></p>
+  </div>
+</div>
+<script id="hms-page-data" type="application/json"><%- JSON.stringify(_pageData).replace(/</g, '\\u003c') %></script>
+<%- include('partials/payroll-layout-end') %>

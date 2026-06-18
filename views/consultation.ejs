@@ -1,0 +1,65 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+
+<div class="page-wrapper">
+ <div class="content">
+ <!-- Header -->
+ <div class="row align-items-center mb-4">
+ <div class="col-sm-8">
+ <h4 class="page-title font-weight-bold text-dark"><%= _t('consultation_hub.title', { ns: 'legacy', defaultValue: 'Clinical Consultation' }) %></h4>
+ <p class="text-muted small"><%= _t('consultation_hub.subtitle', { ns: 'legacy', defaultValue: 'Electronic Medical Records (EMR) and diagnosis hub.' }) %></p>
+ </div>
+ <div class="col-sm-4 text-right">
+ <div class="badge badge-indigo px-3 py-2 rounded-pill">
+ <i class="fa fa-user-md mr-2"></i> Dr. Administrator
+ </div>
+ </div>
+ </div>
+
+ <!-- Consultation Workspace -->
+ <div class="row">
+ <!-- Left: Patient Queue -->
+ <div class="col-lg-4">
+ <div class="card border-0 shadow-sm rounded-xl overflow-hidden h-100">
+ <div class="card-header bg-white p-3 border-bottom">
+ <h6 class="mb-0 font-weight-bold text-dark"><%= _t('consultation_hub.waitlist', { ns: 'legacy', defaultValue: "Today's Waitlist" }) %></h6>
+ </div>
+ <div class="list-group list-group-flush overflow-auto" style="max-height: 600px;">
+ <% active.forEach(pat => { %>
+ <a href="/consultation/visit/<%= pat.id %>" class="list-group-item list-group-item-action p-3 border-0 border-bottom">
+ <div class="d-flex align-items-center">
+ <div class="hms-avatar-sm mr-3 bg-indigo-light text-indigo rounded-circle d-flex align-items-center justify-content-center">
+ <%= pat.first_name[0] %><%= pat.last_name[0] %>
+ </div>
+ <div>
+ <div class="font-weight-bold text-dark"><%= pat.first_name %> <%= pat.last_name %></div>
+ <div class="small text-muted"><%= pat.gender %>, <%= pat.dob ? (new Date().getFullYear() - new Date(pat.dob).getFullYear()) : '?' %> <%= _t('consultation_hub.years', { ns: 'legacy', defaultValue: 'yrs' }) %></div>
+ </div>
+ </div>
+ </a>
+ <% }) %>
+ <% if(active.length === 0) { %>
+ <div class="p-5 text-center text-muted">
+ <i class="fa fa-coffee fa-3x mb-3 opacity-25"></i>
+ <p><%= _t('consultation_hub.empty', { ns: 'legacy', defaultValue: 'No patients in consultation right now.' }) %></p>
+ </div>
+ <% } %>
+ </div>
+ </div>
+ </div>
+
+ <!-- Right: Clinical Editor (Active Patient) -->
+ <div class="col-lg-8">
+ <div class="card border-0 shadow-sm rounded-xl p-4 bg-white h-100">
+ <div class="text-center py-5">
+ <i class="fa fa-folder-open-o fa-4x mb-4 text-light"></i>
+ <h5 class="text-muted font-weight-bold"><%= _t('consultation_hub.select_patient', { ns: 'legacy', defaultValue: 'Select a patient from the waitlist to start consultation' }) %></h5>
+ <p class="small text-muted"><%= _t('consultation_hub.select_hint', { ns: 'legacy', defaultValue: 'Record vitals, clinical notes, and prescriptions here.' }) %></p>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+</div>
+
+<%- include('partials/footer') %>

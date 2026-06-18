@@ -1,0 +1,14 @@
+/**
+ * Offline-friendly fonts — no Google Fonts CDN required.
+ * Icons use Font Awesome from /fonts/ (see font-awesome.min.css).
+ */
+body,
+html,
+.hms-ui {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.pharmacy-odoo-app,
+.o_web_client {
+  font-family: Roboto, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}

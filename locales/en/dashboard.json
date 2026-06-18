@@ -1,0 +1,62 @@
+{
+  "hospital": "Hospital",
+  "title": "Dashboard",
+  "subtitle": "Operational overview — patients, appointments, and department shortcuts.",
+  "open_shortcut": "Open →",
+  "new_patient": "+ New patient",
+  "sections": {
+    "clinical": "Clinical",
+    "operations": "Operations",
+    "finance": "Finance",
+    "live_ops": "Live operations"
+  },
+  "tiles": {
+    "patients": "Patients",
+    "appointments": "Appointments",
+    "inpatients": "Inpatients",
+    "doctors": "Doctors",
+    "emergencies": "Active emergencies",
+    "opd_queue": "OPD queue",
+    "maternity": "Maternity",
+    "laboratory": "Laboratory",
+    "pharmacy": "Pharmacy",
+    "cashier": "Cashier",
+    "radiology": "Radiology",
+    "opd_open": "OPD open today",
+    "revenue_today": "Revenue today (XAF)",
+    "lab_open": "Lab requests open",
+    "rad_open": "Radiology open"
+  },
+  "links": {
+    "lobby": "Lobby screen",
+    "hms_hub": "HMS hub",
+    "reports": "Reports",
+    "front_desk": "Front office",
+    "wards": "Wards"
+  },
+  "panels": {
+    "active_emergencies": "Active emergencies",
+    "recent_appointments": "Recent appointments",
+    "no_appointments": "No appointments yet.",
+    "new_patients": "New patients",
+    "doctors_on_duty": "Doctors on duty",
+    "no_doctors": "No doctors listed.",
+    "patient": "Patient",
+    "email": "Email",
+    "phone": "Phone",
+    "type": "Type",
+    "doctor": "Doctor",
+    "specialisation": "Specialisation",
+    "status": "Status",
+    "unknown": "Unknown",
+    "no_patients": "No patients yet.",
+    "last_7_days": "Last 7 days",
+    "registrations_7d": "New registrations (7 days)",
+    "inpatient": "Inpatient",
+    "outpatient": "Outpatient",
+    "view_all_doctors": "View all doctors",
+    "no_active_doctors": "No active doctors found.",
+    "doctor_role": "Doctor",
+    "active": "Active"
+  }
+}

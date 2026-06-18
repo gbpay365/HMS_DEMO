@@ -1,0 +1,28 @@
+<%- include('hms-perm-helpers') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _top = function (key, fallback, opts) {
+  return _t(key, Object.assign({ ns: 'ops', defaultValue: fallback }, opts || {}));
+};
+var _appClass = (typeof deptAppClass !== 'undefined' && deptAppClass) ? deptAppClass : 'hms-dept-app';
+var _appId = (typeof deptAppId !== 'undefined' && deptAppId) ? deptAppId : 'hmsDeptApp';
+var _moduleHref = (typeof deptModuleHref !== 'undefined') ? deptModuleHref : '/dashboard';
+var _moduleLabel = (typeof deptModuleLabel !== 'undefined')
+  ? deptModuleLabel
+  : _top('dept_nav.module', 'Module');
+var _moduleIcon = (typeof deptModuleIcon !== 'undefined') ? deptModuleIcon : '';
+var _extraCss = (typeof deptExtraCss !== 'undefined' && deptExtraCss) ? deptExtraCss : [];
+if (!Array.isArray(_extraCss)) _extraCss = [_extraCss];
+%>
+<% _extraCss.forEach(function (href) { %>
+<link rel="stylesheet" href="<%= href %>">
+<% }); %>
+<div class="hms-dept-app <%= _appClass %>" id="<%= _appId %>">
+  <header class="o_web_navbar">
+    <% if (canHospitalDashboard()) { %>
+    <a href="/dashboard" class="o_nav_home" title="<%= _top('dept_nav.apps_title', 'ZAIZENS apps') %>"><i class="fa fa-th" aria-hidden="true"></i></a>
+    <% } %>
+    <a href="<%= _moduleHref %>" class="o_nav_module<% if (_moduleIcon) { %> o_nav_module--<%= _moduleIcon %><% } %>"><%= _moduleLabel %></a>
+    <nav class="o_nav_menu" id="hmsDeptNavMenu">

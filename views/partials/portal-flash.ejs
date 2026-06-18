@@ -1,0 +1,7 @@
+<%
+/* portal-layout.ejs — included by every portal view
+   Caller must set: bannerGrad, bannerIcon, bannerTitle, bannerSub, primaryUrl, primaryLabel
+*/
+%>
+<% if(locals.flash){%><div class="alert alert-success border-0 shadow-sm mb-3 py-2"><i class="fa fa-check-circle mr-2"></i><%=locals.flash%></div><%}%>
+<% if(locals.error){%><div class="alert alert-danger border-0 shadow-sm mb-3 py-2"><i class="fa fa-exclamation-circle mr-2"></i><%=locals.error%></div><%}%>

@@ -1,0 +1,216 @@
+/* Copy modal (shared id) — visible submit button */
+#copyRosterModal .modal-content {
+  overflow: visible !important;
+}
+
+#copyRosterModal .modal-footer {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 1rem 1.25rem 1.25rem !important;
+  overflow: visible !important;
+}
+
+#copyRosterModal .nr-copy-submit-btn {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-width: 132px !important;
+  min-height: 42px !important;
+  padding: 0.5rem 1.25rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  background: #1e40af !important;
+  background-image: none !important;
+  border: 2px solid #1e3a8a !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(30, 64, 175, 0.35) !important;
+  cursor: pointer !important;
+}
+
+#copyRosterModal .nr-copy-submit-btn:hover {
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+}
+
+/* Doctor duty roster — clinical / slate theme */
+.dr-roster-page {
+  --dr-bg: #f1f5f9;
+  --dr-card: #ffffff;
+  --dr-primary: #1e40af;
+  --dr-primary-soft: #dbeafe;
+  --dr-night: #6366f1;
+  --dr-night-soft: #e0e7ff;
+  --dr-on: #059669;
+  --dr-on-soft: #d1fae5;
+  --dr-off: #94a3b8;
+  --dr-border: #e2e8f0;
+  --dr-hero: linear-gradient(135deg, #1e3a5f 0%, #1e40af 55%, #3b82f6 100%);
+}
+
+.dr-roster-page .dr-hero {
+  background: var(--dr-hero);
+  color: #fff;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 12px 32px rgba(30, 64, 175, 0.25);
+}
+
+.dr-roster-page .dr-toolbar {
+  background: var(--dr-card);
+  border: 1px solid var(--dr-border);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.dr-roster-page .dr-view-tabs .btn {
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 0.35rem 1rem;
+}
+
+.dr-roster-page .dr-view-tabs .btn.active {
+  background: var(--dr-primary);
+  color: #fff;
+  border-color: var(--dr-primary);
+}
+
+.dr-duty-card {
+  border: 1px solid var(--dr-border);
+  border-radius: 14px;
+  background: var(--dr-card);
+  transition: box-shadow 0.2s, transform 0.2s;
+  overflow: hidden;
+}
+
+.dr-duty-card:hover {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  transform: translateY(-2px);
+}
+
+.dr-duty-card .dr-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  margin: 0 auto 0.65rem;
+  background: var(--dr-primary-soft);
+  color: var(--dr-primary);
+}
+
+.dr-duty-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.dr-duty-pill.on_duty { background: var(--dr-on-soft); color: var(--dr-on); }
+.dr-duty-pill.night { background: var(--dr-night-soft); color: var(--dr-night); }
+.dr-duty-pill.off { background: #f1f5f9; color: var(--dr-off); }
+
+.dr-shift-toggle label {
+  flex: 1;
+  margin: 0;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.45rem 0.25rem;
+  border-radius: 8px;
+  color: #64748b;
+}
+
+.dr-shift-toggle input { display: none; }
+.dr-shift-toggle input:checked + span {
+  display: block;
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  padding: 0.35rem 0;
+}
+
+.dr-week-table th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #f8fafc;
+}
+
+.dr-week-table td { vertical-align: middle; font-size: 0.85rem; }
+
+.dr-badge-od { background: var(--dr-on-soft); color: var(--dr-on); font-weight: 700; }
+.dr-badge-n { background: var(--dr-night-soft); color: var(--dr-night); font-weight: 700; }
+
+.dr-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.dr-month-dow {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  padding: 0.35rem 0;
+}
+
+.dr-month-cell {
+  min-height: 88px;
+  border: 1px solid var(--dr-border);
+  border-radius: 10px;
+  padding: 0.35rem;
+  background: #fff;
+  font-size: 0.68rem;
+}
+
+.dr-month-cell.outside { background: #f8fafc; opacity: 0.65; }
+.dr-month-cell.today { border-color: var(--dr-primary); box-shadow: 0 0 0 2px var(--dr-primary-soft); }
+.dr-month-cell.weekend { background: #fafbff; }
+
+.dr-month-cell .day-num {
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: #334155;
+  margin-bottom: 0.25rem;
+}
+
+.dr-month-chip {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 1px 4px;
+  border-radius: 4px;
+  margin-bottom: 2px;
+}
+
+.dr-month-chip.on_duty { background: var(--dr-on-soft); color: #047857; }
+.dr-month-chip.night { background: var(--dr-night-soft); color: #4338ca; }
+
+.dr-stat-pill {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-right: 0.35rem;
+  background: var(--dr-primary-soft);
+  color: var(--dr-primary);
+}

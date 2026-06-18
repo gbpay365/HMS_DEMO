@@ -1,0 +1,282 @@
+<%
+var modes = (typeof deploymentModes !== 'undefined' && deploymentModes) ? deploymentModes : [];
+var activeIds = (typeof activeProfileIds !== 'undefined' && activeProfileIds) ? activeProfileIds : [];
+if (!activeIds.length && typeof activeProfileId !== 'undefined' && activeProfileId) {
+  activeIds = [Number(activeProfileId)];
+}
+var activeIdSet = {};
+activeIds.forEach(function (id) { activeIdSet[Number(id)] = true; });
+var useProfiles = deployment && (deployment.source === 'profiles' || deployment.source === 'profile');
+var useLegacy = !useProfiles;
+var lic = (typeof licenseDeployment !== 'undefined' && licenseDeployment) ? licenseDeployment : { enabled: false };
+%>
+<% if (typeof _sa !== 'function') {
+  var _sa = function(k, d, opts) {
+    if (typeof t !== 'function') return d || k;
+    var o = { ns: 'superAdmin', defaultValue: d || k };
+    if (opts) Object.assign(o, opts);
+    return t(k, o);
+  };
+}
+var _PROFILE_SLUG = {
+  'Full Suite': 'full_suite', 'HMS': 'hms', 'Accounting': 'accounting',
+  'Leave & Attendance': 'leave_attendance', 'Payroll': 'payroll',
+  'Inventory': 'inventory', 'Procurement': 'procurement',
+  'Asset Management': 'assets', 'Clinical HMS': 'hms',
+  'Accounting Only': 'accounting', 'Inventory / Catalog': 'inventory'
+};
+var _depLabel = (typeof deploymentProfileLabel === 'function')
+  ? deploymentProfileLabel
+  : function (name) {
+    var raw = String(name || '').trim();
+    if (!raw) return '';
+    var slug = _PROFILE_SLUG[raw] || raw.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    return _sa('deployment.profiles.' + slug, raw);
+  };
+var _depModeLabel = (typeof deploymentModeLabel === 'function')
+  ? deploymentModeLabel
+  : function (key, fallback) {
+    return _sa('deployment.modes.' + String(key || ''), fallback || key);
+  };
+var _depNames = function (arr, sep) {
+  return (arr || []).map(_depLabel).filter(Boolean).join(sep != null ? sep : ' + ');
+}; %>
+<link rel="stylesheet" href="/css/super-admin-deployment.css?v=2">
+
+<% if (lic.enabled) { %>
+<div class="card border-0 shadow-sm mb-4" style="border-radius:14px;overflow:hidden;border-top:4px solid #0891b2 !important;">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap" style="border-bottom:2px solid #f1f5f9;gap:10px;">
+    <span class="font-weight-bold">
+      <i class="fa fa-key mr-2" style="color:#0891b2;"></i><%= _sa('deployment.lic_title', 'Deployment controlled by subscriptions') %>
+    </span>
+    <a href="/hms-admin/subscriptions" class="btn btn-sm font-weight-bold text-white" style="background:#0891b2;border-radius:8px;">
+      <i class="fa fa-external-link mr-1"></i><%= _sa('deployment.lic_open_subs', 'Open Solution Subscriptions') %>
+    </a>
+  </div>
+  <div class="card-body">
+    <div class="alert alert-info py-2 small mb-3">
+      <i class="fa fa-info-circle mr-1"></i>
+      <%= _sa('deployment.lic_info', 'Hospital-wide deployment mode and named profiles are managed through solution subscriptions. Admin or Director requests a module, you issue a serial in the ZAIZENS License Generator, and the hospital activates it. Manual profile/mode changes on this page are disabled.') %>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <p class="small text-muted mb-1 text-uppercase font-weight-bold"><%= _sa('deployment.active_subs', 'Active subscriptions') %></p>
+        <% if (!lic.activeSolutions || !lic.activeSolutions.length) { %>
+        <div class="rounded p-3 bg-light text-muted small"><%= _sa('deployment.no_active_subs', 'No active subscriptions yet. Staff menus stay locked until a solution is activated.') %></div>
+        <% } else { %>
+        <ul class="list-group list-group-flush border rounded">
+          <% lic.activeSolutions.forEach(function(s) { %>
+          <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+            <span><i class="fa <%= s.icon || 'fa-cube' %> mr-2" style="color:<%= s.color || '#64748b' %>;"></i><strong><%= s.label %></strong></span>
+            <span class="small text-muted"><%= s.expiresAt ? _sa('deployment.until', 'until {{date}}', { date: new Date(s.expiresAt).toLocaleDateString() }) : '' %></span>
+          </li>
+          <% }); %>
+        </ul>
+        <% } %>
+      </div>
+      <div class="col-md-6 mb-3">
+        <p class="small text-muted mb-1 text-uppercase font-weight-bold"><%= _sa('deployment.effective', 'Effective deployment') %></p>
+        <div class="rounded p-3 bg-light small">
+          <div class="mb-2"><strong><%= _sa('deployment.named_profiles', 'Named profiles:') %></strong>
+            <%= (lic.profileNames && lic.profileNames.length) ? _depNames(lic.profileNames) : _sa('deployment.none_profiles', '— (none)') %>
+          </div>
+          <div class="mb-2"><strong><%= _sa('deployment.module_bundles', 'Module bundles:') %></strong>
+            <%= (lic.slices && lic.slices.length) ? lic.slices.join(', ') : _sa('deployment.none_subscribe', 'none — subscribe to enable modules') %>
+          </div>
+          <% if (lic.pendingSolutions && lic.pendingSolutions.length) { %>
+          <div class="text-warning"><i class="fa fa-clock-o mr-1"></i><%= _sa('deployment.pending_count', '{{count}} pending activation', { count: lic.pendingSolutions.length }) %></div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <p class="small text-muted mb-0">
+      <%= _sa('deployment.license_gen', 'License Generator: run npm start in license-generator/ (default http://localhost:5055).') %>
+    </p>
+  </div>
+</div>
+<% } else { %>
+
+<!-- Hospital-wide deployment mode (legacy single preset) -->
+<div class="card border-0 shadow-sm mb-4" style="border-radius:14px;overflow:hidden;border-top:4px solid #1a6bd8 !important;">
+  <div class="card-header bg-white font-weight-bold" style="border-bottom:2px solid #f1f5f9;">
+    <i class="fa fa-th-large mr-2 text-primary"></i><%= _sa('deployment.legacy_title', 'Hospital-wide deployment mode') %>
+  </div>
+  <div class="card-body">
+    <% if (useProfiles) { %>
+    <div class="alert alert-info py-2 small mb-3">
+      <i class="fa fa-info-circle mr-1"></i>
+      <%= _sa('deployment.profiles_active_info', 'Named profiles are active below ({{names}}). Pick a single mode here and click Apply to switch to one legacy preset instead.', { names: _depNames(deployment.profileNames || (deployment.profileName ? [deployment.profileName] : []), ', ') }) %>
+    </div>
+    <% } else { %>
+    <div class="alert alert-primary py-2 small mb-3">
+      <i class="fa fa-check-circle mr-1"></i>
+      <%= _sa('deployment.active_mode', 'Active: {{mode}}', { mode: typeof productModeLabel !== 'undefined' ? productModeLabel : (productMode || 'full') }) %>
+    </div>
+    <% } %>
+    <p class="text-muted small mb-3">
+      <%= _sa('deployment.legacy_hint', 'Quick single preset for the whole hospital. Super Admin always sees the full menu. For combining modules (e.g. Clinical + Payroll), use named profiles below.') %>
+    </p>
+    <form method="post" action="/super-admin/set-mode" id="hmsProductSlicesForm">
+      <p class="sa-deploy-section-title"><%= _sa('deployment.choose_mode', 'Choose one mode') %></p>
+      <div class="sa-deploy-grid mb-3" id="saLegacyModeGrid">
+        <% modes.forEach(function(m) {
+          var selected = useLegacy && (productMode || 'full') === m.key;
+        %>
+        <label class="sa-deploy-tile<%= selected ? ' is-selected' : '' %>" for="hms_mode_<%= m.key %>">
+          <input type="radio" name="product_mode" id="hms_mode_<%= m.key %>" value="<%= m.key %>"<%= selected ? ' checked' : '' %>>
+          <span class="sa-deploy-check"><i class="fa fa-check"></i></span>
+          <span class="sa-deploy-icon" style="background:<%= m.color %>;"><i class="fa <%= m.icon %>"></i></span>
+          <span class="sa-deploy-label"><%= _depModeLabel(m.key, m.label) %></span>
+        </label>
+        <% }); %>
+      </div>
+      <div class="d-flex flex-wrap align-items-center" style="gap:10px;">
+        <button type="submit" class="btn btn-primary font-weight-bold" style="border-radius:8px;">
+          <i class="fa fa-check mr-1"></i><%= _sa('deployment.apply_mode', 'Apply mode') %>
+        </button>
+        <a href="/super-admin/deployment/legacy/modules" class="btn btn-outline-secondary font-weight-bold" style="border-radius:8px;">
+          <i class="fa fa-sliders mr-1"></i><%= _sa('deployment.edit_overrides', 'Edit module overrides') %><% if (typeof legacyOverrideCount !== 'undefined' && legacyOverrideCount) { %> (<%= legacyOverrideCount %>)<% } %>
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Named deployment profiles (multi-select, Odoo tiles) -->
+<div class="card border-0 shadow-sm mb-4" style="border-radius:14px;overflow:hidden;border-top:4px solid #7c3aed !important;">
+  <div class="card-header bg-white font-weight-bold" style="border-bottom:2px solid #f1f5f9;">
+    <i class="fa fa-cubes mr-2" style="color:#7c3aed;"></i><%= _sa('deployment.named_profiles_title', 'Named deployment profiles') %>
+    <span class="badge badge-light border ml-2 font-weight-normal"><%= _sa('deployment.multi_select', 'multi-select') %></span>
+  </div>
+  <div class="card-body">
+    <p class="text-muted small mb-3">
+      <%= _sa('deployment.named_hint', 'Select one or more profiles, then Activate selected. End-user menus combine all chosen bundles (e.g. HMS + Payroll shows both clinical and HR items). Deployment limits still apply before per-role navigation grants.') %>
+    </p>
+    <% if (useProfiles) { %>
+    <div class="alert alert-success py-2 small mb-3">
+      <i class="fa fa-check-circle mr-1"></i>
+      <%= _sa('deployment.active_for_staff', 'Active for staff: {{names}}', { names: _depNames(deployment.profileNames || (deployment.profileName ? [deployment.profileName] : [])) }) %>
+      <span class="text-muted"><%= activeIds.length === 1 ? _sa('deployment.profile_count', '({{count}} profile)', { count: activeIds.length }) : _sa('deployment.profile_count_plural', '({{count}} profiles)', { count: activeIds.length }) %></span>
+    </div>
+    <% } %>
+    <% if (!deploymentProfiles || !deploymentProfiles.length) { %>
+    <p class="small text-warning mb-3"><i class="fa fa-warning mr-1"></i> <%= _sa('deployment.no_profiles_db', 'No profiles in database — refresh the page to seed defaults.') %></p>
+    <% } %>
+    <form method="post" action="/super-admin/deployment/activate-profiles" id="saProfilesForm">
+      <p class="sa-deploy-section-title"><%= _sa('deployment.select_profiles', 'Select profiles to deploy') %></p>
+      <div class="sa-deploy-grid mb-3" id="saProfileGrid">
+        <% (deploymentProfiles || []).forEach(function(p) {
+          var meta = p.tileMeta || { icon: 'fa-puzzle-piece', color: '#64748b' };
+          var selected = !!activeIdSet[Number(p.id)];
+        %>
+        <label class="sa-deploy-tile sa-profile-tile<%= selected ? ' is-selected' : '' %>" data-profile-id="<%= p.id %>">
+          <input type="checkbox" name="profile_ids" value="<%= p.id %>"<%= selected ? ' checked' : '' %>>
+          <span class="sa-deploy-check"><i class="fa fa-check"></i></span>
+          <span class="sa-deploy-icon" style="background:<%= meta.color %>;"><i class="fa <%= meta.icon %>"></i></span>
+          <span class="sa-deploy-label"><%= _depLabel(p.name) %></span>
+        </label>
+        <% }); %>
+      </div>
+      <div class="d-flex flex-wrap align-items-center mb-3" style="gap:8px;">
+        <button type="submit" class="btn font-weight-bold text-white" style="background:#7c3aed;border-radius:8px;border:none;">
+          <i class="fa fa-play mr-1"></i><%= _sa('deployment.activate_selected', 'Activate selected') %>
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="saProfileSelectAll" style="border-radius:8px;"><%= _sa('deployment.select_all', 'Select all') %></button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="saProfileClearAll" style="border-radius:8px;"><%= _sa('deployment.clear', 'Clear') %></button>
+      </div>
+    </form>
+    <p class="small text-muted mb-2"><%= _sa('deployment.per_profile_overrides', 'Per-profile module overrides:') %></p>
+    <div class="d-flex flex-wrap" style="gap:6px;">
+      <% (deploymentProfiles || []).forEach(function(p) {
+        var modCount = 0;
+        try {
+          var o = typeof p.modules_json === 'string' ? JSON.parse(p.modules_json || '{}') : (p.modules_json || {});
+          modCount = Object.keys(o).length;
+        } catch (e) {}
+      %>
+      <a href="/super-admin/deployment/<%= p.id %>/modules" class="btn btn-sm btn-outline-secondary" style="border-radius:6px;">
+        <i class="fa fa-sliders mr-1"></i><%= _depLabel(p.name) %><% if (modCount) { %> (<%= modCount %>)<% } %>
+      </a>
+      <% }); %>
+    </div>
+    <% if (useProfiles) { %>
+    <form method="post" action="/super-admin/deployment/use-legacy" class="mt-3">
+      <button type="submit" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;">
+        <%= _sa('deployment.switch_legacy', 'Switch back to single hospital-wide mode above') %>
+      </button>
+    </form>
+    <% } %>
+  </div>
+</div>
+
+<script>
+(function () {
+  function bindTileGrid(gridId, isRadio) {
+    var grid = document.getElementById(gridId);
+    if (!grid) return;
+    grid.querySelectorAll('.sa-deploy-tile').forEach(function (tile) {
+      tile.addEventListener('click', function (e) {
+        if (e.target.tagName === 'A') return;
+        var inp = tile.querySelector('input');
+        if (!inp) return;
+        if (isRadio) {
+          grid.querySelectorAll('.sa-deploy-tile').forEach(function (t) {
+            t.classList.remove('is-selected');
+          });
+          inp.checked = true;
+          tile.classList.add('is-selected');
+        } else {
+          inp.checked = !inp.checked;
+          tile.classList.toggle('is-selected', inp.checked);
+        }
+      });
+      var inp = tile.querySelector('input');
+      if (inp) {
+        inp.addEventListener('change', function () {
+          if (isRadio) {
+            grid.querySelectorAll('.sa-deploy-tile').forEach(function (t) {
+              t.classList.toggle('is-selected', t.querySelector('input') && t.querySelector('input').checked);
+            });
+          } else {
+            tile.classList.toggle('is-selected', inp.checked);
+          }
+        });
+      }
+    });
+  }
+  bindTileGrid('saLegacyModeGrid', true);
+  bindTileGrid('saProfileGrid', false);
+
+  var form = document.getElementById('saProfilesForm');
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      var checked = form.querySelectorAll('input[name="profile_ids"]:checked');
+      if (!checked.length) {
+        e.preventDefault();
+        alert(<%= JSON.stringify(_sa('deployment.select_one_profile', 'Select at least one deployment profile.')) %>);
+      }
+    });
+  }
+  var selAll = document.getElementById('saProfileSelectAll');
+  var clrAll = document.getElementById('saProfileClearAll');
+  if (selAll) {
+    selAll.addEventListener('click', function () {
+      document.querySelectorAll('#saProfileGrid input[name="profile_ids"]').forEach(function (inp) {
+        inp.checked = true;
+        inp.closest('.sa-deploy-tile').classList.add('is-selected');
+      });
+    });
+  }
+  if (clrAll) {
+    clrAll.addEventListener('click', function () {
+      document.querySelectorAll('#saProfileGrid input[name="profile_ids"]').forEach(function (inp) {
+        inp.checked = false;
+        inp.closest('.sa-deploy-tile').classList.remove('is-selected');
+      });
+    });
+  }
+})();
+</script>
+<% } %>

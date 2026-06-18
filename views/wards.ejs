@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--wards'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'wards',
+  reactLoadingLabel: typeof t === 'function' ? t('loading.ward_board', { ns: 'ipd', defaultValue: 'Loading ward board…' }) : 'Loading ward board…'
+}) %>
+
+<%- include('partials/footer') %>

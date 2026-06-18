@@ -1,0 +1,82 @@
+<!-- IPD Workflow Banner (matches React ClinicalWorkflowBanner layout) -->
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<style>
+.opd-wf-banner { width: 100%; }
+.opd-wf-title { font-size: 1.35rem; font-weight: 800; color: #1b2559; margin: 0; }
+.opd-wf-title-sub { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #1d4ed8; margin-top: .25rem; }
+.opd-wf-track { display: flex; width: 100%; min-width: 920px; align-items: flex-start; overflow-x: auto; padding-bottom: .5rem; }
+@media (min-width: 992px) { .opd-wf-track { min-width: 0; overflow: visible; } }
+.opd-wf-step-wrap { display: flex; flex: 1 1 0; min-width: 0; align-items: flex-start; }
+.opd-wf-step { display: flex; width: 100%; flex-direction: column; align-items: center; padding: 0 .25rem; }
+.opd-wf-num { display: flex; align-items: center; justify-content: center; width: 3rem; height: 3rem; border-radius: 9999px; color: #fff; font-size: 1rem; font-weight: 800; margin-bottom: .65rem; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+.opd-wf-icon { display: flex; align-items: center; justify-content: center; width: 4rem; height: 4rem; border-radius: 9999px; font-size: 1.35rem; margin-bottom: .65rem; }
+.opd-wf-label { white-space: pre-line; text-align: center; font-size: .8rem; font-weight: 700; line-height: 1.25; color: #1e293b; }
+.opd-wf-role { margin-top: .25rem; text-align: center; font-size: .75rem; color: #64748b; }
+.opd-wf-arrow { flex-shrink: 0; margin-top: 2.5rem; padding: 0 .15rem; color: #0d9488; font-size: 1.1rem; }
+.opd-wf-footnote { font-size: .85rem; line-height: 1.55; color: #475569; }
+</style>
+<div class="card border-0 shadow-sm mb-4 opd-wf-banner">
+  <div class="card-body py-4 px-4">
+    <div class="mb-3">
+      <h3 class="opd-wf-title"><i class="fa fa-random mr-2 text-primary"></i><%= _t('workflow.title', { ns: 'ipd', defaultValue: 'IPD Workflow' }) %></h3>
+      <div class="opd-wf-title-sub"><%= _t('workflow.subtitle', { ns: 'ipd', defaultValue: '10 Stations — inpatient journey' }) %></div>
+    </div>
+
+    <%
+    var wfSteps = [
+      {n:1,  icon:'clipboard',     labelKey:'workflow.step_admit',       roleKey:'workflow.role_doctor',      color:'#1e40af'},
+      {n:2,  icon:'credit-card',   labelKey:'workflow.step_deposit',     roleKey:'workflow.role_cashier',     color:'#059669'},
+      {n:3,  icon:'bed',           labelKey:'workflow.step_bed',         roleKey:'workflow.role_adt_nurse',   color:'#d97706'},
+      {n:4,  icon:'heartbeat',     labelKey:'workflow.step_vitals',      roleKey:'workflow.role_nurse',       color:'#7c3aed'},
+      {n:5,  icon:'stethoscope',   labelKey:'workflow.step_rounds',      roleKey:'workflow.role_doctor',      color:'#6366f1'},
+      {n:6,  icon:'flask',         labelKey:'workflow.step_lab',         roleKey:'workflow.role_lab',         color:'#0891b2'},
+      {n:7,  icon:'medkit',        labelKey:'workflow.step_pharmacy',    roleKey:'workflow.role_pharmacist',  color:'#be185d'},
+      {n:8,  icon:'sign-out',      labelKey:'workflow.step_clinical_dc', roleKey:'workflow.role_doctor',      color:'#1e40af'},
+      {n:9,  icon:'money',         labelKey:'workflow.step_financial_dc',roleKey:'workflow.role_cashier',     color:'#059669'},
+      {n:10, icon:'check-circle',  labelKey:'workflow.step_released',    roleKey:'workflow.role_adt',         color:'#64748b'}
+    ];
+    var wfDefaults = {
+      'workflow.step_admit': 'Doctor\nAdmit Order',
+      'workflow.step_deposit': 'Cashier\nDeposit',
+      'workflow.step_bed': 'ADT\nBed Assign',
+      'workflow.step_vitals': 'Nurse\nBaseline Vitals',
+      'workflow.step_rounds': 'Doctor\nWard Rounds',
+      'workflow.step_lab': 'Lab\nTests',
+      'workflow.step_pharmacy': 'Pharmacy\nDispense',
+      'workflow.step_clinical_dc': 'Doctor\nClinical DC',
+      'workflow.step_financial_dc': 'Cashier\nFinancial DC',
+      'workflow.step_released': 'ADT\nBed Released',
+      'workflow.role_doctor': 'Doctor',
+      'workflow.role_cashier': 'Cashier',
+      'workflow.role_adt_nurse': 'ADT / Nurse',
+      'workflow.role_nurse': 'Nurse',
+      'workflow.role_lab': 'Lab Tech',
+      'workflow.role_pharmacist': 'Pharmacist',
+      'workflow.role_adt': 'ADT'
+    };
+    %>
+
+    <div class="opd-wf-track" role="list" aria-label="<%= _t('workflow.stations_aria', { ns: 'ipd', defaultValue: 'IPD workflow stations' }) %>">
+    <% wfSteps.forEach(function(s,i){
+         var label = _t(s.labelKey, { ns: 'ipd', defaultValue: wfDefaults[s.labelKey] });
+         var role = _t(s.roleKey, { ns: 'ipd', defaultValue: wfDefaults[s.roleKey] });
+    %>
+      <div class="opd-wf-step-wrap" role="listitem">
+        <div class="opd-wf-step">
+          <span class="opd-wf-num" style="background:<%=s.color%>;" title="<%= _t('workflow.station', { ns: 'ipd', n: s.n, defaultValue: 'Station ' + s.n }) %>"><%=s.n%></span>
+          <span class="opd-wf-icon" style="background:<%=s.color%>18;border:2px solid <%=s.color%>;color:<%=s.color%>;" aria-hidden="true"><i class="fa fa-<%= s.icon %>"></i></span>
+          <span class="opd-wf-label"><%=label%></span>
+          <span class="opd-wf-role"><%=role%></span>
+        </div>
+        <% if(i < wfSteps.length - 1){ %>
+        <span class="opd-wf-arrow" aria-hidden="true"><i class="fa fa-long-arrow-right"></i></span>
+        <% } %>
+      </div>
+    <% }); %>
+    </div>
+
+    <div class="mt-3 pt-3" style="border-top:1px dashed #cbd5e1;">
+      <p class="opd-wf-footnote mb-0"><%= _t('workflow.footnote', { ns: 'ipd', defaultValue: 'Station 1 — Admit order: Doctor creates the admission → Station 2 (Cashier deposit) before bed assignment · Station 3 (ADT) assigns ward & bed → nursing baseline, ward rounds, orders, then Stations 8–10 clinical discharge → financial settlement → bed released.' }) %></p>
+    </div>
+  </div>
+</div>

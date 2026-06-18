@@ -1,0 +1,8 @@
+<% var _pd = locals.pageData || {}; var _kind = _pd.kind || 'laboratory'; locals.hmsSurfaceBodyClass = ' hms-body--validate-entry hms-body--validate-entry-' + (_kind === 'pharmacy' ? 'pharmacy' : _kind === 'radiology' ? 'rad' : 'lab'); %>
+<%- include('partials/header') %>
+<%- include('partials/react-page-mount', {
+  reactPage: locals.reactPage || 'lab-workflow',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.service_validate', { ns: 'common' }) : 'Loading…'),
+  pageData: locals.pageData || {}
+}) %>
+<%- include('partials/footer') %>

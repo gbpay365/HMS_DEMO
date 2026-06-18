@@ -1,0 +1,57 @@
+<% if (!selRole || ['1','99'].includes(String(selRole))) { %>
+<div class="alert alert-light border text-muted small mb-0"><%= _ac('action_menus.select_role', 'Select a staff role on Modules & permissions to configure row menu visibility.') %></div>
+<% } else if (!Array.isArray(uiActionMenusGrouped) || !uiActionMenusGrouped.length) { %>
+<div class="alert alert-warning small mb-0"><%= _ac('action_menus.no_catalogue', 'No action menu catalogue found. Restart the app after upgrade so ACL seeds run.') %></div>
+<% } else { %>
+<div class="card border-0 shadow-sm p-4 acl-ui-section" id="acl-action-menus-section" style="border-radius:12px;border-top:4px solid #be185d !important;">
+  <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap" style="gap:8px;">
+    <div>
+      <h5 class="font-weight-bold mb-1"><i class="fa fa-ellipsis-v mr-2" style="color:#be185d;"></i><%= _ac('action_menus.title', 'Row action menus (⋮)') %></h5>
+      <p class="text-muted small mb-0"><%= _ac('action_menus.desc', 'Per-screen row actions for {{role}}. Hiding does not grant access — required_perm still applies.', { role: selRoleTitle }) %></p>
+    </div>
+  </div>
+  <% uiActionMenusGrouped.forEach(function(g){ %>
+  <div class="card border mb-3" style="border-radius:10px;overflow:hidden;">
+    <div class="px-3 py-2 font-weight-bold" style="background:#f1f5f9;font-size:.88rem;color:#1e293b;">
+      <i class="fa fa-table mr-2 text-secondary"></i><%= g.screen_label %>
+      <span class="text-muted font-weight-normal small">(<code><%= g.parent_code %></code>)</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm mb-0" style="font-size:.83rem;">
+        <thead style="background:#fafafa;">
+          <tr>
+            <th style="width:54px;" class="text-center small text-muted text-uppercase"><%= _ac('shared.show', 'Show') %></th>
+            <th class="small text-muted text-uppercase"><%= _ac('action_menus.col_action', 'Action') %></th>
+            <th class="small text-muted text-uppercase"><%= _ac('shared.requires', 'Requires') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% g.items.forEach(function(it){ %>
+          <tr>
+            <td class="text-center align-middle">
+              <input type="checkbox" class="ui-am-toggle" data-parent="<%= g.parent_code %>"
+                     data-code="<%= it.code %>" <% if (!it.isHidden) { %>checked<% } %>
+                     onchange="uiToggleActionMenu(this)">
+            </td>
+            <td class="align-middle">
+              <div class="d-flex align-items-center">
+                <span class="rounded-circle d-inline-flex align-items-center justify-content-center mr-2"
+                      style="width:26px;height:26px;background:<%= (it.color || '#475569') %>1a;">
+                  <i class="fa <%= it.icon || 'fa-ellipsis-v' %>" style="color:<%= it.color || '#475569' %>;font-size:.8rem;"></i>
+                </span>
+                <div>
+                  <div class="font-weight-600" style="color:#1e293b;"><%= it.label %></div>
+                  <code style="font-size:.68rem;color:#64748b;"><%= it.code %></code>
+                </div>
+              </div>
+            </td>
+            <td class="align-middle"><code style="font-size:.7rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#475569;"><%= it.required_perm || '*' %></code></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <% }); %>
+</div>
+<% } %>

@@ -1,0 +1,1293 @@
+<%- include('partials/header') %>
+<% var _ac = function(k, d, opts) {
+  if (typeof t !== 'function') return d || k;
+  var o = { ns: 'access', defaultValue: d || k };
+  if (opts) Object.assign(o, opts);
+  return t(k, o);
+}; %>
+<div class="page-wrapper"><div class="content">
+
+
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap" style="gap:12px;">
+  <div>
+ <h1 class="h4 font-weight-bold mb-1" style="color:#1b2559;"><i class="fa fa-sitemap mr-2" style="color:#667eea;"></i><%= _ac('legacy_page.title', 'Workflow & Access Control') %></h1>
+    <p class="text-muted small mb-0"><%= _ac('legacy_page.subtitle', 'Grant capabilities under Modules & permissions. Configure menus under Navigation. Map clinical steps under Workflow. Admin (1) and Super Admin (99) bypass all checks.') %></p>
+  </div>
+  <a href="/workflow-guides" class="hms-btn hms-btn-outline-primary btn-sm font-weight-bold"><i class="fa fa-book mr-1"></i><%= _ac('header.staff_guides', 'Staff guides') %></a>
+</div>
+
+<div class="alert border-0 shadow-sm mb-4 py-3 px-4" style="border-radius:12px;background:#f0f9ff;border:1px solid #e2e8f0 !important;">
+  <div class="small" style="color:#334155;line-height:1.8;">
+    <%= _ac('legacy_page.steps', '1. Modules � grant permissions per module and sub-capability. 2. Navigation � top tabs, menus, sub-menus, tiles (visibility only). 3. Workflow � OPD/IPD step map (documentation).') %>
+  </div>
+</div>
+
+<!-- Main Tabs -->
+<div class="d-flex mb-4" style="background:#fff;border-radius:12px;padding:.35rem;box-shadow:0 2px 8px rgba(0,0,0,.06);width:fit-content;gap:4px;">
+  <button class="main-tab-btn active" id="mtab-modules" onclick="switchSection('modules',this)"><i class="fa fa-cubes mr-1"></i><%= _ac('legacy_page.tab_modules', 'Modules & permissions') %></button>
+  <button class="main-tab-btn" id="mtab-navigation" onclick="switchSection('navigation',this)"><i class="fa fa-compass mr-1"></i><%= _ac('legacy_page.tab_navigation', 'Navigation') %></button>
+  <button class="main-tab-btn" id="mtab-workflow" onclick="switchSection('workflow',this)"><i class="fa fa-sitemap mr-1"></i><%= _ac('legacy_page.tab_workflow', 'Workflow') %></button>
+  <button class="main-tab-btn" id="mtab-setup" onclick="switchSection('setup',this)"><i class="fa fa-cog mr-1"></i><%= _ac('legacy_page.tab_setup', 'Catalogue & roles') %></button>
+  <button class="main-tab-btn" id="mtab-audit" onclick="switchSection('audit',this)"><i class="fa fa-history mr-1"></i><%= _ac('legacy_page.tab_audit', 'Audit log') %></button>
+</div>
+
+<!-- Workflow map (documentation � does not grant permissions) -->
+<div class="section-panel" id="section-workflow">
+  <div class="d-flex justify-content-end mb-2">
+    <button type="button" class="hms-btn hms-btn-primary btn-sm font-weight-bold" onclick="hmsWfSave()"><i class="fa fa-save mr-1"></i><%= _ac('legacy_page.save_workflow', 'Save workflow') %></button>
+  </div>
+
+  <!-- Portal Pills Toolbar � HORIZONTAL row matching PHP version -->
+  <div class="wf-pills-toolbar mb-3">
+ <span class="wf-pills-label"><i class="fa fa-long-arrow-right mr-1"></i><%= _ac('legacy_page.drag_portals', 'DRAG A PORTAL ONTO A STEP:') %></span>
+ <% portals.forEach(function(p){ %>
+ <div class="portal-pill" draggable="true" data-code="<%=p.code%>" data-label="<%=p.label%>" id="pill-<%=p.code%>">
+ <i class="fa fa-th-large"></i> <%=p.label%>
+ </div>
+ <% }); %>
+  </div>
+
+  <!-- Workflow Canvas -->
+  <div class="card border-0 shadow-sm mb-4 wf-canvas-card">
+
+ <!-- OPD / IPD Tabs -->
+ <div class="wf-tab-bar">
+ <button class="wf-tab-btn active" onclick="switchWfTab('opd',this)"><i class="fa fa-hospital-o mr-1"></i><%= _ac('legacy_page.opd_tab', 'OPD � Outpatient Workflow') %></button>
+ <button class="wf-tab-btn" onclick="switchWfTab('ipd',this)"><i class="fa fa-bed mr-1"></i><%= _ac('legacy_page.ipd_tab', 'IPD � Inpatient Workflow') %></button>
+ </div>
+
+ <!-- OPD Flow -->
+ <div id="tab-opd" class="wf-flow-wrap">
+ <div class="wf-flow" id="flow-opd">
+ <% opdSteps.forEach(function(step, i){ %>
+ <% if(i>0){ %><span class="wf-arrow"><i class="fa fa-arrow-right"></i></span><% } %>
+ <div class="wf-step" id="step-opd-<%=step.step_key%>" style="background:<%=step.step_color||'#3182ce'%>"
+ data-workflow="opd" data-key="<%=step.step_key%>"
+ ondragover="allowDrop(event)" ondrop="dropOnStep(event)"
+ ondragenter="this.classList.add('drop-over')" ondragleave="this.classList.remove('drop-over')">
+ <div class="wf-step-label">
+ <span class="step-label-text"><%=step.step_label%></span>
+ <div style="display:flex;gap:3px;flex-shrink:0;">
+ <button class="wf-step-edit" onclick="renameStep('opd','<%=step.step_key%>',this)" title="<%= _ac('shared.rename', 'Rename') %>"><i class="fa fa-pencil"></i></button>
+ <% if(step.is_custom){ %><button class="wf-step-edit" onclick="deleteStep('opd','<%=step.step_key%>',this)" title="<%= _ac('shared.delete', 'Delete') %>" style="background:rgba(220,38,38,.4)"><i class="fa fa-trash"></i></button><% } %>
+ </div>
+ </div>
+ <div class="wf-step-portals">
+ <% (step.portals||[]).forEach(function(pc){ %>
+ <span class="wf-badge" data-portal="<%=pc%>"><%=plMap[pc]||pc%> <button class="wf-badge-x" onclick="removePortal('opd','<%=step.step_key%>','<%=pc%>')">&times;</button></span>
+ <% }); %>
+ </div>
+ </div>
+ <% }); %>
+ <span class="wf-arrow"><i class="fa fa-arrow-right"></i></span>
+ <div class="wf-add-step" onclick="addStep('opd')"><i class="fa fa-plus fa-lg"></i><span><%= _ac('legacy_page.add_step', 'Add Step') %></span></div>
+ </div>
+ </div>
+
+ <!-- IPD Flow -->
+ <div id="tab-ipd" class="wf-flow-wrap" style="display:none">
+ <div class="wf-flow" id="flow-ipd">
+ <% ipdSteps.forEach(function(step, i){ %>
+ <% if(i>0){ %><span class="wf-arrow"><i class="fa fa-arrow-right"></i></span><% } %>
+ <div class="wf-step" id="step-ipd-<%=step.step_key%>" style="background:<%=step.step_color||'#3182ce'%>"
+ data-workflow="ipd" data-key="<%=step.step_key%>"
+ ondragover="allowDrop(event)" ondrop="dropOnStep(event)"
+ ondragenter="this.classList.add('drop-over')" ondragleave="this.classList.remove('drop-over')">
+ <div class="wf-step-label">
+ <span class="step-label-text"><%=step.step_label%></span>
+ <div style="display:flex;gap:3px;flex-shrink:0;">
+ <button class="wf-step-edit" onclick="renameStep('ipd','<%=step.step_key%>',this)" title="<%= _ac('shared.rename', 'Rename') %>"><i class="fa fa-pencil"></i></button>
+ <% if(step.is_custom){ %><button class="wf-step-edit" onclick="deleteStep('ipd','<%=step.step_key%>',this)" title="<%= _ac('shared.delete', 'Delete') %>" style="background:rgba(220,38,38,.4)"><i class="fa fa-trash"></i></button><% } %>
+ </div>
+ </div>
+ <div class="wf-step-portals">
+ <% (step.portals||[]).forEach(function(pc){ %>
+ <span class="wf-badge" data-portal="<%=pc%>"><%=plMap[pc]||pc%> <button class="wf-badge-x" onclick="removePortal('ipd','<%=step.step_key%>','<%=pc%>')">&times;</button></span>
+ <% }); %>
+ </div>
+ </div>
+ <% }); %>
+ <span class="wf-arrow"><i class="fa fa-arrow-right"></i></span>
+ <div class="wf-add-step" onclick="addStep('ipd')"><i class="fa fa-plus fa-lg"></i><span><%= _ac('legacy_page.add_step', 'Add Step') %></span></div>
+ </div>
+ </div>
+  </div><!-- /wf-canvas-card -->
+
+  <!-- Bottom 2-col: Workflow Summary + How to Use -->
+  <div class="row">
+ <div class="col-lg-6 mb-3">
+ <div class="card border-0 shadow-sm p-4" style="border-radius:12px;height:100%;">
+ <h6 class="font-weight-bold mb-3"><i class="fa fa-file-text-o mr-2 text-primary"></i><%= _ac('legacy_page.wf_summary_title', 'Workflow Summary') %></h6>
+ <div class="form-group mb-3">
+ <select id="summaryPortalSel" class="hms-input w-full text-sm" onchange="loadSummary(this.value)">
+ <option value=""><%= _ac('legacy_page.select_portal', '� Select a Portal �') %></option>
+ <% portals.forEach(function(p){ %>
+ <option value="<%=p.code%>"><%=p.label%></option>
+ <% }); %>
+ </select>
+ </div>
+ <div id="summaryText" class="small text-muted p-3 rounded" style="background:#f8fafc;min-height:90px;border:1px solid #e2e8f0;">
+ <%= _ac('legacy_page.summary_placeholder', 'Select a portal above to see its auto-generated workflow summary.') %>
+ </div>
+ <div class="mt-3">
+ <button class="hms-btn hms-btn-primary btn-sm font-weight-bold w-100" onclick="copySummary()"><i class="fa fa-copy mr-1"></i> <%= _ac('legacy_page.copy_summary', 'Copy Summary') %></button>
+ </div>
+ </div>
+ </div>
+ <div class="col-lg-6 mb-3">
+ <div class="card border-0 shadow-sm p-4" style="border-radius:12px;height:100%;">
+ <h6 class="font-weight-bold mb-3"><i class="fa fa-info-circle mr-2 text-primary"></i><%= _ac('legacy_page.how_to_title', 'How to Use the Designer') %></h6>
+ <div style="font-size:.83rem;color:#475569;line-height:2.4;">
+ <div><i class="fa fa-hand-pointer-o mr-2 text-primary"></i><%= _ac('legacy_page.how_to_1', 'Drag a portal pill onto a step to show which portal handles that stage.') %></div>
+ <div><i class="fa fa-times-circle mr-2 text-danger"></i><%= _ac('legacy_page.how_to_2', 'Click � on a badge to remove a portal from that step.') %></div>
+ <div><i class="fa fa-pencil mr-2 text-warning"></i><%= _ac('legacy_page.how_to_3', 'Click the pencil icon on any step to rename it.') %></div>
+ <div><i class="fa fa-plus-circle mr-2 text-success"></i><%= _ac('legacy_page.how_to_4', 'Click Add Step to insert a new custom clinical stage.') %></div>
+ <div><i class="fa fa-refresh mr-2" style="color:#0c8b8b;"></i><%= _ac('legacy_page.how_to_5', 'Portal assignment is documentation only. Grant access under Role access.') %></div>
+ </div>
+ </div>
+ </div>
+  </div>
+
+</div><!-- /section-workflow -->
+
+<!-- - SECTION 2: Role Permissions - -->
+
+<div class="section-panel active" id="section-acl">
+  <div class="card border-0 shadow-sm p-4" style="border-radius:12px;">
+ <h5 class="font-weight-bold mb-1"><i class="fa fa-cubes mr-2 text-primary"></i><%= _ac('legacy_page.modules_heading', 'Modules & permissions') %></h5>
+ <p class="text-muted small mb-3"><%= _ac('legacy_page.modules_desc', 'Grant or revoke capabilities by module and sub-capability (drag cards or use All / None on each module). This is the only place that grants real access. Configure menus on the Navigation tab.') %></p>
+ <% if (selRole && !['1','99'].includes(String(selRole))) { %>
+ <div class="d-flex flex-wrap align-items-center mb-4 p-3 rounded" style="background:#f8fafc;border:1px solid #e2e8f0;gap:10px;">
+   <span class="small font-weight-bold text-secondary mb-0 text-uppercase" style="letter-spacing:.04em;"><i class="fa fa-copy mr-1"></i><%= _ac('legacy_page.copy_from_role', 'Copy from role') %></span>
+   <select id="aclCopyFrom" class="hms-input w-full text-sm" style="max-width:280px;">
+     <option value=""><%= _ac('legacy_page.select_source_role', '� Select source role �') %></option>
+     <% roles.forEach(function(r){
+       if (String(r.role)===String(selRole)) return;
+       if (['1','99'].indexOf(String(r.role))>=0) return;
+     %>
+     <option value="<%= r.role %>"><%= r.title %> (#<%= r.role %>)</option>
+     <% }); %>
+   </select>
+   <button type="button" class="hms-btn hms-btn-primary hms-btn-sm font-weight-bold" onclick="aclCopyFromRole()"><i class="fa fa-check mr-1"></i><%= _ac('legacy_page.replace_grants', 'Replace grants') %></button>
+   <span class="small text-muted"><%= _ac('legacy_page.copy_grants_hint', 'Copies every permission from the source role onto {{role}} (portals are unchanged).', { role: selRoleTitle }) %></span>
+ </div>
+ <% } %>
+ <% if (selRole && aclRoleSummary) { %>
+ <div class="card border-0 shadow-sm mb-4" style="border-radius:12px;background:linear-gradient(135deg,#f8fafc 0%,#f0fdf4 100%);border:1px solid #e2e8f0 !important;">
+   <div class="card-body py-3 px-4">
+     <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap" style="gap:8px;">
+       <span class="font-weight-bold" style="color:#1e293b;"><i class="fa fa-dashboard mr-2 text-primary"></i><%= _ac('legacy_page.footprint', 'Role footprint � {{role}} (#{{id}})', { role: selRoleTitle, id: selRole }) %></span>
+       <span class="badge badge-light border"><i class="fa fa-info-circle mr-1"></i><%= _ac('legacy_page.at_glance', 'At-a-glance') %></span>
+     </div>
+     <div class="row text-center">
+       <div class="col-6 col-md-3 mb-2 mb-md-0">
+         <div class="small text-muted text-uppercase" style="letter-spacing:.06em;font-size:.65rem;"><%= _ac('permissions.capabilities', 'Capabilities') %></div>
+         <div class="font-weight-bold" style="font-size:1.35rem;color:#1a6bd8;"><%= aclRoleSummary.permissionsGranted %><span class="text-muted font-weight-normal" style="font-size:.85rem;"> / <%= aclRoleSummary.permissionsTotal %></span></div>
+       </div>
+       <div class="col-6 col-md-3 mb-2 mb-md-0">
+         <div class="small text-muted text-uppercase" style="letter-spacing:.06em;font-size:.65rem;"><%= _ac('permissions.portals_kpi', 'Portals') %></div>
+         <div class="font-weight-bold" style="font-size:1.35rem;color:#0c8b8b;"><%= aclRoleSummary.portalsAllowed %><span class="text-muted font-weight-normal" style="font-size:.85rem;"> / <%= aclRoleSummary.portalsTotal %></span></div>
+       </div>
+       <div class="col-6 col-md-3 mb-2 mb-md-0">
+         <div class="small text-muted text-uppercase" style="letter-spacing:.06em;font-size:.65rem;"><%= _ac('legacy_page.home_portal', 'Home portal') %></div>
+         <div class="font-weight-bold" style="font-size:.95rem;color:#15803d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<%= aclRoleSummary.homePortalLabel || '' %>">
+           <% if (aclRoleSummary.homePortalLabel) { %><%= aclRoleSummary.homePortalLabel %><% } else { %><span class="text-muted font-weight-normal">�</span><% } %>
+         </div>
+       </div>
+       <div class="col-6 col-md-3">
+         <div class="small text-muted text-uppercase" style="letter-spacing:.06em;font-size:.65rem;"><%= _ac('legacy_page.ui_hides', 'UI hides') %></div>
+         <div class="font-weight-bold" style="font-size:1.35rem;color:#7c3aed;"><%= aclRoleSummary.uiHideRowCount %><span class="text-muted font-weight-normal" style="font-size:.72rem;"> <%= _ac('legacy_page.rows', 'rows') %></span></div>
+         <div class="small text-muted" style="font-size:.68rem;"><%= _ac('legacy_page.tiles_hidden', '{{hidden}} / {{total}} tiles hidden', { hidden: aclRoleSummary.uiHiddenTiles, total: aclRoleSummary.uiTotalTiles }) %></div>
+         <div class="small text-muted" style="font-size:.68rem;"><%= _ac('legacy_page.row_actions_hidden', '{{hidden}} / {{total}} row actions hidden', { hidden: aclRoleSummary.actionMenuHidden, total: aclRoleSummary.actionMenuTotal }) %></div>
+       </div>
+     </div>
+   </div>
+ </div>
+ <% } %>
+
+ <div class="perm-board">
+ <!-- Role list -->
+ <div class="perm-roles">
+ <div class="small font-weight-bold text-muted text-uppercase mb-2 px-3"><%= _ac('roles.title', 'Roles') %></div>
+ <input type="text" id="roleListFilter" class="hms-input w-full text-sm mx-2 mb-2" style="max-width:calc(100% - 1rem);" placeholder="<%= _ac('roles.search_ph', 'Search roles�') %>" onkeyup="filterRoleList(this)">
+ <% roles.forEach(function(r){ %>
+ <a href="/access-control?role=<%=r.role%>#section-modules"
+ class="perm-role-item <%=String(r.role)===String(selRole)?'active':''%>"
+ data-search="<%= String(r.title + ' ' + r.role).toLowerCase().replace(/"/g, '') %>"
+ onclick="switchSection('modules',document.getElementById('mtab-modules'))">
+ <span><%=r.title%></span>
+ <span class="text-muted small" style="float:right;">#<%=r.role%></span>
+ </a>
+ <% }); %>
+ </div>
+
+ <% if(selRole){ %>
+ <!-- Hidden perms -->
+ <div class="perm-col-wrap">
+ <div class="mb-3 d-flex justify-content-between align-items-center">
+ <span class="small font-weight-bold text-muted"><i class="fa fa-minus-circle mr-1"></i><%= _ac('legacy_page.not_granted', 'Not granted to role') %></span>
+ <span class="small text-muted"><%= _ac('legacy_page.role_label', 'Role:') %> <strong><%=selRoleTitle%></strong></span>
+ </div>
+ <input type="text" class="hms-input w-full text-sm mb-2" placeholder="<%= _ac('legacy_page.filter_not_granted_ph', 'Filter not granted...') %>" onkeyup="filterPerms(this,'col-available')">
+ <div class="small text-muted mb-2"><%= _ac('legacy_page.not_granted_count', '{{count}} not granted', { count: availablePerms.length }) %></div>
+ <div class="perm-col" id="col-available" ondragover="allowDrop(event)" ondrop="permDrop(event,'revoke')" ondragenter="this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">
+   <% availablePermsGrouped.forEach(function(g){ %>
+   <div class="perm-col-group" data-mod="<%= g.meta.code %>">
+     <div class="perm-col-group-head">
+       <span class="perm-col-group-icon" style="background:<%= (g.meta.color || '#1a6bd8') %>1a;color:<%= g.meta.color || '#1a6bd8' %>;"><i class="fa <%= g.meta.icon || 'fa-cube' %>"></i></span>
+       <span class="perm-col-group-title"><%= g.meta.label %></span>
+       <% if (selRole && ['1','99'].indexOf(String(selRole)) === -1) { %>
+       <span class="perm-col-group-actions d-inline-flex align-items-center" style="gap:4px;">
+         <button type="button" class="hms-btn hms-btn-outline-success hms-btn-sm py-0 px-1" title="<%= _ac('legacy_page.grant_module', 'Grant entire module') %>" onclick="aclModuleBulk('<%= g.meta.code %>', true)"><%= _ac('legacy_page.all', 'All') %></button>
+         <button type="button" class="hms-btn hms-btn-secondary hms-btn-sm py-0 px-1" title="<%= _ac('legacy_page.revoke_module', 'Revoke entire module') %>" onclick="aclModuleBulk('<%= g.meta.code %>', false)"><%= _ac('legacy_page.none', 'None') %></button>
+       </span>
+       <% } %>
+       <span class="perm-col-group-count"><%= g.items.length %></span>
+     </div>
+     <% g.items.forEach(function(p){ %>
+     <div class="perm-card" draggable="true" ondragstart="permDrag(event)" data-id="<%=p.id%>" data-mod="<%= g.meta.code %>">
+       <div class="perm-card-icon" style="color:<%= g.meta.color || '#475569' %>;"><i class="fa <%= g.meta.icon || 'fa-cube' %>"></i></div>
+       <div><div style="font-weight:600;color:#1e293b;margin-bottom:2px;font-size:.83rem;"><%=p.label%><% if (p.action) { %> <span class="badge badge-light border ml-1" style="font-size:.65rem;font-weight:600;"><%= p.action %></span><% } %></div><code class="perm-code"><%=p.code%></code></div>
+     </div>
+     <% }); %>
+   </div>
+   <% }); %>
+ </div>
+ </div>
+<!-- Assigned perms -->
+<div class="perm-col-wrap">
+<div class="mb-3 d-flex justify-content-between align-items-center flex-wrap" style="gap:6px;">
+<span class="small font-weight-bold text-success"><i class="fa fa-check-circle mr-1"></i><%= _ac('legacy_page.granted_to_role', 'Granted to role') %></span>
+<div class="d-flex" style="gap:6px;">
+  <button class="hms-btn hms-btn-success hms-btn-sm py-1 px-3 font-weight-bold" onclick="hmsAclSave()"><i class="fa fa-save mr-1"></i><%= _ac('shared.save', 'Save') %></button>
+</div>
+</div>
+ <input type="text" class="hms-input w-full text-sm mb-2" placeholder="<%= _ac('legacy_page.filter_granted_ph', 'Filter granted...') %>" onkeyup="filterPerms(this,'col-assigned')">
+ <div class="small text-muted mb-2"><%= _ac('legacy_page.granted_count', '{{count}} granted', { count: assignedPerms.length }) %></div>
+ <div class="perm-col assigned" id="col-assigned" ondragover="allowDrop(event)" ondrop="permDrop(event,'grant')" ondragenter="this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">
+   <% assignedPermsGrouped.forEach(function(g){ %>
+   <div class="perm-col-group" data-mod="<%= g.meta.code %>">
+     <div class="perm-col-group-head">
+       <span class="perm-col-group-icon" style="background:<%= (g.meta.color || '#16a34a') %>1a;color:<%= g.meta.color || '#16a34a' %>;"><i class="fa <%= g.meta.icon || 'fa-check' %>"></i></span>
+       <span class="perm-col-group-title"><%= g.meta.label %></span>
+       <% if (selRole && ['1','99'].indexOf(String(selRole)) === -1) { %>
+       <span class="perm-col-group-actions d-inline-flex align-items-center" style="gap:4px;">
+         <button type="button" class="hms-btn hms-btn-outline-success hms-btn-sm py-0 px-1" title="<%= _ac('legacy_page.grant_module', 'Grant entire module') %>" onclick="aclModuleBulk('<%= g.meta.code %>', true)"><%= _ac('legacy_page.all', 'All') %></button>
+         <button type="button" class="hms-btn hms-btn-secondary hms-btn-sm py-0 px-1" title="<%= _ac('legacy_page.revoke_module', 'Revoke entire module') %>" onclick="aclModuleBulk('<%= g.meta.code %>', false)"><%= _ac('legacy_page.none', 'None') %></button>
+       </span>
+       <% } %>
+       <span class="perm-col-group-count"><%= g.items.length %></span>
+     </div>
+     <% g.items.forEach(function(p){ %>
+     <div class="perm-card assigned" draggable="true" ondragstart="permDrag(event)" data-id="<%=p.id%>" data-mod="<%= g.meta.code %>">
+       <div class="perm-card-icon" style="color:<%= g.meta.color || '#16a34a' %>;"><i class="fa fa-check"></i></div>
+       <div><div style="font-weight:600;color:#1e293b;margin-bottom:2px;font-size:.83rem;"><%=p.label%><% if (p.action) { %> <span class="badge badge-light border ml-1" style="font-size:.65rem;font-weight:600;"><%= p.action %></span><% } %></div><code class="perm-code"><%=p.code%></code></div>
+     </div>
+     <% }); %>
+   </div>
+   <% }); %>
+ </div>
+ </div>
+ <% } else { %>
+ <div class="perm-col" style="grid-column:span 2;display:flex;align-items:center;justify-content:center;color:#94a3b8;min-height:200px;"><%= _ac('legacy_page.select_role_left', 'Select a role from the left to manage permissions.') %></div>
+ <% } %>
+ </div>
+  </div>
+
+  <% if (selRole && !['1','99'].includes(String(selRole)) && Array.isArray(rolePortalRows) && rolePortalRows.length) { %>
+  <!-- Role Portals � drives staffHomeUrl(role) -->
+  <div class="card border-0 shadow-sm p-4 mt-4" style="border-radius:12px;">
+    <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap" style="gap:8px;">
+      <div>
+        <h5 class="font-weight-bold mb-1"><i class="fa fa-compass mr-2 text-primary"></i><%= _ac('legacy_page.role_portals_title', 'Role Portals') %></h5>
+        <p class="text-muted small mb-0">
+          <%= _ac('legacy_page.role_portals_desc', 'Choose which staff portals {{role}} can open, and which one is its Home (the page they land on after login). Changes apply immediately.', { role: selRoleTitle }) %>
+        </p>
+      </div>
+      <span class="badge badge-light border align-self-center"><i class="fa fa-home mr-1"></i><%= _ac('legacy_page.login_home_badge', 'Login & "My Home" target') %></span>
+    </div>
+
+    <div class="table-responsive">
+    <table class="table table-sm mb-0" style="font-size:.88rem;">
+      <thead style="background:#f8fafc;">
+        <tr>
+          <th style="width:64px;font-size:.7rem;text-transform:uppercase;color:#64748b;" class="text-center"><%= _ac('legacy_page.col_allow', 'Allow') %></th>
+          <th style="width:64px;font-size:.7rem;text-transform:uppercase;color:#64748b;" class="text-center"><%= _ac('shared.home', 'Home') %></th>
+          <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;"><%= _ac('shared.portal', 'Portal') %></th>
+          <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;"><%= _ac('shared.code', 'Code') %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% rolePortalRows.forEach(function(rp){ %>
+        <tr>
+          <td class="text-center align-middle">
+            <input type="checkbox" class="rp-assign" data-code="<%= rp.code %>" <% if (rp.assigned) { %>checked<% } %>
+                   onchange="rpToggleAssign(this)">
+          </td>
+          <td class="text-center align-middle">
+            <input type="radio" name="rp_home_<%=selRole%>" class="rp-home" data-code="<%= rp.code %>"
+                   <% if (rp.is_home) { %>checked<% } %>
+                   <% if (!rp.assigned) { %>disabled<% } %>
+                   onchange="rpSetHome(this)">
+          </td>
+          <td class="align-middle font-weight-600" style="color:#1e293b;"><%= rp.label %></td>
+          <td class="align-middle"><code style="font-size:.74rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#475569;"><%= rp.code %></code></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+    </div>
+    <div class="small text-muted mt-2">
+      <i class="fa fa-info-circle mr-1"></i>
+      <%= _ac('portals.home_hint', 'The first portal assigned is set as Home automatically. Removing the Home portal promotes the next assigned one.') %>
+    </div>
+  </div>
+  <% } %>
+
+</div><!-- /section-acl -->
+
+<div class="section-panel" id="section-navigation">
+  <%- include('partials/access-control-navigation-hub') %>
+</div>
+
+<!-- - SECTION 3: Permission Manager - -->
+<div class="section-panel" id="section-perm">
+  <div class="card border-0 shadow-sm p-4" style="border-radius:12px;">
+ <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap" style="gap:8px;">
+   <div>
+     <h5 class="font-weight-bold mb-1"><i class="fa fa-list mr-2 text-primary"></i><%= _ac('legacy_page.perm_mgr_title', 'Permission Manager') %></h5>
+     <p class="text-muted small mb-0"><%= _ac('legacy_page.perm_mgr_sub', 'System-wide granular permission definitions, grouped by module.') %></p>
+   </div>
+   <div class="d-flex" style="gap:6px;">
+     <input type="text" id="permMgrFilter" class="hms-input w-full text-sm"
+            placeholder="<%= _ac('legacy_page.filter_permissions_ph', 'Filter permissions...') %>" style="width:240px;" onkeyup="permMgrFilter(this.value)">
+     <button class="hms-btn hms-btn-primary btn-sm font-weight-bold" onclick="permAddModal()"><i class="fa fa-plus mr-1"></i><%= _ac('shared.add', '+ Add') %></button>
+   </div>
+ </div>
+
+ <% if (!Array.isArray(allPermsGrouped) || !allPermsGrouped.length) { %>
+   <div class="text-muted small p-4 text-center"><%= _ac('legacy_page.no_permissions', 'No permissions defined yet.') %></div>
+ <% } else { %>
+ <div class="perm-mgr">
+   <% allPermsGrouped.forEach(function(g){ %>
+   <div class="perm-mgr-group" data-mod="<%= g.meta.code %>">
+     <button type="button" class="perm-mgr-head" onclick="permMgrToggle(this)" aria-expanded="true">
+       <span class="perm-mgr-icon-wrap" style="background:<%= (g.meta.color || '#1a6bd8') %>1a;">
+         <i class="fa <%= g.meta.icon || 'fa-cube' %>" style="color:<%= g.meta.color || '#1a6bd8' %>;"></i>
+       </span>
+       <span class="perm-mgr-title"><%= g.meta.label %></span>
+       <span class="perm-mgr-count"><%= g.items.length %></span>
+       <i class="fa fa-chevron-down perm-mgr-chev"></i>
+     </button>
+     <div class="perm-mgr-body">
+       <table class="table table-hover table-sm mb-0" style="font-size:.85rem;">
+         <thead style="background:#f8fafc;">
+           <tr>
+             <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;width:60px;">ID</th>
+             <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;"><%= _ac('shared.code', 'Code') %></th>
+             <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;"><%= _ac('shared.label', 'Label') %></th>
+             <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;width:90px;"><%= _ac('shared.action', 'Action') %></th>
+             <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;" class="text-right" width="120"><%= _ac('shared.actions', 'Actions') %></th>
+           </tr>
+         </thead>
+         <tbody>
+           <% g.items.forEach(function(p){ %>
+           <tr class="perm-mgr-row" data-search="<%= ((p.code||'')+' '+(p.label||'')+' '+(p.module_code||'')+' '+(p.action||'')).toLowerCase() %>">
+             <td class="text-muted">#<%=p.id%></td>
+             <td><code style="font-size:.78rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#475569;"><%=p.code%></code></td>
+             <td class="font-weight-600"><%=p.label%></td>
+             <td><span class="badge badge-light border text-uppercase" style="letter-spacing:.04em;"><%= p.action || '�' %></span></td>
+             <td class="text-right">
+               <button class="hms-btn hms-btn-outline-primary hms-btn-sm mr-1" onclick='permEditModal(<%- JSON.stringify(p) %>)'><i class="fa fa-pencil"></i></button>
+               <button class="hms-btn hms-btn-outline-danger hms-btn-sm" onclick="permDelete(<%=p.id%>)"><i class="fa fa-trash"></i></button>
+             </td>
+           </tr>
+           <% }); %>
+         </tbody>
+       </table>
+     </div>
+   </div>
+   <% }); %>
+ </div>
+ <% } %>
+  </div>
+</div><!-- /section-perm -->
+
+<!-- - SECTION 4: Role Manager - -->
+<div class="section-panel" id="section-role">
+  <div class="card border-0 shadow-sm p-4" style="border-radius:12px;">
+ <div class="d-flex justify-content-between align-items-center mb-4">
+ <div><h5 class="font-weight-bold mb-1"><i class="fa fa-users mr-2 text-primary"></i><%= _ac('legacy_page.role_mgr_title', 'Role Manager') %></h5>
+ <p class="text-muted small mb-0"><%= _ac('legacy_page.role_mgr_sub', 'Define and manage hospital staff roles.') %></p></div>
+ <button class="hms-btn hms-btn-primary btn-sm font-weight-bold" onclick="roleAddModal()"><i class="fa fa-plus mr-1"></i><%= _ac('legacy_page.add_role_btn', 'Add Role') %></button>
+ </div>
+ <div class="table-responsive">
+ <table class="table table-hover mb-0" style="font-size:.85rem;">
+ <thead style="background:#f8fafc;"><tr>
+ <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;width:100px;"><%= _ac('shared.code', 'Code') %></th>
+ <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;"><%= _ac('legacy_page.role_title_col', 'Role Title') %></th>
+ <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;" class="text-right"><%= _ac('shared.actions', 'Actions') %></th>
+ </tr></thead>
+ <tbody>
+ <% allRoles.forEach(function(r){ %>
+ <tr>
+ <td><code style="font-size:.78rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#475569;"><%=r.role%></code></td>
+ <td class="font-weight-600"><%=r.title%></td>
+ <td class="text-right">
+ <button class="hms-btn hms-btn-outline-primary hms-btn-sm mr-1" onclick='roleEditModal(<%- JSON.stringify(r) %>)'><i class="fa fa-pencil"></i></button>
+ <% if(!['1','99'].includes(String(r.role))){ %>
+ <button class="hms-btn hms-btn-outline-danger hms-btn-sm" onclick="roleDelete('<%=r.role%>')"><i class="fa fa-trash"></i></button>
+ <% } %>
+ </td>
+ </tr>
+ <% }); %>
+ </tbody>
+ </table>
+ </div>
+  </div>
+</div><!-- /section-role -->
+
+<!-- - SECTION 5: Audit Log - -->
+<div class="section-panel" id="section-audit">
+  <div class="card border-0 shadow-sm p-4" style="border-radius:12px;">
+    <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap" style="gap:8px;">
+      <div>
+        <h5 class="font-weight-bold mb-1"><i class="fa fa-history mr-2 text-primary"></i><%= _ac('audit.title', 'ACL audit log') %></h5>
+        <p class="text-muted small mb-0"><%= _ac('legacy_page.audit_sub', 'Every permission grant/revoke, role / portal / UI-visibility change, and workflow designer step edit is recorded here. Filter to narrow down the trail.') %></p>
+      </div>
+      <div class="d-flex flex-wrap" style="gap:6px;">
+      <a class="hms-btn hms-btn-secondary hms-btn-sm" href="/access-control?audit_limit=<%= (auditFilter && auditFilter.limit) || 100 %>#section-audit"
+         onclick="switchSection('audit',document.getElementById('mtab-audit'))">
+         <i class="fa fa-refresh mr-1"></i><%= _ac('shared.refresh', 'Refresh') %>
+      </a>
+      <button type="button" class="hms-btn hms-btn-outline-primary hms-btn-sm font-weight-bold" onclick="auditExportCsv()">
+        <i class="fa fa-download mr-1"></i><%= _ac('shared.export_csv', 'Export CSV') %>
+      </button>
+      </div>
+    </div>
+
+    <form id="auditFilterForm" method="get" action="/access-control" class="form-row align-items-end mb-3"
+          onsubmit="setTimeout(function(){switchSection('audit',document.getElementById('mtab-audit'));}, 50);">
+      <input type="hidden" name="role" value="<%= selRole %>">
+      <div class="col-md-3 mb-2">
+        <label class="small text-uppercase font-weight-bold text-muted mb-1" style="letter-spacing:.05em;"><%= _ac('shared.role', 'Role') %></label>
+        <select name="audit_role" class="hms-input w-full text-sm">
+          <option value=""><%= _ac('shared.all_roles', 'All roles') %></option>
+          <% (allRoles || []).forEach(function(r){ %>
+            <option value="<%= r.role %>" <% if (auditFilter && String(auditFilter.role)===String(r.role)) { %>selected<% } %>><%= r.title %> (#<%= r.role %>)</option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="col-md-3 mb-2">
+        <label class="small text-uppercase font-weight-bold text-muted mb-1" style="letter-spacing:.05em;"><%= _ac('shared.action', 'Action') %></label>
+        <select name="audit_action" class="hms-input w-full text-sm">
+          <option value=""><%= _ac('shared.all_actions', 'All actions') %></option>
+          <% (auditActionOptions || []).forEach(function(a){ %>
+            <option value="<%= a.action %>" <% if (auditFilter && auditFilter.action===a.action) { %>selected<% } %>><%= a.action %> (<%= a.n %>)</option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="col-md-3 mb-2">
+        <label class="small text-uppercase font-weight-bold text-muted mb-1" style="letter-spacing:.05em;"><%= _ac('shared.actor', 'Actor') %></label>
+        <input type="text" name="audit_actor" class="hms-input w-full text-sm"
+               placeholder="<%= _ac('audit.actor_ph', 'name or user id') %>"
+               value="<%= (auditFilter && auditFilter.actor) || '' %>">
+      </div>
+      <div class="col-md-2 mb-2">
+        <label class="small text-uppercase font-weight-bold text-muted mb-1" style="letter-spacing:.05em;"><%= _ac('audit.show', 'Show') %></label>
+        <select name="audit_limit" class="hms-input w-full text-sm">
+          <% [50,100,200,500,1000,2000].forEach(function(n){ %>
+            <option value="<%= n %>" <% if (auditFilter && Number(auditFilter.limit)===n) { %>selected<% } %>><%= _ac('shared.show_last', 'Last {{n}}', { n: n }) %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="col-md-1 mb-2 text-right">
+        <button type="submit" class="hms-btn hms-btn-primary btn-sm font-weight-bold w-100">
+          <i class="fa fa-filter"></i>
+        </button>
+      </div>
+    </form>
+
+    <% if (!Array.isArray(auditRows) || !auditRows.length) { %>
+      <div class="text-muted small p-4 text-center border rounded" style="background:#f8fafc;">
+        <i class="fa fa-inbox mr-1"></i><%= _ac('legacy_page.audit_empty', 'No audit entries match this filter yet.') %>
+      </div>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table table-hover table-sm mb-0" style="font-size:.85rem;">
+        <thead style="background:#f8fafc;">
+          <tr>
+            <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;width:170px;"><%= _ac('shared.when', 'When') %></th>
+            <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;width:160px;"><%= _ac('shared.actor', 'Actor') %></th>
+            <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;width:130px;"><%= _ac('shared.action', 'Action') %></th>
+            <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;width:90px;"><%= _ac('shared.role', 'Role') %></th>
+            <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;"><%= _ac('shared.target', 'Target') %></th>
+            <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;"><%= _ac('shared.detail', 'Detail') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% auditRows.forEach(function(a){
+               // action → bootstrap colour buckets so a reviewer can scan quickly
+               var actClass = 'secondary';
+               if (/^grant$|portal_assign|portal_set_home|role_add|perm_add|ui_show/.test(a.action)) actClass = 'success';
+               else if (/^revoke$|portal_unassign|role_delete|perm_delete|ui_hide/.test(a.action))  actClass = 'danger';
+               else if (/_edit$/.test(a.action)) actClass = 'info';
+               else if (/^wf_/.test(a.action)) actClass = 'warning';
+          %>
+          <tr>
+            <td class="text-muted"><%= a.created_at ? new Date(a.created_at).toLocaleString() : '' %></td>
+            <td>
+              <% if (a.actor_name) { %>
+                <span class="font-weight-600" style="color:#1e293b;"><%= a.actor_name %></span>
+                <% if (a.actor_id) { %><span class="text-muted small">#<%= a.actor_id %></span><% } %>
+              <% } else { %>
+                <span class="text-muted">�</span>
+              <% } %>
+            </td>
+            <td><span class="badge badge-<%= actClass %>"><%= a.action %></span></td>
+            <td><% if (a.role) { %><code style="font-size:.74rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#475569;">#<%= a.role %></code><% } else { %><span class="text-muted">�</span><% } %></td>
+            <td><% if (a.target) { %><code style="font-size:.74rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#475569;"><%= a.target %></code><% } else { %><span class="text-muted">�</span><% } %></td>
+            <td class="small text-muted" style="max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<%= a.detail || '' %>"><%= a.detail || '' %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <div class="small text-muted mt-2">
+      <i class="fa fa-info-circle mr-1"></i>
+      <%= _ac('legacy_page.audit_showing', 'Showing the {{count}} most recent entries', { count: auditRows.length }) %>
+      <% if ((auditFilter && (auditFilter.role || auditFilter.action || auditFilter.actor))) { %>
+        <%= _ac('legacy_page.audit_filtered', 'matching the current filter.') %>
+      <% } else { %><%= _ac('legacy_page.audit_unfiltered', '(unfiltered).') %><% } %>
+    </div>
+    <% } %>
+  </div>
+</div><!-- /section-audit -->
+
+<!-- Modals -->
+<div class="modal fade" id="modalPerm" tabindex="-1" role="dialog" aria-labelledby="modalPermTitle">
+  <div class="modal-dialog"><div class="modal-content">
+ <div class="modal-header bg-primary text-white"><h5 class="modal-title" id="modalPermTitle"><%= _ac('legacy_page.modal_add_perm', 'Add Permission') %></h5><button type="button" class="close text-white" data-dismiss="modal" aria-label="<%= _ac('shared.cancel', 'Cancel') %>"><span aria-hidden="true">&times;</span></button></div>
+ <div class="modal-body">
+ <input type="hidden" id="p_id">
+ <div class="form-group"><label class="font-weight-bold small"><%= _ac('shared.code', 'Code') %></label><input type="text" id="p_code" class="hms-input w-full" placeholder="<%= _ac('legacy_page.code_ph', 'e.g. pharmacy.read') %>"></div>
+ <div class="form-group"><label class="font-weight-bold small"><%= _ac('shared.label', 'Label') %></label><input type="text" id="p_label" class="hms-input w-full" placeholder="<%= _ac('legacy_page.label_ph', 'e.g. View pharmacy stock') %>"></div>
+ <div class="form-group"><label class="font-weight-bold small"><%= _ac('legacy_page.group_area', 'Group Area') %></label><input type="number" id="p_gap" class="hms-input w-full" value="0"></div>
+ </div>
+ <div class="modal-footer"><button type="button" class="hms-btn hms-btn-secondary" data-dismiss="modal"><%= _ac('shared.cancel', 'Cancel') %></button><button type="button" class="hms-btn hms-btn-primary font-weight-bold" onclick="permSave()"><%= _ac('legacy_page.save_permission', 'Save Permission') %></button></div>
+  </div></div>
+</div>
+
+<div class="modal fade" id="modalRole" tabindex="-1" role="dialog" aria-labelledby="modalRoleTitle">
+  <div class="modal-dialog"><div class="modal-content">
+ <div class="modal-header bg-primary text-white"><h5 class="modal-title" id="modalRoleTitle"><%= _ac('legacy_page.modal_add_role', 'Add Role') %></h5><button type="button" class="close text-white" data-dismiss="modal" aria-label="<%= _ac('shared.cancel', 'Cancel') %>"><span aria-hidden="true">&times;</span></button></div>
+ <div class="modal-body">
+ <input type="hidden" id="r_id">
+ <div class="form-group"><label class="font-weight-bold small"><%= _ac('legacy_page.role_title_col', 'Role Title') %></label><input type="text" id="r_title" class="hms-input w-full" placeholder="<%= _ac('legacy_page.role_title_ph', 'e.g. Finance Manager') %>"></div>
+ <div class="form-group" id="r_clone_wrap">
+   <label class="font-weight-bold small d-flex align-items-center" style="gap:.4rem;">
+     <i class="fa fa-clone text-muted" aria-hidden="true"></i> <%= _ac('legacy_page.clone_from_role', 'Start from existing role') %>
+     <span class="badge badge-light border ml-auto" style="font-weight:500;color:#64748b;"><%= _ac('legacy_page.optional', 'optional') %></span>
+   </label>
+   <select id="r_clone_from" class="hms-input w-full">
+     <option value=""><%= _ac('legacy_page.empty_role_full', '� Empty role (no permissions, no portals) �') %></option>
+     <% (roles || []).forEach(function(rr){ %>
+       <option value="<%= rr.role %>"><%= rr.title %> (#<%= rr.role %>)</option>
+     <% }); %>
+   </select>
+   <div class="small text-muted mt-1">
+     <i class="fa fa-info-circle mr-1"></i>
+     <%= _ac('legacy_page.clone_hint', "Copies permissions, portal access, Home portal, and any UI hide overrides from the chosen role. The new role's title still needs to be unique.") %>
+   </div>
+ </div>
+ </div>
+ <div class="modal-footer"><button type="button" class="hms-btn hms-btn-secondary" data-dismiss="modal"><%= _ac('shared.cancel', 'Cancel') %></button><button type="button" class="hms-btn hms-btn-primary font-weight-bold" onclick="roleSave()"><%= _ac('legacy_page.save_role', 'Save Role') %></button></div>
+  </div></div>
+</div>
+
+</div></div><!-- /content /page-wrapper -->
+
+<style>
+.main-tab-btn{padding:.55rem 1.25rem;border-radius:8px;border:none;font-weight:700;font-size:.85rem;cursor:pointer;background:transparent;color:#64748b;transition:all .25s;}
+.main-tab-btn:hover{color:#1e293b;background:#f8fafc;}
+.main-tab-btn.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;box-shadow:0 4px 12px rgba(102,126,234,.4);}
+.section-panel{display:none;}.section-panel.active{display:block;}
+
+/* Portal Dashboard Tiles � tabs by portal */
+.acl-ptile-tabbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:1rem;}
+.acl-ptile-tab{display:inline-flex;align-items:center;border:1px solid #e2e8f0;background:#fff;color:#475569;font-size:.78rem;font-weight:600;padding:.42rem .85rem;border-radius:8px;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s,border-color .15s,box-shadow .15s;}
+.acl-ptile-tab:hover{background:#f8fafc;color:#1e293b;border-color:#cbd5e1;}
+.acl-ptile-tab.active{background:linear-gradient(135deg,#1a6bd8,#0c8b8b);color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(26,107,216,.25);}
+.acl-ptile-tab .badge{background:rgba(255,255,255,.95);color:#334155;}
+.acl-ptile-tab.active .badge{background:rgba(255,255,255,.22);color:#fff;border-color:transparent!important;}
+.acl-ptile-panel{display:none;}
+.acl-ptile-panel.active{display:block;}
+
+/* UI visibility � jump bar + top navigation cards */
+.acl-ui-jumpbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 1px 3px rgba(15,23,42,.04);}
+.acl-ui-jumpbar__label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-right:4px;}
+.acl-ui-jumpbar__link{display:inline-flex;align-items:center;padding:.45rem .9rem;border-radius:8px;font-size:.8rem;font-weight:600;color:#475569;background:#f8fafc;border:1px solid #e2e8f0;text-decoration:none;transition:background .15s,color .15s,border-color .15s;}
+.acl-ui-jumpbar__link:hover{background:#eef2f7;color:#1e293b;text-decoration:none;}
+.acl-ui-jumpbar__link--primary{background:linear-gradient(135deg,#1a6bd8,#0c8b8b);color:#fff;border-color:transparent;}
+.acl-ui-jumpbar__link--primary:hover{color:#fff;opacity:.92;}
+.acl-topnav-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;height:100%;display:flex;flex-direction:column;box-shadow:0 2px 8px rgba(15,23,42,.04);transition:opacity .2s,border-color .2s;}
+.acl-topnav-card--off{opacity:.55;border-style:dashed;background:#f8fafc;}
+.acl-topnav-card__head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:12px 14px;border-bottom:1px solid #eef2f7;background:linear-gradient(180deg,#f8fafc,#fff);}
+.acl-topnav-card__title{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem;color:#1e293b;}
+.acl-topnav-card__icon{width:32px;height:32px;border-radius:8px;background:rgba(26,107,216,.1);color:#1a6bd8;display:flex;align-items:center;justify-content:center;font-size:.95rem;}
+.acl-topnav-card__switch{display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;}
+.acl-topnav-card__switch input{margin:0;}
+.acl-topnav-card__switch-label{font-size:.7rem;font-weight:700;color:#0f766e;text-transform:uppercase;letter-spacing:.04em;}
+.acl-topnav-card--off .acl-topnav-card__switch-label{color:#94a3b8;}
+.acl-topnav-card__body{padding:10px 12px;flex:1;display:flex;flex-direction:column;gap:4px;}
+.acl-topnav-link-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;margin:0;font-size:.8rem;font-weight:500;color:#334155;}
+.acl-topnav-link-row:hover{background:#f1f5f9;}
+.acl-topnav-link-row--off{opacity:.5;}
+.acl-topnav-link-row input{margin:0;flex-shrink:0;}
+.acl-topnav-card__foot{padding:8px 12px;border-top:1px solid #eef2f7;background:#fafbfc;}
+.acl-ui-row--hidden{opacity:.45;}
+.acl-ui-section{scroll-margin-top:80px;}
+
+/* ── Portal pills horizontal toolbar  */
+.wf-pills-toolbar{
+  background:#fff;border-radius:12px;border:1px solid #e8edf5;
+  padding:.65rem 1rem;
+  display:flex;flex-wrap:wrap;align-items:center;gap:.55rem;
+  box-shadow:0 1px 4px rgba(0,0,0,.05);
+}
+.wf-pills-label{font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;margin-right:.3rem;}
+
+/* ── Portal pills  */
+.portal-pill{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:20px;padding:.35rem .9rem;font-size:.8rem;font-weight:600;cursor:grab;user-select:none;box-shadow:0 2px 6px rgba(102,126,234,.35);transition:all .2s;display:inline-flex;align-items:center;gap:.35rem;}
+.portal-pill:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(102,126,234,.45);}
+.portal-pill[data-code="front_desk"]{background:linear-gradient(135deg,#11998e,#38ef7d);box-shadow:0 2px 6px rgba(17,153,142,.35);}
+.portal-pill[data-code="doctors"]{background:linear-gradient(135deg,#8e44ad,#c39bd3);box-shadow:0 2px 6px rgba(142,68,173,.35);}
+.portal-pill[data-code="nursing"]{background:linear-gradient(135deg,#e84393,#f093fb);box-shadow:0 2px 6px rgba(232,67,147,.35);}
+.portal-pill[data-code="laboratory"]{background:linear-gradient(135deg,#f7971e,#ffd200);box-shadow:0 2px 6px rgba(247,151,30,.35);}
+.portal-pill[data-code="pharmacy"]{background:linear-gradient(135deg,#575fcf,#43e97b);box-shadow:0 2px 6px rgba(87,95,207,.35);}
+.portal-pill[data-code="radiology"]{background:linear-gradient(135deg,#00b09b,#96c93d);box-shadow:0 2px 6px rgba(0,176,155,.35);}
+.portal-pill[data-code="cashier"]{background:linear-gradient(135deg,#e67e22,#f39c12);box-shadow:0 2px 6px rgba(230,126,34,.35);}
+.portal-pill[data-code="accountant"]{background:linear-gradient(135deg,#f093fb,#f5576c);box-shadow:0 2px 6px rgba(245,87,108,.35);}
+.portal-pill[data-code="patient"]{background:linear-gradient(135deg,#30cfd0,#330867);box-shadow:0 2px 6px rgba(48,207,208,.35);}
+
+/* ── Workflow canvas card  */
+.wf-canvas-card{border-radius:14px;overflow:hidden;}
+.wf-tab-bar{background:#f8fafc;padding:.75rem 1.25rem;border-bottom:1px solid #e8edf5;display:flex;gap:.5rem;}
+.wf-tab-btn{padding:.4rem 1.1rem;border-radius:20px;border:none;font-weight:600;font-size:.82rem;cursor:pointer;background:#fff;color:#64748b;transition:all .2s;border:1px solid #e2e8f0;}
+.wf-tab-btn.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:transparent;box-shadow:0 3px 8px rgba(102,126,234,.4);}
+
+/* ── Flow wrap & horizontal scroll  */
+.wf-flow-wrap{padding:1.25rem 1.25rem 1rem;overflow-x:auto;}
+.wf-flow{display:flex;flex-wrap:nowrap;align-items:flex-start;gap:0;width:max-content;padding:.5rem 0;}
+.wf-arrow{color:#cbd5e1;padding:0 .3rem;align-self:center;margin-top:-18px;font-size:1rem;}
+
+/* ── Workflow step cards  */
+.wf-step{width:155px;min-height:95px;border-radius:10px;padding:.8rem 1rem;color:#fff;position:relative;transition:all .2s;flex-shrink:0;}
+.wf-step.drop-over{transform:scale(1.06);box-shadow:0 0 0 3px #fff,0 0 0 6px #667eea;}
+.wf-step-label{font-size:.73rem;font-weight:700;line-height:1.3;margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:flex-start;}
+.wf-step-edit{background:rgba(255,255,255,.25);border:none;color:#fff;border-radius:4px;width:20px;height:20px;cursor:pointer;font-size:.6rem;flex-shrink:0;margin-left:2px;}
+.wf-step-portals{display:flex;flex-wrap:wrap;gap:.25rem;min-height:20px;}
+.wf-badge{background:rgba(255,255,255,.25);border-radius:10px;padding:.15rem .5rem;font-size:.65rem;font-weight:600;display:inline-flex;align-items:center;gap:.25rem;backdrop-filter:blur(4px);}
+.wf-badge-x{background:rgba(255,255,255,.4);border:none;color:#fff;border-radius:50%;width:13px;height:13px;font-size:.5rem;cursor:pointer;line-height:1;padding:0;}
+.wf-add-step{border:2px dashed #cbd5e1;background:#f8fafc;border-radius:10px;width:105px;min-height:85px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#94a3b8;font-size:.73rem;font-weight:600;transition:all .2s;flex-shrink:0;gap:.3rem;}
+.wf-add-step:hover{border-color:#667eea;color:#667eea;background:#f0f0ff;}
+.wf-tab-btn{padding:.45rem 1.1rem;border-radius:20px;border:none;font-weight:600;font-size:.83rem;cursor:pointer;background:#f1f5f9;color:#64748b;transition:all .2s;}
+.wf-tab-btn.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;box-shadow:0 3px 8px rgba(102,126,234,.4);}
+.perm-board{display:grid;grid-template-columns:200px 1fr 1fr;gap:1.5rem;}
+.perm-roles{border-right:1px solid #f1f5f9;padding-right:1rem;}
+.perm-role-item{display:block;padding:.55rem 1rem;border-left:3px solid transparent;color:#64748b;text-decoration:none;font-weight:500;font-size:.85rem;transition:all .2s;border-radius:0 6px 6px 0;}
+.perm-role-item:hover{background:#f8fafc;color:#1e293b;}
+.perm-role-item.active{border-left-color:#667eea;background:#f0f0ff;color:#667eea;}
+.perm-col{background:#f8fafc;border-radius:12px;border:2px dashed #e2e8f0;padding:1.1rem;height:500px;overflow-y:auto;transition:all .2s;scrollbar-width:thin;}
+.perm-col.assigned{background:#f0fdf4;border-color:#86efac;}
+.perm-col.drag-over{border-color:#667eea;background:#f0f0ff;transform:scale(1.01);}
+.perm-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:.75rem;margin-bottom:.65rem;cursor:grab;display:flex;align-items:center;gap:.75rem;transition:all .2s;font-size:.83rem;}
+.perm-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);border-color:#667eea;transform:translateY(-2px);}
+.perm-card-icon{width:30px;height:30px;border-radius:8px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#64748b;font-size:.78rem;}
+.perm-card.assigned .perm-card-icon{background:#dcfce7;color:#16a34a;}
+.perm-code{font-family:monospace;font-size:.7rem;background:#f1f5f9;padding:2px 5px;border-radius:4px;color:#64748b;}
+
+/* Module groups inside permission columns */
+.perm-col-group{margin-bottom:1.1rem;}
+.perm-col-group:last-child{margin-bottom:.25rem;}
+.perm-col-group-head{display:flex;align-items:center;gap:.5rem;margin-bottom:.45rem;padding:0 .15rem;flex-wrap:wrap;}
+.perm-col-group-icon{width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;}
+.perm-col-group-title{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#334155;flex:1;min-width:72px;}
+.perm-col-group-count{font-size:.68rem;font-weight:700;background:#e2e8f0;color:#475569;border-radius:9px;padding:1px 7px;flex-shrink:0;}
+
+/* Permission Manager accordion (Section 3) */
+.perm-mgr{display:flex;flex-direction:column;gap:.6rem;}
+.perm-mgr-group{border:1px solid #e2e8f0;border-radius:10px;background:#fff;overflow:hidden;}
+.perm-mgr-head{width:100%;display:flex;align-items:center;gap:.6rem;background:#f8fafc;border:none;padding:.6rem .85rem;cursor:pointer;text-align:left;color:#1e293b;font-weight:600;font-size:.88rem;}
+.perm-mgr-head:hover{background:#eef2f7;}
+.perm-mgr-icon-wrap{width:28px;height:28px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;}
+.perm-mgr-title{flex:1;}
+.perm-mgr-count{font-size:.7rem;font-weight:700;background:#e2e8f0;color:#475569;border-radius:9px;padding:1px 8px;margin-right:.4rem;}
+.perm-mgr-chev{font-size:.7rem;color:#64748b;transition:transform .2s;}
+.perm-mgr-group.collapsed .perm-mgr-chev{transform:rotate(-90deg);}
+.perm-mgr-group.collapsed .perm-mgr-body{display:none;}
+.perm-mgr-body{padding:0;}
+.perm-mgr-body table{margin:0;}
+.perm-mgr-row td{vertical-align:middle;}
+
+@media(max-width:768px){.perm-board{grid-template-columns:1fr;}}
+</style>
+
+<% var _aclJs = {
+  newStepName: _ac('legacy_page.js.new_step_name', 'New Step Name'),
+  stepPh: _ac('legacy_page.js.step_ph', 'e.g. Triage, Vitals...'),
+  addStep: _ac('legacy_page.js.add_step', 'Add Step'),
+  renameStep: _ac('legacy_page.js.rename_step', 'Rename Step'),
+  rename: _ac('legacy_page.js.rename', 'Rename'),
+  deleteStepTitle: _ac('legacy_page.js.delete_step_title', 'Delete Step?'),
+  deleteStepBody: _ac('legacy_page.js.delete_step_body', 'Are you sure you want to delete this custom step?'),
+  yesDelete: _ac('legacy_page.js.yes_delete', 'Yes, Delete'),
+  wfSaved: _ac('legacy_page.js.wf_saved', 'Workflow saved automatically'),
+  summaryPlaceholder: _ac('legacy_page.summary_placeholder', 'Select a portal above to see its auto-generated workflow summary.'),
+  loading: _ac('legacy_page.js.loading', 'Loading...'),
+  noPortalsAssigned: _ac('legacy_page.js.no_portals_assigned', 'No steps have portals assigned yet. Drag portal pills onto steps to assign access.'),
+  nothingCopy: _ac('legacy_page.js.nothing_copy', 'Nothing to copy'),
+  summaryCopied: _ac('legacy_page.js.summary_copied', 'Summary copied!'),
+  summary: _ac('legacy_page.js.summary', 'Summary'),
+  permSaveFail: _ac('legacy_page.js.perm_save_fail', 'Could not save permission'),
+  reloadServer: _ac('legacy_page.js.reload_server', 'Reloading to match the server...'),
+  permsSaved: _ac('legacy_page.js.perms_saved', 'Permissions saved automatically'),
+  selectRole: _ac('legacy_page.js.select_role', 'Select a role'),
+  chooseNonAdmin: _ac('legacy_page.js.choose_non_admin', 'Choose a non-admin role on the left.'),
+  grantWhole: _ac('legacy_page.js.grant_whole', 'Grant whole module?'),
+  revokeWhole: _ac('legacy_page.js.revoke_whole', 'Revoke whole module?'),
+  module: _ac('legacy_page.js.module', 'Module:'),
+  yesVerb: _ac('legacy_page.js.yes_verb', 'Yes, {{verb}}'),
+  cancel: _ac('shared.cancel', 'Cancel'),
+  updated: _ac('legacy_page.js.updated', 'Updated'),
+  permsAffected: _ac('legacy_page.js.perms_affected', '{{count}} permission(s) affected.'),
+  error: _ac('legacy_page.js.error', 'Error'),
+  unknownError: _ac('legacy_page.js.unknown_error', 'Unknown error'),
+  networkError: _ac('legacy_page.js.network_error', 'Network error'),
+  pickSource: _ac('legacy_page.js.pick_source', 'Pick a source role'),
+  replaceAllTitle: _ac('legacy_page.js.replace_all_title', 'Replace all permissions?'),
+  replaceAllBody: _ac('legacy_page.js.replace_all_body', 'This will remove every permission currently assigned to this role and copy them from the selected role.'),
+  yesReplace: _ac('legacy_page.js.yes_replace', 'Yes, replace'),
+  done: _ac('legacy_page.js.done', 'Done'),
+  permsCopied: _ac('legacy_page.js.perms_copied', '{{count}} permission(s) copied.'),
+  addPerm: _ac('legacy_page.modal_add_perm', 'Add Permission'),
+  editPerm: _ac('legacy_page.modal_edit_perm', 'Edit Permission'),
+  deletePermTitle: _ac('legacy_page.js.delete_perm_title', 'Delete Permission?'),
+  deletePermBody: _ac('legacy_page.js.delete_perm_body', 'Are you sure you want to delete this permission? This cannot be undone.'),
+  addRole: _ac('legacy_page.modal_add_role', 'Add Role'),
+  editRole: _ac('legacy_page.modal_edit_role', 'Edit Role'),
+  deleteRoleTitle: _ac('legacy_page.js.delete_role_title', 'Delete Role?'),
+  deleteRoleBody: _ac('legacy_page.js.delete_role_body', 'Are you sure you want to delete this role?'),
+  roleCreated: _ac('legacy_page.js.role_created', 'Role created. {{summary}}'),
+  pickRoleFirst: _ac('legacy_page.js.pick_role_first', 'Pick a role first'),
+  updateFail: _ac('legacy_page.js.update_fail', 'Failed to update'),
+  tileShown: _ac('legacy_page.js.tile_shown', 'Tile shown'),
+  tileHidden: _ac('legacy_page.js.tile_hidden', 'Tile hidden'),
+  actionShown: _ac('legacy_page.js.action_shown', 'Action shown'),
+  actionHidden: _ac('legacy_page.js.action_hidden', 'Action hidden'),
+  portalAllowed: _ac('legacy_page.js.portal_allowed', 'Portal allowed'),
+  portalRemoved: _ac('legacy_page.js.portal_removed', 'Portal removed'),
+  homeUpdated: _ac('legacy_page.js.home_updated', 'Home portal updated'),
+  setHomeFail: _ac('legacy_page.js.set_home_fail', 'Failed to set home'),
+  grant: _ac('legacy_page.js.grant_verb', 'grant'),
+  revoke: _ac('legacy_page.js.revoke_verb', 'revoke')
+}; %>
+
+<script>
+var _L = <%- JSON.stringify(_aclJs) %>;
+var currentRole = "<%=selRole%>";
+var draggingPortal = null;
+
+// ── Tab switching 
+var ACL_TAB_GROUPS = {
+  modules: ['acl'],
+  navigation: ['navigation'],
+  workflow: ['workflow'],
+  setup: ['perm', 'role'],
+  audit: ['audit'],
+  roles: ['acl'],
+  acl: ['acl'],
+  perm: ['perm', 'role'],
+  role: ['perm', 'role']
+};
+function switchSection(name, btn) {
+  var key = String(name || '');
+  if (key === 'acl' || key === 'roles') key = 'modules';
+  if (key === 'navstudio' || key === 'am') key = 'navigation';
+  if (key === 'perm' || key === 'role') key = 'setup';
+  document.querySelectorAll('.section-panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.main-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  var ids = ACL_TAB_GROUPS[key] || [key];
+  ids.forEach(function(id) {
+    var el = document.getElementById('section-' + id);
+    if (el) el.classList.add('active');
+  });
+  var tabBtn = document.getElementById('mtab-' + key) || btn;
+  if (tabBtn) tabBtn.classList.add('active');
+}
+function switchWfTab(tab, btn) {
+  document.getElementById('tab-opd').style.display = tab==='opd' ? '' : 'none';
+  document.getElementById('tab-ipd').style.display = tab==='ipd' ? '' : 'none';
+  document.querySelectorAll('.wf-tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── Handle hash on load 
+window.addEventListener('DOMContentLoaded', function(){
+  // Accept both "#audit" and "#section-audit" so links like
+  //   /access-control?audit_role=11#section-audit
+  // pre-select the right tab. Strips the optional 'section-' prefix.
+  var hash = location.hash.replace('#','').replace(/^section-/, '');
+  if (hash === 'acl' || hash === 'roles') hash = 'modules';
+  if (hash === 'navstudio' || hash === 'am') hash = 'navigation';
+  if (hash === 'perm' || hash === 'role') hash = 'setup';
+  if (hash && (document.getElementById('section-'+hash) || ACL_TAB_GROUPS[hash])) {
+    var btn = document.getElementById('mtab-'+hash);
+    switchSection(hash, btn);
+  } else if (!location.hash) {
+    switchSection('modules', document.getElementById('mtab-modules'));
+  }
+  document.querySelectorAll('.portal-pill').forEach(function(pill){
+ pill.addEventListener('dragstart', function(e){
+ draggingPortal = {code: pill.dataset.code, label: pill.dataset.label};
+ e.dataTransfer.effectAllowed = 'copy';
+ });
+ pill.addEventListener('dragend', () => draggingPortal = null);
+  });
+});
+
+function allowDrop(e){ e.preventDefault(); }
+
+// ── Workflow drag/drop 
+function dropOnStep(e) {
+  e.preventDefault();
+  var step = e.currentTarget;
+  step.classList.remove('drop-over');
+  if(!draggingPortal) return;
+  var wf = step.dataset.workflow, key = step.dataset.key, code = draggingPortal.code, label = draggingPortal.label;
+  var existing = step.querySelectorAll('.wf-badge');
+  for(var b of existing){ if(b.dataset.portal===code) return; }
+  var badge = document.createElement('span');
+  badge.className='wf-badge'; badge.dataset.portal=code;
+  badge.innerHTML=label+' <button class="wf-badge-x" onclick="removePortal(\''+wf+'\',\''+key+'\',\''+code+'\')">&times;</button>';
+  step.querySelector('.wf-step-portals').appendChild(badge);
+  ajax({wf_action:'assign_portal', workflow:wf, step_key:key, portal_code:code});
+}
+function removePortal(wf, key, code) {
+  var stepEl = document.getElementById('step-'+wf+'-'+key);
+  if(!stepEl) return;
+  stepEl.querySelectorAll('.wf-badge').forEach(b => { if(b.dataset.portal===code) b.remove(); });
+  ajax({wf_action:'unassign_portal', workflow:wf, step_key:key, portal_code:code});
+}
+function addStep(wf) {
+  Swal.fire({
+    title: _L.newStepName,
+    input: 'text',
+    inputPlaceholder: _L.stepPh,
+    showCancelButton: true,
+    confirmButtonText: _L.addStep,
+    background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff',
+    color: document.documentElement.classList.contains('dark') ? '#f8fafc' : '#1e293b'
+  }).then((res) => {
+    if (res.value) {
+      var label = res.value;
+      ajax({wf_action:'add_step', workflow:wf, step_label:label, step_color:'#3182ce'}, function(r){ if(r.ok) location.reload(); });
+    }
+  });
+}
+function renameStep(wf, key, btn) {
+  var span = btn.closest('.wf-step-label').querySelector('.step-label-text');
+  var cur = span ? span.textContent.trim() : '';
+  Swal.fire({
+    title: _L.renameStep,
+    input: 'text',
+    inputValue: cur,
+    showCancelButton: true,
+    confirmButtonText: _L.rename,
+    background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff',
+    color: document.documentElement.classList.contains('dark') ? '#f8fafc' : '#1e293b'
+  }).then((res) => {
+    if (res.value) {
+      var newL = res.value;
+      ajax({wf_action:'rename_step', workflow:wf, step_key:key, step_label:newL}, function(r){ if(r.ok && span) span.textContent=newL; });
+    }
+  });
+}
+function deleteStep(wf, key, btn) {
+  HMS.confirm(_L.deleteStepTitle, _L.deleteStepBody, 'warning', _L.yesDelete)
+  .then((result) => {
+    if (result.isConfirmed) {
+      ajax({wf_action:'delete_step', workflow:wf, step_key:key}, function(r){ if(r.ok){ location.reload(); }});
+    }
+  });
+}
+function hmsWfSave(){ HMS.toast.fire({ icon: 'success', title: _L.wfSaved }); }
+
+// ── Workflow Summary panel 
+function loadSummary(code) {
+  var el = document.getElementById('summaryText');
+  if(!code){ el.textContent=_L.summaryPlaceholder; return; }
+  el.innerHTML='<span class="text-muted"><i class="fa fa-spin fa-spinner mr-2"></i>'+_L.loading+'</span>';
+  // Build summary from DOM
+  var lines = [];
+  document.querySelectorAll('.wf-flow .wf-step').forEach(function(s){
+ var portals = Array.from(s.querySelectorAll('.wf-badge')).map(function(b){ return b.textContent.replace('×','').trim(); });
+ if(portals.length===0) return;
+ var lbl = (s.querySelector('.step-label-text')||{}).textContent||'';
+ lines.push('<strong>'+lbl+':</strong> '+portals.join(', '));
+  });
+  var msg = lines.length ? lines.join('<br>') : _L.noPortalsAssigned;
+  el.innerHTML = msg;
+}
+function copySummary(){
+  var txt = document.getElementById('summaryText').innerText||'';
+  if(!txt){ HMS.toast.fire({ icon: 'warning', title: _L.nothingCopy }); return; }
+  navigator.clipboard.writeText(txt).then(function(){ HMS.toast.fire({ icon: 'success', title: _L.summaryCopied }); }).catch(function(){ HMS.alert(_L.summary, txt); });
+}
+
+// ── Permission drag/drop 
+var draggingPermId = null;
+function permDrag(e){ draggingPermId = e.currentTarget.dataset.id; e.dataTransfer.effectAllowed='move'; }
+function permDrop(e, action) {
+  e.preventDefault();
+  var col = e.currentTarget; col.classList.remove('drag-over');
+  if(!draggingPermId) return;
+  var card = document.querySelector('.perm-card[data-id="'+draggingPermId+'"]');
+  if(!card) { draggingPermId=null; return; }
+
+  // Drop the card into the matching module group inside the target column so
+  // grouping stays consistent across grants/revokes. If the group doesn't
+  // exist yet (first card of that module on this side), create it on the fly.
+  var mod = card.dataset.mod || 'misc';
+  var group = col.querySelector('.perm-col-group[data-mod="'+mod+'"]');
+  if (!group) {
+    // Clone styling from the sibling column's group if present, otherwise build minimal one.
+    var other = (col.id === 'col-available') ? 'col-assigned' : 'col-available';
+    var template = document.querySelector('#'+other+' .perm-col-group[data-mod="'+mod+'"]');
+    if (template) {
+      group = template.cloneNode(false);
+      group.innerHTML = template.querySelector('.perm-col-group-head').outerHTML;
+      var cnt = group.querySelector('.perm-col-group-count'); if (cnt) cnt.textContent = '0';
+    } else {
+      group = document.createElement('div');
+      group.className = 'perm-col-group'; group.dataset.mod = mod;
+    }
+    col.appendChild(group);
+  }
+  group.appendChild(card);
+  if(action==='grant') card.classList.add('assigned'); else card.classList.remove('assigned');
+
+  // Refresh per-group counts on both columns.
+  ['col-available','col-assigned'].forEach(function(cid){
+    var c = document.getElementById(cid); if (!c) return;
+    c.querySelectorAll('.perm-col-group').forEach(function(g){
+      var n = g.querySelectorAll('.perm-card').length;
+      var lbl = g.querySelector('.perm-col-group-count');
+      if (lbl) lbl.textContent = n;
+      g.style.display = n ? '' : 'none';
+    });
+  });
+
+  ajax({ wf_action: action, role_val: currentRole, permission_id: draggingPermId }, function (r) {
+    if (!r || !r.ok) {
+      HMS.toast.fire({
+        icon: 'error',
+        title: (r && r.error) || _L.permSaveFail,
+        text: _L.reloadServer
+      });
+      setTimeout(function () { location.reload(); }, 800);
+    }
+  });
+  draggingPermId = null;
+}
+function hmsAclSave(){ HMS.toast.fire({ icon: 'success', title: _L.permsSaved }); }
+
+function aclModuleBulk(mod, grant){
+  var role = '<%= selRole || "" %>';
+  if(!role || role === '1' || role === '99'){ Swal.fire(_L.selectRole,_L.chooseNonAdmin,'warning'); return; }
+  if(!mod){ return; }
+  var verb = grant ? _L.grant : _L.revoke;
+  Swal.fire({
+    icon: 'question',
+    title: grant ? _L.grantWhole : _L.revokeWhole,
+    text: _L.module + ' ' + mod,
+    showCancelButton: true,
+    confirmButtonText: _L.yesVerb.replace('{{verb}}', verb),
+    cancelButtonText: _L.cancel
+  }).then(function(r){
+    if(!r.isConfirmed) return;
+    fetch('/access-control/api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ action: 'bulk_module_perms', role_val: role, module_code: mod, grant: grant ? '1' : '0' })
+    }).then(function(x){ return x.json(); }).then(function(d){
+      if(d.ok){
+        Swal.fire({ icon: 'success', title: _L.updated, text: _L.permsAffected.replace('{{count}}', d.affected || 0), timer: 1600, showConfirmButton: false });
+        setTimeout(function(){ location.reload(); }, 900);
+      } else {
+        Swal.fire({ icon: 'error', title: _L.error, text: d.error || _L.unknownError });
+      }
+    }).catch(function(e){ Swal.fire({ icon: 'error', title: _L.networkError, text: e.message }); });
+  });
+}
+
+function aclCopyFromRole(){
+  var role = '<%= selRole || "" %>';
+  var from = document.getElementById('aclCopyFrom') && document.getElementById('aclCopyFrom').value;
+  if(!role || role === '1' || role === '99'){ Swal.fire(_L.selectRole,'','warning'); return; }
+  if(!from){ Swal.fire(_L.pickSource,'','warning'); return; }
+  Swal.fire({
+    icon: 'warning',
+    title: _L.replaceAllTitle,
+    html: _L.replaceAllBody,
+    showCancelButton: true,
+    confirmButtonText: _L.yesReplace,
+    confirmButtonColor: '#1a6bd8'
+  }).then(function(r){
+    if(!r.isConfirmed) return;
+    fetch('/access-control/api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ action: 'copy_role_perms_from', role_val: role, copy_from_role: from })
+    }).then(function(x){ return x.json(); }).then(function(d){
+      if(d.ok){
+        Swal.fire({ icon: 'success', title: _L.done, text: _L.permsCopied.replace('{{count}}', d.copied || 0), timer: 1800, showConfirmButton: false });
+        setTimeout(function(){ location.reload(); }, 1000);
+      } else {
+        Swal.fire({ icon: 'error', title: _L.error, text: d.error || _L.unknownError });
+      }
+    }).catch(function(e){ Swal.fire({ icon: 'error', title: _L.networkError, text: e.message }); });
+  });
+}
+function filterPerms(inp, colId) {
+  var q=inp.value.toLowerCase(); var col=document.getElementById(colId);
+  // Match against card text; hide cards that don't match, and collapse any
+  // group whose visible card count drops to zero.
+  col.querySelectorAll('.perm-card').forEach(function(c){
+    var txt=(c.textContent||'').toLowerCase();
+    c.style.display = (!q || txt.indexOf(q)!==-1) ? '' : 'none';
+  });
+  col.querySelectorAll('.perm-col-group').forEach(function(g){
+    var visible = Array.prototype.some.call(g.querySelectorAll('.perm-card'),
+                  function(c){ return c.style.display !== 'none'; });
+    g.style.display = visible ? '' : 'none';
+  });
+}
+
+function filterRoleList(inp){
+  var q = (inp && inp.value || '').toLowerCase().trim();
+  document.querySelectorAll('.perm-role-item').forEach(function(a){
+    var hay = (a.dataset.search || a.textContent || '').toLowerCase();
+    a.style.display = (!q || hay.indexOf(q) !== -1) ? '' : 'none';
+  });
+}
+
+function auditExportCsv(){
+  var f = document.getElementById('auditFilterForm');
+  var qs = new URLSearchParams();
+  if (f) {
+    var fd = new FormData(f);
+    fd.forEach(function(val, key){
+      if (key === 'role') return;
+      if (val != null && String(val).trim() !== '') qs.append(key, val);
+    });
+  }
+  if (!qs.has('audit_limit')) qs.set('audit_limit', '500');
+  window.location.href = '/access-control/audit-export.csv?' + qs.toString();
+}
+
+// ── Permission Manager accordion + filter ─────────────────────────────────
+function permMgrToggle(btn){
+  var g = btn.closest('.perm-mgr-group');
+  if (!g) return;
+  g.classList.toggle('collapsed');
+  btn.setAttribute('aria-expanded', g.classList.contains('collapsed') ? 'false' : 'true');
+}
+function permMgrFilter(q){
+  q = (q || '').toLowerCase().trim();
+  document.querySelectorAll('.perm-mgr-group').forEach(function(g){
+    var rows = g.querySelectorAll('.perm-mgr-row');
+    var visible = 0;
+    rows.forEach(function(r){
+      var hit = !q || (r.dataset.search || '').indexOf(q) !== -1;
+      r.style.display = hit ? '' : 'none';
+      if (hit) visible++;
+    });
+    g.style.display = visible ? '' : 'none';
+    if (q && visible) g.classList.remove('collapsed');
+  });
+}
+
+// ── Permission CRUD 
+function permAddModal(){ document.getElementById('p_id').value=''; document.getElementById('p_code').value=''; document.getElementById('p_label').value=''; document.getElementById('p_gap').value='0'; document.getElementById('modalPermTitle').textContent=_L.addPerm; $('#modalPerm').modal('show'); }
+function permEditModal(p){ document.getElementById('p_id').value=p.id; document.getElementById('p_code').value=p.code; document.getElementById('p_label').value=p.label; document.getElementById('p_gap').value=p.gap_area||0; document.getElementById('modalPermTitle').textContent=_L.editPerm; $('#modalPerm').modal('show'); }
+function permSave(){
+  var id=document.getElementById('p_id').value, code=document.getElementById('p_code').value, label=document.getElementById('p_label').value, gap=document.getElementById('p_gap').value;
+  ajax({wf_action: id?'perm_edit':'perm_add', id:id, code:code, label:label, gap_area:gap}, function(r){ if(r.ok){ $('#modalPerm').modal('hide'); location.reload(); } else HMS.toast.fire({ icon: 'error', title: r.error||_L.error }); });
+}
+function permDelete(id){
+  HMS.confirm(_L.deletePermTitle, _L.deletePermBody, 'warning', _L.yesDelete)
+  .then((result) => {
+    if (result.isConfirmed) {
+      ajax({wf_action:'perm_delete', id:id}, function(r){ if(r.ok) location.reload(); else HMS.toast.fire({ icon: 'error', title: r.error||_L.error }); });
+    }
+  });
+}
+
+// ── Role CRUD 
+function roleAddModal(){
+  document.getElementById('r_id').value='';
+  document.getElementById('r_title').value='';
+  var cf = document.getElementById('r_clone_from'); if (cf) cf.value = '';
+  var w  = document.getElementById('r_clone_wrap'); if (w) w.style.display = '';
+  document.getElementById('modalRoleTitle').textContent=_L.addRole;
+  $('#modalRole').modal('show');
+}
+function roleEditModal(r){
+  document.getElementById('r_id').value=r.role;
+  document.getElementById('r_title').value=r.title;
+  var w = document.getElementById('r_clone_wrap'); if (w) w.style.display='none';
+  document.getElementById('modalRoleTitle').textContent=_L.editRole;
+  $('#modalRole').modal('show');
+}
+function roleSave(){
+  var id    = document.getElementById('r_id').value,
+      title = document.getElementById('r_title').value,
+      cloneSel = document.getElementById('r_clone_from'),
+      cloneFrom = cloneSel ? cloneSel.value : '';
+  var payload = { wf_action: id ? 'role_edit' : 'role_add', role_id: id, title: title };
+  if (!id && cloneFrom) payload.clone_from = cloneFrom;
+  ajax(payload, function(r){
+    if(r && r.ok){
+      $('#modalRole').modal('hide');
+      if (r.clone_summary) {
+        HMS.toast.fire({ icon: 'success', title: _L.roleCreated.replace('{{summary}}', r.clone_summary) });
+      }
+      location.reload();
+    } else {
+      HMS.toast.fire({ icon: 'error', title: (r && r.error) || _L.error });
+    }
+  });
+}
+function roleDelete(rid){
+  HMS.confirm(_L.deleteRoleTitle, _L.deleteRoleBody, 'warning', _L.yesDelete)
+  .then((result) => {
+    if (result.isConfirmed) {
+      ajax({wf_action:'role_delete', role_id:rid}, function(r){ if(r.ok) location.reload(); else HMS.toast.fire({ icon: 'error', title: r.error||_L.error }); });
+    }
+  });
+}
+
+// ── AJAX Helper 
+function ajax(data, cb){
+  fetch('/access-control/api', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:new URLSearchParams(data) })
+ .then(r=>r.json()).then(function(j){ if(cb) cb(j); }).catch(function(e){ console.error(e); });
+}
+
+// ── Portal Dashboard Tiles: tab switcher (by portal / global sidebar) ───────
+function aclPortalTileTab(btn){
+  if (!btn) return;
+  var code = btn.getAttribute('data-portal-code');
+  if (!code) return;
+  document.querySelectorAll('.acl-ptile-tab').forEach(function(b){
+    b.classList.toggle('active', b === btn);
+    b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+  });
+  document.querySelectorAll('.acl-ptile-panel').forEach(function(p){
+    p.classList.toggle('active', p.id === 'acl-ptile-panel-' + code);
+  });
+}
+
+// ── Portal Dashboard Tile visibility (per role) ─────────────────────────────
+function uiToggleTile(cb){
+  if(!currentRole){ HMS.toast.fire({ icon:'warning', title:_L.pickRoleFirst }); cb.checked = !cb.checked; return; }
+  var code = cb.dataset.code;
+  var act  = cb.checked ? 'ui_show' : 'ui_hide';
+  ajax({ wf_action: act, role_val: currentRole, element_code: code }, function(r){
+    if(!r || !r.ok){
+      cb.checked = !cb.checked;
+      HMS.toast.fire({ icon: 'error', title: (r && r.error) || _L.updateFail });
+    } else {
+      HMS.toast.fire({ icon: 'success', title: cb.checked ? _L.tileShown : _L.tileHidden });
+    }
+  });
+}
+function uiToggleActionMenu(cb){
+  if(!currentRole){ HMS.toast.fire({ icon:'warning', title:_L.pickRoleFirst }); cb.checked = !cb.checked; return; }
+  var code = cb.dataset.code;
+  var act  = cb.checked ? 'ui_show' : 'ui_hide';
+  ajax({ wf_action: act, role_val: currentRole, element_code: code }, function(r){
+    if(!r || !r.ok){
+      cb.checked = !cb.checked;
+      HMS.toast.fire({ icon: 'error', title: (r && r.error) || _L.updateFail });
+    } else {
+      HMS.toast.fire({ icon: 'success', title: cb.checked ? _L.actionShown : _L.actionHidden });
+    }
+  });
+}
+function uiBulkPortal(portal, show){
+  var boxes = document.querySelectorAll('.ui-tile-toggle[data-portal="'+portal+'"]');
+  boxes.forEach(function(cb){
+    if(cb.checked !== !!show){ cb.checked = !!show; uiToggleTile(cb); }
+  });
+}
+function uiBulkTopnav(show){
+  document.querySelectorAll('.ui-tile-toggle[data-portal="global_topnav"]').forEach(function(cb){
+    if(cb.checked !== !!show){ cb.checked = !!show; uiToggleTile(cb); }
+    uiSyncTopnavCard(cb);
+  });
+}
+function uiBulkSidebar(show){
+  document.querySelectorAll('.ui-sidebar-toggle').forEach(function(cb){
+    if(cb.checked !== !!show){ cb.checked = !!show; uiToggleTile(cb); }
+  });
+}
+function uiToggleTopnavParent(cb){
+  uiToggleTile(cb);
+  uiSyncTopnavCard(cb);
+}
+function uiSyncTopnavCard(cb){
+  var card = cb && cb.closest ? cb.closest('.acl-topnav-card') : null;
+  if(!card) return;
+  var parentOn = card.querySelector('.ui-topnav-parent');
+  card.classList.toggle('acl-topnav-card--off', !(parentOn && parentOn.checked));
+  card.querySelectorAll('.acl-topnav-link-row').forEach(function(row){
+    var child = row.querySelector('.ui-topnav-child');
+    row.classList.toggle('acl-topnav-link-row--off', !(child && child.checked));
+  });
+}
+
+// ── Role Portals (tbl_acl_role_portal) ─────────────────────────────────────
+function rpToggleAssign(cb){
+  if(!currentRole){ HMS.toast.fire({ icon:'warning', title:_L.pickRoleFirst }); cb.checked = !cb.checked; return; }
+  var code = cb.dataset.code;
+  var act  = cb.checked ? 'portal_assign' : 'portal_unassign';
+  ajax({ wf_action: act, role_val: currentRole, portal_code: code }, function(r){
+    if(!r || !r.ok){
+      cb.checked = !cb.checked;
+      HMS.toast.fire({ icon: 'error', title: (r && r.error) || _L.updateFail });
+      return;
+    }
+    var radio = document.querySelector('.rp-home[data-code="'+code+'"]');
+    if (radio) radio.disabled = !cb.checked;
+    HMS.toast.fire({ icon: 'success', title: cb.checked ? _L.portalAllowed : _L.portalRemoved });
+    setTimeout(function(){ location.reload(); }, 250);
+  });
+}
+function rpSetHome(radio){
+  if(!currentRole){ HMS.toast.fire({ icon:'warning', title:_L.pickRoleFirst }); return; }
+  if(radio.disabled) return;
+  var code = radio.dataset.code;
+  ajax({ wf_action: 'portal_set_home', role_val: currentRole, portal_code: code }, function(r){
+    if(!r || !r.ok){
+      HMS.toast.fire({ icon: 'error', title: (r && r.error) || _L.setHomeFail });
+      return;
+    }
+    HMS.toast.fire({ icon: 'success', title: _L.homeUpdated });
+  });
+}
+</script>
+<%- include('partials/footer') %>
+

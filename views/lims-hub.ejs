@@ -1,0 +1,45 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<%- include('partials/laboratory-odoo-start', {
+  labOdooMenu: 'lims',
+  labOdooTitle: _t('lims_hub_page.title', { ns: 'legacy', defaultValue: 'Laboratory (LIMS)' })
+}) %>
+<div class="o_content">
+<%- include('partials/clinical-dept-alerts-strip', { clinicalDeptStripDept: 'laboratory' }) %>
+
+<div class="hms-surface-hero mb-4">
+ <div class="hms-surface-hero-icon"><i class="fa fa-flask" aria-hidden="true"></i></div>
+ <h1 class="hms-surface-hero-title"><%= _t('lims_hub_page.title', { ns: 'legacy', defaultValue: 'Laboratory (LIMS)' }) %></h1>
+ <p><%= _t('lims_hub_page.subtitle', { ns: 'legacy', defaultValue: 'Sample tracking, test requests, results and configuration.' }) %></p>
+</div>
+
+<% var st = stats || {}; %>
+<section class="hms-stat-section">
+ <h2 class="hms-stat-section__title"><%= _t('lims_hub_page.workflow', { ns: 'legacy', defaultValue: 'Workflow' }) %></h2>
+ <div class="hms-stat-grid">
+  <%- include('partials/hms-stat-link', { href: '/lims/requests?filter=today', label: _t('lims_hub_page.stat_today_open', { ns: 'legacy', defaultValue: "Today's open" }), value: st.today_open || 0, icon: 'fa-inbox', color: '#8b5cf6' }) %>
+  <%- include('partials/hms-stat-link', { href: '/lims/requests?filter=submitted', label: _t('lims_hub_page.stat_submitted', { ns: 'legacy', defaultValue: 'Submitted' }), value: st.submitted || 0, icon: 'fa-paper-plane', color: '#0ea5e9' }) %>
+  <%- include('partials/hms-stat-link', { href: '/lims/requests?filter=in_progress', label: _t('lims_hub_page.stat_in_progress', { ns: 'legacy', defaultValue: 'In progress' }), value: st.in_progress || 0, icon: 'fa-cog', color: '#f59e0b' }) %>
+  <%- include('partials/hms-stat-link', { href: '/lims/samples', label: _t('lims_hub_page.stat_samples_collected', { ns: 'legacy', defaultValue: 'Samples collected' }), value: st.samples_collected || 0, icon: 'fa-tint', color: '#10b981' }) %>
+ </div>
+</section>
+
+<h5 class="font-weight-bold mb-3"><%= _t('lims_hub_page.menus', { ns: 'legacy', defaultValue: 'Menus' }) %></h5>
+<div class="hms-menu-tile-grid">
+ <% [
+  {h:'/lims/requests?filter=today',i:'fa-list',tKey:'menu_requests',def:'Lab requests'},
+  {h:'/lims/request/new',i:'fa-plus',tKey:'menu_new_request',def:'New request'},
+  {h:'/lims/samples',i:'fa-tint',tKey:'menu_samples',def:'Lab samples'},
+  {h:'/lims/results',i:'fa-file-text-o',tKey:'menu_results',def:'Test results'},
+  {h:'/laboratory/validate',i:'fa-qrcode',tKey:'menu_validate',def:'Validate code'},
+  {h:'/lab/templates',i:'fa-list-alt',tKey:'menu_templates',def:'Templates'},
+  {h:'/lims/config',i:'fa-cog',tKey:'menu_config',def:'Configuration'}
+ ].forEach(function(m){ %>
+ <a href="<%= m.h %>" class="hms-surface-card hms-menu-tile">
+  <i class="fa <%= m.i %> hms-menu-tile__ico" aria-hidden="true"></i><strong><%= _t('lims_hub_page.' + m.tKey, { ns: 'legacy', defaultValue: m.def }) %></strong>
+ </a>
+ <% }); %>
+</div>
+</div>
+<%- include('partials/laboratory-odoo-end') %>
+<%- include('partials/footer') %>

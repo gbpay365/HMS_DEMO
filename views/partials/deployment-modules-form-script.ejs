@@ -1,0 +1,55 @@
+<script>
+(function () {
+  var I18N = window.__DEP_MOD_I18N || { visible: 'Visible', hidden: 'Hidden' };
+  function sliceDefault(sel) {
+    var row = sel.closest('tr');
+    return row && row.getAttribute('data-slice-default') === '1';
+  }
+  function effectiveFrom(sel) {
+    var v = sel.value;
+    if (v === '1') return true;
+    if (v === '0') return false;
+    return sliceDefault(sel);
+  }
+  function updateRow(sel) {
+    var row = sel.closest('tr');
+    if (!row) return;
+    var eff = effectiveFrom(sel);
+    row.classList.toggle('table-secondary', !eff);
+    var cell = row.querySelector('.deployment-mod-effective');
+    if (cell) {
+      cell.innerHTML = eff
+        ? '<span class="badge badge-primary">' + I18N.visible + '</span>'
+        : '<span class="badge badge-light border">' + I18N.hidden + '</span>';
+    }
+  }
+  document.querySelectorAll('.deployment-mod-select').forEach(function (sel) {
+    sel.addEventListener('change', function () { updateRow(sel); });
+  });
+  var resetBtn = document.getElementById('depModResetAll');
+  var showBtn = document.getElementById('depModShowAll');
+  var hideBtn = document.getElementById('depModHideAll');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function () {
+      document.querySelectorAll('.deployment-mod-select').forEach(function (sel) {
+        sel.value = '';
+        updateRow(sel);
+      });
+    });
+  }
+  if (showBtn) {
+    showBtn.addEventListener('click', function () {
+      document.querySelectorAll('.deployment-mod-select').forEach(function (sel) {
+        if (!sliceDefault(sel)) { sel.value = '1'; updateRow(sel); }
+      });
+    });
+  }
+  if (hideBtn) {
+    hideBtn.addEventListener('click', function () {
+      document.querySelectorAll('.deployment-mod-select').forEach(function (sel) {
+        if (sliceDefault(sel)) { sel.value = '0'; updateRow(sel); }
+      });
+    });
+  }
+})();
+</script>

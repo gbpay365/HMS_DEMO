@@ -1,0 +1,8 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--consultation-new'; %>
+<%- include('partials/header') %>
+<%- include('partials/react-page-mount', {
+  reactPage: 'consultation-session',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.consultation_new', { ns: 'common' }) : 'Loading…'),
+  pageData: locals.pageData || {}
+}) %>
+<%- include('partials/footer') %>

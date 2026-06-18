@@ -1,0 +1,184 @@
+<% if (locals.validateHub) {
+  var _vk = locals.validateKind || 'laboratory';
+  locals.hmsSurfaceBodyClass = ' hms-body--validate-detail hms-body--validate-detail-' + (_vk === 'radiology' ? 'rad' : 'lab');
+} else {
+  var _pd = locals.pageData || {};
+  var _kind = _pd.kind || 'laboratory';
+  locals.hmsSurfaceBodyClass = ' hms-body--validate-detail hms-body--validate-detail-' + (_kind === 'pharmacy' ? 'pharmacy' : _kind === 'radiology' ? 'rad' : 'lab');
+} %>
+<%- include('partials/header') %>
+
+<% if (locals.validateHub) { %>
+<% var meta = validateMeta || {}; var code = validateCode || ''; var rm = resultMap || {}; var isRad = validateKind === 'radiology'; %>
+<link rel="stylesheet" href="/css/service-validate-hub.css?v=2">
+
+<div class="page-wrapper hms-surface-module">
+  <div class="content px-3 px-md-4 pb-5 pt-2">
+    <div class="svh-root <%= isRad ? 'svh-root--rad' : '' %>">
+      <% if (flash) { %><div class="alert alert-success border-0 shadow-sm py-2 mb-3"><%= flash %></div><% } %>
+      <% if (error) { %><div class="alert alert-danger border-0 shadow-sm py-2 mb-3"><%= error %></div><% } %>
+
+      <div class="svh-toolbar">
+        <a href="<%= meta.registryPath %>/validate" class="btn btn-sm btn-outline-secondary rounded-pill font-weight-bold">
+          <i class="fa fa-arrow-left mr-1"></i> Validate another code
+        </a>
+        <a href="<%= meta.registryPath %>" class="btn btn-sm btn-link font-weight-bold text-muted mb-0">
+          <i class="fa fa-list-alt mr-1"></i> Registry
+        </a>
+      </div>
+
+      <div class="hms-surface-hero svh-hero">
+        <div class="hms-surface-hero-icon"><i class="fa <%= meta.icon || 'fa-flask' %>" aria-hidden="true"></i></div>
+        <h1 class="hms-surface-hero-title"><%= meta.label || 'Laboratory' %></h1>
+        <p><%= _tl('labWorkflow.validate_order_code', 'Order {{code}}', { code: code }) %></p>
+        <div class="hms-surface-hero-chips mt-3">
+          <span class="hms-icon-chip font-monospace text-uppercase"><%= code %></span>
+        </div>
+        <div class="hms-surface-hero-actions mt-4">
+          <a href="<%= meta.registryPath %>" class="hms-btn-secondary btn btn-sm rounded-pill font-weight-bold">
+            <i class="fa fa-list-alt mr-1"></i> Registry
+          </a>
+          <a href="<%= meta.templatesPath %>" class="hms-btn-secondary btn btn-sm rounded-pill font-weight-bold">
+            <i class="fa fa-book mr-1"></i> Template library
+          </a>
+        </div>
+      </div>
+
+      <div class="svh-stat-row">
+        <div class="hms-surface-card svh-stat-card">
+          <div class="svh-stat-label"><%= _tl('labWorkflow.patient', 'Patient') %></div>
+          <div class="svh-stat-value"><%= patient.first_name || '' %> <%= patient.last_name || '' %></div>
+          <div class="svh-stat-hint">ID #<%= patient.id %></div>
+        </div>
+        <div class="hms-surface-card svh-stat-card">
+          <div class="svh-stat-label"><%= _tl('labWorkflow.referring_doctor', 'Referring doctor') %></div>
+          <div class="svh-stat-value"><%= doctor && doctor.name ? doctor.name : '—' %></div>
+        </div>
+      </div>
+
+      <% var inHouse = (items || []).filter(function(it) { return String(it.status || '') !== 'external'; }); %>
+      <% var external = (items || []).filter(function(it) { return String(it.status || '') === 'external'; }); %>
+      <% var printableCount = 0;
+         inHouse.forEach(function(it) {
+           var res = rm[String(it.id)] || rm[it.id] || null;
+           var hasResult = !!(res && (res.notes || res.findings || res.conclusion_code || res.status === 'received'));
+           var pending = res && Number(res.revision_pending) === 1;
+           if (hasResult && !pending && res && res.id) printableCount += 1;
+         }); %>
+
+      <% if (printableCount > 0) { %>
+      <div class="dh-handover-bar<%= isRad ? ' dh-handover-bar--rad' : '' %> svh-batch-print-bar">
+        <div class="d-flex align-items-center" style="gap:12px;flex:1;min-width:200px;">
+          <div class="dh-handover-icon"><i class="fa fa-files-o"></i></div>
+          <div class="dh-handover-text">
+            <h2><%= _tl('diag_handover.print_all_title', 'Print all results for this code') %></h2>
+            <p><%= _tl('diag_handover.print_all_hint', '{{count}} completed report(s) ready — opens one combined PDF-style printout for patient handover.', { count: printableCount }) %></p>
+          </div>
+        </div>
+        <div class="dh-handover-actions">
+          <button type="button" class="dh-btn-print" data-diag-print-all="<%= isRad ? 'radiology' : 'laboratory' %>" data-diag-print-code="<%= code %>">
+            <i class="fa fa-print"></i> <%= _tl('diag_handover.print_all_btn', 'Print all results') %>
+          </button>
+        </div>
+      </div>
+      <% } %>
+
+      <div class="svh-panel">
+        <div class="svh-panel-head">
+          <h2>In-house items (<%= inHouse.length %>)</h2>
+          <p>Enter results in the template workbench, then <strong>Print patient copy</strong> when ready for collection.</p>
+        </div>
+        <% if (!inHouse.length) { %>
+        <p class="text-muted text-center py-4 mb-0">No in-house items on this code.</p>
+        <% } else { %>
+        <table class="svh-table">
+          <thead>
+            <tr>
+              <th>Test</th>
+              <th>Status</th>
+              <th class="svh-col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% inHouse.forEach(function(it) {
+              var res = rm[String(it.id)] || rm[it.id] || null;
+              var tplUrl = meta.templatesPath + '?code=' + encodeURIComponent(code) + '&oi=' + it.id + '&lock=1&autoload=1';
+              var hasResult = !!(res && (res.notes || res.findings || res.conclusion_code || res.status === 'received'));
+              var pending = res && Number(res.revision_pending) === 1;
+              var reportUrl = res && res.id ? meta.reportPath + '/' + res.id : null;
+            %>
+            <tr class="<%= pending ? 'svh-row--pending' : '' %>">
+              <td>
+                <div class="svh-test-name"><%= it.item_name || it.service_name || 'Test' %></div>
+                <div class="svh-test-line">Line #<%= it.id %></div>
+              </td>
+              <td>
+                <div class="svh-badges">
+                  <% if (hasResult) { %>
+                  <span class="svh-badge svh-badge--ok"><i class="fa fa-check"></i> Result on file</span>
+                  <% if (res.conclusion_code) { %><span class="svh-badge svh-badge--muted"><%= res.conclusion_code %></span><% } %>
+                  <% if (pending) { %><span class="svh-badge svh-badge--warn">Correction</span><% } %>
+                  <% } else { %>
+                  <span class="svh-badge svh-badge--pending">Pending entry</span>
+                  <% } %>
+                </div>
+              </td>
+              <td class="svh-col-actions">
+                <div class="svh-actions">
+                  <a href="<%= tplUrl %>" class="btn btn-success">
+                    <i class="fa fa-list-alt mr-1"></i><%= hasResult ? 'Edit template' : 'Enter template' %>
+                  </a>
+                  <% if (reportUrl) { %>
+                  <a href="<%= reportUrl %>" class="btn btn-outline-primary">Report</a>
+                  <% if (hasResult && !pending && res && res.id) { %>
+                  <button type="button" class="btn btn-dh-print" data-diag-print="<%= isRad ? 'radiology' : 'laboratory' %>" data-diag-print-id="<%= res.id %>">
+                    <i class="fa fa-print mr-1"></i> Print copy
+                  </button>
+                  <% } %>
+                  <% } else { %>
+                  <span class="btn btn-outline-secondary disabled" style="pointer-events:none;opacity:.45;">Report</span>
+                  <% } %>
+                  <% if (hasResult && !pending) { %>
+                  <form method="POST" action="<%= meta.recallPath %>/<%= encodeURIComponent(code) %>"
+                        onsubmit="return confirm('Return this line for correction?');">
+                    <input type="hidden" name="oi_id" value="<%= it.id %>">
+                    <button type="submit" class="btn btn-outline-secondary">Unlock</button>
+                  </form>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <% } %>
+      </div>
+
+      <% if (external.length) { %>
+      <div class="alert alert-danger border-0 py-2 mb-3" style="border-radius:12px;font-size:.84rem;">
+        <strong><%= external.length %></strong> external item(s) — obtained outside this facility:
+        <%= external.map(function(it) { return it.item_name || it.service_name || 'Item'; }).join(', ') %>
+      </div>
+      <% } %>
+
+      <div class="svh-footnote">
+        <i class="fa fa-info-circle text-primary mr-1"></i>
+        Saved templates update the <%= meta.label.toLowerCase() %> registry and stay linked to this order code.
+        <a href="<%= meta.templatesPath %>" class="font-weight-bold ml-1">Template library</a>
+      </div>
+    </div>
+  </div>
+</div>
+<link rel="stylesheet" href="/css/diagnostic-handover.css?v=1">
+<script src="/js/hms-diagnostic-report-print.js?v=3"></script>
+<script src="/js/hms-diagnostic-report-handover.js?v=3"></script>
+
+<% } else { %>
+<%- include('partials/react-page-mount', {
+  reactPage: locals.reactPage || 'lab-workflow',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.order', { ns: 'common' }) : 'Loading…'),
+  pageData: locals.pageData || {}
+}) %>
+<% } %>
+
+<%- include('partials/footer') %>

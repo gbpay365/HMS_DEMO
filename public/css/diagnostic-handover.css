@@ -1,0 +1,132 @@
+/* Patient handover print bar — lab & radiology report / validate hub */
+.dh-handover-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 1rem;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(124, 58, 237, 0.22);
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 55%, #fff 100%);
+  box-shadow: 0 4px 18px rgba(124, 58, 237, 0.08);
+}
+
+.dh-handover-bar--rad {
+  border-color: rgba(8, 145, 178, 0.22);
+  background: linear-gradient(135deg, #ecfeff 0%, #cffafe 55%, #fff 100%);
+  box-shadow: 0 4px 18px rgba(8, 145, 178, 0.08);
+}
+
+.dh-handover-bar--muted {
+  border-color: #e2e8f0;
+  background: #f8fafc;
+  box-shadow: none;
+}
+
+.dh-handover-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  background: #7c3aed;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.dh-handover-bar--rad .dh-handover-icon {
+  background: #0891b2;
+}
+
+.dh-handover-text h2 {
+  margin: 0 0 2px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.dh-handover-text p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.dh-handover-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.dh-btn-print {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: #fff;
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.28);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.dh-btn-print:hover {
+  color: #fff;
+  filter: brightness(1.05);
+  text-decoration: none;
+}
+
+.dh-handover-bar--rad .dh-btn-print {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  box-shadow: 0 4px 14px rgba(8, 145, 178, 0.28);
+}
+
+.dh-btn-print:disabled,
+.dh-btn-print.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.dh-btn-secondary-link {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+  text-decoration: none;
+}
+
+.dh-btn-secondary-link:hover {
+  color: #334155;
+  text-decoration: underline;
+}
+
+.svh-actions .btn-dh-print {
+  background: linear-gradient(135deg, var(--svh-accent), var(--svh-accent-2));
+  border: 0;
+  color: #fff;
+  font-weight: 700;
+}
+
+.svh-actions .btn-dh-print:hover {
+  color: #fff;
+  filter: brightness(1.05);
+}
+
+.svh-batch-print-bar {
+  margin-bottom: 1rem;
+}
+
+@media print {
+  .dh-handover-bar {
+    display: none !important;
+  }
+}

@@ -1,0 +1,17 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--hms-hub'; %>
+<%- include('partials/header') %>
+<%
+var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+%>
+<div class="page-wrapper hms-surface-module"><div class="content">
+<%- include('partials/clinical-dept-alerts-strip', { clinicalDeptStripDept: 'hms' }) %>
+
+<div class="hms-surface-hero mb-4">
+ <div class="hms-surface-hero-icon"><i class="fa fa-hospital-o" aria-hidden="true"></i></div>
+ <h1 class="hms-surface-hero-title"><%= _t('hub.title', { ns: 'legacy', defaultValue: 'Medical Center' }) %></h1>
+ <p><%= _t('hub.subtitle', { ns: 'legacy', defaultValue: 'OPD · appointments · diagnostics · IPD · billing' }) %></p>
+</div>
+
+<%- include('partials/hms-hub-body') %>
+
+</div></div><%- include('partials/footer') %>

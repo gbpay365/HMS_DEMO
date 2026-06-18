@@ -1,0 +1,220 @@
+<% if (selRole && !['1','99'].includes(String(selRole))) { %>
+<% var _hasUiVis = (Array.isArray(uiTopNavMenus) && uiTopNavMenus.length) || (Array.isArray(uiGlobalSidebar) && uiGlobalSidebar.length) || (Array.isArray(uiPortalTilesGrouped) && uiPortalTilesGrouped.length); %>
+<% if (_hasUiVis) { %>
+
+<div class="acl-ui-jumpbar mt-4 mb-3" role="navigation" aria-label="<%= _ac('ui_visibility.jumpbar_aria', 'UI visibility sections') %>">
+  <span class="acl-ui-jumpbar__label"><i class="fa fa-compass mr-1"></i><%= _ac('ui_visibility.jump_to', 'Jump to') %></span>
+  <% if (Array.isArray(uiTopNavMenus) && uiTopNavMenus.length) { %>
+  <a href="#acl-topnav-section" class="acl-ui-jumpbar__link acl-ui-jumpbar__link--primary"><i class="fa fa-navicon mr-1"></i><%= _ac('ui_visibility.topnav', 'Top Navigation Bar') %></a>
+  <% } %>
+  <% if (Array.isArray(uiGlobalSidebar) && uiGlobalSidebar.length) { %>
+  <a href="#acl-sidebar-section" class="acl-ui-jumpbar__link"><i class="fa fa-bars mr-1"></i><%= _ac('ui_visibility.sidebar', 'Global Sidebar') %></a>
+  <% } %>
+  <% if (Array.isArray(uiPortalTilesGrouped) && uiPortalTilesGrouped.length) { %>
+  <a href="#acl-portal-tiles-section" class="acl-ui-jumpbar__link"><i class="fa fa-th-large mr-1"></i><%= _ac('ui_visibility.portal_tiles', 'Portal Dashboard Tiles') %></a>
+  <% } %>
+  <a href="#navstudio-accounting" class="acl-ui-jumpbar__link"><i class="fa fa-calculator mr-1"></i><%= _ac('ui_visibility.accounting_menus', 'Accounting menus') %></a>
+  <a href="#acl-action-menus-section" class="acl-ui-jumpbar__link"><i class="fa fa-ellipsis-v mr-1"></i><%= _ac('ui_visibility.row_actions', 'Row actions') %></a>
+</div>
+
+<% if (Array.isArray(uiTopNavMenus) && uiTopNavMenus.length) { %>
+<div class="card border-0 shadow-sm p-4 mt-2 acl-ui-section acl-ui-section--topnav" id="acl-topnav-section" style="border-radius:12px;border-top:4px solid #1a6bd8 !important;">
+  <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap" style="gap:10px;">
+    <div style="max-width:720px;">
+      <h5 class="font-weight-bold mb-1" style="color:#1e293b;"><i class="fa fa-navicon mr-2" style="color:#1a6bd8;"></i><%= _ac('ui_visibility.topnav', 'Top Navigation Bar') %></h5>
+      <p class="text-muted small mb-2">
+        <%= _ac('ui_visibility.topnav_desc', 'Controls the main header menus (Clinical, Operations, HR, Configuration) for role {{role}}. Use Menu on to show or hide an entire dropdown, or toggle individual links below. Permissions are still required — this only changes what appears in the header.', { role: selRoleTitle }) %>
+      </p>
+      <div class="alert alert-info py-2 px-3 small mb-0" style="border-radius:8px;">
+        <i class="fa fa-lightbulb-o mr-1"></i>
+        <%= _ac('ui_visibility.topnav_example', 'Example (Cashier): turn off Clinical, HR, and Configuration; keep Operations (Cashier, wallets, etc.).') %>
+      </div>
+    </div>
+    <div class="text-right">
+      <span class="badge badge-primary mb-2 d-inline-block"><i class="fa fa-header mr-1"></i><%= _ac('ui_visibility.header_bar_only', 'Header bar only') %></span><br>
+      <button type="button" class="btn btn-sm btn-outline-success font-weight-bold mr-1" onclick="uiBulkTopnav(true)"><i class="fa fa-eye mr-1"></i><%= _ac('nav_studio.show_all', 'Show all') %></button>
+      <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold" onclick="uiBulkTopnav(false)"><i class="fa fa-eye-slash mr-1"></i><%= _ac('nav_studio.hide_all', 'Hide all') %></button>
+    </div>
+  </div>
+  <div class="row">
+    <% uiTopNavMenus.forEach(function(menu){ %>
+    <div class="col-md-6 col-xl-3 mb-3">
+      <div class="acl-topnav-card <%= menu.parent.isHidden ? 'acl-topnav-card--off' : '' %>" data-menu-code="<%= menu.parent.code %>">
+        <div class="acl-topnav-card__head">
+          <div class="acl-topnav-card__title">
+            <span class="acl-topnav-card__icon"><i class="fa <%= menu.parent.icon || 'fa-folder' %>"></i></span>
+            <span><%= menu.parent.label %></span>
+          </div>
+          <label class="acl-topnav-card__switch mb-0" title="<%= _ac('ui_visibility.menu_toggle_title', 'Show or hide entire menu') %>">
+            <input type="checkbox" class="ui-tile-toggle ui-topnav-parent" data-portal="global_topnav"
+                   data-code="<%= menu.parent.code %>" <% if (!menu.parent.isHidden) { %>checked<% } %>
+                   onchange="uiToggleTopnavParent(this)">
+            <span class="acl-topnav-card__switch-label"><%= _ac('ui_visibility.menu_on', 'Menu on') %></span>
+          </label>
+        </div>
+        <div class="acl-topnav-card__body">
+          <% if (!menu.children.length) { %>
+          <p class="text-muted small mb-0"><%= _ac('ui_visibility.no_sublinks', 'No sub-links.') %></p>
+          <% } else { %>
+          <% menu.children.forEach(function(ch){ %>
+          <label class="acl-topnav-link-row <%= ch.isHidden ? 'acl-topnav-link-row--off' : '' %>">
+            <input type="checkbox" class="ui-tile-toggle ui-topnav-child" data-portal="global_topnav"
+                   data-parent="<%= menu.parent.code %>"
+                   data-code="<%= ch.code %>" <% if (!ch.isHidden) { %>checked<% } %>
+                   onchange="uiToggleTile(this); uiSyncTopnavCard(this)">
+            <span class="acl-topnav-link-row__label"><%= ch.label %></span>
+          </label>
+          <% }); %>
+          <% } %>
+        </div>
+        <div class="acl-topnav-card__foot small text-muted"><code><%= menu.parent.code %></code></div>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+</div>
+<% } %>
+
+<% if (Array.isArray(uiGlobalSidebar) && uiGlobalSidebar.length) { %>
+<div class="card border-0 shadow-sm p-4 mt-4 acl-ui-section" id="acl-sidebar-section" style="border-radius:12px;border-top:4px solid #64748b !important;">
+  <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap" style="gap:8px;">
+    <div>
+      <h5 class="font-weight-bold mb-1"><i class="fa fa-bars mr-2 text-secondary"></i><%= _ac('ui_visibility.sidebar', 'Global Sidebar') %></h5>
+      <p class="text-muted small mb-0">
+        <%= _ac('ui_visibility.sidebar_desc', 'Left sidebar on every page for {{role}} — separate from the top header bar.', { role: selRoleTitle }) %>
+      </p>
+    </div>
+    <div>
+      <button type="button" class="btn btn-sm btn-outline-success font-weight-bold mr-1" onclick="uiBulkSidebar(true)"><i class="fa fa-eye mr-1"></i><%= _ac('nav_studio.show_all', 'Show all') %></button>
+      <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold" onclick="uiBulkSidebar(false)"><i class="fa fa-eye-slash mr-1"></i><%= _ac('nav_studio.hide_all', 'Hide all') %></button>
+    </div>
+  </div>
+  <div class="table-responsive border rounded">
+    <table class="table table-sm mb-0" style="font-size:.83rem;background:#fff;">
+      <thead style="background:#eef2f7;">
+        <tr>
+          <th style="width:54px;font-size:.7rem;text-transform:uppercase;color:#64748b;" class="text-center"><%= _ac('shared.show', 'Show') %></th>
+          <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;"><%= _ac('ui_visibility.col_sidebar_link', 'Sidebar link') %></th>
+          <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;"><%= _ac('shared.requires', 'Requires') %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% uiGlobalSidebar.forEach(function(t){ %>
+        <tr class="<%= t.isHidden ? 'acl-ui-row--hidden' : '' %>">
+          <td class="text-center align-middle">
+            <input type="checkbox" class="ui-tile-toggle ui-sidebar-toggle" data-portal="global"
+                   data-code="<%= t.code %>" <% if (!t.isHidden) { %>checked<% } %>
+                   onchange="uiToggleTile(this)">
+          </td>
+          <td class="align-middle">
+            <div class="d-flex align-items-center">
+              <span class="rounded-circle d-inline-flex align-items-center justify-content-center mr-2"
+                    style="width:28px;height:28px;background:<%= (t.color || '#64748b') %>1a;">
+                <i class="fa <%= t.icon || 'fa-link' %>" style="color:<%= t.color || '#64748b' %>;font-size:.85rem;"></i>
+              </span>
+              <div>
+                <div class="font-weight-600" style="color:#1e293b;"><%= t.label %></div>
+                <code style="font-size:.7rem;color:#64748b;"><%= t.code %></code>
+              </div>
+            </div>
+          </td>
+          <td class="align-middle"><code style="font-size:.7rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#475569;"><%= t.required_perm || '*' %></code></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>
+
+<% if (Array.isArray(uiPortalTilesGrouped) && uiPortalTilesGrouped.length) { %>
+<div class="card border-0 shadow-sm p-4 mt-4 acl-ui-section" id="acl-portal-tiles-section" style="border-radius:12px;border-top:4px solid #0c8b8b !important;">
+  <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap" style="gap:8px;">
+    <div>
+      <h5 class="font-weight-bold mb-1"><i class="fa fa-th-large mr-2" style="color:#0c8b8b;"></i><%= _ac('ui_visibility.portal_tiles', 'Portal Dashboard Tiles') %></h5>
+      <p class="text-muted small mb-0">
+        <%= _ac('ui_visibility.portal_desc', 'Shortcut cards and banner buttons (e.g. Workflow Guide) on staff portal home pages for {{role}}. Pick a portal using the tabs below. Hiding Workflow Guide here also hides it from the sidebar and top menu.', { role: selRoleTitle }) %>
+      </p>
+    </div>
+    <span class="badge badge-light border align-self-center"><i class="fa fa-th mr-1"></i><%= _ac('ui_visibility.portal_homes', 'Portal homes') %></span>
+  </div>
+
+  <div class="acl-ptile-tabbar" role="tablist" aria-label="<%= _ac('ui_visibility.portal_tiles_aria', 'Staff portal dashboard tiles') %>">
+    <% uiPortalTilesGrouped.forEach(function(g, idx){ %>
+    <button type="button" role="tab" class="acl-ptile-tab <%= idx === 0 ? 'active' : '' %>"
+            id="acl-ptile-tab-<%= g.portal_code %>"
+            data-portal-code="<%= g.portal_code %>"
+            aria-selected="<%= idx === 0 ? 'true' : 'false' %>"
+            aria-controls="acl-ptile-panel-<%= g.portal_code %>"
+            onclick="aclPortalTileTab(this)">
+      <i class="fa fa-th-large mr-1"></i>
+      <%= g.portal_label %>
+      <span class="badge badge-light border ml-1" style="font-size:.65rem;font-weight:600;"><%= g.tiles.length %></span>
+    </button>
+    <% }); %>
+  </div>
+
+  <% uiPortalTilesGrouped.forEach(function(g, idx){ %>
+  <div class="acl-ptile-panel <%= idx === 0 ? 'active' : '' %>" role="tabpanel"
+       id="acl-ptile-panel-<%= g.portal_code %>"
+       aria-labelledby="acl-ptile-tab-<%= g.portal_code %>">
+    <div class="border rounded p-3" style="background:#f8fafc;">
+      <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap" style="gap:8px;">
+        <div class="font-weight-bold text-uppercase small" style="color:#1e293b;letter-spacing:.4px;">
+          <i class="fa fa-th-large mr-1 text-primary"></i><%= g.portal_label %>
+          <span class="text-muted font-weight-normal text-lowercase" style="font-size:.72rem;">(<code><%= g.portal_code %></code>)</span>
+        </div>
+        <div>
+          <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2"
+            onclick="uiBulkPortal('<%= g.portal_code %>', true)" title="<%= _ac('nav_studio.show_all', 'Show all') %>"><i class="fa fa-eye"></i></button>
+          <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 ml-1"
+            onclick="uiBulkPortal('<%= g.portal_code %>', false)" title="<%= _ac('nav_studio.hide_all', 'Hide all') %>"><i class="fa fa-eye-slash"></i></button>
+        </div>
+      </div>
+      <% if (!g.tiles.length) { %>
+      <div class="text-muted small"><%= _ac('ui_visibility.no_tiles', 'No tiles defined for this portal yet.') %></div>
+      <% } else { %>
+      <div class="table-responsive">
+      <table class="table table-sm mb-0" style="font-size:.83rem;background:#fff;">
+        <thead style="background:#eef2f7;">
+          <tr>
+            <th style="width:54px;font-size:.7rem;text-transform:uppercase;color:#64748b;" class="text-center"><%= _ac('shared.show', 'Show') %></th>
+            <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;"><%= _ac('ui_visibility.col_tile', 'Tile') %></th>
+            <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;"><%= _ac('shared.requires', 'Requires') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% g.tiles.forEach(function(t){ %>
+          <tr class="<%= t.isHidden ? 'acl-ui-row--hidden' : '' %>">
+            <td class="text-center align-middle">
+              <input type="checkbox" class="ui-tile-toggle" data-portal="<%= g.portal_code %>"
+                     data-code="<%= t.code %>" <% if (!t.isHidden) { %>checked<% } %>
+                     onchange="uiToggleTile(this)">
+            </td>
+            <td class="align-middle">
+              <div class="d-flex align-items-center">
+                <span class="rounded-circle d-inline-flex align-items-center justify-content-center mr-2"
+                      style="width:28px;height:28px;background:<%= (t.color || '#1a6bd8') %>1a;">
+                  <i class="fa <%= t.icon || 'fa-cube' %>" style="color:<%= t.color || '#1a6bd8' %>;font-size:.85rem;"></i>
+                </span>
+                <div>
+                  <div class="font-weight-600" style="color:#1e293b;"><%= t.label %></div>
+                  <code style="font-size:.7rem;color:#64748b;"><%= t.code %></code>
+                </div>
+              </div>
+            </td>
+            <td class="align-middle"><code style="font-size:.7rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#475569;"><%= t.required_perm || '*' %></code></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+      </div>
+      <% } %>
+    </div>
+  </div>
+  <% }); %>
+</div>
+<% } %>
+
+<% } %>
+<% } %>

@@ -1,0 +1,226 @@
+/**
+ * Laboratory — workflow content styles (nav: hms-dept-nav.css)
+ */
+.laboratory-odoo-app {
+  --o-brand: var(--hms-dept-laboratory);
+  --o-brand-hover: #6d28d9;
+  --o-brand-soft: rgba(139, 92, 246, 0.12);
+}
+
+.laboratory-odoo-app .o_nav_module--laboratory::before {
+  content: '\f0c3';
+  font-family: FontAwesome;
+  margin-right: 6px;
+  font-weight: normal;
+}
+
+.laboratory-odoo-app .o_btn_primary {
+  background: linear-gradient(135deg, var(--hms-dept-laboratory), #6d28d9);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.laboratory-odoo-app .o_btn_secondary {
+  background: var(--o-surface);
+  border: 1px solid var(--o-border);
+  color: var(--o-text);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+
+.laboratory-odoo-app .o_searchbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.laboratory-odoo-app .o_searchbar input,
+.laboratory-odoo-app .o_searchbar select {
+  border: 1px solid var(--o-border);
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 0.88rem;
+}
+
+.laboratory-odoo-app .o_filter_pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.laboratory-odoo-app .o_pill {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--o-border);
+  background: var(--o-surface);
+  color: var(--o-muted);
+  text-decoration: none;
+}
+
+.laboratory-odoo-app .o_pill.active {
+  background: #ede9fe;
+  border-color: #c4b5fd;
+  color: #7c3aed;
+}
+
+.laboratory-odoo-app .o_list_table {
+  width: 100%;
+  background: var(--o-surface);
+  border: 1px solid var(--o-border);
+  border-radius: 8px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+}
+
+.laboratory-odoo-app .o_list_table th {
+  background: var(--o-bg);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--o-muted);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--o-border);
+}
+
+.laboratory-odoo-app .o_list_table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.9rem;
+}
+
+.laboratory-odoo-app .o_list_table tr:hover td {
+  background: #f8fafc;
+}
+
+.laboratory-odoo-app .o_stat_row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.laboratory-odoo-app .o_stat_card {
+  background: var(--o-surface);
+  border: 1px solid var(--o-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.laboratory-odoo-app .o_stat_card .n {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--o-brand);
+}
+
+.laboratory-odoo-app .o_stat_card .l {
+  font-size: 0.75rem;
+  color: var(--o-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.laboratory-odoo-app .o_status {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.laboratory-odoo-app .o_status--submitted { background: #fef3c7; color: #92400e; }
+.laboratory-odoo-app .o_status--in_progress { background: #dbeafe; color: #1d4ed8; }
+.laboratory-odoo-app .o_status--done { background: #d1fae5; color: #047857; }
+.laboratory-odoo-app .o_status--draft { background: #f1f5f9; color: #475569; }
+
+.laboratory-odoo-app .o_form_sheet {
+  background: var(--o-surface);
+  border: 1px solid var(--o-border);
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 1100px;
+}
+
+.laboratory-odoo-app .o_form_grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .laboratory-odoo-app .o_form_grid { grid-template-columns: 1fr; }
+}
+
+.laboratory-odoo-app .o_field label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--o-muted);
+  margin-bottom: 4px;
+}
+
+.laboratory-odoo-app .o_field input,
+.laboratory-odoo-app .o_field select,
+.laboratory-odoo-app .o_field textarea {
+  width: 100%;
+  border: 1px solid var(--o-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+}
+
+.laboratory-odoo-app .o_lines_table {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.laboratory-odoo-app .o_statusbar {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border: 1px solid var(--o-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.laboratory-odoo-app .o_statusbar_step {
+  flex: 1;
+  text-align: center;
+  padding: 10px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--o-bg);
+  color: var(--o-muted);
+  border-right: 1px solid var(--o-border);
+}
+
+.laboratory-odoo-app .o_statusbar_step:last-child { border-right: none; }
+.laboratory-odoo-app .o_statusbar_step.is-done { background: #ede9fe; color: #7c3aed; }
+.laboratory-odoo-app .o_statusbar_step.is-current { background: var(--o-brand); color: #fff; }
+
+.laboratory-odoo-app .o_alert {
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 0.88rem;
+}
+
+.laboratory-odoo-app .o_alert--ok { background: #d1fae5; color: #065f46; }
+.laboratory-odoo-app .o_alert--err { background: #fee2e2; color: #991b1b; }
+

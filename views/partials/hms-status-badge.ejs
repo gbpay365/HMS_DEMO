@@ -1,0 +1,7 @@
+<%
+// variant: active | inactive | pending | confirmed | completed | cancelled | info | warning | danger | success | purple | pink | muted
+// label — display text
+var __v = (typeof variant !== 'undefined' && variant) ? String(variant) : 'muted';
+var __lbl = (typeof label !== 'undefined') ? label : '';
+%>
+<span class="hms-status-badge hms-status-<%= __v %>"><%= __lbl %></span>

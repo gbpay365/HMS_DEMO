@@ -1,0 +1,65 @@
+<%- include('partials/header') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    var o = { ns: 'legacy', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+    return _t(key, o);
+  };
+}
+var _code = code || '';
+var _patient = patient || {};
+var _expired = expiredChecks || [];
+var _pending = pendingServe || [];
+var _pname = (_patient.first_name || '') + ' ' + (_patient.last_name || '');
+%>
+<style>
+.psw-wrap{max-width:720px;margin:1.6rem auto;padding:0 1rem;}
+.psw-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 6px 24px rgba(15,23,42,.06);overflow:hidden;margin-bottom:1rem;}
+.psw-head{padding:1.2rem 1.4rem;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;}
+.psw-head h2{margin:0;font-weight:800;font-size:1.2rem;}
+.psw-body{padding:1.2rem 1.4rem;}
+.psw-item{border:1px solid #fecaca;background:#fef2f2;border-radius:10px;padding:.85rem 1rem;margin-bottom:.65rem;}
+.psw-actions{display:flex;gap:.5rem;flex-wrap:wrap;padding:0 1.4rem 1.2rem;}
+</style>
+<div class="page-wrapper"><div class="content">
+<div class="psw-wrap">
+  <a href="/pharmacy/validate/<%= encodeURIComponent(_code) %>" class="text-muted small font-weight-bold"><i class="fa fa-arrow-left"></i> <%= _tl('pharmacy_serve_warn.back_pha', 'Back to PHA code') %></a>
+  <div class="psw-card mt-3">
+    <div class="psw-head">
+      <h2><i class="fa fa-exclamation-triangle mr-2"></i><%= _tl('pharmacy_serve_warn.title', 'Expired medicine — confirm serve') %></h2>
+      <div class="small mt-1 opacity-90"><%= _code %> · <%= _pname %></div>
+    </div>
+    <div class="psw-body">
+      <p class="mb-3"><%= _tl('pharmacy_serve_warn.body', 'The following items are linked to inventory that is past its expiry date. Serving them requires pharmacist override.') %></p>
+      <% _expired.forEach(function(row){
+           var chk = row.check || {};
+           var inv = chk.inventory || {};
+           var oi = chk.oi || {};
+      %>
+      <div class="psw-item">
+        <div class="font-weight-bold"><%= oi.item_name || inv.name || _tl('pharmacy_serve_warn.item_num', 'Item #') + row.oid %></div>
+        <div class="small text-danger mt-1"><strong><%= _tl('pharmacy_shared.expiry', 'Expiry:') %></strong> <%= chk.expiry_date || _tl('pharmacy_shared.em_dash', '—') %></div>
+        <ul class="small mb-0 pl-3 mt-1"><% (chk.warnings||[]).forEach(function(w){ %><li><%= w %></li><% }); %></ul>
+      </div>
+      <% }); %>
+    </div>
+    <div class="psw-actions">
+      <a href="/pharmacy/validate/<%= encodeURIComponent(_code) %>" class="btn btn-light"><%= _tl('pharmacy_shared.cancel', 'Cancel') %></a>
+      <form method="post" action="/pharmacy/serve/<%= encodeURIComponent(_code) %>" style="margin:0;"
+            onsubmit="return confirm('<%= _tl('pharmacy_serve_warn.confirm_override', 'Override expiry warning and mark selected as served?').replace(/'/g, "\\'") %>');">
+        <input type="hidden" name="force" value="1">
+        <% _pending.forEach(function(row){ %>
+        <input type="hidden" name="serve_ids[]" value="<%= row.oid %>">
+        <input type="hidden" name="note_<%= row.oid %>" value="<%= row.note || '' %>">
+        <% }); %>
+        <button type="submit" class="btn btn-danger font-weight-bold"><%= _tl('pharmacy_serve_warn.serve_anyway', 'Serve anyway') %></button>
+      </form>
+    </div>
+  </div>
+</div>
+</div></div>
+<%- include('partials/footer') %>

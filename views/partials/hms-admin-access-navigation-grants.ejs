@@ -1,0 +1,82 @@
+<%
+if (typeof _ac !== 'function') {
+  var _ac = function (k, d, opts) {
+    if (typeof t !== 'function') return d || k;
+    var o = { ns: 'access', defaultValue: d || k };
+    if (opts) Object.assign(o, opts);
+    return t(k, o);
+  };
+}
+%>
+<div class="haa-alert-bar mb-3">
+  <i class="fa fa-compass mr-1"></i>
+  <%- _ac('navigation.hint', '<strong>Navigation access</strong> controls which menus and links appear in the top bar and sidebar. It does <strong>not</strong> grant data access — use the <strong>Data access</strong> tab for Read / Write permissions.') %>
+</div>
+
+<% if (navGrantMode) { %>
+<div class="alert alert-success py-2 small mb-3">
+  <i class="fa fa-check-circle mr-1"></i>
+  <%= navGrantCount === 1
+    ? _ac('navigation.nav_only_one', 'This role uses navigation-only rules ({{count}} bundle).', { count: navGrantCount })
+    : _ac('navigation.nav_only_many', 'This role uses navigation-only rules ({{count}} bundles).', { count: navGrantCount }) %>
+</div>
+<% } else { %>
+<div class="alert alert-warning py-2 small mb-3">
+  <i class="fa fa-info-circle mr-1"></i>
+  <%= _ac('navigation.legacy_hint', 'No navigation bundles configured yet — menus follow <strong>capabilities</strong> (legacy). Toggle a section below to switch this role to navigation-only control.') %>
+</div>
+<% } %>
+
+<div class="d-flex flex-wrap mb-3" style="gap:8px;">
+  <button type="button" class="btn btn-sm btn-outline-success" id="haaNavGrantAll"><%= _ac('navigation.grant_all_sections', 'Grant all sections') %></button>
+  <button type="button" class="btn btn-sm btn-outline-secondary" id="haaNavRevokeAll"><%= _ac('navigation.clear_all', 'Clear all navigation') %></button>
+  <a href="/hms?preview_role=<%= selRole %>" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary ml-auto">
+    <i class="fa fa-eye mr-1"></i><%= _ac('navigation.preview_menus', 'Preview menus as this role') %>
+  </a>
+</div>
+
+<% (navAccessTree || []).forEach(function(section) { %>
+<div class="haa-nav-section card border-0 shadow-sm mb-3">
+  <div class="card-header bg-white d-flex align-items-center justify-content-between py-3" style="border-left:4px solid <%= section.color || '#714b67' %>;">
+    <div class="d-flex align-items-center" style="gap:10px;">
+      <span class="rounded d-inline-flex align-items-center justify-content-center" style="width:36px;height:36px;background:<%= section.color || '#714b67' %>22;">
+        <i class="fa <%= section.icon || 'fa-folder' %>" style="color:<%= section.color || '#714b67' %>;"></i>
+      </span>
+      <div>
+        <div class="font-weight-bold"><%= section.label %></div>
+        <div class="small text-muted"><%= _ac('navigation.top_bar_section', 'Top bar section') %></div>
+      </div>
+    </div>
+    <div class="d-flex align-items-center" style="gap:8px;">
+      <button type="button" class="btn btn-xs btn-sm btn-outline-primary haa-nav-bundle" data-code="<%= section.code %>" data-grant="1"><%= _ac('navigation.all_in_section', 'All in section') %></button>
+      <label class="haa-switch mb-0">
+        <input type="checkbox" class="haa-nav-toggle" data-code="<%= section.code %>" data-bundle="1" <%= section.granted ? 'checked' : '' %>>
+        <span class="haa-switch-slider"></span>
+      </label>
+    </div>
+  </div>
+  <div class="card-body py-2">
+    <div class="row">
+      <% (section.children || []).forEach(function(ch) { %>
+      <div class="col-md-6 col-lg-4 mb-2">
+        <label class="haa-nav-child d-flex align-items-center justify-content-between border rounded px-2 py-2 mb-0">
+          <span class="small font-weight-600"><%= ch.label %></span>
+          <span class="haa-switch mb-0">
+            <input type="checkbox" class="haa-nav-toggle" data-code="<%= ch.code %>" <%= ch.granted ? 'checked' : '' %>>
+            <span class="haa-switch-slider"></span>
+          </span>
+        </label>
+      </div>
+      <% }); %>
+    </div>
+  </div>
+</div>
+<% }); %>
+
+<details class="mt-3 small text-muted">
+  <summary class="font-weight-bold text-secondary" style="cursor:pointer;"><%= _ac('navigation.fine_tune_summary', 'Fine-tune individual links (Navigation Studio)') %></summary>
+  <div class="mt-2 p-2 border rounded bg-white">
+    <p class="small mb-2"><%= _ac('navigation.fine_tune_hint', 'Hide specific links within a granted section (optional).') %></p>
+    <%- include('navigation-studio') %>
+  </div>
+</details>

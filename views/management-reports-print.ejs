@@ -1,0 +1,241 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    var o = { ns: 'legacy', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+    return _t(key, o);
+  };
+}
+%>
+<!DOCTYPE html>
+<html lang="<%= locals.lang || 'en' %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= typeof title !== 'undefined' ? title : _tl('management_reports_print.default_title', 'Management & Director Report') %></title>
+<link rel="stylesheet" href="/css/hms-management-reports-print.css?v=2">
+</head>
+<body class="mr-print-body">
+
+<div class="mr-print-toolbar no-print">
+  <a href="<%= reportsBackUrl || '/portal/hub/director' %>" class="mr-pt-btn">&larr; <%= _tl('management_reports_print.back_to_reports', 'Back to reports') %></a>
+  <button type="button" class="mr-pt-btn mr-pt-primary" onclick="window.print()"><i class="fa fa-print"></i> <%= _tl('management_reports_print.print_save_pdf', 'Print / Save as PDF') %></button>
+</div>
+
+<div class="mr-print-page">
+  <%- include('partials/print-letterhead', {
+    docTitle: (typeof reportTitle !== 'undefined' && reportTitle) ? reportTitle : _tl('management_reports_print.default_title', 'Management & Director Report'),
+    docNumber: reportRef || '',
+    docDate: printDate || '',
+    accent: '#1e3a5f',
+    tagline: orgName || ''
+  }) %>
+
+  <div class="mr-print-cover-meta">
+    <div class="mr-print-cover-grid">
+      <div>
+        <div class="mr-pcm-label"><%= _tl('management_reports_print.label_organisation', 'Organisation') %></div>
+        <div class="mr-pcm-value"><%= orgName || _tl('management_reports_print.default_org', 'Hospital') %></div>
+        <% if (entityName && entityName !== orgName) { %>
+        <div class="mr-pcm-sub"><%= entityName %></div>
+        <% } %>
+      </div>
+      <div>
+        <div class="mr-pcm-label"><%= _tl('management_reports_print.label_report_ref', 'Report reference') %></div>
+        <div class="mr-pcm-value mono"><%= reportRef || '—' %></div>
+      </div>
+      <div>
+        <div class="mr-pcm-label"><%= _tl('management_reports_print.label_generated', 'Generated') %></div>
+        <div class="mr-pcm-value"><%= printDate || '—' %></div>
+        <div class="mr-pcm-sub"><%= liveGeneratedAt || '' %></div>
+      </div>
+      <div>
+        <div class="mr-pcm-label"><%= _tl('management_reports_print.label_prepared_by', 'Prepared by') %></div>
+        <div class="mr-pcm-value"><%= preparedBy || _tl('management_reports_print.default_prepared_by', 'Authorised user') %></div>
+        <% if (preparedRole) { %><div class="mr-pcm-sub"><%= preparedRole %></div><% } %>
+      </div>
+    </div>
+    <p class="mr-print-confidential"><%= _tl('management_reports_print.confidential', 'CONFIDENTIAL — For internal management use only. Unauthorized disclosure is prohibited.') %></p>
+  </div>
+
+  <% if (typeof reportTitle !== 'undefined' && reportTitle) { %>
+  <h1 class="mr-print-single-title"><%= reportTitle %></h1>
+  <% } %>
+  <% if (typeof periodRange !== 'undefined' && periodRange && periodRange.label) { %>
+  <p class="mr-print-period-banner"><strong><%= _tl('management_reports_print.reporting_period', 'Reporting period:') %></strong> <%= periodRange.label %>
+    <span class="mr-print-period-type">(<%= periodRange.period === 'day' ? _tl('management_reports_print.period_daily', 'Daily') : periodRange.period === 'week' ? _tl('management_reports_print.period_weekly', 'Weekly') : _tl('management_reports_print.period_monthly', 'Monthly') %>)</span>
+  </p>
+  <% } %>
+  <% if (scopeLabel) { %>
+  <p class="mr-print-scope-note"><strong><%= _tl('management_reports_print.scope_label', 'Scope:') %></strong> <%= scopeLabel %></p>
+  <% } %>
+
+  <% (sections || []).forEach(function(s, sIdx) { %>
+  <section class="mr-print-section<%= sIdx > 0 ? ' mr-page-break' : '' %>">
+    <header class="mr-print-section-head">
+      <h2><%= s.label %><%= _tl('management_reports_print.section_reports_suffix', ' reports') %></h2>
+      <p><%= s.subtitle %></p>
+    </header>
+
+    <% if (s.cards && s.cards.length) { %>
+    <% s.cards.forEach(function(c) { %>
+    <article class="mr-print-card">
+      <h3 class="mr-print-card-title"><%= c.title %></h3>
+      <% if (c.live && c.live.metrics && c.live.metrics.length) { %>
+      <table class="mr-print-kpi-table">
+        <thead>
+          <tr>
+            <th style="width:42%"><%= _tl('management_reports_print.col_indicator', 'Indicator') %></th>
+            <th style="width:22%"><%= _tl('management_reports_print.col_value', 'Value') %></th>
+            <th><%= _tl('management_reports_print.col_notes', 'Notes') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% c.live.metrics.forEach(function(m) { %>
+          <tr>
+            <td><%= m.label %></td>
+            <td class="num"><strong><%= m.value %></strong></td>
+            <td class="note"><%= m.subtext || '' %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+      <% } else { %>
+      <p class="mr-print-no-data"><%= _tl('management_reports_print.no_live_data', 'No live data available for this indicator set.') %></p>
+      <% } %>
+      <% if (c.items && c.items.length) { %>
+      <div class="mr-print-scope">
+        <div class="mr-print-scope-label"><%= _tl('management_reports_print.scope_definitions', 'Report scope (definitions)') %></div>
+        <ul>
+          <% c.items.forEach(function(item) { %>
+          <li><%= item %></li>
+          <% }); %>
+        </ul>
+      </div>
+      <% } %>
+    </article>
+    <% }); %>
+    <% } %>
+
+    <% if (s.key === 'financial') { %>
+      <% if (s.financialRows && s.financialRows.length) { %>
+      <h3 class="mr-print-subhead"><%= _tl('management_reports_print.financial_by_frequency', 'Financial transactions — by frequency') %></h3>
+      <table class="mr-print-data-table">
+        <thead>
+          <tr>
+            <th><%= _tl('management_reports_print.col_report', 'Report') %></th>
+            <th style="width:12%"><%= _tl('management_reports_print.col_frequency', 'Frequency') %></th>
+            <th style="width:28%"><%= _tl('management_reports_print.col_live_figures', 'Live figures') %></th>
+            <th><%= _tl('management_reports_print.col_key_data_points', 'Key data points (scope)') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% s.financialRows.forEach(function(r) { %>
+          <tr>
+            <td><strong><%= r.title %></strong></td>
+            <td class="freq"><%= r.freq %></td>
+            <td>
+              <% if (r.live && r.live.metrics && r.live.metrics.length) { %>
+              <% r.live.metrics.forEach(function(m, i) { %>
+              <% if (i) { %><br><% } %><span class="mr-fin-live"><%= m.label %>: <strong><%= m.value %></strong></span>
+              <% }); %>
+              <% } else { %>—<% } %>
+            </td>
+            <td class="scope-cell"><%= r.points %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+      <% } %>
+
+      <% if (s.financialUnits && s.financialUnits.length) { %>
+      <h3 class="mr-print-subhead mr-page-break-avoid"><%= _tl('management_reports_print.sales_purchases_by_unit', 'Sales & purchases by unit') %></h3>
+      <table class="mr-print-data-table">
+        <thead>
+          <tr>
+            <th style="width:18%"><%= _tl('management_reports_print.col_unit', 'Unit') %></th>
+            <th style="width:32%"><%= _tl('management_reports_print.col_live_figures', 'Live figures') %></th>
+            <th><%= _tl('management_reports_print.col_sales_scope', 'Sales (scope)') %></th>
+            <th><%= _tl('management_reports_print.col_purchases_scope', 'Purchases (scope)') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% s.financialUnits.forEach(function(u) { %>
+          <tr>
+            <td><strong><%= u.name %></strong></td>
+            <td>
+              <% if (u.live && u.live.metrics && u.live.metrics.length) { %>
+              <% u.live.metrics.forEach(function(m, i) { %>
+              <% if (i) { %><br><% } %><%= m.label %>: <strong><%= m.value %></strong>
+              <% }); %>
+              <% } else { %>—<% } %>
+            </td>
+            <td class="scope-cell"><%= u.sales %></td>
+            <td class="scope-cell"><%= u.purchases %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+      <% } %>
+    <% } %>
+
+    <%
+    var printDetailItems = [];
+    (s.cards || []).forEach(function(c) {
+      if (c.details && c.details.rows && c.details.rows.length) {
+        printDetailItems.push({ parentTitle: c.title, detail: c.details });
+      }
+    });
+    (s.financialRows || []).forEach(function(r) {
+      if (r.details && r.details.rows && r.details.rows.length) {
+        printDetailItems.push({ parentTitle: r.title, detail: r.details });
+      }
+    });
+    (s.financialUnits || []).forEach(function(u) {
+      if (u.details && u.details.rows && u.details.rows.length) {
+        printDetailItems.push({ parentTitle: u.name, detail: u.details });
+      }
+    });
+    %>
+    <% if (printDetailItems.length) { %>
+    <div class="mr-print-details-zone mr-page-break">
+      <h2 class="mr-print-details-zone-title"><%= _tl('management_reports_print.line_detail', 'Line detail') %></h2>
+      <p class="mr-print-details-zone-sub"><%= _tl('management_reports_print.line_detail_sub', 'Individual records for the reporting period (separate from summary KPIs above).') %></p>
+      <% printDetailItems.forEach(function(item) { %>
+      <%- include('partials/management-reports-details', { detail: item.detail, parentTitle: item.parentTitle, extraClass: 'mr-detail-print' }) %>
+      <% }); %>
+    </div>
+    <% } %>
+  </section>
+  <% }); %>
+
+  <footer class="mr-print-footer">
+    <div class="mr-print-sig-row">
+      <div class="mr-print-sig">
+        <div class="mr-print-sig-line"></div>
+        <div><%= _tl('management_reports_print.authorised_signatory', 'Authorised signatory') %></div>
+      </div>
+      <div class="mr-print-sig">
+        <div class="mr-print-sig-line"></div>
+        <div><%= _tl('management_reports_print.date', 'Date') %></div>
+      </div>
+    </div>
+    <p class="mr-print-footer-note">
+      <%= _tl('management_reports_print.footer_generated', 'Generated by {{product}}.', { product: (typeof brand !== 'undefined' && brand.productName ? brand.productName : _tl('management_reports_print.default_product', 'ZAIZENS Integrated HMS')) }) %>
+      <%= _tl('management_reports_print.footer_valid', 'This document is valid as printed on {{date}}.', { date: printDate || _tl('management_reports_print.default_generation_date', 'the generation date') }) %>
+      <%= orgName ? ' — ' + orgName : '' %>
+    </p>
+  </footer>
+</div>
+
+<link rel="stylesheet" href="/css/font-awesome.min.css">
+<script>
+  if (window.location.search.indexOf('autoprint=1') >= 0) {
+    window.addEventListener('load', function () { setTimeout(function () { window.print(); }, 400); });
+  }
+</script>
+</body>
+</html>

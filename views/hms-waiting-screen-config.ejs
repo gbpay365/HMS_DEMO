@@ -1,0 +1,21 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<div class="page-wrapper"><div class="content">
+<p class="mb-2"><a href="/hms"><%= _t('hms_waiting_config.back_hub', { ns: 'legacy', defaultValue: 'HMS hub' }) %></a> · <a href="/hms/waiting-screen" target="_blank"><%= _t('hms_waiting_config.open_tv', { ns: 'legacy', defaultValue: 'Open TV display' }) %></a></p>
+<h4 class="font-weight-bold mb-3"><%= _t('hms_waiting_config.title', { ns: 'legacy', defaultValue: 'Waiting screen settings' }) %></h4>
+<% if(flash){%><div class="alert alert-success"><%=flash%></div><%}%>
+<form method="POST" action="/hms/waiting-screen/config" class="card p-4 shadow-sm" style="max-width:640px;">
+ <div class="form-group"><label class="small font-weight-bold"><%= _t('hms_waiting_config.welcome', { ns: 'legacy', defaultValue: 'Welcome message' }) %></label>
+ <input name="welcome_message" class="form-control" value="<%=config.welcome_message||''%>"></div>
+ <div class="form-group"><label class="small font-weight-bold"><%= _t('hms_waiting_config.refresh', { ns: 'legacy', defaultValue: 'Refresh (seconds)' }) %></label>
+ <input type="number" name="refresh_seconds" class="form-control" min="3" max="60" value="<%=config.refresh_seconds||5%>"></div>
+ <div class="form-group">
+  <label class="d-block small"><input type="checkbox" name="show_patient_name" value="1" <%=config.show_patient_name?'checked':''%>> <%= _t('hms_waiting_config.show_patient', { ns: 'legacy', defaultValue: 'Show patient names' }) %></label>
+  <label class="d-block small"><input type="checkbox" name="show_doctor_name" value="1" <%=config.show_doctor_name?'checked':''%>> <%= _t('hms_waiting_config.show_doctor', { ns: 'legacy', defaultValue: 'Show doctor names' }) %></label>
+  <label class="d-block small"><input type="checkbox" name="show_room" value="1" <%=config.show_room?'checked':''%>> <%= _t('hms_waiting_config.show_room', { ns: 'legacy', defaultValue: 'Show consultation room' }) %></label>
+  <label class="d-block small"><input type="checkbox" name="show_ticket_number" value="1" <%=config.show_ticket_number?'checked':''%>> <%= _t('hms_waiting_config.show_ticket', { ns: 'legacy', defaultValue: 'Show ticket numbers' }) %></label>
+  <label class="d-block small mt-2"><input type="checkbox" name="chime_enabled" value="1" <%=config.chime_enabled!==0?'checked':''%>> <%= _t('hms_waiting_config.chime', { ns: 'legacy', defaultValue: 'Play chime when Next patient changes' }) %></label>
+ </div>
+ <button class="btn btn-primary"><%= _t('hms_waiting_config.save', { ns: 'legacy', defaultValue: 'Save' }) %></button>
+</form>
+</div></div><%- include('partials/footer') %>

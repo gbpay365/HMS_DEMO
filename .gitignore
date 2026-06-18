@@ -1,0 +1,10 @@
+license-generator/keys/
+license-generator/.env
+node_modules
+node_modules
+docs/scripts/railway-sync.env
+scripts/railway-sync.env
+scripts/db-sync.env
+db-sync.env
+scripts/deploy-server.env
+tmp/railway-sync-logs/

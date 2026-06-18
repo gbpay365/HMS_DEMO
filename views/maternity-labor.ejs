@@ -1,0 +1,76 @@
+<%- include('partials/hms-date-helpers') %>
+<%- include('partials/header') %>
+<%- include('partials/maternity-odoo-start', {
+  matOdooMenu: 'labor',
+  matOdooTitle: _tl('maternity_labor.title', 'Labor ward & partograph')
+}) %>
+<div class="o_content">
+
+<div class="row">
+ <div class="col-lg-3 mb-3">
+  <div class="mat-card p-2">
+   <div class="mat-card-head"><%= _tl('maternity_labor.active_labors', 'Active labors') %></div>
+   <% (active||[]).forEach(function(a){ %>
+   <a href="?labor_id=<%= a.id %>" class="d-block p-2 border-bottom small <%= labor && labor.id===a.id ? 'bg-light font-weight-bold':'' %>">
+    <%= a.antenatal_number %> — <%= a.first_name %> <%= a.last_name %>
+   </a>
+   <% }) %>
+   <% if (!active || !active.length) { %><p class="small text-muted p-2 mb-0"><%= _tl('maternity_labor.none', 'None') %></p><% } %>
+  </div>
+ </div>
+ <div class="col-lg-9">
+  <% if (labor) { %>
+  <div class="mat-card p-3 mb-3">
+   <h5 class="font-weight-bold"><%= labor.antenatal_number %> — <%= labor.first_name %> <%= labor.last_name %></h5>
+   <p class="small mb-0"><%= _tl('maternity_labor.admitted_line', 'Admitted {{date}} · {{type}} · dilation {{dilation}} cm', { date: fmtDate(labor.admission_date), type: labor.admission_type, dilation: labor.cervical_dilation || '—' }) %></p>
+   <a href="/maternity/chart/<%= labor.maternity_patient_id %>?tab=delivery" class="hms-btn hms-btn-success hms-btn-sm mt-2"><i class="fa fa-medkit mr-1"></i> <%= _tl('maternity_labor.record_delivery', 'Record delivery') %></a>
+  </div>
+
+  <form method="post" action="/maternity/labor/<%= labor.id %>/partograph" class="mat-card p-3 mb-3">
+   <h6 class="font-weight-bold"><%= _tl('maternity_labor.partograph_entry', 'WHO partograph entry') %></h6>
+   <div class="form-row">
+    <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.time', 'Time') %></label><input type="text" name="time_label" class="hms-input w-full" placeholder="<%= _tl('maternity_labor.time_placeholder', 'HHMM') %>"></div>
+    <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.dilation', 'Dilation') %></label><input type="number" name="cervical_dilation" class="hms-input w-full" min="0" max="10"></div>
+    <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.station', 'Station') %></label><input type="text" name="descent_station" class="hms-input w-full"></div>
+    <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.ctx', 'CTX /10min') %></label><input type="number" name="contractions_in_10min" class="hms-input w-full"></div>
+    <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.fhr', 'FHR') %></label><input type="number" name="fhr" class="hms-input w-full"></div>
+    <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.bp', 'BP') %></label><input type="number" name="bp_systolic" class="hms-input w-full mb-1" placeholder="<%= _tl('maternity_labor.bp_sys', 'sys') %>"><input type="number" name="bp_diastolic" class="hms-input w-full" placeholder="<%= _tl('maternity_labor.bp_dia', 'dia') %>"></div>
+   </div>
+   <button class="hms-btn hms-btn-primary hms-btn-sm"><i class="fa fa-plus mr-1"></i> <%= _tl('maternity_labor.add_entry', 'Add entry') %></button>
+  </form>
+
+  <div class="mat-card">
+   <div class="mat-card-head"><%= _tl('maternity_labor.timeline', 'Partograph timeline') %></div>
+   <div class="table-responsive">
+    <table class="table table-sm mb-0">
+     <thead><tr><th><%= _tl('maternity_labor.th_time', 'Time') %></th><th><%= _tl('maternity_labor.th_dil', 'Dil.') %></th><th><%= _tl('maternity_labor.th_station', 'Station') %></th><th><%= _tl('maternity_labor.th_ctx', 'CTX') %></th><th><%= _tl('maternity_labor.th_fhr', 'FHR') %></th><th><%= _tl('maternity_labor.th_bp', 'BP') %></th><th><%= _tl('maternity_labor.th_alert', 'Alert') %></th><th><%= _tl('maternity_labor.th_action', 'Action') %></th></tr></thead>
+     <tbody>
+     <% (partograph||[]).forEach(function(e){ %>
+     <tr class="<%= e.alert_line_crossed || e.action_line_crossed ? 'partograph-alert':'' %>">
+      <td><%= e.time_label || new Date(e.recorded_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) %></td>
+      <td><%= e.cervical_dilation %></td><td><%= e.descent_station %></td><td><%= e.contractions_in_10min %></td>
+      <td><%= e.fhr %></td><td><%= e.bp_systolic %>/<%= e.bp_diastolic %></td>
+      <td><%= e.alert_line_crossed ? '⚠' : '' %></td><td><%= e.action_line_crossed ? '‼' : '' %></td>
+     </tr>
+     <% }) %>
+     </tbody>
+    </table>
+   </div>
+  </div>
+  <% } else { %>
+  <div class="mat-card p-4">
+   <p class="mb-3 text-muted"><%= _tl('maternity_labor.select_help', 'Select a patient from Active labors on the left, or admit from a maternity chart.') %></p>
+   <a href="/maternity/patients" class="hms-btn hms-btn-outline-primary btn-sm mr-2"><%= _tl('maternity_labor.anc_registry', 'ANC registry') %></a>
+   <% if (active && active.length) { %>
+   <p class="small text-muted mt-3 mb-2"><%= _tl('maternity_labor.click_sidebar', 'Click a name in the sidebar to open the partograph.') %></p>
+   <% } else { %>
+   <p class="small text-muted mt-3 mb-0"><%= _tl('maternity_labor.no_active', 'No active labors yet. Open a patient chart → Labor tab → Admit & open partograph.') %></p>
+   <% } %>
+  </div>
+  <% } %>
+ </div>
+</div>
+
+</div>
+<%- include('partials/maternity-odoo-end') %>
+<%- include('partials/footer') %>

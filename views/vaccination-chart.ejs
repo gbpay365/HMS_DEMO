@@ -1,0 +1,61 @@
+<%- include('partials/hms-date-helpers') %>
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<% const p = summary.patient; const recs = summary.records || []; %>
+<%- include('partials/vaccination-odoo-start', {
+  vacOdooMenu: 'patients',
+  vacOdooTitle: p.first_name + ' ' + p.last_name,
+  vacOdooActions: '<a href="/vaccination/administer?patient_id=' + p.id + '" class="o_btn_primary"><i class="fa fa-plus"></i> ' + _t('vaccination_chart.add_dose', { ns: 'legacy', defaultValue: 'Add dose' }) + '</a><a href="/patient-chart/' + p.id + '" class="btn btn-sm btn-outline-secondary ml-2"><i class="fa fa-file-text-o"></i> ' + _t('vaccination_chart.patient_chart', { ns: 'legacy', defaultValue: 'Patient chart' }) + '</a>'
+}) %>
+<div class="o_content">
+
+<div class="vac-header mb-4">
+ <div class="small text-uppercase" style="opacity:.8;letter-spacing:.08em;"><%= _t('vaccination_chart.immunization_record', { ns: 'legacy', defaultValue: 'Immunization record' }) %></div>
+ <p class="mb-0 small" style="opacity:.9;">
+  <%= p.patient_code || ('#' + p.id) %> · <%= p.gender || '' %> · <%= p.phone || '' %>
+  <% if (p.dob) { %> · <%= _t('vaccination_chart.dob', { ns: 'legacy', defaultValue: 'DOB' }) %>: <%= fmtDate(p.dob) %><% } %>
+ </p>
+</div>
+
+<div class="hms-stat-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+ <div class="vac-stat hms-stat-card hms-stat-card--success"><div class="hms-stat-card__value"><%= summary.total_doses || 0 %></div><div class="hms-stat-card__label"><%= _t('vaccination_chart.total_doses', { ns: 'legacy', defaultValue: 'Total doses' }) %></div></div>
+ <div class="vac-stat hms-stat-card hms-stat-card--warning"><div class="hms-stat-card__value"><%= summary.due_count || 0 %></div><div class="hms-stat-card__label"><%= _t('vaccination_chart.due', { ns: 'legacy', defaultValue: 'Due now' }) %></div></div>
+ <div class="vac-stat hms-stat-card hms-stat-card--info"><div class="hms-stat-card__value"><%= summary.age_days != null ? Math.floor(summary.age_days / 365) : '—' %></div><div class="hms-stat-card__label"><%= _t('vaccination_chart.age_years', { ns: 'legacy', defaultValue: 'Age (years)' }) %></div></div>
+</div>
+
+<div class="vac-card mb-4">
+ <div class="vac-card-head"><%= _t('vaccination_chart.history', { ns: 'legacy', defaultValue: 'Dose history' }) %></div>
+ <div class="table-responsive">
+  <table class="table table-hover mb-0 vac-table">
+   <thead><tr>
+    <th><%= _t('vaccination_chart.col_date', { ns: 'legacy', defaultValue: 'Date' }) %></th>
+    <th><%= _t('vaccination_chart.col_vaccine', { ns: 'legacy', defaultValue: 'Vaccine' }) %></th>
+    <th><%= _t('vaccination_chart.col_dose', { ns: 'legacy', defaultValue: 'Dose' }) %></th>
+    <th><%= _t('vaccination_chart.col_batch', { ns: 'legacy', defaultValue: 'Batch' }) %></th>
+    <th><%= _t('vaccination_chart.col_site', { ns: 'legacy', defaultValue: 'Site / Route' }) %></th>
+    <th><%= _t('vaccination_chart.col_next', { ns: 'legacy', defaultValue: 'Next due' }) %></th>
+    <th><%= _t('vaccination_chart.col_status', { ns: 'legacy', defaultValue: 'Status' }) %></th>
+   </tr></thead>
+   <tbody>
+    <% if (!recs.length) { %>
+    <tr><td colspan="7" class="text-muted text-center py-4"><%= _t('vaccination_chart.no_records', { ns: 'legacy', defaultValue: 'No doses recorded yet.' }) %></td></tr>
+    <% } %>
+    <% recs.forEach(function(r){ %>
+    <tr>
+     <td><%= fmtDate(r.administered_date) %></td>
+     <td><strong><%= r.vaccine_name %></strong><br><span class="small text-muted"><%= r.vaccine_code %></span></td>
+     <td><span class="dose-badge"><%= r.dose_number %></span></td>
+     <td><%= r.batch_number || '—' %></td>
+     <td><%= r.site || '—' %><% if (r.route) { %><br><span class="small text-muted"><%= r.route %></span><% } %></td>
+     <td><% if (r.next_dose_due) { %><span class="status-pill <%= new Date(r.next_dose_due) <= new Date() ? 'due' : 'scheduled' %>"><%= fmtDate(r.next_dose_due) %></span><% } else { %>—<% } %></td>
+     <td><span class="status-pill <%= r.status %>"><%= r.status %></span></td>
+    </tr>
+    <% }) %>
+   </tbody>
+  </table>
+ </div>
+</div>
+
+</div>
+<%- include('partials/vaccination-odoo-end') %>
+<%- include('partials/footer') %>

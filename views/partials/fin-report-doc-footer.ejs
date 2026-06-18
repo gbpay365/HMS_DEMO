@@ -1,0 +1,13 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+%>
+<% if (typeof footnote !== 'undefined' && footnote) { %>
+<p class="fin-report-footnote"><%= footnote %></p>
+<% } %>
+<div class="fin-report-doc-footer">
+ <span><%= _t('report.confidential', { ns: 'financials', defaultValue: 'Confidential — internal use' }) %></span>
+ <span><%= typeof docLabel !== 'undefined' ? docLabel : _t('report.doc_label', { ns: 'financials', defaultValue: 'Financial report' }) %></span>
+ <span><%= _t('report.page_one', { ns: 'financials', defaultValue: 'Page 1' }) %></span>
+</div>

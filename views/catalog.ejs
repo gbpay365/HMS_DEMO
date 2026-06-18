@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--catalog'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'catalog',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.catalog', { ns: 'common' }) : 'Loading Service Catalog…')
+}) %>
+
+<%- include('partials/footer') %>

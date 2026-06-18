@@ -1,0 +1,32 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _rhTitle = (typeof reportTitle !== 'undefined' && reportTitle)
+  ? String(reportTitle)
+  : _t('report.default_title', { ns: 'financials', defaultValue: 'FINANCIAL REPORT' });
+var _rhOrg = (typeof orgName !== 'undefined' && orgName) ? String(orgName) : (locals.finReportOrgName || (locals.brand && locals.brand.orgName) || 'ZAIZENS');
+var _rhRows = (typeof metaRows !== 'undefined' && metaRows && metaRows.length) ? metaRows : [];
+%>
+<header class="fin-report-header" role="doc-title">
+  <h1 class="fin-report-header__title"><%= _rhTitle %></h1>
+  <p class="fin-report-header__org"><%= _rhOrg %></p>
+  <% if (_rhRows.length) { %>
+  <div class="fin-report-header__meta">
+    <% _rhRows.forEach(function(row) {
+      if (!row || row.label == null) return;
+      var val = (row.value != null && String(row.value).trim() !== '') ? row.value : '—';
+      if (typeof hmsFormatPeriodStr === 'function' && (String(val).indexOf(' — ') !== -1 || String(val).indexOf(' → ') !== -1 || /GMT/.test(String(val)))) {
+        val = hmsFormatPeriodStr(val);
+      } else if (typeof hmsFormatDate === 'function' && (/^\d{4}-\d{2}-\d{2}/.test(String(val)) || val instanceof Date || /GMT/.test(String(val)))) {
+        val = hmsFormatDate(val);
+      }
+    %>
+    <div class="fin-report-header__row">
+      <span class="fin-report-header__label"><%= row.label %></span>
+      <span class="fin-report-header__value"><%= val %></span>
+    </div>
+    <% }); %>
+  </div>
+  <% } %>
+</header>

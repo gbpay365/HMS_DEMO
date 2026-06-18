@@ -1,0 +1,178 @@
+/**
+ * HMS Clinical premium buttons — shared by EJS pages (OPD/IPD/ER/Lab/Rad/Maternity)
+ * Tokens: hms-tokens.css — mirrors frontend/src/styles/tailwind.css hms-btn-* classes.
+ */
+.hms-btn,
+.btn.hms-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 12px;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.25;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.hms-btn:hover,
+.btn.hms-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+  text-decoration: none;
+}
+
+.hms-btn-sm { padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 10px; }
+.hms-btn-lg { padding: 0.7rem 1.35rem; font-size: 0.9375rem; }
+.hms-btn-block { display: flex; width: 100%; }
+
+.hms-btn-primary,
+.btn-primary.hms-btn,
+.page-wrapper .btn-primary:not(.btn-link) {
+  background: linear-gradient(135deg, var(--hms-brand) 0%, var(--hms-brand-dark) 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 4px 14px var(--hms-brand-glow) !important;
+}
+
+.hms-btn-success,
+.btn-success.hms-btn,
+.page-wrapper .btn-success:not(.btn-link) {
+  background: linear-gradient(135deg, var(--hms-brand-hover) 0%, var(--hms-brand-dark) 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 4px 14px var(--hms-brand-glow) !important;
+}
+
+.hms-btn-warning,
+.btn-warning.hms-btn,
+.page-wrapper .btn-warning:not(.btn-link) {
+  background: linear-gradient(135deg, var(--hms-warning) 0%, #ea580c 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35) !important;
+}
+
+.hms-btn-danger,
+.btn-danger.hms-btn,
+.page-wrapper .btn-danger:not(.btn-link) {
+  background: linear-gradient(135deg, var(--hms-danger) 0%, #b91c1c 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3) !important;
+}
+
+.hms-btn-secondary,
+.btn-secondary.hms-btn,
+.btn-light.hms-btn {
+  background: var(--hms-card-bg) !important;
+  color: var(--hms-text-secondary) !important;
+  border: 1px solid var(--hms-border) !important;
+  box-shadow: var(--hms-shadow-sm) !important;
+}
+
+.hms-btn-outline-primary,
+.btn-outline-primary.hms-btn {
+  background: var(--hms-card-bg) !important;
+  color: var(--hms-brand-dark) !important;
+  border: 2px solid var(--hms-brand-light) !important;
+  box-shadow: none !important;
+}
+
+.hms-btn-outline-success {
+  background: var(--hms-card-bg) !important;
+  color: var(--hms-brand-hover) !important;
+  border: 2px solid var(--hms-brand-light) !important;
+  box-shadow: none !important;
+}
+
+.hms-btn-outline-danger,
+.btn-outline-danger.hms-btn {
+  background: var(--hms-card-bg) !important;
+  color: var(--hms-danger) !important;
+  border: 2px solid #fecaca !important;
+  box-shadow: none !important;
+}
+
+.hms-btn-action-start {
+  background: linear-gradient(135deg, var(--hms-dept-laboratory) 0%, #4f46e5 100%) !important;
+  color: #fff !important;
+}
+
+.hms-btn-action-save {
+  background: linear-gradient(135deg, var(--hms-brand-hover) 0%, var(--hms-brand-dark) 100%) !important;
+  color: #fff !important;
+}
+
+.hms-btn-action-vitals {
+  background: linear-gradient(135deg, var(--hms-warning) 0%, #ea580c 100%) !important;
+  color: #fff !important;
+}
+
+.hms-btn-action-complete {
+  background: linear-gradient(135deg, var(--hms-brand) 0%, #14b8a6 100%) !important;
+  color: #fff !important;
+}
+
+.hms-btn-action-dispense {
+  background: linear-gradient(135deg, var(--hms-brand-hover) 0%, var(--hms-brand-dark) 50%, #14b8a6 100%) !important;
+  color: #fff !important;
+  padding: 0.75rem 1.5rem !important;
+  font-weight: 800 !important;
+}
+
+.hms-btn-ghost {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: none !important;
+  border-radius: 999px !important;
+}
+
+.hms-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Odoo radiology/lab workflow buttons */
+.o_btn_primary,
+.radiology-odoo-app .o_btn_primary,
+.hms-odoo-app .o_btn_primary {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.45rem !important;
+  border-radius: 12px !important;
+  padding: 0.55rem 1.1rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+  background: linear-gradient(135deg, var(--hms-brand) 0%, var(--hms-brand-dark) 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 4px 14px var(--hms-brand-glow) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.o_btn_secondary,
+.radiology-odoo-app .o_btn_secondary {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  border-radius: 12px !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 700 !important;
+  background: #fff !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06) !important;
+}
+
+.o_btn_primary:hover,
+.o_btn_secondary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}

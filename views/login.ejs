@@ -1,0 +1,47 @@
+<%
+var b = locals.brand || {};
+var _lang = locals.lang || 'en';
+var _t = locals.t || function (k, o) { return (o && o.defaultValue) || k; };
+%>
+<!DOCTYPE html>
+<html lang="<%= _lang %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="hms-lang" content="<%= _lang %>">
+  <title><%= _t('document_titles.login', { ns: 'common', defaultValue: b.loginTitle || 'Sign in — ZAIZENS Integrated HMS' }) %></title>
+  <link rel="icon" type="image/svg+xml" href="<%= b.faviconPath || '/img/zaizens-favicon.svg' %>">
+  <link rel="stylesheet" href="/css/hms-fonts-local.css">
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/hms-notify.css?v=2">
+  <link rel="stylesheet" href="/css/hms-tokens.css">
+  <link rel="stylesheet" href="/css/login.css?v=21">
+  <link rel="stylesheet" href="/css/hms-login-surface.css?v=1">
+</head>
+<body class="login-page hms-body--login">
+  <div class="login-lang-bar">
+    <div class="login-lang-form d-inline-flex align-items-center" style="gap:4px;">
+      <span class="login-lang-form__label"><%= _t('language.label', { ns: 'common', defaultValue: 'Language' }) %></span>
+      <a href="/set-lang?lang=en&amp;back=/" class="login-lang-form__btn<%= _lang === 'en' ? ' is-active' : '' %>">EN</a>
+      <a href="/set-lang?lang=fr&amp;back=/" class="login-lang-form__btn<%= _lang === 'fr' ? ' is-active' : '' %>">FR</a>
+    </div>
+  </div>
+  <div id="hms-notify-root"></div>
+  <div id="hms-react-root" data-page="login"></div>
+  <%
+  var _pageData = Object.assign(
+    { lang: _lang, locale: _lang, error: locals.error || null, msg: locals.msg || null, brand: b, loginLabels: {} },
+    locals.pageData || {}
+  );
+  if (!_pageData.lang) _pageData.lang = _lang;
+  if (!_pageData.locale) _pageData.locale = _lang;
+  %>
+  <script id="hms-page-data" type="application/json"><%- JSON.stringify(_pageData).replace(/</g, '\\u003c') %></script>
+  <% if (locals.hmsUiMissing) { %>
+  <div style="max-width:400px;margin:1rem auto;padding:1rem;background:#fef3c7;border-radius:12px;font-family:system-ui,sans-serif;font-size:14px;">
+    <strong>UI bundle missing.</strong> Run <code>npm run build:ui</code> from the project root.
+  </div>
+  <% } %>
+  <script src="/dist/hms-login.js?v=26" defer onerror="window.__HMS_UI_LOAD_FAILED=1"></script>
+</body>
+</html>

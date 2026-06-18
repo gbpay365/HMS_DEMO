@@ -1,0 +1,34 @@
+/**
+ * Vaccination — dept shell accent (nav: hms-dept-nav.css)
+ */
+.vaccination-odoo-app {
+  --o-brand: var(--hms-dept-vaccination);
+  --o-brand-hover: #0d9488;
+  --o-brand-soft: rgba(20, 184, 166, 0.12);
+}
+
+.vaccination-odoo-app .o_nav_module--vaccination::before {
+  content: '\f0fa';
+  font-family: FontAwesome;
+  margin-right: 6px;
+  font-weight: normal;
+}
+
+.vaccination-odoo-app .o_btn_primary {
+  background: linear-gradient(135deg, var(--hms-dept-vaccination), #0d9488);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vaccination-odoo-app .o_btn_primary:hover {
+  color: #fff;
+  opacity: 0.92;
+}

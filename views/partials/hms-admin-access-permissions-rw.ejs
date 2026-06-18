@@ -1,0 +1,132 @@
+<%
+if (typeof _ac !== 'function') {
+  var _ac = function (k, d, opts) {
+    if (typeof t !== 'function') return d || k;
+    var o = { ns: 'access', defaultValue: d || k };
+    if (opts) Object.assign(o, opts);
+    return t(k, o);
+  };
+}
+var _assignedSet = (typeof assignedIdSet !== 'undefined' && assignedIdSet)
+  ? assignedIdSet
+  : (function() {
+      var s = {};
+      (typeof assignedPerms !== 'undefined' && assignedPerms ? assignedPerms : []).forEach(function(p){ s[p.id] = true; });
+      return s;
+    })();
+%>
+<div class="haa-alert-bar mb-3">
+  <i class="fa fa-key mr-1"></i>
+  <%- _ac('permissions.hint', '<strong>Data access</strong> grants what users can <em>do</em> (view records, create, edit). Menus are configured separately under <strong>Navigation</strong>.') %>
+</div>
+
+<div class="table-responsive bg-white border rounded shadow-sm mb-4">
+  <table class="table table-hover mb-0 haa-rw-table">
+    <thead class="thead-light">
+      <tr>
+        <th><%= _ac('permissions.col_module', 'Module') %></th>
+        <th class="text-center" style="width:100px;"><%= _ac('permissions.col_read', 'Read') %></th>
+        <th class="text-center" style="width:100px;"><%= _ac('permissions.col_write', 'Write') %></th>
+        <th class="text-center" style="width:90px;"><%= _ac('permissions.col_other', 'Other') %></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% (permModuleRw || []).forEach(function(row) {
+        var meta = row.meta || {};
+        var mod = meta.code || 'misc';
+      %>
+      <tr data-module="<%= mod %>">
+        <td>
+          <span class="d-inline-flex align-items-center">
+            <span class="rounded d-inline-flex align-items-center justify-content-center mr-2" style="width:28px;height:28px;background:<%= meta.color || '#714b67' %>22;">
+              <i class="fa <%= meta.icon || 'fa-cube' %>" style="color:<%= meta.color || '#714b67' %>;font-size:.85rem;"></i>
+            </span>
+            <span class="font-weight-bold"><%= meta.label || mod %></span>
+          </span>
+        </td>
+        <td class="text-center">
+          <% if (row.readTotal) { %>
+          <label class="haa-switch mb-0" title="<%= _ac('permissions.read_count_title', '{{count}}/{{total}} read permissions', { count: row.readCount, total: row.readTotal }) %>">
+            <input type="checkbox" class="haa-rw-toggle" data-module="<%= mod %>" data-rw="read"
+              <%= row.readAll ? 'checked' : '' %> <%= row.readSome && !row.readAll ? 'data-indeterminate="1"' : '' %>>
+            <span class="haa-switch-slider"></span>
+          </label>
+          <div class="small text-muted"><%= row.readCount %>/<%= row.readTotal %></div>
+          <% } else { %><span class="text-muted">—</span><% } %>
+        </td>
+        <td class="text-center">
+          <% if (row.writeTotal) { %>
+          <label class="haa-switch mb-0" title="<%= _ac('permissions.write_count_title', '{{count}}/{{total}} write permissions', { count: row.writeCount, total: row.writeTotal }) %>">
+            <input type="checkbox" class="haa-rw-toggle" data-module="<%= mod %>" data-rw="write"
+              <%= row.writeAll ? 'checked' : '' %>>
+            <span class="haa-switch-slider"></span>
+          </label>
+          <div class="small text-muted"><%= row.writeCount %>/<%= row.writeTotal %></div>
+          <% } else { %><span class="text-muted">—</span><% } %>
+        </td>
+        <td class="text-center">
+          <% if ((row.otherItems || []).length) { %>
+          <button type="button" class="btn btn-xs btn-sm btn-outline-secondary haa-rw-other-btn" data-module="<%= mod %>">
+            <%= (row.otherItems || []).filter(function(p){ return _assignedSet[p.id]; }).length %>/<%= row.otherItems.length %>
+          </button>
+          <% } else { %><span class="text-muted">—</span><% } %>
+        </td>
+      </tr>
+      <% if ((row.otherItems || []).length) { %>
+      <tr class="haa-rw-other-row d-none" data-module-other="<%= mod %>">
+        <td colspan="4" class="bg-light py-2">
+          <div class="haa-perm-grid">
+            <% row.otherItems.forEach(function(p) {
+              var on = !!_assignedSet[p.id];
+            %>
+            <label class="haa-perm-row">
+              <span>
+                <span><%= p.label || p.code %></span>
+                <span class="haa-perm-code"><%= p.code %> · <%= p.action %></span>
+              </span>
+              <span class="haa-switch">
+                <input type="checkbox" <%= on ? 'checked' : '' %> onchange="HaaAccess.togglePerm('<%= selRole %>',<%= p.id %>, this.checked, this)">
+                <span class="haa-switch-slider"></span>
+              </span>
+            </label>
+            <% }); %>
+          </div>
+        </td>
+      </tr>
+      <% } %>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+
+<details class="mb-3">
+  <summary class="font-weight-bold small text-secondary" style="cursor:pointer;"><%= _ac('permissions.detailed_list', 'All permissions (detailed list)') %></summary>
+  <div class="mt-3">
+    <% (allPermsGrouped || []).forEach(function(grp) {
+      var meta = grp.meta || {};
+      var mod = meta.code || 'misc';
+    %>
+    <div class="haa-module-card mb-2" data-module="<%= mod %>">
+      <div class="haa-module-head px-3 py-2 border rounded bg-white font-weight-bold small">
+        <%= meta.label || mod %>
+      </div>
+      <div class="haa-perm-grid p-2 border border-top-0 rounded-bottom">
+        <% (grp.items || []).forEach(function(p) {
+          var on = !!_assignedSet[p.id];
+        %>
+        <label class="haa-perm-row">
+          <span>
+            <span><%= p.label || p.code %></span>
+            <span class="haa-perm-code"><%= p.code %> · <%= p.action %></span>
+          </span>
+          <span class="haa-switch">
+            <input type="checkbox" <%= on ? 'checked' : '' %> onchange="HaaAccess.togglePerm('<%= selRole %>',<%= p.id %>, this.checked, this)">
+            <span class="haa-switch-slider"></span>
+          </span>
+        </label>
+        <% }); %>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+</details>

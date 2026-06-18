@@ -1,0 +1,43 @@
+<%
+var _diagNs = typeof diagI18nNs === 'string' ? diagI18nNs : 'laboratory_templates';
+var _tFn = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+var _m = function (k, fb) { return _tFn(_diagNs + '.js.' + k, { ns: 'legacy', defaultValue: fb }); };
+var _i18n = {
+  err_load_templates: _m('err_load_templates', 'Could not load templates (HTTP {{status}})'),
+  err_invalid_response: _m('err_invalid_response', 'Invalid response'),
+  err_access_check: _m('err_access_check', 'Access check failed'),
+  err_code_validation: _m('err_code_validation', 'Service code validation required.'),
+  err_code_not_validated: _m('err_code_not_validated', 'Service code still not validated.'),
+  err_load_order: _m('err_load_order', 'Could not load order context'),
+  err_load_registry: _m('err_load_registry', 'Could not load registry result'),
+  err_load_alert: _m('err_load_alert', 'Could not load alert context'),
+  suggest_html: _m('suggest_html', '<i class="fa fa-magic mr-1 text-success"></i> Suggested template <strong>{{name}}</strong> from the prescribed test. Patient and doctor stay fixed; pick another panel if needed.'),
+  linked_order_html: _m('linked_order_html', '<i class="fa fa-link mr-2"></i><strong>Linked order</strong> · Service code <code class="bg-white px-1 rounded">{{code}}</code> · Item #{{oi}} — <span class="font-weight-bold">{{item}}</span>. Patient fields prefilled; results save to this line.'),
+  correction_html: _m('correction_html', '<i class="fa fa-edit mr-2"></i><strong>Correction mode</strong> · Updating registry row <strong>#{{id}}</strong>. Open the same template panel, adjust values, then save.'),
+  flag_low: _m('flag_low', 'LOW'),
+  flag_high: _m('flag_high', 'HIGH'),
+  flag_ok: _m('flag_ok', 'OK'),
+  toast_select_test: _m('toast_select_test', 'Select a test from the library first.'),
+  report_patient: _m('report_patient', 'Patient'),
+  report_patient_id: _m('report_patient_id', 'Patient ID'),
+  report_name: _m('report_name', 'Name'),
+  report_age_sex: _m('report_age_sex', 'Age / Sex'),
+  report_requesting_dr: _m('report_requesting_dr', 'Requesting Dr.'),
+  report_date: _m('report_date', 'Date'),
+  report_results: _m('report_results', 'Results'),
+  report_conclusion: _m('report_conclusion', 'Conclusion'),
+  preview_suffix: _m('preview_suffix', ' — Preview'),
+  err_save_failed: _m('err_save_failed', 'Save failed'),
+  saved_registry: _m('saved_registry', 'Saved to registry · #{{id}}'),
+  saved_upload_failed: _m('saved_upload_failed', 'Report saved (# {{id}}) but file upload failed: {{err}}'),
+  save_failed_prefix: _m('save_failed_prefix', 'Save failed: {{err}}'),
+  test_count: _m('test_count', '{{count}} tests'),
+  match_count_one: _m('match_count_one', '{{count}} match'),
+  match_count_many: _m('match_count_many', '{{count}} matches'),
+  form_meta: _m('form_meta', '{{label}} · ID: {{id}} · {{fields}} fields'),
+  order_context_prefix: _m('order_context_prefix', 'Order context: {{err}}')
+};
+%>
+<script>
+window.__DIAG_TPL_I18N = <%- JSON.stringify(_i18n) %>;
+</script>

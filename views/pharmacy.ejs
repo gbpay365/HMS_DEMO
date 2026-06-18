@@ -1,0 +1,8 @@
+<%- include('partials/header') %>
+
+<%- include('partials/react-pharmacy-page-mount', {
+  reactPage: 'pharmacy',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.pharmacy', { ns: 'common' }) : 'Loading…')
+}) %>
+
+<%- include('partials/footer') %>

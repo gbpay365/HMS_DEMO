@@ -1,0 +1,12 @@
+<%
+  var _avatarEmoji = locals.userProfileEmoji || '🧑';
+  var _avatarPhoto = locals.userProfilePhoto || '';
+  var _avatarClass = locals.avatarClass || 'hms-user-avatar hms-user-avatar--md';
+%>
+<span class="<%= _avatarClass %>" aria-hidden="true">
+  <% if (_avatarPhoto) { %>
+    <img src="/uploads/<%= _avatarPhoto %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">
+  <% } else { %>
+    <%= _avatarEmoji %>
+  <% } %>
+</span>

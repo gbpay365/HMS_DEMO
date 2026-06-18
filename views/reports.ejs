@@ -1,0 +1,121 @@
+<%- include('partials/header') %>
+
+<div class="page-wrapper">
+ <div class="content">
+ <!-- Header -->
+ <div class="row align-items-center mb-4">
+ <div class="col-sm-8">
+ <h4 class="page-title font-weight-bold text-dark"><%= _tl('reports.title', 'Hospital Intelligence') %></h4>
+ <p class="text-muted small"><%= _tl('reports.subtitle', 'Advanced analytics and operational reporting.') %></p>
+ </div>
+ <div class="col-sm-4 text-right">
+ <a href="/portal/hub/director" class="hms-btn hms-btn-primary hms-btn-premium">
+ <i class="fa fa-bar-chart mr-2"></i> <%= _tl('reports.open_mgmt', 'Open management reports') %>
+ </a>
+ </div>
+ </div>
+
+ <!-- Executive Summary -->
+ <div class="row mb-4">
+ <div class="col-md-4">
+ <div class="card border-0 shadow-sm rounded-xl p-4 bg-white">
+ <div class="d-flex align-items-center">
+ <div class="hms-icon-box bg-blue-light text-blue mr-3 rounded-circle d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
+ <i class="fa fa-users h4 mb-0"></i>
+ </div>
+ <div>
+ <div class="small text-muted font-weight-bold"><%= _tl('reports.stat_total_patients', 'TOTAL PATIENTS') %></div>
+ <div class="h3 font-weight-bold text-dark mb-0"><%= stats.totalPatients %></div>
+ </div>
+ </div>
+ </div>
+ </div>
+ <div class="col-md-4">
+ <div class="card border-0 shadow-sm rounded-xl p-4 bg-white">
+ <div class="d-flex align-items-center">
+ <div class="hms-icon-box bg-green-light text-green mr-3 rounded-circle d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
+ <i class="fa fa-calendar h4 mb-0"></i>
+ </div>
+ <div>
+ <div class="small text-muted font-weight-bold"><%= _tl('reports.stat_appointments', 'APPOINTMENTS') %></div>
+ <div class="h3 font-weight-bold text-dark mb-0"><%= stats.totalAppointments %></div>
+ </div>
+ </div>
+ </div>
+ </div>
+ <div class="col-md-4">
+ <div class="card border-0 shadow-sm rounded-xl p-4 bg-indigo text-white">
+ <div class="d-flex align-items-center">
+ <div class="hms-icon-box bg-white-transparent mr-3 rounded-circle d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
+ <i class="fa fa-money h4 mb-0"></i>
+ </div>
+ <div>
+ <div class="small opacity-75 font-weight-bold text-uppercase"><%= _tl('reports.stat_gross_revenue', 'Gross Revenue') %></div>
+ <div class="h3 font-weight-bold mb-0"><%= Number(stats.totalRevenue).toLocaleString() %> <small><%= _tl('reports.currency_xaf', 'XAF') %></small></div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <div class="row">
+ <!-- Left: Clinical Distribution -->
+ <div class="col-lg-6">
+ <div class="card border-0 shadow-sm rounded-xl">
+ <div class="card-header bg-white p-4 border-bottom">
+ <h5 class="mb-0 font-weight-bold text-dark"><%= _tl('reports.staff_distribution', 'Staff Distribution') %></h5>
+ </div>
+ <div class="card-body">
+ <% deptDist.forEach(dept => { %>
+ <div class="mb-4">
+ <div class="d-flex justify-content-between mb-1">
+ <span class="font-weight-bold text-dark"><%= dept.name %></span>
+ <span class="text-muted"><%= _tl('reports.staff_count', '{{count}} Staff', { count: dept.value }) %></span>
+ </div>
+ <div class="progress rounded-pill" style="height: 8px;">
+ <div class="progress-bar bg-indigo" style="width: <%= (dept.value / stats.totalPatients * 100) %>%"></div>
+ </div>
+ </div>
+ <% }) %>
+ </div>
+ </div>
+ </div>
+
+ <!-- Right: Operational Health -->
+ <div class="col-lg-6">
+ <div class="card border-0 shadow-sm rounded-xl">
+ <div class="card-header bg-white p-4 border-bottom">
+ <h5 class="mb-0 font-weight-bold text-dark"><%= _tl('reports.operational_checkup', 'Operational Checkup') %></h5>
+ </div>
+ <div class="card-body p-0">
+ <ul class="list-group list-group-flush">
+ <li class="list-group-item p-4 d-flex justify-content-between align-items-center">
+ <div>
+ <div class="font-weight-bold text-dark"><%= _tl('reports.data_quality_score', 'Data Quality Score') %></div>
+ <div class="small text-muted"><%= _tl('reports.mpi_dedup', 'MPI deduplication active') %></div>
+ </div>
+ <span class="badge badge-success-light px-3 py-1">98.2%</span>
+ </li>
+ <li class="list-group-item p-4 d-flex justify-content-between align-items-center">
+ <div>
+ <div class="font-weight-bold text-dark"><%= _tl('reports.system_uptime', 'System Uptime') %></div>
+ <div class="small text-muted"><%= _tl('reports.last_30_days', 'Last 30 days') %></div>
+ </div>
+ <span class="badge badge-success-light px-3 py-1">99.9%</span>
+ </li>
+ <li class="list-group-item p-4 d-flex justify-content-between align-items-center">
+ <div>
+ <div class="font-weight-bold text-dark"><%= _tl('reports.inventory_health', 'Inventory Health') %></div>
+ <div class="small text-muted"><%= _tl('reports.skus_above_reorder', 'SKUs above reorder level') %></div>
+ </div>
+ <span class="badge badge-warning-light px-3 py-1">84%</span>
+ </li>
+ </ul>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+</div>
+
+<%- include('partials/footer') %>

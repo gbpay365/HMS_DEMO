@@ -1,0 +1,42 @@
+<%- include('partials/header') %>
+<div class="page-wrapper"><div class="content">
+<p class="mb-2"><a href="/lims" class="small text-muted"><%= _tl('portal_lab.lims_hub', 'LIMS hub') %></a> · <a href="/lims/requests" class="small text-muted"><%= _tl('lims_request_detail.requests', 'Requests') %></a></p>
+<div class="card mb-3 p-3" style="background:linear-gradient(135deg,#7c3aed,#0ea5e9);color:#fff;border-radius:14px;">
+ <strong><%=req.request_no%></strong> — <%=req.first_name%> <%=req.last_name%>
+ <span class="badge badge-light text-dark ml-2"><%=req.status%></span>
+ <span class="small ml-2"><%=req.scheduled_date%> · <%=req.collection_center_name||'—'%></span>
+</div>
+<ul class="nav nav-pills mb-3">
+ <li class="nav-item"><a class="nav-link <%=tab==='workflow'?'active':''%>" href="?tab=workflow"><%= _tl('lims_request_detail.tab_workflow', 'Workflow') %></a></li>
+ <li class="nav-item"><a class="nav-link <%=tab==='samples'?'active':''%>" href="?tab=samples"><%= _tl('lims_request_detail.tab_samples', 'Samples') %></a></li>
+ <li class="nav-item"><a class="nav-link" href="/laboratory"><%= _tl('lims_request_detail.all_results', 'All results') %></a></li>
+</ul>
+<% if(tab==='workflow'){ %>
+<div class="row mb-3">
+ <div class="col-md-8">
+  <% if(req.status==='submitted'){ %><form method="POST" action="/lims/request/<%=req.id%>/accept"><button class="btn btn-success btn-sm mb-2"><%= _tl('lims_request_detail.accept_request', 'Accept request') %></button></form><% } %>
+  <% if(req.status==='accepted'||req.status==='in_progress'){ %><form method="POST" action="/lims/request/<%=req.id%>/in-progress" class="d-inline"><button class="btn btn-warning btn-sm mb-2"><%= _tl('lims_request_detail.mark_in_progress', 'Mark in progress') %></button></form><% } %>
+  <table class="table table-sm card shadow-sm"><thead><tr><th><%= _tl('lims_request_detail.col_test', 'Test') %></th><th><%= _tl('lims_request_detail.col_line_status', 'Line status') %></th><th><%= _tl('lims_request_detail.col_result', 'Result') %></th><th></th></tr></thead><tbody>
+  <% lines.forEach(function(l){ %>
+  <tr><td><%=l.test_name%></td><td><%=l.line_status%></td><td><% if(l.lab_result_id){ %><a href="/laboratory/report/<%=l.lab_result_id%>"><%=l.result_status||'pending'%></a><% } else { %>—<% } %></td>
+  <td><% if(l.lab_result_id){ %><a href="/lab/templates?lab_result_id=<%=l.lab_result_id%>" class="btn btn-xs btn-primary"><%= _tl('lims_request_detail.enter_result', 'Enter result') %></a><% } %></td></tr>
+  <% }); %></tbody></table>
+  <% if(req.status!=='done'){ %><form method="POST" action="/lims/request/<%=req.id%>/done"><button class="btn btn-dark btn-sm mt-2"><%= _tl('lims_request_detail.mark_done', 'Mark request done') %></button></form><% } %>
+ </div>
+ <div class="col-md-4"><div class="card p-3 small"><strong><%= _tl('lims_request_detail.doctor', 'Doctor:') %></strong> <%=req.doc_fn||''%> <%=req.doc_ln||'—'%><br><strong><%= _tl('lims_request_detail.group', 'Group:') %></strong> <%=req.test_group_name||'—'%><br><strong><%= _tl('lims_request_detail.notes', 'Notes:') %></strong> <%=req.notes||'—'%></div></div>
+</div>
+<% } else { %>
+<div class="card p-3 mb-3"><h6><%= _tl('lims_request_detail.record_sample', 'Record sample') %></h6>
+<form method="POST" action="/lims/request/<%=req.id%>/sample" class="form-inline flex-wrap">
+<select name="request_line_id" class="form-control form-control-sm mb-1 mr-1"><option value=""><%= _tl('lims_request_detail.whole_request', 'Whole request') %></option>
+<% lines.forEach(function(l){ %><option value="<%=l.id%>"><%=l.test_name%></option><% }); %></select>
+<input name="container_no" class="form-control form-control-sm mb-1 mr-1" placeholder="<%= _tl('lims_request_detail.container_ph', 'Container #') %>" required>
+<select name="sample_type_id" class="form-control form-control-sm mb-1 mr-1"><option value=""><%= _tl('lims_request_detail.type', 'Type') %></option>
+<% sampleTypes.forEach(function(st){ %><option value="<%=st.id%>"><%=st.name%></option><% }); %></select>
+<button class="btn btn-sm btn-primary mb-1"><%= _tl('lims_request_detail.mark_collected', 'Mark collected') %></button>
+</form></div>
+<table class="table table-sm mt-3"><thead><tr><th><%= _tl('lims_request_detail.col_container', 'Container') %></th><th><%= _tl('lims_request_detail.col_type', 'Type') %></th><th><%= _tl('lims_request_detail.col_status', 'Status') %></th><th><%= _tl('lims_request_detail.col_when', 'When') %></th></tr></thead><tbody>
+<% samples.forEach(function(s){ %><tr><td><%=s.container_no||'—'%></td><td><%=s.sample_type_name||'—'%></td><td><%=s.status%></td><td class="small"><%=s.collected_at||''%></td></tr><% }); %>
+</tbody></table>
+<% } %>
+</div></div><%- include('partials/footer') %>

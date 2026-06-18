@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--portal'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'portal',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.portal', { ns: 'common' }) : 'Loading…')
+}) %>
+
+<%- include('partials/footer') %>

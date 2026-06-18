@@ -1,0 +1,54 @@
+/**
+ * Pharmacy UI Revamp — module-specific accents (nav: hms-dept-nav.css)
+ */
+.pharmacy-odoo-app {
+  --o-brand: var(--hms-dept-pharmacy);
+  --o-brand-hover: var(--hms-brand-hover);
+  --o-brand-soft: var(--hms-brand-soft);
+}
+
+.pharmacy-odoo-app .o_nav_module--pharmacy::before {
+  content: '\f484';
+  font-family: FontAwesome;
+  margin-right: 6px;
+  font-weight: normal;
+}
+
+.pharmacy-odoo-app .o_nav_link .pha-nav-ico,
+.pharmacy-odoo-app .o_nav_drop_panel a .pha-nav-ico {
+  display: inline-block;
+  width: 1.1rem;
+  text-align: center;
+  margin-right: 0.4rem;
+  color: var(--o-brand);
+  opacity: 0.9;
+}
+
+.pharmacy-odoo-app .o_nav_link:hover .pha-nav-ico,
+.pharmacy-odoo-app .o_nav_link.active .pha-nav-ico {
+  color: var(--o-brand);
+}
+
+.pharmacy-odoo-app .o_nav_drop_panel a {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pharmacy-odoo-app .o_nav_drop_panel a:hover .pha-nav-ico {
+  transform: scale(1.08);
+}
+
+.pharmacy-odoo-app .o_list_table thead th {
+  background: #f1f5f9;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  color: var(--o-muted);
+}
+
+.pharmacy-odoo-app .o_flash {
+  border-radius: 10px;
+  border-left: 4px solid var(--o-brand);
+}

@@ -1,0 +1,117 @@
+<%- include('partials/hms-date-helpers') %>
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<% var _st = locals.poFilter || ''; var _ps = locals.poStats || { total: 0, draft: 0, approved: 0, received: 0 }; var _search = locals.poSearch || ''; %>
+
+<div class="page-wrapper hms-surface-module">
+ <div class="content">
+ <% if(locals.flash){ %><div class="hms-flash hms-flash--success"><%= flash %></div><% } %>
+ <% if(locals.error){ %><div class="hms-flash hms-flash--error"><%= error %></div><% } %>
+
+ <div class="d-flex flex-wrap justify-content-between align-items-start mb-3" style="gap:12px;">
+  <div>
+   <h4 class="page-title font-weight-bold text-dark mb-1"><%= _t('procurement_pos.title', { ns: 'legacy', defaultValue: 'Purchase Orders' }) %></h4>
+   <p class="text-muted small mb-0"><%= _t('procurement_pos.subtitle', { ns: 'legacy', defaultValue: 'Track orders, approvals, and deliveries.' }) %></p>
+  </div>
+  <a href="/procurement/purchase-orders/new" class="btn btn-primary hms-btn-premium">
+   <i class="fa fa-plus mr-2"></i> <%= _t('procurement_pos.create_po', { ns: 'legacy', defaultValue: 'Create New PO' }) %>
+  </a>
+ </div>
+
+ <div class="hms-stat-grid">
+  <div class="hms-stat-card hms-stat-card--brand">
+   <div class="hms-stat-card__value"><%= _ps.total %></div>
+   <div class="hms-stat-card__label"><%= _t('procurement_pos.stat_total', { ns: 'legacy', defaultValue: 'Total POs' }) %></div>
+  </div>
+  <div class="hms-stat-card hms-stat-card--warning">
+   <div class="hms-stat-card__value"><%= _ps.draft %></div>
+   <div class="hms-stat-card__label"><%= _t('procurement_pos.stat_draft', { ns: 'legacy', defaultValue: 'Draft' }) %></div>
+  </div>
+  <div class="hms-stat-card hms-stat-card--success">
+   <div class="hms-stat-card__value"><%= _ps.approved %></div>
+   <div class="hms-stat-card__label"><%= _t('procurement_pos.stat_approved', { ns: 'legacy', defaultValue: 'Approved' }) %></div>
+  </div>
+  <div class="hms-stat-card hms-stat-card--info">
+   <div class="hms-stat-card__value"><%= _ps.received %></div>
+   <div class="hms-stat-card__label"><%= _t('procurement_pos.stat_received', { ns: 'legacy', defaultValue: 'Received' }) %></div>
+  </div>
+ </div>
+
+ <form method="get" action="/procurement/purchase-orders" class="hms-filter-bar">
+  <input type="search" name="q" class="form-control hms-filter-bar__search" value="<%= _search %>" placeholder="<%= _t('procurement_pos.search_ph', { ns: 'legacy', defaultValue: 'Search PO # or vendor' }) %>">
+  <% if (_st) { %><input type="hidden" name="status" value="<%= _st %>"><% } %>
+  <button type="submit" class="btn btn-outline-secondary"><%= _t('procurement_pos.filter', { ns: 'legacy', defaultValue: 'Search' }) %></button>
+  <% if (_search || _st) { %><a href="/procurement/purchase-orders" class="btn btn-link"><%= _t('procurement_pos.reset', { ns: 'legacy', defaultValue: 'Reset' }) %></a><% } %>
+ </form>
+
+ <div class="hms-chip-row">
+  <a href="/procurement/purchase-orders<%= _search ? ('?q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= !_st ? ' active' : '' %>"><%= _t('procurement_pos.chip_all', { ns: 'legacy', defaultValue: 'All' }) %></a>
+  <a href="/procurement/purchase-orders?status=draft<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _st === 'draft' ? ' active' : '' %>"><%= _t('procurement_pos.status_draft', { ns: 'legacy', defaultValue: 'draft' }) %></a>
+  <a href="/procurement/purchase-orders?status=approved<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _st === 'approved' ? ' active' : '' %>"><%= _t('procurement_pos.status_approved', { ns: 'legacy', defaultValue: 'approved' }) %></a>
+  <a href="/procurement/purchase-orders?status=received<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _st === 'received' ? ' active' : '' %>"><%= _t('procurement_pos.status_received', { ns: 'legacy', defaultValue: 'received' }) %></a>
+ </div>
+
+ <div class="hms-surface-card">
+  <div class="table-responsive">
+  <table class="table table-hover mb-0 hms-table-v3">
+  <thead class="bg-light">
+  <tr>
+  <th><%= _t('procurement_pos.col_po_number', { ns: 'legacy', defaultValue: 'PO Number' }) %></th>
+  <th><%= _t('procurement_pos.col_vendor', { ns: 'legacy', defaultValue: 'Vendor / Supplier' }) %></th>
+  <th><%= _t('procurement_pos.col_total', { ns: 'legacy', defaultValue: 'Total Amount' }) %></th>
+  <th><%= _t('procurement_pos.col_issued', { ns: 'legacy', defaultValue: 'Issued Date' }) %></th>
+  <th><%= _t('procurement_pos.col_status', { ns: 'legacy', defaultValue: 'Status' }) %></th>
+  <th class="text-right"><%= _t('procurement_pos.col_action', { ns: 'legacy', defaultValue: 'Action' }) %></th>
+  </tr>
+  </thead>
+  <tbody>
+  <% pos.forEach(po => {
+    var st = String(po.status || '');
+    var stLabel = st === 'approved' ? _t('procurement_pos.status_approved', { ns: 'legacy', defaultValue: 'approved' })
+      : st === 'draft' ? _t('procurement_pos.status_draft', { ns: 'legacy', defaultValue: 'draft' })
+      : st === 'received' ? _t('procurement_pos.status_received', { ns: 'legacy', defaultValue: 'received' })
+      : st;
+  %>
+  <tr>
+  <td><span class="font-weight-bold text-dark"><%= po.po_number %></span></td>
+  <td><%= po.vendor_name || po.supplier_name || _t('procurement_pos.generic_vendor', { ns: 'legacy', defaultValue: 'Generic Vendor' }) %></td>
+  <td class="font-weight-bold"><%= Number(po.total_amount).toLocaleString() %> <small>XAF</small></td>
+  <td><%= fmtDate(po.created_at) %></td>
+  <td>
+  <span class="badge badge-<%= po.status == 'approved' ? 'success' : (po.status == 'draft' ? 'warning' : (po.status == 'received' ? 'indigo' : 'info')) %>-light px-2 py-1 text-uppercase extra-small">
+  <%= stLabel %>
+  </span>
+  </td>
+  <td class="text-right">
+  <% var poSt = String(po.status || '').toLowerCase(); %>
+  <% var poEditable = locals.canWrite && ['draft', 'approved', 'issued', 'received'].includes(poSt); %>
+  <div class="btn-group btn-group-sm">
+  <a href="/procurement/purchase-orders/<%= po.id %>" class="btn btn-outline-primary rounded-pill px-3">
+  <i class="fa fa-file-text-o mr-1"></i> <%= _t('procurement_pos.details', { ns: 'legacy', defaultValue: 'Details' }) %>
+  </a>
+  <% if (poEditable) { %>
+  <a href="/procurement/purchase-orders/<%= po.id %>?edit=1" class="btn btn-outline-warning rounded-pill px-3">
+  <i class="fa fa-pencil mr-1"></i> <%= _t('procurement_pos.edit', { ns: 'legacy', defaultValue: 'Edit' }) %>
+  </a>
+  <% } %>
+  </div>
+  </td>
+  </tr>
+  <% }) %>
+  <% if(pos.length === 0) { %>
+  <tr>
+  <td colspan="6" class="text-center py-5 text-muted"><%= _t('procurement_pos.empty', { ns: 'legacy', defaultValue: 'No purchase orders found.' }) %></td>
+  </tr>
+  <% } %>
+  </tbody>
+  </table>
+  </div>
+ </div>
+ </div>
+</div>
+
+<style>
+ .extra-small { font-size: 0.65rem; }
+</style>
+
+<%- include('partials/footer') %>

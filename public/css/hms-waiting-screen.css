@@ -1,0 +1,128 @@
+/**
+ * Legacy / standalone HMS waiting room TV display
+ */
+:root {
+  --ws-brand: #10b981;
+  --ws-brand-dim: #34d399;
+  --ws-bg-grad: linear-gradient(160deg, #0f172a 0%, #134e4a 48%, #047857 100%);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body.hms-body--waiting-screen {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--ws-bg-grad);
+  background-attachment: fixed;
+  color: #fff;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.ws-wrap {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 2rem 3rem;
+}
+
+.ws-hdr {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.ws-hdr h1 {
+  font-size: clamp(1.75rem, 4vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.ws-hdr p {
+  opacity: 0.85;
+  font-size: 1.15rem;
+  margin-top: 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.ws-now-serving {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(52, 211, 153, 0.45);
+  border-radius: 20px;
+  padding: 2rem 2.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  box-shadow: 0 0 32px rgba(16, 185, 129, 0.15);
+}
+
+.ws-now-serving .label {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--ws-brand-dim);
+  margin-bottom: 0.75rem;
+}
+
+.ws-now-serving .name {
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.ws-now-serving .meta {
+  font-size: 1.25rem;
+  margin-top: 0.75rem;
+  opacity: 0.9;
+}
+
+.ws-queue {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  flex: 1;
+}
+
+.ws-qcard {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.ws-qcard.next {
+  border-color: var(--ws-brand-dim);
+  box-shadow: 0 0 24px rgba(52, 211, 153, 0.35);
+}
+
+.ws-qcard .num {
+  font-size: 0.85rem;
+  color: var(--ws-brand-dim);
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.ws-qcard .nm {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.ws-qcard .sub {
+  font-size: 0.95rem;
+  opacity: 0.8;
+  margin-top: 0.35rem;
+}
+
+.ws-foot {
+  text-align: center;
+  padding-top: 1rem;
+  font-size: 0.85rem;
+  opacity: 0.5;
+}
+
+.ws-urgent {
+  color: #fca5a5;
+}

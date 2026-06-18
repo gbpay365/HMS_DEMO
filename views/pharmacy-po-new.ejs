@@ -1,0 +1,112 @@
+<%- include('partials/header') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    var o = { ns: 'legacy', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+    return _t(key, o);
+  };
+}
+var _units = units || [];
+%>
+<%- include('partials/pharmacy-odoo-start', { phaOdooMenu: 'purchase', phaOdooTitle: _tl('pharmacy_po_new.title', 'New purchase order'), nursingSupplyPending, flash, error }) %>
+<div class="o_control_panel">
+  <div class="o_cp_breadcrumb"><span><%= _tl('pharmacy_po_new.title', 'New purchase order') %></span></div>
+  <a href="/pharmacy/purchase-orders" class="o_btn_link"><%= _tl('pharmacy_shared.all_pos', 'All POs') %></a>
+</div>
+<div class="o_content p-3">
+  <form method="post" action="/pharmacy/purchase-orders" id="poForm">
+    <div class="card mb-3" style="border-radius:8px;max-width:960px;">
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label class="small font-weight-bold"><%= _tl('pharmacy_po_new.supplier_name', 'Supplier name') %></label>
+            <input name="supplier_name" class="form-control" required placeholder="<%= _tl('pharmacy_po_new.vendor_ph', 'Vendor name') %>">
+          </div>
+          <div class="form-group col-md-6">
+            <label class="small font-weight-bold"><%= _tl('pharmacy_po_new.vendor_optional', 'Vendor (optional)') %></label>
+            <select name="vendor_id" class="form-control">
+              <option value=""><%= _tl('pharmacy_shared.select_dash', '— Select —') %></option>
+              <% (vendors||[]).forEach(function(v){ %>
+              <option value="<%= v.id %>"><%= v.name %><% if(v.vendor_code){ %> (<%= v.vendor_code %>)<% } %></option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+        <div class="form-group mb-0">
+          <label class="small font-weight-bold"><%= _tl('pharmacy_shared.notes_label', 'Notes') %></label>
+          <input name="po_notes" class="form-control" value="<%= _tl('pharmacy_po_new.default_notes', 'Pharmacy purchase') %>">
+        </div>
+      </div>
+    </div>
+    <div class="o_list_renderer mb-3" style="max-width:960px;">
+      <table class="o_list_table" id="poLinesTable">
+        <thead>
+          <tr>
+            <th><%= _tl('pharmacy_shared.product', 'Product') %></th>
+            <th style="width:130px;"><%= _tl('pharmacy_po_new.col_unit_price', 'Unit price') %></th>
+            <th style="width:180px;"><%= _tl('pharmacy_shared.qty', 'Qty') %></th>
+            <th style="width:48px;"></th>
+          </tr>
+        </thead>
+        <tbody id="poLinesBody">
+          <tr class="po-line-row">
+            <td>
+              <select name="inventory_item_id" class="form-control form-control-sm" required>
+                <option value=""><%= _tl('pharmacy_po_new.select_product', '— Product —') %></option>
+                <% (inventory||[]).forEach(function(it){ %>
+                <option value="<%= it.id %>" data-price="<%= it.unit_price||0 %>"><%= it.name %> (<%= it.sku %>)</option>
+                <% }); %>
+              </select>
+            </td>
+            <td><input type="number" name="unit_price" class="form-control form-control-sm po-unit-price" min="0" step="0.01" value="0"></td>
+            <td>
+              <input type="text" name="quantity" class="form-control form-control-sm" value="1 Pack" required placeholder="e.g. 50 Cartons" list="poQtyUnitHints">
+            </td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+      <datalist id="poQtyUnitHints">
+        <% _units.forEach(function(u){ %><option value="1 <%= u.label %>"><% }); %>
+        <option value="50 Cartons"><option value="60 Packs"><option value="45 Ampoules"><option value="33 Sachets">
+      </datalist>
+      <p class="small text-muted mt-1 mb-2">Enter quantity with unit — e.g. <strong>50 Cartons</strong>, <strong>60 Packs</strong>, <strong>45 Ampoules</strong>.</p>
+      <button type="button" class="btn btn-sm btn-outline-secondary mt-1" id="poAddLine"><i class="fa fa-plus"></i> <%= _tl('pharmacy_po_new.add_line', 'Add line') %></button>
+    </div>
+    <button type="submit" class="o_cp_new border-0"><%= _tl('pharmacy_po_new.create_po', 'Create purchase order') %></button>
+  </form>
+</div>
+<%- include('partials/pharmacy-odoo-end') %>
+<script>
+(function(){
+  var body = document.getElementById('poLinesBody');
+  var tpl = body.querySelector('.po-line-row');
+  document.getElementById('poAddLine').addEventListener('click', function(){
+    var row = tpl.cloneNode(true);
+    row.querySelectorAll('input').forEach(function(i){
+      if (i.name === 'quantity') i.value = '1 Pack';
+      else if (i.name === 'unit_price') i.value = '0';
+    });
+    var sel = row.querySelector('select'); if (sel) sel.selectedIndex = 0;
+    var rm = document.createElement('button');
+    rm.type = 'button'; rm.className = 'btn btn-sm btn-link text-danger'; rm.textContent = '×';
+    rm.onclick = function(){ row.remove(); };
+    row.cells[3].appendChild(rm);
+    body.appendChild(row);
+  });
+  body.addEventListener('change', function(e){
+    if (e.target.name !== 'inventory_item_id') return;
+    var opt = e.target.selectedOptions[0];
+    if (!opt) return;
+    var price = opt.getAttribute('data-price') || '0';
+    var row = e.target.closest('tr');
+    var inp = row && row.querySelector('.po-unit-price');
+    if (inp && (!inp.value || inp.value === '0')) inp.value = price;
+  });
+})();
+</script>
+<%- include('partials/footer') %>

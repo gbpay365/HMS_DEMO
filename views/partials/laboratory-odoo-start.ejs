@@ -1,0 +1,56 @@
+<%- include('hms-perm-helpers') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _top = function (key, fallback, opts) {
+  return _t(key, Object.assign({ ns: 'ops', defaultValue: fallback }, opts || {}));
+};
+var _up = locals.userPerms || [];
+function _labHasP() {
+  if (_up.includes('*')) return true;
+  for (var i = 0; i < arguments.length; i++) {
+    if (_up.includes(arguments[i])) return true;
+  }
+  return false;
+}
+var _labMenu = locals.labOdooMenu || 'registry';
+var _labTitle = locals.labOdooTitle || _top('laboratory_odoo.default_title', 'Laboratory registry');
+var _labUser = locals.userDisplayName || (locals.user && locals.user.name) || _top('laboratory_odoo.user_fallback', 'User');
+function _labActive(m) { return _labMenu === m ? ' active' : ''; }
+var _labCanCatalog = _labHasP('service_catalog.laboratory.read', 'service_catalog.laboratory.write');
+%>
+<%- include('hms-dept-shell-open', {
+  deptAppClass: 'laboratory-odoo-app',
+  deptAppId: 'labOdooApp',
+  deptModuleHref: '/laboratory',
+  deptModuleLabel: _top('laboratory_odoo.module', 'Laboratory'),
+  deptModuleIcon: 'laboratory',
+  deptExtraCss: ['/css/laboratory-odoo.css?v=2'],
+  deptNavUser: _labUser
+}) %>
+      <a href="/lims" class="o_nav_link<%= _labActive('lims') %>"><i class="fa fa-flask hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.lims_hub', 'LIMS hub') %></a>
+      <a href="/laboratory" class="o_nav_link<%= _labActive('registry') %>"><i class="fa fa-list-alt hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.registry', 'Registry') %></a>
+      <a href="/lab/templates" class="o_nav_link<%= _labActive('templates') %>"><i class="fa fa-file-text-o hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.templates', 'Templates') %></a>
+      <div class="o_nav_dropdown<%= _labActive('operations') || _labActive('validate') || _labActive('alerts') || _labActive('lims_config') ? ' active' : '' %>">
+        <button type="button" class="o_nav_link o_nav_drop_btn"><i class="fa fa-cogs hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.operations', 'Operations') %> <i class="fa fa-caret-down" aria-hidden="true"></i></button>
+        <div class="o_nav_drop_panel">
+          <a href="/laboratory/validate"><i class="fa fa-check-circle hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.validate_code', 'Validate code') %></a>
+          <% if (_labHasP('lab.write')) { %><a href="/laboratory/order-alerts"><i class="fa fa-bell hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.order_alerts', 'Order alerts') %></a><% } %>
+          <a href="/lims/requests"><i class="fa fa-inbox hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.lab_requests', 'Lab requests') %></a>
+          <a href="/lims/samples"><i class="fa fa-flask hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.lab_samples', 'Lab samples') %></a>
+          <% if (_labHasP('lab.write')) { %><a href="/lims/config"><i class="fa fa-sliders hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.lims_config', 'LIMS configuration') %></a><% } %>
+        </div>
+      </div>
+      <% if (_labCanCatalog) { %>
+      <div class="o_nav_dropdown<%= _labActive('settings') || _labActive('catalog') ? ' active' : '' %>">
+        <button type="button" class="o_nav_link o_nav_drop_btn"><i class="fa fa-cog hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.settings', 'Settings') %> <i class="fa fa-caret-down" aria-hidden="true"></i></button>
+        <div class="o_nav_drop_panel">
+          <a href="/catalog#lab"><i class="fa fa-book hms-dept-nav-ico" aria-hidden="true"></i><%= _top('catalog.title', 'Service catalog') %></a>
+        </div>
+      </div>
+      <% } %>
+<%- include('hms-dept-shell-main-open', {
+  deptPageTitle: locals.labOdooTitle ? _labTitle : null,
+  deptPageActions: locals.labOdooActions || null
+}) %>

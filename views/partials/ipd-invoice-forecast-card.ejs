@@ -1,0 +1,26 @@
+<% var fc = locals.forecast || {}; var lines = fc.lines || []; %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<div class="card border-0 shadow-sm mb-3" style="border-radius:12px;border-left:4px solid #d97706;">
+ <div class="card-body py-3">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+   <h6 class="font-weight-bold mb-0"><i class="fa fa-line-chart mr-2 text-warning"></i><%= _t('forecast_card.title', { ns: 'ipd', defaultValue: 'Invoice forecast' }) %></h6>
+   <span class="small text-muted"><%= _t('forecast_card.before_invoice', { ns: 'ipd', defaultValue: 'Before final IPD invoice' }) %></span>
+  </div>
+  <% if(!lines.length){ %>
+  <p class="small text-muted mb-2"><%= _t('forecast_card.no_charges_hint', { ns: 'ipd', defaultValue: 'No itemized charges yet. Total uses the admission running bill and deposit.' }) %></p>
+  <% } else { %>
+  <table class="table table-sm mb-2"><tbody>
+  <% lines.forEach(function(l){ %>
+  <tr><td class="small"><%=l.description%></td><td class="text-right small font-weight-bold"><%=Number(l.amount||0).toLocaleString()%></td></tr>
+  <% }); %>
+  </tbody></table>
+  <% } %>
+  <div class="d-flex flex-wrap" style="gap:12px;">
+   <div><span class="small text-muted d-block"><%= _t('forecast_card.forecast_total', { ns: 'ipd', defaultValue: 'Forecast total' }) %></span><strong class="text-danger"><%=Number(fc.forecast_total||0).toLocaleString()%> FCFA</strong></div>
+   <div><span class="small text-muted d-block"><%= _t('forecast_card.deposit', { ns: 'ipd', defaultValue: 'Deposit' }) %></span><strong class="text-success"><%=Number(fc.deposit||0).toLocaleString()%> FCFA</strong></div>
+   <div><span class="small text-muted d-block"><%= _t('forecast_card.balance_due', { ns: 'ipd', defaultValue: 'Balance due' }) %></span><strong><%=Number(fc.balance_due||0).toLocaleString()%> FCFA</strong></div>
+  </div>
+  <a href="/ipd/running-bill/<%=typeof admId!=='undefined'?admId:(adm&&adm.id)%>" class="btn btn-outline-secondary btn-sm mt-2 mr-1"><%= _t('forecast_card.running_bill', { ns: 'ipd', defaultValue: 'Running bill' }) %></a>
+  <a href="/cashier/ipd-settle" class="btn btn-outline-success btn-sm mt-2"><%= _t('forecast_card.cashier_settle', { ns: 'ipd', defaultValue: 'Cashier settlement' }) %></a>
+ </div>
+</div>

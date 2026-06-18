@@ -1,0 +1,8 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+%>
+<% if (locals.finCanWrite) { %>
+<a href="/financials/journal-new" class="o_cp_new"><i class="fa fa-plus"></i> <%= _t('nav.new_journal_entry', { ns: 'financials', defaultValue: 'New journal entry' }) %></a>
+<% } %>

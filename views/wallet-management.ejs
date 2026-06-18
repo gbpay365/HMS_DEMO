@@ -1,0 +1,141 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<div class="page-wrapper"><div class="content">
+
+<%if(locals.flash){%><div class="alert alert-success border-0 shadow-sm mb-3"><i class="fa fa-check-circle mr-2"></i><%=locals.flash%></div><%}%>
+<%if(locals.error){%><div class="alert alert-danger border-0 shadow-sm mb-3"><i class="fa fa-exclamation-circle mr-2"></i><%=locals.error%></div><%}%>
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+ <div>
+  <h4 class="font-weight-bold text-dark mb-1"><i class="fa fa-credit-card mr-2 text-primary"></i><%= _t('wallet_management.title', { ns: 'legacy', defaultValue: 'Wallet Management' }) %></h4>
+  <p class="text-muted small mb-0"><%= _t('wallet_management.subtitle', { ns: 'legacy', defaultValue: 'Pre-paid patient virtual wallets for frictionless department payments.' }) %></p>
+ </div>
+</div>
+
+<!-- Search -->
+<div class="card border-0 shadow-sm rounded-xl mb-4">
+ <div class="card-body p-3">
+  <form method="GET" class="form-row align-items-end mb-0">
+   <div class="form-group col-md-10 mb-0">
+    <label class="small text-muted"><%= _t('wallet_management.search_label', { ns: 'legacy', defaultValue: 'Search by patient name, phone, or patient ID' }) %></label>
+    <input type="search" name="q" class="hms-input w-full" value="<%= searchQ %>" placeholder="<%= _t('wallet_management.search_ph', { ns: 'legacy' }) %>" autofocus>
+   </div>
+   <div class="form-group col-md-2 mb-0">
+    <label class="d-none d-md-block">&nbsp;</label>
+    <button type="submit" class="btn btn-primary btn-block"><i class="fa fa-search mr-1"></i><%= _t('wallet_management.find', { ns: 'legacy', defaultValue: 'Find' }) %></button>
+   </div>
+  </form>
+ </div>
+</div>
+
+<!-- Wallets Table -->
+<div class="card border-0 shadow-sm rounded-xl overflow-hidden">
+ <div class="card-header bg-white py-3">
+  <h6 class="font-weight-bold text-uppercase text-muted mb-0" style="font-size:.75rem;letter-spacing:.06em;"><%= _t('wallet_management.table_title', { ns: 'legacy', defaultValue: 'Active Virtual Wallets' }) %></h6>
+ </div>
+ <div class="table-responsive">
+  <table class="table mb-0">
+   <thead class="thead-light">
+    <tr><th><%= _t('wallet_management.col_patient', { ns: 'legacy', defaultValue: 'Patient' }) %></th><th><%= _t('wallet_management.col_status', { ns: 'legacy', defaultValue: 'Status' }) %></th><th class="text-right"><%= _t('wallet_management.col_balance', { ns: 'legacy', defaultValue: 'Balance' }) %></th><th><%= _t('wallet_management.col_last_activity', { ns: 'legacy', defaultValue: 'Last Activity' }) %></th><th class="text-right"><%= _t('wallet_management.col_actions', { ns: 'legacy', defaultValue: 'Actions' }) %></th></tr>
+   </thead>
+   <tbody>
+   <% if (wallets.length === 0) { %>
+    <tr><td colspan="5" class="text-center text-muted py-4"><%= _t('wallet_management.empty', { ns: 'legacy', defaultValue: 'No wallets found.' }) %><% if (!searchQ) { %><%= _t('wallet_management.empty_hint', { ns: 'legacy', defaultValue: ' They are created automatically when patients register.' }) %><% } %></td></tr>
+   <% } else { wallets.forEach(w => {
+     const wid = w.wallet_id;
+     const b = parseFloat(w.balance||0);
+     const ptLabel = '#PT' + String(w.patient_id).padStart(4,'0');
+   %>
+    <tr>
+     <td>
+      <div class="font-weight-bold"><%= w.first_name %> <%= w.last_name %></div>
+      <div class="small text-muted"><%= ptLabel %> &bull; <%= w.phone||'—' %></div>
+     </td>
+     <td>
+      <span class="badge badge-<%= w.status==='active'?'success':'secondary' %>"><%= w.status||'—' %></span>
+     </td>
+     <td class="text-right font-weight-bold text-success" style="font-size:1.05rem;">
+      <%= b.toLocaleString('fr-FR') %> <small class="text-muted">FCFA</small>
+     </td>
+     <td class="small text-muted"><%= w.updated_at ? new Date(w.updated_at).toLocaleString() : '—' %></td>
+     <td class="text-right text-nowrap">
+      <button class="btn btn-sm btn-outline-info mr-1" onclick="showQR('<%= w.qr_token %>','<%= w.first_name %> <%= w.last_name %>')">
+       <i class="fa fa-qrcode"></i> <%= _t('wallet_management.qr', { ns: 'legacy', defaultValue: 'QR' }) %>
+      </button>
+      <button class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#topupModal"
+       data-wid="<%= wid %>" data-name="<%= w.first_name %> <%= w.last_name %>">
+       <i class="fa fa-arrow-up"></i> <%= _t('wallet_management.topup', { ns: 'legacy', defaultValue: 'Top-up' }) %>
+      </button>
+     </td>
+    </tr>
+   <% }) } %>
+   </tbody>
+  </table>
+ </div>
+</div>
+
+</div></div>
+
+<!-- Top-Up Modal -->
+<div class="modal fade" id="topupModal" tabindex="-1" role="dialog">
+ <div class="modal-dialog" role="document">
+  <div class="modal-content border-0 shadow-lg rounded-xl">
+   <form method="POST" action="/wallet-management/topup">
+    <input type="hidden" name="wallet_id" id="modal_wid" value="">
+    <div class="modal-header border-0 pb-0">
+     <h5 class="modal-title font-weight-bold"><i class="fa fa-arrow-up text-success mr-2"></i><%= _t('wallet_management.modal_topup_title', { ns: 'legacy', defaultValue: 'Cash Top-up:' }) %> <span id="modal_name"></span></h5>
+     <button type="button" class="close" data-dismiss="modal" aria-label="<%= _t('wallet_management.cancel', { ns: 'legacy' }) %>"><span>&times;</span></button>
+    </div>
+    <div class="modal-body">
+     <p class="small text-muted"><%= _t('wallet_management.modal_topup_hint', { ns: 'legacy', defaultValue: 'Receive physical cash from the patient and load into their virtual contactless wallet.' }) %></p>
+     <div class="form-group">
+      <label class="font-weight-bold small"><%= _t('wallet_management.amount_label', { ns: 'legacy', defaultValue: 'Deposit Amount (FCFA)' }) %> <span class="text-danger">*</span></label>
+      <input type="number" step="1" min="1" name="amount" class="hms-input w-full" required placeholder="<%= _t('wallet_management.amount_ph', { ns: 'legacy' }) %>">
+     </div>
+     <div class="form-group mb-0">
+      <label class="font-weight-bold small"><%= _t('wallet_management.notes', { ns: 'legacy' }) %></label>
+      <textarea class="hms-input w-full" name="notes" rows="2" placeholder="<%= _t('wallet_management.notes_ph', { ns: 'legacy' }) %>"></textarea>
+     </div>
+    </div>
+    <div class="modal-footer border-0">
+     <button type="button" class="hms-btn hms-btn-secondary" data-dismiss="modal"><%= _t('wallet_management.cancel', { ns: 'legacy' }) %></button>
+     <button type="submit" class="hms-btn hms-btn-primary"><i class="fa fa-check mr-1" aria-hidden="true"></i><%= _t('wallet_management.process_topup', { ns: 'legacy' }) %></button>
+    </div>
+   </form>
+  </div>
+ </div>
+</div>
+
+<!-- QR Modal -->
+<div class="modal fade" id="qrModal" tabindex="-1" role="dialog">
+ <div class="modal-dialog modal-sm" role="document">
+  <div class="modal-content text-center border-0 shadow-lg rounded-xl">
+   <div class="modal-header border-0 pb-0">
+    <button type="button" class="close ml-auto" data-dismiss="modal" aria-label="<%= _t('wallet_management.cancel', { ns: 'legacy' }) %>"><span>&times;</span></button>
+   </div>
+   <div class="modal-body pt-0 pb-4">
+    <h6 class="font-weight-bold mb-3" id="qr_name"></h6>
+    <img id="qr_img" src="" alt="<%= _t('wallet_management.qr_alt', { ns: 'legacy', defaultValue: 'QR Code' }) %>" class="border rounded p-2 shadow-sm" style="width:200px;height:200px;">
+    <p class="small text-muted mt-3 mb-1"><%= _t('wallet_management.qr_scan_hint', { ns: 'legacy', defaultValue: 'Scan at Pharmacy & Lab for direct payment.' }) %></p>
+    <div class="small text-monospace bg-light border rounded p-1 mt-1 text-truncate" id="qr_token"></div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<script>
+ $('#topupModal').on('show.bs.modal', function(e) {
+  var btn = $(e.relatedTarget);
+  $(this).find('#modal_wid').val(btn.data('wid'));
+  $(this).find('#modal_name').text(btn.data('name'));
+ });
+ function showQR(token, name) {
+  document.getElementById('qr_name').innerText = name;
+  document.getElementById('qr_img').src = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(token);
+  document.getElementById('qr_token').innerText = token;
+  $('#qrModal').modal('show');
+ }
+</script>
+
+<%- include('partials/footer') %>

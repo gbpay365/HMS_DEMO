@@ -1,0 +1,79 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--assets'; %>
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<% var stats = locals.stats || {}; %>
+
+<div class="page-wrapper hms-surface-module">
+ <div class="content">
+  <% if(locals.flash){ %><div class="hms-flash hms-flash--success"><%= flash %></div><% } %>
+  <% if(locals.error){ %><div class="hms-flash hms-flash--error"><%= error %></div><% } %>
+
+  <div class="hms-surface-hero mb-4">
+   <div class="hms-surface-hero-icon"><i class="fa fa-building"></i></div>
+   <h1 class="hms-surface-hero-title"><%= _t('assets_hub.title', { ns: 'legacy', defaultValue: 'Asset Management' }) %></h1>
+   <p><%= _t('assets_hub.subtitle', { ns: 'legacy', defaultValue: 'Fixed assets, medical equipment, rentals, and maintenance tracking.' }) %></p>
+  </div>
+
+  <div class="hms-stat-grid mb-4">
+   <div class="hms-stat-card hms-stat-card--brand">
+    <div class="hms-stat-card__value"><%= stats.total || 0 %></div>
+    <div class="hms-stat-card__label"><%= _t('assets_hub.kpi_total', { ns: 'legacy', defaultValue: 'Registered assets' }) %></div>
+   </div>
+   <div class="hms-stat-card hms-stat-card--success">
+    <div class="hms-stat-card__value"><%= stats.active || 0 %></div>
+    <div class="hms-stat-card__label"><%= _t('assets_hub.kpi_active', { ns: 'legacy', defaultValue: 'Active' }) %></div>
+   </div>
+   <div class="hms-stat-card hms-stat-card--warning">
+    <div class="hms-stat-card__value"><%= stats.maintenanceDue || 0 %></div>
+    <div class="hms-stat-card__label"><%= _t('assets_hub.kpi_maint_due', { ns: 'legacy', defaultValue: 'Maintenance due (30d)' }) %></div>
+   </div>
+   <div class="hms-stat-card hms-stat-card--procurement">
+    <div class="hms-stat-card__value"><%= stats.activeContracts || 0 %></div>
+    <div class="hms-stat-card__label"><%= _t('assets_hub.kpi_contracts', { ns: 'legacy', defaultValue: 'Active rentals' }) %></div>
+   </div>
+  </div>
+
+  <div class="d-flex flex-wrap mb-4" style="gap:10px;">
+   <a href="/assets/registry" class="hms-btn hms-btn-primary font-weight-bold"><i class="fa fa-list mr-1"></i><%= _t('assets_hub.open_registry', { ns: 'legacy', defaultValue: 'Asset registry' }) %></a>
+   <a href="/assets/maintenance" class="hms-btn hms-btn-secondary font-weight-bold"><i class="fa fa-wrench mr-1"></i><%= _t('assets_hub.open_maintenance', { ns: 'legacy', defaultValue: 'Maintenance log' }) %></a>
+   <a href="/assets/rentals" class="hms-btn hms-btn-secondary font-weight-bold"><i class="fa fa-key mr-1"></i><%= _t('assets_hub.open_rentals', { ns: 'legacy', defaultValue: 'Rentals' }) %></a>
+   <% if (canWrite) { %>
+   <a href="/assets/registry/new" class="hms-btn hms-btn-secondary font-weight-bold ml-md-auto"><i class="fa fa-plus mr-1"></i><%= _t('assets_hub.register_asset', { ns: 'legacy', defaultValue: 'Register asset' }) %></a>
+   <% } %>
+  </div>
+
+  <div class="hms-surface-card">
+   <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="font-weight-bold mb-0"><%= _t('assets_hub.recent_assets', { ns: 'legacy', defaultValue: 'Recent assets' }) %></h5>
+    <a href="/assets/registry" class="small"><%= _t('assets_hub.view_all', { ns: 'legacy', defaultValue: 'View all' }) %></a>
+   </div>
+   <div class="table-responsive">
+    <table class="table table-hover mb-0 hms-table-v3">
+     <thead class="bg-light"><tr>
+      <th><%= _t('assets_registry.col_tag', { ns: 'legacy', defaultValue: 'Tag' }) %></th>
+      <th><%= _t('assets_registry.col_name', { ns: 'legacy', defaultValue: 'Name' }) %></th>
+      <th><%= _t('assets_registry.col_category', { ns: 'legacy', defaultValue: 'Category' }) %></th>
+      <th><%= _t('assets_registry.col_location', { ns: 'legacy', defaultValue: 'Location' }) %></th>
+      <th><%= _t('assets_registry.col_status', { ns: 'legacy', defaultValue: 'Status' }) %></th>
+     </tr></thead>
+     <tbody>
+      <% if (!recentAssets || !recentAssets.length) { %>
+      <tr><td colspan="5" class="text-center text-muted py-4"><%= _t('assets_registry.empty', { ns: 'legacy', defaultValue: 'No assets registered yet.' }) %></td></tr>
+      <% } %>
+      <% (recentAssets || []).forEach(function(a) { %>
+      <tr>
+       <td><a href="/assets/registry/<%= a.id %>"><code><%= a.asset_tag %></code></a></td>
+       <td class="font-weight-bold"><%= a.name %></td>
+       <td><%= a.category_name || '—' %></td>
+       <td><%= a.location || '—' %></td>
+       <td><span class="badge badge-<%= statusBadge(a.status) %> text-uppercase extra-small"><%= a.status %></span></td>
+      </tr>
+      <% }); %>
+     </tbody>
+    </table>
+   </div>
+  </div>
+ </div>
+</div>
+
+<%- include('partials/footer') %>

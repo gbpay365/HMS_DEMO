@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pharmacy reports — <%= reportRange.label %></title>
+  <link rel="stylesheet" href="/css/pharmacy-reports.css?v=4">
+  <style>
+    body { font-family: Inter, sans-serif; margin: 24px; color: #0f172a; }
+    .pha-bulk-print-section { page-break-inside: avoid; margin-bottom: 2rem; }
+    @media print { body { margin: 12px; } .pha-bulk-print-section { page-break-after: always; } }
+  </style>
+</head>
+<body onload="if(window.location.search.indexOf('auto=1')>=0)window.print()">
+  <header class="pha-report-hero">
+    <h1 style="margin:0;font-size:1.4rem;">Pharmacy Intelligence Reports</h1>
+    <p style="margin:0.5rem 0 0;opacity:0.9;">Period: <strong><%= reportRange.label %></strong> · Generated <%= generatedAt %></p>
+  </header>
+
+  <% (reportSections || []).forEach(function(section){ var data = section.data; %>
+  <section class="pha-bulk-print-section">
+    <h2 style="font-size:1.1rem;margin:1.25rem 0 0.5rem;color:#0f172a;"><%= section.meta.title %></h2>
+    <p style="font-size:0.85rem;color:#64748b;margin:0 0 0.75rem;"><%= section.meta.subtitle %></p>
+    <div class="pha-report-table-wrap">
+      <table class="pha-report-table">
+        <thead>
+          <tr>
+            <% (data.columns || []).forEach(function(col){ %>
+            <th<%= col.align === 'right' ? ' style="text-align:right;"' : '' %>><%= col.label %></th>
+            <% }); %>
+          </tr>
+        </thead>
+        <tbody>
+          <% (data.rows || []).forEach(function(row){ %>
+          <tr>
+            <% (data.columns || []).forEach(function(col){ %>
+            <td<%= col.align === 'right' ? ' style="text-align:right;"' : '' %>><%= row[col.key] != null ? row[col.key] : '—' %></td>
+            <% }); %>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <% }); %>
+</body>
+</html>

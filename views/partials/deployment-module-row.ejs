@@ -1,0 +1,28 @@
+<tr class="deployment-mod-row<%= row.effective ? '' : ' table-secondary' %>" data-slice-default="<%= row.sliceDefault ? '1' : '0' %>">
+  <td>
+    <span class="font-weight-600"><%= row.label %></span>
+    <% if (row.url) { %><br><span class="text-muted small"><%= row.url %></span><% } %>
+  </td>
+  <td><code class="small"><%= row.code %></code></td>
+  <td class="text-center">
+    <% if (row.sliceDefault) { %>
+    <span class="badge badge-success"><%= typeof _sa === 'function' ? _sa('deployModules.form.slice_show', 'Show') : 'Show' %></span>
+    <% } else { %>
+    <span class="badge badge-secondary"><%= typeof _sa === 'function' ? _sa('deployModules.form.slice_hide', 'Hide') : 'Hide' %></span>
+    <% } %>
+  </td>
+  <td>
+    <select name="mod_<%= row.code %>" class="form-control form-control-sm deployment-mod-select" data-code="<%= row.code %>">
+      <option value=""<%= row.inheritValue === '' ? ' selected' : '' %>><%= typeof _sa === 'function' ? _sa('deployModules.form.inherit', 'Inherit') : 'Inherit' %></option>
+      <option value="1"<%= row.inheritValue === '1' ? ' selected' : '' %>><%= typeof _sa === 'function' ? _sa('deployModules.form.force_show_opt', 'Force show') : 'Force show' %></option>
+      <option value="0"<%= row.inheritValue === '0' ? ' selected' : '' %>><%= typeof _sa === 'function' ? _sa('deployModules.form.force_hide_opt', 'Force hide') : 'Force hide' %></option>
+    </select>
+  </td>
+  <td class="text-center deployment-mod-effective">
+    <% if (row.effective) { %>
+    <span class="badge badge-primary"><%= typeof _sa === 'function' ? _sa('deployModules.form.visible', 'Visible') : 'Visible' %></span>
+    <% } else { %>
+    <span class="badge badge-light border"><%= typeof _sa === 'function' ? _sa('deployModules.form.hidden', 'Hidden') : 'Hidden' %></span>
+    <% } %>
+  </td>
+</tr>

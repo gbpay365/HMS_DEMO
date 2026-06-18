@@ -1,0 +1,129 @@
+<%- include('partials/header') %>
+<div class="page-wrapper">
+  <div class="content">
+    <% if (typeof flash !== 'undefined' && flash) { %><div class="alert alert-success border-0 shadow-sm py-2 mb-3"><%= flash %></div><% } %>
+    <%- include('partials/diagnostic-handover-print-bar', { handoverModule: 'laboratory', printPayload: typeof printPayload !== 'undefined' ? printPayload : null, handoverTemplatesPath: typeof handoverTemplatesPath !== 'undefined' ? handoverTemplatesPath : '/lab/templates', row: row }) %>
+    <a href="/laboratory" class="btn btn-outline-secondary btn-sm mb-3 rounded-pill font-weight-bold">
+      <i class="fa fa-arrow-left mr-1"></i> <%= _tl('laboratory_report_view.back_registry', 'Back to Laboratory Registry') %>
+    </a>
+    <% if (validateCode) { %>
+    <a href="/laboratory/validate/<%= encodeURIComponent(validateCode) %>" class="btn btn-outline-primary btn-sm mb-3 ml-2 rounded-pill font-weight-bold">
+      <i class="fa fa-qrcode mr-1"></i> <%= _tl('laboratory_report_view.open_validate', 'Open validate') %> · <%= validateCode %>
+    </a>
+    <% } %>
+
+    <div class="card border-0 shadow-sm rounded-xl overflow-hidden">
+      <div class="card-header bg-white border-bottom py-3">
+        <h4 class="font-weight-bold text-dark mb-1">
+          <i class="fa fa-flask mr-2 text-primary"></i><%= row.test_name || _tl('laboratory_report_view.default_title', 'Laboratory result') %>
+        </h4>
+        <div class="small text-muted">
+          <%= _tl('laboratory_report_view.registry_id', 'Registry #LAB-{{id}}', { id: String(row.id).padStart(4, '0') }) %>
+          · <%= _tl('laboratory_report_view.patient_line', 'Patient') %> <strong><%= row.p_fn %> <%= row.p_ln %></strong> (#P-<%= row.patient_id %>)
+          <% if (row.appointment_date) { %>
+          · <%= _tl('laboratory_report_view.request_date', 'Request date') %> <%= fmtDate(row.appointment_date) %>
+          <% } %>
+        </div>
+        <% if (row.ref_display) { %>
+        <div class="small mt-2"><span class="text-muted text-uppercase font-weight-bold"><%= _tl('laboratory_report_view.referred_by', 'Referred by') %></span> · <%= row.ref_display %></div>
+        <% } %>
+        <div class="mt-2">
+          <% var st = (row.status || 'pending').toLowerCase(); %>
+          <span class="badge badge-<%= st === 'received' ? 'success' : st === 'in_progress' ? 'info' : 'warning' %>-light px-2 py-1"><%= (row.status || '').toUpperCase() %></span>
+          <% if (row.source) { %><span class="badge badge-secondary-light px-2 py-1 ml-1"><%= String(row.source).toUpperCase() %></span><% } %>
+        </div>
+        <% if (Number(row.revision_pending) === 1) { %>
+        <div class="alert alert-warning border-0 shadow-sm mt-3 mb-0 py-2 small font-weight-bold">
+          <i class="fa fa-exclamation-triangle mr-1"></i> <%= _tl('laboratory_report_view.revision_unlocked', 'Unlocked for correction —') %>
+          <% if (row.opd_order_item_id) { %>
+          <%= _tl('laboratory_report_view.revision_validate_hint', 'edit on the validate-by-code screen and resubmit. Superseded versions appear struck through for the doctor.') %>
+          <% } else { %>
+          <%= _tl('laboratory_report_view.revision_templates_open', 'open') %> <strong><%= _tl('laboratory_report_view.lab_templates', 'Lab templates') %></strong> <%= _tl('laboratory_report_view.revision_templates_after', 'for this patient, re-enter the panel, and save — the same registry row will update. Superseded versions appear struck through for the doctor.') %>
+          <% } %>
+        </div>
+        <% } %>
+      </div>
+      <div class="card-body">
+        <% if (row.conclusion_code) { %>
+        <p class="mb-3"><span class="text-muted small font-weight-bold text-uppercase"><%= _tl('laboratory_report_view.conclusion_code', 'Conclusion code') %></span><br><%= row.conclusion_code %></p>
+        <% } %>
+
+        <% if (structured && structured.results && structured.results.length) { %>
+        <h6 class="font-weight-bold text-dark border-bottom pb-2 mb-3"><%= _tl('laboratory_report_view.structured_results', 'Structured results (current)') %></h6>
+        <div class="table-responsive mb-4">
+          <table class="table table-sm table-bordered mb-0">
+            <thead class="bg-light"><tr><th><%= _tl('laboratory_report_view.col_field', 'Field') %></th><th><%= _tl('laboratory_report_view.col_value', 'Value') %></th></tr></thead>
+            <tbody>
+              <% structured.results.forEach(function (r) { %>
+              <tr>
+                <td class="small font-weight-bold text-muted"><%= r.label || r.key %></td>
+                <td><%= (r.value != null && r.value !== '') ? r.value : '—' %><% if (r.unit) { %> <span class="text-muted"><%= r.unit %></span><% } %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <% if (structured.conclusion) { %>
+        <p class="mb-3"><span class="text-muted small font-weight-bold text-uppercase"><%= _tl('laboratory_report_view.conclusion', 'Conclusion') %></span><br><%= structured.conclusion %></p>
+        <% } %>
+        <% } %>
+
+        <% var ch = typeof correctionHistory !== 'undefined' ? correctionHistory : []; %>
+        <% if (ch && ch.length) { %>
+        <h6 class="font-weight-bold text-dark border-bottom pb-2 mb-2"><%= _tl('laboratory_report_view.prior_versions_title', 'Prior versions (superseded — as shown to doctors)') %></h6>
+        <p class="small text-muted mb-3"><%= _tl('laboratory_report_view.prior_versions_hint', 'Each block is an earlier result replaced after correction. Text is shown struck through on the patient chart and in clinical views.') %></p>
+        <% ch.forEach(function (h) { %>
+        <div class="mb-3 p-3 rounded" style="border-left:4px solid #dc2626;background:#fef2f2;color:#991b1b;line-height:1.5;font-size:0.9rem;">
+          <div class="font-weight-bold" style="text-decoration:line-through;"><%= _tl('laboratory_report_view.superseded', 'Superseded') %></div>
+          <% if (h.performed_at) { %><div class="small text-muted mt-1"><%= new Date(h.performed_at).toLocaleString() %><% if (h.performer_name) { %> · <%= h.performer_name %><% } %></div><% } %>
+          <div class="mt-2" style="white-space:pre-wrap;text-decoration:line-through;"><%= h.superseded_findings || '—' %></div>
+          <% if (h.superseded_conclusion) { %><div class="small mt-1" style="text-decoration:line-through;"><%= _tl('laboratory_report_view.code_label', 'Code:') %> <%= h.superseded_conclusion %></div><% } %>
+        </div>
+        <% }); %>
+        <% } %>
+
+        <% var att = typeof attachments !== 'undefined' ? attachments : []; %>
+        <% if (att && att.length) { %>
+        <h6 class="font-weight-bold text-dark border-bottom pb-2 mb-3"><i class="fa fa-paperclip mr-1"></i> <%= _tl('laboratory_report_view.attached_files', 'Attached result files') %></h6>
+        <div class="row mb-4">
+          <% att.forEach(function (a) { %>
+          <div class="col-6 col-md-4 col-lg-3 mb-3">
+            <div class="border rounded p-2 h-100 bg-light text-center">
+              <% if (a.mime && String(a.mime).indexOf('image/') === 0) { %>
+              <a href="<%= a.file_path %>" target="_blank" rel="noopener">
+                <img src="<%= a.file_path %>" alt="" class="img-fluid rounded mb-2" style="max-height:160px;object-fit:contain;">
+              </a>
+              <% } else { %>
+              <a href="<%= a.file_path %>" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm mt-2 mb-2">
+                <i class="fa fa-file-pdf-o mr-1"></i> <%= _tl('laboratory_report_view.open_pdf', 'Open PDF') %>
+              </a>
+              <% } %>
+              <div class="small text-muted text-truncate" title="<%= a.original_name || '' %>"><%= a.original_name || _tl('laboratory_report_view.attachment', 'Attachment') %></div>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+        <% } %>
+
+        <h6 class="font-weight-bold text-dark border-bottom pb-2 mb-2"><%= _tl('laboratory_report_view.findings_current', 'Findings / result narrative') %> <span class="text-success"><%= _tl('laboratory_report_view.current', '(current)') %></span></h6>
+        <div class="text-dark bg-light border rounded p-3 mb-4" style="white-space:pre-wrap;line-height:1.55;font-size:0.95rem;"><%= row.notes || row.findings || '—' %></div>
+
+        <div class="border-top pt-3 mt-2">
+          <h6 class="font-weight-bold text-dark mb-2"><%= _tl('laboratory_report_view.return_section', 'Return for correction') %></h6>
+          <% if (row.opd_order_item_id) { %>
+          <p class="small text-muted mb-2"><%= _tl('laboratory_report_view.return_opd_same', 'Same as') %> <strong><%= _tl('laboratory_report_view.validate_return_action', 'Validate by code → Return for correction') %></strong><%= _tl('laboratory_report_view.return_opd_after', ': unlocks this line, opens the validate screen to edit, and after resubmit the doctor sees old text in red strikethrough with the new result below.') %></p>
+          <% } else { %>
+          <p class="small text-muted mb-2"><%= _tl('laboratory_report_view.return_standalone_unlocks', 'Unlocks this standalone registry row and opens') %> <strong><%= _tl('laboratory_report_view.lab_templates', 'Lab templates') %></strong> <%= _tl('laboratory_report_view.return_standalone_after', 'so you can re-save the same row. After resubmit, the doctor sees prior text struck through with the new result below.') %></p>
+          <% } %>
+          <form method="post" action="/laboratory/registry-recall/<%= row.id %>" class="d-inline-block" onsubmit="var n=prompt('<%= _tl('laboratory_report_view.prompt_reason', 'Optional note for the audit log (reason for return):').replace(/'/g, "\\'") %>',''); if(n===null)return false; this.reason.value=n||''; return confirm('<%= _tl('laboratory_report_view.confirm_return', 'Return this line for correction?').replace(/'/g, "\\'") %>');">
+            <input type="hidden" name="reason" value="">
+            <button type="submit" class="btn btn-outline-danger font-weight-bold rounded-pill btn-sm">
+              <i class="fa fa-undo mr-1"></i> <%= _tl('laboratory_report_view.return_btn', 'Return for correction') %>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('partials/footer') %>

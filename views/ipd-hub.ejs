@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--ipd-hub'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'ipd-hub',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading.hub', { ns: 'ipd', defaultValue: 'Loading IPD hub…' }) : 'Loading IPD hub…')
+}) %>
+
+<%- include('partials/footer') %>

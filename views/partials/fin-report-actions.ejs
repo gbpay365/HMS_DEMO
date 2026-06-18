@@ -1,0 +1,10 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _finRefresh = (typeof refreshLabel !== 'undefined' && refreshLabel)
+  ? refreshLabel
+  : _t('report.refresh', { ns: 'financials', defaultValue: 'Refresh' });
+%>
+<button type="submit" class="btn fin-btn-qb"><i class="fa fa-refresh mr-1"></i><%= _finRefresh %></button>
+<button type="button" class="btn fin-btn-qb-outline" onclick="window.print()"><i class="fa fa-print mr-1"></i> <%= _t('report.print', { ns: 'financials', defaultValue: 'Print' }) %></button>

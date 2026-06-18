@@ -1,0 +1,55 @@
+<%- include('hms-perm-helpers') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _top = function (key, fallback, opts) {
+  return _t(key, Object.assign({ ns: 'ops', defaultValue: fallback }, opts || {}));
+};
+var _up = locals.userPerms || [];
+function _radHasP() {
+  if (_up.includes('*')) return true;
+  for (var i = 0; i < arguments.length; i++) {
+    if (_up.includes(arguments[i])) return true;
+  }
+  return false;
+}
+var _radMenu = locals.radOdooMenu || 'requests';
+var _radTitle = locals.radOdooTitle || _top('radiology_odoo.default_title', 'Radiology requests');
+var _radUser = locals.userDisplayName || (locals.user && locals.user.name) || _top('radiology_odoo.user_fallback', 'User');
+function _radActive(m) { return _radMenu === m ? ' active' : ''; }
+var _radCanCatalog = _radHasP('service_catalog.radiology.read', 'service_catalog.radiology.write');
+%>
+<%- include('hms-dept-shell-open', {
+  deptAppClass: 'radiology-odoo-app',
+  deptAppId: 'radOdooApp',
+  deptModuleHref: '/radiology',
+  deptModuleLabel: _top('radiology_odoo.module', 'Radiology'),
+  deptModuleIcon: 'radiology',
+  deptExtraCss: ['/css/radiology-odoo.css?v=2'],
+  deptNavUser: _radUser
+}) %>
+      <a href="/radiology" class="o_nav_link<%= _radActive('requests') %>"><i class="fa fa-inbox hms-dept-nav-ico" aria-hidden="true"></i><%= _top('radiology_odoo.requests', 'Requests') %></a>
+      <a href="/radiology/workflow" class="o_nav_link<%= _radActive('workflow') %>"><i class="fa fa-columns hms-dept-nav-ico" aria-hidden="true"></i><%= _top('radiology_odoo.workflow_board', 'Workflow board') %></a>
+      <a href="/radiology/results" class="o_nav_link<%= _radActive('results') %>"><i class="fa fa-file-text-o hms-dept-nav-ico" aria-hidden="true"></i><%= _top('radiology_odoo.test_results', 'Test results') %></a>
+      <div class="o_nav_dropdown<%= _radActive('operations') || _radActive('config') || _radActive('templates') || _radActive('validate') || _radActive('alerts') ? ' active' : '' %>">
+        <button type="button" class="o_nav_link o_nav_drop_btn"><i class="fa fa-cogs hms-dept-nav-ico" aria-hidden="true"></i><%= _top('radiology_odoo.operations', 'Operations') %> <i class="fa fa-caret-down" aria-hidden="true"></i></button>
+        <div class="o_nav_drop_panel">
+          <a href="/radiology/validate"><i class="fa fa-check-circle hms-dept-nav-ico" aria-hidden="true"></i><%= _top('radiology_odoo.validate_rad', 'Validate RAD code') %></a>
+          <% if (_radHasP('radiology.write')) { %><a href="/radiology/order-alerts"><i class="fa fa-bell hms-dept-nav-ico" aria-hidden="true"></i><%= _top('radiology_odoo.order_alerts', 'Order alerts') %></a><% } %>
+          <a href="/radiology/templates"><i class="fa fa-file-text hms-dept-nav-ico" aria-hidden="true"></i><%= _top('radiology_odoo.exam_templates', 'Exam templates') %></a>
+          <a href="/radiology/configuration"><i class="fa fa-sliders hms-dept-nav-ico" aria-hidden="true"></i><%= _top('radiology_odoo.tests_groups_rooms', 'Tests, groups & rooms') %></a>
+        </div>
+      </div>
+      <% if (_radCanCatalog) { %>
+      <div class="o_nav_dropdown<%= _radActive('settings') || _radActive('catalog') ? ' active' : '' %>">
+        <button type="button" class="o_nav_link o_nav_drop_btn"><i class="fa fa-cog hms-dept-nav-ico" aria-hidden="true"></i><%= _top('radiology_odoo.settings', 'Settings') %> <i class="fa fa-caret-down" aria-hidden="true"></i></button>
+        <div class="o_nav_drop_panel">
+          <a href="/catalog#radiology"><i class="fa fa-book hms-dept-nav-ico" aria-hidden="true"></i><%= _top('catalog.title', 'Service catalog') %></a>
+        </div>
+      </div>
+      <% } %>
+<%- include('hms-dept-shell-main-open', {
+  deptPageTitle: _radTitle,
+  deptPageActions: locals.radOdooActions || null
+}) %>

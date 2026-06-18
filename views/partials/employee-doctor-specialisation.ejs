@@ -1,0 +1,106 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    var o = { ns: 'legacy', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+    return _t(key, o);
+  };
+}
+%><% var _emp = (typeof emp !== 'undefined' && emp) ? emp : {};
+   var _specs = doctorSpecialisations || [];
+   var _docRoleIds = (doctorRoleIds || []).map(function(id) { return String(id); });
+   var _curSpec = _emp.specialisation || '';
+   if (!_curSpec && _emp.primary_department && _docRoleIds.indexOf(String(_emp.role || '')) !== -1) {
+     _curSpec = _emp.primary_department;
+   }
+   var _specInList = !_curSpec || _specs.some(function(s) { return String(s) === String(_curSpec); });
+   var _useNew = _curSpec && !_specInList; %>
+<div class="col-md-6" id="doctorSpecialisationWrap" style="display:none;">
+ <div class="form-group mb-0">
+  <label class="font-weight-bold small" for="specialisationSelect">
+   <%= _tl('departments.specialisation', 'Specialisation') %> <span class="text-danger doctor-spec-req">*</span>
+  </label>
+  <select id="specialisationSelect" class="hms-input w-full">
+   <option value=""><%= _tl('employee_doctor.select_specialisation', '— Select specialisation —') %></option>
+   <% _specs.forEach(function(spec) { %>
+   <option value="<%= spec %>" <%= (!_useNew && _curSpec === spec) ? 'selected' : '' %>><%= spec %></option>
+   <% }); %>
+   <option value="__new__" <%= _useNew ? 'selected' : '' %>><%= _tl('employee_doctor.add_new_specialisation', '+ Add new specialisation…') %></option>
+  </select>
+  <input type="text" id="specialisationNew" class="hms-input w-full mt-2"
+   placeholder="<%= _tl('departments.ph_specialisation', 'Type new specialisation (e.g. Endocrinology)') %>"
+   value="<%= _useNew ? _curSpec : '' %>"
+   maxlength="120"
+   style="display:<%= _useNew ? 'block' : 'none' %>;"
+   autocomplete="off">
+  <input type="hidden" name="specialisation" id="specialisation" value="<%= _curSpec %>">
+  <small class="text-muted d-block mt-1"><%= _tl('employee_doctor.specialisation_hint', 'Choose from the list or add a new clinical specialty. New entries are saved for future doctors.') %></small>
+ </div>
+</div>
+<script>
+(function() {
+ var doctorRoleIds = <%- JSON.stringify(_docRoleIds) %>;
+ var roleSel = document.getElementById('role');
+ var wrap = document.getElementById('doctorSpecialisationWrap');
+ var specSel = document.getElementById('specialisationSelect');
+ var specNew = document.getElementById('specialisationNew');
+ var specHidden = document.getElementById('specialisation');
+ var form = wrap && wrap.closest('form');
+ if (!roleSel || !wrap || !specSel || !specNew || !specHidden) return;
+
+ function isDoctorRole(roleVal) {
+  return doctorRoleIds.indexOf(String(roleVal || '')) !== -1;
+ }
+
+ function syncNewFieldVisibility() {
+  var isNew = specSel.value === '__new__';
+  specNew.style.display = isNew ? 'block' : 'none';
+  specNew.required = isNew && isDoctorRole(roleSel.value);
+  if (!isNew) specNew.value = '';
+ }
+
+ function syncHiddenSpecialisation() {
+  if (!isDoctorRole(roleSel.value)) {
+   specHidden.value = '';
+   return;
+  }
+  if (specSel.value === '__new__') {
+   specHidden.value = String(specNew.value || '').trim();
+  } else {
+   specHidden.value = String(specSel.value || '').trim();
+  }
+ }
+
+ function syncDoctorSpecialisation() {
+  var show = isDoctorRole(roleSel.value);
+  wrap.style.display = show ? '' : 'none';
+  specSel.required = show;
+  if (!show) {
+   specSel.value = '';
+   specNew.value = '';
+   specHidden.value = '';
+   specNew.style.display = 'none';
+   return;
+  }
+  syncNewFieldVisibility();
+  syncHiddenSpecialisation();
+ }
+
+ specSel.addEventListener('change', function() {
+  syncNewFieldVisibility();
+  syncHiddenSpecialisation();
+ });
+ specNew.addEventListener('input', syncHiddenSpecialisation);
+ roleSel.addEventListener('change', syncDoctorSpecialisation);
+ if (form) {
+  form.addEventListener('submit', function() {
+   syncHiddenSpecialisation();
+  });
+ }
+
+ syncDoctorSpecialisation();
+})();
+</script>

@@ -1,0 +1,159 @@
+<%- include('partials/header') %>
+<%
+var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+%>
+<div class="page-wrapper"><div class="content">
+
+<% if(locals.flash){%><div class="hms-flash hms-flash--success border-0 shadow-sm mb-3 py-2"><i class="fa fa-check-circle mr-2"></i><%=locals.flash%></div><%}%>
+<% if(locals.error){%><div class="hms-flash hms-flash--error border-0 shadow-sm mb-3"><i class="fa fa-exclamation-circle mr-2"></i><%=locals.error%></div><%}%>
+
+<div class="d-flex align-items-center mb-4">
+  <div>
+ <h1 class="h4 font-weight-bold mb-0" style="color:#1b2559;"><i class="fa fa-pencil mr-2" style="color:#1a6bd8;"></i><%= _t('employee_edit.title', { ns: 'legacy', defaultValue: 'Edit Employee' }) %> <span class="text-muted font-weight-normal">#<%=emp.id%></span></h1>
+ <p class="text-muted small mb-0"><%=emp.first_name%> <%=emp.last_name%></p>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-xl-9 col-lg-11">
+ <form id="hms-employee-form" method="post" action="<%= locals.formAction || ('/employees/' + emp.id + '/edit') %>" enctype="multipart/form-data" class="card border-0 shadow-sm" style="border-radius:14px;overflow:hidden;">
+
+ <!-- SECTION: Profile -->
+ <div class="card-body pb-0">
+ <h6 class="font-weight-bold text-uppercase small mb-3 pb-2" style="color:#64748b;border-bottom:2px solid #f1f5f9;letter-spacing:.06em;">
+ <i class="fa fa-user mr-2 text-primary"></i><%= _t('employee_edit.profile', { ns: 'legacy', defaultValue: 'Profile' }) %>
+ </h6>
+ <div class="row">
+ <div class="col-md-6"><div class="form-group">
+ <label class="font-weight-bold small" for="fn"><%= _t('employee_edit.first_name', { ns: 'legacy', defaultValue: 'First Name' }) %> <span class="text-danger">*</span></label>
+ <input id="fn" class="hms-input w-full" type="text" name="first_name" value="<%=emp.first_name||''%>" required>
+ </div></div>
+ <div class="col-md-6"><div class="form-group">
+ <label class="font-weight-bold small" for="ln"><%= _t('employee_edit.last_name', { ns: 'legacy', defaultValue: 'Last Name' }) %> <span class="text-danger">*</span></label>
+ <input id="ln" class="hms-input w-full" type="text" name="last_name" value="<%=emp.last_name||''%>" required>
+ </div></div>
+ <div class="col-md-6"><div class="form-group">
+ <label class="font-weight-bold small" for="un"><%= _t('employee_edit.username', { ns: 'legacy', defaultValue: 'Username' }) %> <span class="text-danger">*</span></label>
+ <input id="un" class="hms-input w-full" type="text" name="username" value="<%=emp.username||''%>" required>
+ </div></div>
+ <div class="col-md-6"><div class="form-group">
+ <label class="font-weight-bold small" for="em"><%= _t('employee_edit.email', { ns: 'legacy', defaultValue: 'Email' }) %> <span class="text-danger">*</span></label>
+ <input id="em" class="hms-input w-full" type="email" name="emailid" value="<%=emp.emailid||''%>">
+ </div></div>
+ <% if (typeof canResetPassword !== 'undefined' && canResetPassword === false) { %>
+ <div class="col-md-6"><div class="form-group">
+ <label class="font-weight-bold small text-muted"><%= _t('employee_edit.new_password', { ns: 'legacy', defaultValue: 'New Password' }) %></label>
+ <p class="small text-muted mb-0"><%= _t('employee_edit.password_super_admin_only', { ns: 'legacy', defaultValue: 'Password reset for Super Admin accounts is restricted to Super Admin only.' }) %></p>
+ </div></div>
+ <% } else { %>
+ <div class="col-md-6"><div class="form-group">
+ <label class="font-weight-bold small" for="pw"><%= _t('employee_edit.new_password', { ns: 'legacy', defaultValue: 'New Password' }) %></label>
+ <input id="pw" class="hms-input w-full" type="password" name="pwd" placeholder="<%= _t('employee_edit.password_placeholder', { ns: 'legacy', defaultValue: 'Leave blank to keep current' }) %>" autocomplete="new-password">
+ </div></div>
+ <% } %>
+ <div class="col-md-6"><div class="form-group">
+ <label class="font-weight-bold small"><%= _t('employee_edit.gender', { ns: 'legacy', defaultValue: 'Gender' }) %></label>
+ <div class="d-flex align-items-center" style="gap:16px;padding:.5rem 0;">
+ <div class="form-check mb-0"><input class="form-check-input" type="radio" name="gender" id="gm" value="Male" <%=emp.gender==='Male'?'checked':''%>><label class="form-check-label" for="gm"><%= _t('employee_edit.gender_male', { ns: 'legacy', defaultValue: 'Male' }) %></label></div>
+ <div class="form-check mb-0"><input class="form-check-input" type="radio" name="gender" id="gf" value="Female" <%=emp.gender==='Female'?'checked':''%>><label class="form-check-label" for="gf"><%= _t('employee_edit.gender_female', { ns: 'legacy', defaultValue: 'Female' }) %></label></div>
+ </div>
+ </div></div>
+ <div class="col-12"><%- include('partials/employee-profile-picture-react', { employeeProfile: locals.employeeProfile || {} }) %></div>
+ <div class="col-md-6"><div class="form-group">
+ <label class="font-weight-bold small" for="dob"><%= _t('employee_edit.dob', { ns: 'legacy', defaultValue: 'Date of Birth' }) %></label>
+ <input id="dob" class="hms-input w-full" type="date" name="dob" value="<%= typeof hmsToIsoDatePart === 'function' ? hmsToIsoDatePart(emp.dob) : '' %>">
+ </div></div>
+ </div>
+ </div>
+
+ <!-- SECTION: Employment -->
+ <div class="card-body pb-0 pt-1">
+ <h6 class="font-weight-bold text-uppercase small mb-3 pb-2" style="color:#64748b;border-bottom:2px solid #f1f5f9;letter-spacing:.06em;">
+ <i class="fa fa-briefcase mr-2" style="color:#10b981;"></i><%= _t('employee_edit.employment', { ns: 'legacy', defaultValue: 'Employment' }) %>
+ </h6>
+ <div class="row">
+ <div class="col-md-6"><div class="form-group">
+ <label class="font-weight-bold small" for="eid"><%= _t('employee_edit.employee_id', { ns: 'legacy', defaultValue: 'Employee ID' }) %></label>
+ <input id="eid" class="hms-input w-full" type="text" name="employee_id" value="<%=emp.employee_id||''%>">
+ </div></div>
+ <div class="col-md-6"><div class="form-group">
+ <label class="font-weight-bold small" for="jd"><%= _t('employee_edit.joining_date', { ns: 'legacy', defaultValue: 'Joining Date' }) %></label>
+ <input id="jd" class="hms-input w-full" type="date" name="joining_date" value="<%= typeof hmsToIsoDatePart === 'function' ? hmsToIsoDatePart(emp.joining_date) : '' %>">
+ </div></div>
+ <div class="col-md-6"><div class="form-group">
+ <label class="font-weight-bold small" for="ph"><%= _t('employee_edit.phone', { ns: 'legacy', defaultValue: 'Phone' }) %></label>
+ <input id="ph" class="hms-input w-full" type="text" name="phone" value="<%=emp.phone||''%>">
+ </div></div>
+ <div class="col-md-6"><div class="form-group">
+ <label class="d-flex justify-content-between font-weight-bold small mb-1" for="role">
+ <%= _t('employee_edit.role', { ns: 'legacy', defaultValue: 'Role' }) %> <a href="/access-control#section-setup" class="text-primary small font-weight-normal" target="_blank"><i class="fa fa-cog mr-1"></i><%= _t('employee_edit.manage', { ns: 'legacy', defaultValue: 'Manage' }) %></a>
+ </label>
+ <select id="role" class="hms-input w-full" name="role">
+ <option value=""><%= _t('employee_edit.select_role', { ns: 'legacy', defaultValue: '— Select Role —' }) %></option>
+ <% roles.forEach(function(r){
+    var _isDoc = /doctor|physician|m[eé]decin|specialist|sp[eé]cialiste/i.test(String(r.title || '')); %>
+ <option value="<%=r.role%>" data-doctor="<%= _isDoc ? '1' : '0' %>" <%=String(emp.role)===String(r.role)?'selected':''%>><%=r.title%></option>
+ <% }); %>
+ </select>
+ </div></div>
+ <% if (!locals.hideClinicalFields) { %>
+ <%- include('partials/employee-doctor-specialisation', { emp: emp, doctorSpecialisations: doctorSpecialisations, doctorRoleIds: doctorRoleIds }) %>
+ <%- include('partials/employee-doctor-multi-react', { doctorMulti: locals.doctorMulti || {} }) %>
+ <div class="col-md-6" id="primaryDepartmentWrap"><div class="form-group">
+ <label class="d-flex justify-content-between font-weight-bold small mb-1" for="dept">
+ <%= _t('employee_edit.department', { ns: 'legacy', defaultValue: 'Department' }) %> <a href="/departments" class="text-primary small font-weight-normal" target="_blank"><i class="fa fa-cog mr-1"></i><%= _t('employee_edit.manage', { ns: 'legacy', defaultValue: 'Manage' }) %></a>
+ </label>
+ <select id="dept" class="hms-input w-full" name="primary_department">
+ <option value=""><%= _t('employee_edit.not_set', { ns: 'legacy', defaultValue: '— Not set —' }) %></option>
+ <% departments.forEach(function(d){ %>
+ <option value="<%=d.name%>" <%=(emp.primary_department||'')===(d.name||'')?'selected':''%>><%=d.name%></option>
+ <% }); %>
+ </select>
+ </div></div>
+ <% } %>
+ <div class="col-md-6"><div class="form-group">
+ <label class="font-weight-bold small" for="addr"><%= _t('employee_edit.address', { ns: 'legacy', defaultValue: 'Address' }) %></label>
+ <input id="addr" class="hms-input w-full" type="text" name="address" value="<%=emp.address||''%>">
+ </div></div>
+ <div class="col-12"><div class="form-group">
+ <label class="font-weight-bold small" for="bio"><%= _t('employee_edit.bio', { ns: 'legacy', defaultValue: 'Short Biography' }) %></label>
+ <textarea id="bio" class="hms-input w-full" rows="3" name="bio"><%=emp.bio||''%></textarea>
+ </div></div>
+ </div>
+ </div>
+
+ <% if (!locals.hideClinicalFields) { %><%- include('partials/employee-hr-fields', { emp: emp }) %><% } %>
+
+ <!-- SECTION: Account Status -->
+ <div class="card-body pt-1">
+ <h6 class="font-weight-bold text-uppercase small mb-3 pb-2" style="color:#64748b;border-bottom:2px solid #f1f5f9;letter-spacing:.06em;">
+ <i class="fa fa-toggle-on mr-2" style="color:#8b5cf6;"></i><%= _t('employee_edit.account_status', { ns: 'legacy', defaultValue: 'Account Status' }) %>
+ </h6>
+ <div class="d-flex align-items-center" style="gap:16px;">
+ <div class="form-check mb-0"><input class="form-check-input" type="radio" name="status" id="sact" value="1" <%=emp.status==1?'checked':''%>><label class="form-check-label font-weight-bold text-success" for="sact"><%= _t('employee_edit.active', { ns: 'legacy', defaultValue: 'Active' }) %></label></div>
+ <div class="form-check mb-0"><input class="form-check-input" type="radio" name="status" id="sinact" value="0" <%=emp.status==0?'checked':''%>><label class="form-check-label font-weight-bold text-muted" for="sinact"><%= _t('employee_edit.inactive', { ns: 'legacy', defaultValue: 'Inactive' }) %></label></div>
+ </div>
+ </div>
+
+ <!-- Portal Access link -->
+ <div class="card-body pt-1 pb-3">
+ <h6 class="font-weight-bold text-uppercase small mb-2 pb-2" style="color:#64748b;border-bottom:2px solid #f1f5f9;letter-spacing:.06em;">
+ <i class="fa fa-lock mr-2" style="color:#ef4444;"></i><%= _t('employee_edit.portal_access', { ns: 'legacy', defaultValue: 'Portal Access' }) %>
+ </h6>
+ <p class="text-muted small mb-2"><%= _t('employee_edit.portal_access_hint', { ns: 'legacy', defaultValue: 'Assign which portals this employee may access under Modules & permissions in Access Control.' }) %></p>
+ <a class="hms-btn hms-btn-outline-primary btn-sm font-weight-bold" href="/access-control?role=<%=emp.role%>">
+ <i class="fa fa-lock mr-1"></i><%= _t('employee_edit.open_access_control', { ns: 'legacy', defaultValue: 'Open Access Control for this role' }) %>
+ </a>
+ </div>
+
+ <div class="card-footer bg-white d-flex justify-content-end align-items-center py-3" style="border-top:2px solid #f1f5f9;gap:8px;">
+ <a href="<%= locals.cancelHref || '/employees' %>" class="hms-btn hms-btn-secondary"><%= _t('employee_edit.cancel', { ns: 'legacy', defaultValue: 'Cancel' }) %></a>
+ <button type="submit" class="hms-btn hms-btn-primary font-weight-bold shadow-sm">
+ <i class="fa fa-save mr-1"></i> <%= _t('employee_edit.save_changes', { ns: 'legacy', defaultValue: 'Save Changes' }) %>
+ </button>
+ </div>
+ </form>
+  </div>
+</div>
+
+</div></div><%- include('partials/footer') %>

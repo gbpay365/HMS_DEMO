@@ -1,0 +1,8 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--nursing-supply'; %>
+<%- include('partials/header') %>
+<%- include('partials/react-page-mount', {
+  reactPage: 'nursing-supply-requests',
+  reactLoadingLabel: typeof t === 'function' ? t('loading.default', { ns: 'common', defaultValue: 'Loading…' }) : 'Loading…',
+  pageData: locals.pageData || {}
+}) %>
+<%- include('partials/footer') %>

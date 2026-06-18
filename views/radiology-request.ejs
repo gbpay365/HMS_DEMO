@@ -1,0 +1,182 @@
+<%- include('partials/header') %>
+<%
+const req = detail && detail.request;
+const lines = (detail && detail.lines) || [];
+const isNew = !req;
+const st = req ? req.status : 'draft';
+const stSteps = ['draft','submitted','in_progress','done'];
+%>
+<%- include('partials/radiology-odoo-start', {
+  radOdooMenu: 'requests',
+  radOdooTitle: isNew ? _tl('radiology_request.new_title', 'New radiology request') : _tl('radiology_request.title_existing', 'Request {{no}}', { no: req.request_no }),
+  radOdooActions: '<a href="/radiology" class="o_btn_secondary">' + _tl('radiology_request.back_list', 'Back to list') + '</a>'
+}) %>
+
+<div class="o_content">
+<% if (flash) { %><div class="o_alert o_alert--ok"><%= flash %></div><% } %>
+<% if (error) { %><div class="o_alert o_alert--err"><%= error %></div><% } %>
+
+<% if (!isNew) { %>
+<div class="o_statusbar">
+ <% stSteps.forEach(function(s) {
+   const done = stSteps.indexOf(s) <= stSteps.indexOf(st);
+   const cur = s === st;
+ %>
+ <div class="o_statusbar_step<%= done ? ' is-done' : '' %><%= cur ? ' is-current' : '' %>"><%= radStatusLabel(s) %></div>
+ <% }) %>
+</div>
+<div class="mb-3 d-flex flex-wrap" style="gap:8px;">
+ <% if (st === 'draft' || st === 'submitted') { %>
+ <form method="post" action="/radiology/requests/<%= req.id %>/accept" style="display:inline">
+  <button type="submit" class="o_btn_primary"><i class="fa fa-check"></i> <%= _tl('radiology_request.accept_start', 'Accept / Start') %></button>
+ </form>
+ <% } %>
+ <% if (st !== 'done' && st !== 'cancelled') { %>
+ <a href="/billing?patient_id=<%= req.patient_id %>" class="o_btn_secondary"><i class="fa fa-file-invoice"></i> <%= _tl('radiology_request.invoice_patient', 'Invoice patient') %></a>
+ <% } %>
+ <% if (req.invoice_ref) { %><span class="small text-muted"><%= _tl('radiology_request.invoice_ref', 'Invoice ref:') %> <%= req.invoice_ref %></span><% } %>
+</div>
+<% } %>
+
+<% if (isNew) { %>
+<form method="post" action="/radiology/requests" class="o_form_sheet" id="radNewRequestForm">
+<% } else { %>
+<div class="o_form_sheet">
+<% } %>
+
+<div class="o_form_grid">
+ <div class="o_field">
+  <label><%= _tl('radiology_request.patient_required', 'Patient *') %></label>
+  <% if (isNew) { %>
+  <select name="patient_id" required>
+   <option value=""><%= _tl('radiology_request.select', '— Select —') %></option>
+   <% (patients || []).forEach(function(p) { %>
+   <option value="<%= p.id %>"><%= p.last_name %>, <%= p.first_name %></option>
+   <% }) %>
+  </select>
+  <% } else { %>
+  <input type="text" readonly value="<%= req.p_ln %>, <%= req.p_fn %> (#<%= req.patient_id %>)">
+  <% } %>
+ </div>
+ <div class="o_field">
+  <label><%= _tl('radiology_request.test_group', 'Test group') %></label>
+  <% if (isNew) { %>
+  <select name="test_group_id" id="radTestGroupId">
+   <option value=""><%= _tl('radiology_request.optional_load_lines', '— Optional: load lines from group —') %></option>
+   <% (testGroups || []).forEach(function(g) { %>
+   <option value="<%= g.id %>"><%= g.name %></option>
+   <% }) %>
+  </select>
+  <% } else { %>
+  <input type="text" readonly value="<%= req.group_name || '—' %>">
+  <% } %>
+ </div>
+ <div class="o_field">
+  <label><%= _tl('radiology_request.scheduled_datetime', 'Scheduled date & time') %></label>
+  <% if (isNew) { %>
+  <input type="datetime-local" name="scheduled_at" value="<%= defaultScheduled || '' %>">
+  <% } else { %>
+  <input type="text" readonly value="<%= req.scheduled_at ? new Date(req.scheduled_at).toLocaleString() : '—' %>">
+  <% } %>
+ </div>
+ <div class="o_field">
+  <label><%= _tl('radiology_request.prescribing_doctor', 'Prescribing doctor') %></label>
+  <% if (isNew) { %>
+  <select name="referred_by_id">
+   <option value=""><%= _tl('radiology_request.internal_walkin', '— Internal / walk-in —') %></option>
+   <% (doctors || []).forEach(function(d) { %>
+   <option value="<%= d.id %>">Dr. <%= d.first_name %> <%= d.last_name %></option>
+   <% }) %>
+  </select>
+  <% } else { %>
+  <input type="text" readonly value="<%= req.ref_fn ? ('Dr. ' + req.ref_fn + ' ' + req.ref_ln) : '—' %>">
+  <% } %>
+ </div>
+ <div class="o_field">
+  <label><%= _tl('radiology_request.room', 'Room') %></label>
+  <% if (isNew) { %>
+  <select name="room_id">
+   <option value=""><%= _tl('radiology_request.assign_later', '— Assign later —') %></option>
+   <% (rooms || []).forEach(function(r) { %>
+   <option value="<%= r.id %>"><%= r.name %></option>
+   <% }) %>
+  </select>
+  <% } else { %>
+  <input type="text" readonly value="<%= req.room_name || '—' %>">
+  <% } %>
+ </div>
+ <div class="o_field">
+  <label><%= _tl('radiology_request.group_request', 'Group request (family)') %></label>
+  <% if (isNew) { %>
+  <label class="d-flex align-items-center" style="gap:8px;font-weight:normal;text-transform:none;">
+   <input type="checkbox" name="is_group_request" value="1"> <%= _tl('radiology_request.link_multiple', 'Link multiple patients') %>
+  </label>
+  <% } else { %>
+  <input type="text" readonly value="<%= req.is_group_request ? _tl('radiology_request.yes', 'Yes') : _tl('radiology_request.no', 'No') %>">
+  <% } %>
+ </div>
+</div>
+
+<% if (isNew) { %>
+<div class="o_field mt-3">
+ <label><%= _tl('radiology_request.clinical_notes', 'Clinical notes') %></label>
+ <textarea name="notes" rows="2" placeholder="<%= _tl('radiology_request.clinical_notes_ph', 'Indication, contrast, urgency…') %>"></textarea>
+</div>
+
+<h5 class="mt-4 mb-2 font-weight-bold"><%= _tl('radiology_request.imaging_lines', 'Imaging lines') %></h5>
+<table class="o_list_table o_lines_table">
+ <thead><tr><th><%= _tl('portal_shared.exam', 'Exam') %></th><th><%= _tl('portal_shared.modality', 'Modality') %></th><th><%= _tl('radiology_request.body_part', 'Body part') %></th><th></th></tr></thead>
+ <tbody id="radLinesBody">
+  <tr>
+   <td><input name="exam_name[]" class="form-control" placeholder="<%= _tl('radiology_request.exam_ph', 'e.g. Chest X-Ray (PA)') %>" required></td>
+   <td><input name="line_modality[]" class="form-control" value="X-Ray"></td>
+   <td><input name="line_body_part[]" class="form-control" placeholder="<%= _tl('radiology_request.body_part_ph', 'Chest') %>"></td>
+   <td><button type="button" class="btn btn-sm btn-outline-danger" data-rad-remove-line>&times;</button></td>
+  </tr>
+ </tbody>
+</table>
+<button type="button" class="o_btn_secondary mt-2" id="radAddLineBtn"><i class="fa fa-plus"></i> <%= _tl('radiology_request.add_line', 'Add line') %></button>
+
+<template id="radLineRowTpl">
+ <tr>
+  <td><input name="exam_name[]" class="form-control" required></td>
+  <td><input name="line_modality[]" class="form-control" value="X-Ray"></td>
+  <td><input name="line_body_part[]" class="form-control"></td>
+  <td><button type="button" class="btn btn-sm btn-outline-danger" data-rad-remove-line>&times;</button></td>
+ </tr>
+</template>
+
+<div class="mt-4 d-flex flex-wrap" style="gap:8px;">
+ <button type="submit" name="action" value="draft" class="o_btn_secondary"><%= _tl('radiology_request.save_draft', 'Save draft') %></button>
+ <button type="submit" name="submit" value="1" class="o_btn_primary"><i class="fa fa-paper-plane"></i> <%= _tl('radiology_request.submit_request', 'Submit request') %></button>
+</div>
+</form>
+<% } else { %>
+
+<h5 class="mt-3 font-weight-bold"><%= _tl('radiology_request.test_lines', 'Test lines') %></h5>
+<table class="o_list_table">
+ <thead>
+  <tr><th><%= _tl('portal_shared.exam', 'Exam') %></th><th><%= _tl('portal_shared.status', 'Status') %></th><th><%= _tl('radiology_request.findings', 'Findings') %></th><th><%= _tl('radiology_request.action', 'Action') %></th></tr>
+ </thead>
+ <tbody>
+ <% lines.forEach(function(ln) { %>
+ <tr id="rad-line-<%= ln.id %>">
+  <td><strong><%= ln.exam_name || ln.test_name %></strong></td>
+  <td><span class="o_status o_status--<%= ln.status === 'received' ? 'done' : (ln.status === 'in_progress' ? 'in_progress' : 'submitted') %>"><%= ln.status %></span></td>
+  <td class="small text-muted"><%= (ln.findings || '').toString().slice(0, 80) %><%= (ln.findings && ln.findings.length > 80) ? '…' : '' %></td>
+  <td>
+   <a href="/radiology/templates?registry_id=<%= ln.id %>" class="o_btn_secondary btn-sm"><%= _tl('radiology_request.results_report', 'Results & report') %></a>
+   <% if (ln.status !== 'received') { %>
+   <a href="/radiology/workflow#rad-<%= ln.id %>" class="o_btn_secondary btn-sm"><%= _tl('radiology_request.on_board', 'On board') %></a>
+   <% } %>
+  </td>
+ </tr>
+ <% }) %>
+ </tbody>
+</table>
+</div>
+<% } %>
+</div>
+
+<%- include('partials/radiology-odoo-end') %>
+<%- include('partials/footer') %>

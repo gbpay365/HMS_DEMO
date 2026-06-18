@@ -1,0 +1,407 @@
+/**
+ * Director command center — dark operational dashboard shell.
+ * Used by DirectorDailyDashboard.jsx; tokens defined in hms-tokens.css.
+ */
+.hms-command-center {
+  margin: -8px -16px 0;
+  min-height: 100%;
+  padding: 16px;
+}
+
+.hms-cmd-kpi {
+  background: var(--hms-cmd-surface);
+  border: 0.5px solid var(--hms-cmd-border);
+  border-radius: var(--hms-cmd-radius);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hms-cmd-kpi__label {
+  font-size: 11px;
+  color: var(--hms-cmd-text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hms-cmd-kpi__value {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--hms-cmd-text);
+  line-height: 1;
+}
+
+.hms-cmd-kpi__sub {
+  font-size: 12px;
+  color: var(--hms-cmd-text-muted);
+}
+
+.hms-cmd-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hms-cmd-text);
+  letter-spacing: 0.02em;
+  margin-bottom: 12px;
+}
+
+.hms-cmd-panel {
+  background: var(--hms-cmd-surface);
+  border: 0.5px solid var(--hms-cmd-border);
+  border-radius: var(--hms-cmd-radius);
+  padding: 16px;
+}
+
+.hms-cmd-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.hms-cmd-header {
+  background: var(--hms-cmd-surface);
+  border-bottom: 0.5px solid var(--hms-cmd-border);
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.hms-cmd-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hms-cmd-header__logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--hms-cmd-blue) 0%, var(--hms-cmd-purple) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.hms-cmd-header__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--hms-cmd-text);
+}
+
+.hms-cmd-header__sub {
+  font-size: 11px;
+  color: var(--hms-cmd-text-muted);
+  margin-top: 1px;
+}
+
+.hms-cmd-header__live {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--hms-cmd-surface-alt);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: var(--hms-cmd-text-muted);
+}
+
+.hms-cmd-header__live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--hms-cmd-green);
+  box-shadow: 0 0 6px var(--hms-cmd-green);
+}
+
+.hms-cmd-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 24px;
+  border-bottom: 0.5px solid var(--hms-cmd-border);
+  background: var(--hms-cmd-surface);
+  overflow-x: auto;
+}
+
+.hms-cmd-tab {
+  padding: 10px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--hms-cmd-text-muted);
+  white-space: nowrap;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s;
+}
+
+.hms-cmd-tab.is-active {
+  color: var(--hms-cmd-text);
+  border-bottom-color: var(--hms-cmd-blue);
+}
+
+.hms-cmd-tab__badge {
+  margin-left: 6px;
+  font-size: 10px;
+  background: var(--hms-cmd-red-soft);
+  color: var(--hms-cmd-red);
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-weight: 600;
+}
+
+.hms-cmd-body {
+  padding: 20px 24px;
+}
+
+.hms-cmd-kpi__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.hms-cmd-kpi__icon {
+  font-size: 18px;
+}
+
+.hms-cmd-kpi__spark {
+  margin-top: 4px;
+}
+
+.hms-cmd-section-head {
+  margin-bottom: 12px;
+}
+
+.hms-cmd-section-head__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hms-cmd-text);
+  letter-spacing: 0.02em;
+}
+
+.hms-cmd-section-head__sub {
+  font-size: 11px;
+  color: var(--hms-cmd-text-muted);
+  margin-top: 2px;
+}
+
+.hms-cmd-legend {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.hms-cmd-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--hms-cmd-text-muted);
+}
+
+.hms-cmd-legend__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.hms-cmd-chart-svg {
+  display: block;
+}
+
+.hms-cmd-ward-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.hms-cmd-ward-row__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--hms-cmd-text);
+  margin-bottom: 6px;
+}
+
+.hms-cmd-ward-row__track {
+  height: 4px;
+  background: var(--hms-cmd-border);
+  border-radius: 2px;
+  margin-bottom: 6px;
+}
+
+.hms-cmd-ward-row__fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+.hms-cmd-ward-row__meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.hms-cmd-ward-row__pct {
+  font-weight: 600;
+}
+
+.hms-cmd-ward-pills {
+  display: flex;
+  gap: 4px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+.hms-cmd-pill {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.hms-cmd-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hms-cmd-alert-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 0.5px solid var(--hms-cmd-border);
+  background: var(--hms-cmd-surface-alt);
+}
+
+.hms-cmd-table-wrap {
+  overflow-x: auto;
+}
+
+.hms-cmd-flow-legend {
+  display: flex;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.hms-cmd-flow-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--hms-cmd-text-muted);
+}
+
+.hms-cmd-ward-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.hms-cmd-ward-card {
+  background: var(--hms-cmd-surface-alt);
+  border: 0.5px solid var(--hms-cmd-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.hms-cmd-pill--amber {
+  background: var(--hms-cmd-amber-soft);
+  color: var(--hms-cmd-amber);
+}
+
+.hms-cmd-pill--green {
+  background: var(--hms-cmd-green-soft);
+  color: var(--hms-cmd-green);
+}
+
+.hms-cmd-pill--muted {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--hms-cmd-text-dim);
+}
+
+.hms-cmd-ward-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.hms-cmd-ward-card {
+  background: var(--hms-cmd-surface-alt);
+  border: 0.5px solid var(--hms-cmd-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.hms-cmd-pill--amber {
+  background: var(--hms-cmd-amber-soft);
+  color: var(--hms-cmd-amber);
+}
+
+.hms-cmd-pill--green {
+  background: var(--hms-cmd-green-soft);
+  color: var(--hms-cmd-green);
+}
+
+.hms-cmd-pill--muted {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--hms-cmd-text-dim);
+}
+
+/* Wallet hub — token-aligned KPI gradients */
+.kpi-trust { background: linear-gradient(135deg, var(--hms-dept-finance), #3b82f6); }
+.kpi-count { background: linear-gradient(135deg, var(--hms-brand-dark), var(--hms-brand)); }
+.kpi-today { background: linear-gradient(135deg, var(--hms-dept-laboratory), #a78bfa); }
+.kpi-vol { background: linear-gradient(135deg, #c2410c, var(--hms-warning)); }
+
+/* Odoo app launcher — token accent icons (replaces inline hex) */
+.o_app_icon[data-accent="brand"] { background: var(--hms-brand) !important; }
+.o_app_icon[data-accent="sky"] { background: var(--hms-dept-radiology) !important; }
+.o_app_icon[data-accent="violet"] { background: var(--hms-dept-laboratory) !important; }
+.o_app_icon[data-accent="emerald"] { background: var(--hms-brand) !important; }
+.o_app_icon[data-accent="amber"] { background: var(--hms-warning) !important; }
+.o_app_icon[data-accent="pink"] { background: var(--hms-dept-maternity) !important; }
+.o_app_icon[data-accent="red"] { background: var(--hms-danger) !important; }
+.o_app_icon[data-accent="indigo"] { background: var(--hms-dept-finance) !important; }
+.o_app_icon[data-accent="finance"] { background: var(--hms-dept-finance) !important; }
+.o_app_icon[data-accent="slate"] { background: var(--hms-ink-muted) !important; }
+.o_app_icon[data-accent="inventory"] { background: #b45309 !important; }
+
+/* Form layouts (G3) */
+.hms-form-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.hms-form-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.hms-form-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 767px) {
+  .hms-form-grid--2,
+  .hms-form-grid--3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hms-form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.hms-form-compact .hms-input {
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+  font-size: 0.8125rem;
+}

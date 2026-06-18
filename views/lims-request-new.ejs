@@ -1,0 +1,31 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--lims'; %>
+<%- include('partials/header') %>
+<h4 class="font-weight-bold mb-3"><a href="/lims/requests" class="small text-muted"><%= _tl('lims_request_new.requests', 'Requests') %></a> / <%= _tl('lims_request_new.title', 'New lab request') %></h4>
+<form method="POST" action="/lims/request" class="card p-4 shadow-sm">
+<div class="row">
+<div class="col-md-6 mb-2"><label class="small font-weight-bold"><%= _tl('lims_request_new.patient', 'Patient') %></label>
+<select name="patient_id" class="hms-input w-full text-sm" required><option value="">—</option>
+<% patients.forEach(function(p){ %><option value="<%=p.id%>"><%=p.first_name%> <%=p.last_name%></option><% }); %></select></div>
+<div class="col-md-6 mb-2"><label class="small font-weight-bold"><%= _tl('lims_request_new.prescribing_doctor', 'Prescribing doctor') %></label>
+<select name="prescribing_doctor_id" class="hms-input w-full text-sm"><option value="">—</option>
+<% doctors.forEach(function(d){ %><option value="<%=d.id%>">Dr. <%=d.first_name%> <%=d.last_name%></option><% }); %></select></div>
+<div class="col-md-4 mb-2"><label class="small font-weight-bold"><%= _tl('lims_request_new.test_group', 'Test group (panel)') %></label>
+<select name="test_group_id" class="hms-input w-full text-sm"><option value=""><%= _tl('lims_request_new.optional', '— optional —') %></option>
+<% groups.forEach(function(g){ %><option value="<%=g.id%>"><%=g.code||''%> <%=g.name%></option><% }); %></select></div>
+<div class="col-md-4 mb-2"><label class="small font-weight-bold"><%= _tl('lims_request_new.collection_center', 'Collection center') %></label>
+<select name="collection_center_id" class="hms-input w-full text-sm"><option value="">—</option>
+<% centers.forEach(function(c){ %><option value="<%=c.id%>"><%=c.name%></option><% }); %></select></div>
+<div class="col-md-4 mb-2"><label class="small font-weight-bold"><%= _tl('lims_request_new.schedule_date', 'Schedule date') %></label>
+<input type="date" name="scheduled_date" class="hms-input w-full text-sm" value="<%=today%>" required></div>
+<div class="col-md-4 mb-2"><label class="small font-weight-bold"><%= _tl('lims_request_new.time', 'Time') %></label>
+<input type="time" name="scheduled_time" class="hms-input w-full text-sm"></div>
+<div class="col-12 mb-2"><label class="small font-weight-bold"><%= _tl('lims_request_new.additional_tests', 'Additional tests (if no group)') %></label>
+<div class="row"><% catalog.forEach(function(c){ %>
+<div class="col-md-4"><label class="small"><input type="checkbox" name="catalog_id" value="<%=c.id%>"> <%=c.name%></label></div>
+<% }); %></div>
+<div class="col-12 mb-2"><label class="small"><input type="checkbox" name="is_group_request" value="1"> <%= _tl('lims_request_new.group_family', 'Group / family request') %></label></div>
+<div class="col-12 mb-2"><textarea name="notes" class="hms-input w-full text-sm" rows="2" placeholder="<%= _tl('lims_request_new.notes_ph', 'Notes') %>"></textarea></div>
+</div>
+<button class="hms-btn hms-btn-primary"><%= _tl('lims_request_new.submit', 'Submit request') %></button>
+</form>
+</div></div><%- include('partials/footer') %>

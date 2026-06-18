@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ZAIZENS HMS — Windows 10 Backup &amp; Disaster Recovery</title>
+  <link rel="stylesheet" href="ops-doc-styles.css" />
+</head>
+<body>
+  <section class="cover">
+    <div class="cover-top">
+      <div class="cover-brand">
+        <div><p class="vendor"><strong>ZAIZENS</strong> · Business Continuity</p></div>
+        <div class="cover-badge">Operations Guide · PDF</div>
+      </div>
+      <h1>Windows 10 Local Backup &amp; Quick Recovery</h1>
+      <p class="subtitle">Restore the hospital HMS and MySQL database rapidly after server crash, disk failure, or ransomware</p>
+    </div>
+    <div class="cover-accent"></div>
+    <div class="cover-body">
+      <dl class="client-grid">
+        <div class="full"><dt>Scope</dt><dd>On-premises Windows 10 + XAMPP MySQL + ZAIZENS HMS Node application</dd></div>
+        <div><dt>Scripts</dt><dd><code>scripts/windows-hms-backup.ps1</code></dd></div>
+        <div><dt>Restore</dt><dd><code>scripts/windows-hms-restore.ps1</code></dd></div>
+        <div><dt>RTO target</dt><dd>2–4 hours (with tested backups)</dd></div>
+        <div><dt>RPO target</dt><dd>24 hours (nightly) + optional hourly MySQL</dd></div>
+      </dl>
+      <div class="cover-meta">
+        <span><strong>Version</strong><br/>1.0 — June 2026</span>
+        <span><strong>Backup root</strong><br/><code>D:\HMS-Backups</code></span>
+      </div>
+    </div>
+  </section>
+
+  <div class="doc-strip"><span><strong>ZAIZENS</strong> HMS</span><span>Windows Backup &amp; DR</span></div>
+  <main>
+    <div class="toc-block">
+      <h2>Table of contents</h2>
+      <ul class="toc-grid">
+        <li><a href="#principles"><span class="num">1</span> Backup principles</a></li>
+        <li><a href="#layout"><span class="num">2</span> Backup layout &amp; 3-2-1 rule</a></li>
+        <li><a href="#mysql"><span class="num">3</span> MySQL database backup</a></li>
+        <li><a href="#app"><span class="num">4</span> Application &amp; config backup</a></li>
+        <li><a href="#automate"><span class="num">5</span> Automated backup script</a></li>
+        <li><a href="#schedule"><span class="num">6</span> Task Scheduler</a></li>
+        <li><a href="#restore"><span class="num">7</span> Full restore procedure</a></li>
+        <li><a href="#partial"><span class="num">8</span> Partial recovery scenarios</a></li>
+        <li><a href="#service"><span class="num">9</span> Windows service &amp; auto-start</a></li>
+        <li><a href="#test"><span class="num">10</span> Testing &amp; runbook</a></li>
+      </ul>
+    </div>
+
+    <h2 id="principles">1. Backup principles</h2>
+    <div class="callout"><strong>Objective:</strong> After hardware failure, corruption, or accidental deletion, restore clinical operations within hours using offline backups — independent of Railway DR (which is covered in the replication guide).</div>
+    <table>
+      <thead><tr><th>Layer</th><th>What to protect</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td>Database</td><td><code>hms_demo</code> (all <code>tbl_*</code> data)</td><td>Critical — nightly minimum</td></tr>
+        <tr><td>Configuration</td><td><code>.env</code>, <code>config/</code>, uploaded assets</td><td>Critical</td></tr>
+        <tr><td>Application</td><td><code>HMS_JS</code> deploy folder or build package</td><td>High — weekly snapshot</td></tr>
+        <tr><td>System</td><td>Windows image (optional)</td><td>Medium — monthly</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="layout">2. Backup layout &amp; 3-2-1 rule</h2>
+    <div class="diagram">D:\HMS-Backups\
+├── mysql\
+│   ├── daily\          ← mysqldump .sql.gz (retain 14 days)
+│   └── hourly\         ← optional (retain 48 hours)
+├── config\
+│   └── daily\          ← .env, betterpay.json, brand files
+├── app\
+│   └── weekly\         ← zip of deploy folder (no node_modules)
+├── logs\
+│   └── backup-*.log
+└── MANIFEST.txt        ← last successful backup summary
+
+3-2-1 rule:
+  3 copies · 2 media types · 1 off-site (USB + cloud sync)</div>
+    <ul>
+      <li><strong>Copy 1:</strong> Live production on <code>C:</code></li>
+      <li><strong>Copy 2:</strong> <code>D:\HMS-Backups</code> on separate disk/partition</li>
+      <li><strong>Copy 3:</strong> External USB or encrypted cloud (OneDrive/Google Drive sync of <code>mysql/daily</code> only)</li>
+    </ul>
+
+    <h2 id="mysql">3. MySQL database backup</h2>
+    <h3>3.1 Manual dump (verification)</h3>
+    <pre>"C:\xampp\mysql\bin\mysqldump.exe" -h127.0.0.1 -uroot -p ^
+  --single-transaction --routines --triggers --events ^
+  hms_demo > D:\HMS-Backups\mysql\manual-test.sql</pre>
+    <h3>3.2 Compressed daily backup</h3>
+    <p>The automated script gzips dumps to save space. Verify periodically:</p>
+    <pre>"C:\xampp\mysql\bin\mysql.exe" -uroot -p -e "SELECT COUNT(*) FROM hms_demo.tbl_patient"</pre>
+    <h3>3.3 MySQL data directory (optional)</h3>
+    <p>For advanced recovery, stop MySQL and copy <code>C:\xampp\mysql\data\hms_demo</code> — only when MySQL is stopped. Logical dumps are safer for routine backups.</p>
+    <div class="callout warn">Never copy live InnoDB files while MySQL is running — risk of corrupt backup.</div>
+
+    <h2 id="app">4. Application &amp; configuration backup</h2>
+    <table>
+      <thead><tr><th>Path</th><th>Include?</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>C:\HMS_JS\.env</code></td><td>Yes</td><td>Encrypt backup copy — contains DB password</td></tr>
+        <tr><td><code>C:\HMS_JS\config\</code></td><td>Yes</td><td>BetterPay, branding JSON</td></tr>
+        <tr><td><code>C:\HMS_JS\public\dist\</code></td><td>Yes</td><td>Built UI bundles</td></tr>
+        <tr><td><code>C:\HMS_JS\uploads\</code> (if any)</td><td>Yes</td><td>Patient documents, letterheads</td></tr>
+        <tr><td><code>node_modules\</code></td><td>No</td><td>Reinstall with <code>npm install</code></td></tr>
+        <tr><td><code>license-generator\keys\</code> (private)</td><td>Vendor only</td><td>Not on hospital server ideally</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="automate">5. Automated backup script</h2>
+    <p>Run from repository:</p>
+    <pre>powershell -ExecutionPolicy Bypass -File C:\HMS_JS\scripts\windows-hms-backup.ps1</pre>
+    <p>The script:</p>
+    <ul>
+      <li>Creates dated MySQL dump under <code>D:\HMS-Backups\mysql\daily\</code></li>
+      <li>Copies <code>.env</code> and <code>config\</code> to <code>config\daily\</code></li>
+      <li>Prunes dumps older than 14 days</li>
+      <li>Writes log to <code>D:\HMS-Backups\logs\</code></li>
+    </ul>
+    <h3>5.1 Optional parameters</h3>
+    <pre>powershell -File scripts\windows-hms-backup.ps1 `
+  -BackupRoot "D:\HMS-Backups" `
+  -DbName "hms_demo" `
+  -DbUser "root" `
+  -DbPassword "your-password" `
+  -XamppBin "C:\xampp\mysql\bin"</pre>
+
+    <h2 id="schedule">6. Task Scheduler</h2>
+    <table>
+      <thead><tr><th>Task</th><th>Schedule</th><th>Script</th></tr></thead>
+      <tbody>
+        <tr><td>MySQL + config backup</td><td>Daily 02:00</td><td><code>windows-hms-backup.ps1</code></td></tr>
+        <tr><td>Railway sync (DR)</td><td>Every 15–30 min</td><td><code>run-railway-sync.ps1</code></td></tr>
+        <tr><td>App folder zip</td><td>Weekly Sunday 03:00</td><td>Custom zip task (Section 4)</td></tr>
+      </tbody>
+    </table>
+    <ol class="steps">
+      <li>Task Scheduler → Create Task → name <strong>ZAIZENS HMS Daily Backup</strong>.</li>
+      <li>Trigger: daily 02:00, wake computer if needed.</li>
+      <li>Action: <code>powershell.exe -ExecutionPolicy Bypass -File C:\HMS_JS\scripts\windows-hms-backup.ps1</code></li>
+      <li>Conditions: start only if AC power (for laptops).</li>
+      <li>Settings: restart on failure up to 3 times.</li>
+    </ol>
+
+    <h2 id="restore">7. Full restore procedure (server crash)</h2>
+    <div class="callout danger">Perform restores on a test path first if time permits. In emergency, follow steps sequentially.</div>
+    <ol class="steps">
+      <li><strong>Prepare hardware</strong> — Windows 10, install XAMPP, Node.js 18+, Git or copy deploy folder.</li>
+      <li><strong>Start MySQL</strong> in XAMPP Control Panel.</li>
+      <li><strong>Create database &amp; user</strong> (if fresh XAMPP):
+        <pre>CREATE DATABASE hms_demo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'root'@'localhost' IDENTIFIED BY 'your-password';
+GRANT ALL PRIVILEGES ON hms_demo.* TO 'root'@'localhost';
+FLUSH PRIVILEGES;</pre>
+      </li>
+      <li><strong>Restore database</strong> from latest backup:
+        <pre>powershell -ExecutionPolicy Bypass -File C:\HMS_JS\scripts\windows-hms-restore.ps1 `
+  -SqlBackup "D:\HMS-Backups\mysql\daily\hms-YYYYMMDD-HHmmss.sql.gz"</pre>
+      </li>
+      <li><strong>Restore application</strong> — copy <code>HMS_JS</code> from weekly zip or Git; run <code>npm install</code>.</li>
+      <li><strong>Restore config</strong> — copy <code>.env</code> from <code>D:\HMS-Backups\config\daily\</code>.</li>
+      <li><strong>Start HMS</strong> — <code>npm start</code> or Windows service (Section 9).</li>
+      <li><strong>Verify</strong> — <code>http://localhost:3000/__health</code>, login, patient count, print test.</li>
+      <li><strong>Re-enable backups</strong> and Railway sync tasks.</li>
+    </ol>
+
+    <h2 id="partial">8. Partial recovery scenarios</h2>
+    <table>
+      <thead><tr><th>Scenario</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>Corrupt single table</td><td>Restore table from dump: <code>mysql ... &lt; extract_table.sql</code></td></tr>
+        <tr><td>Deleted .env only</td><td>Restore from <code>config\daily\</code></td></tr>
+        <tr><td>Bad deploy / code bug</td><td>Revert to last weekly app zip; DB unchanged</td></tr>
+        <tr><td>Ransomware</td><td>Do not pay — rebuild from offline USB backup (not synced folder)</td></tr>
+        <tr><td>Disk full</td><td>Free space; prune old backups; expand partition</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="service">9. Windows service &amp; auto-start</h2>
+    <p>Run HMS as a service so it survives logout and reboots (see main Local Deployment guide Section 19). After restore:</p>
+    <ul>
+      <li>Configure XAMPP MySQL as Windows service (auto start)</li>
+      <li>Configure HMS Node service with restart on failure</li>
+      <li>Set service account with read access to <code>.env</code> only — not Domain Users</li>
+    </ul>
+
+    <h2 id="test">10. Testing &amp; runbook</h2>
+    <ul class="checklist">
+      <li>Monthly: restore latest dump to <code>hms_demo_test</code> on same server</li>
+      <li>Quarterly: full restore drill on spare PC or VM</li>
+      <li>Document backup size trend (alert if sudden 50%+ drop)</li>
+      <li>Store printed runbook with Railway DR URL and IT contacts</li>
+      <li>Verify USB off-site copy is unplugged after sync (ransomware protection)</li>
+      <li>After any restore, run <code>node diagnostic2.js</code></li>
+    </ul>
+    <table>
+      <thead><tr><th>Contact / asset</th><th>Location</th></tr></thead>
+      <tbody>
+        <tr><td>Latest backup path</td><td><code>D:\HMS-Backups\MANIFEST.txt</code></td></tr>
+        <tr><td>Railway DR URL</td><td>IT runbook / replication guide</td></tr>
+        <tr><td>Vendor support</td><td>ZAIZENS implementation team</td></tr>
+      </tbody>
+    </table>
+
+    <p class="footer-note">© ZAIZENS · Windows Backup &amp; DR Guide v1.0 · Confidential</p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<%- include('hms-perm-helpers') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _top = function (key, fallback, opts) {
+  return _t(key, Object.assign({ ns: 'ops', defaultValue: fallback }, opts || {}));
+};
+var _phaMenu = locals.phaOdooMenu || 'products';
+var _phaTitle = locals.phaOdooTitle || _top('pharmacy_odoo.default_title', 'Products');
+var _phaUser = locals.userDisplayName || (locals.user && locals.user.name) || _top('pharmacy_odoo.user_fallback', 'User');
+var _nursingBadge = parseInt(locals.nursingSupplyPending, 10) || 0;
+function _phaActive(m) { return _phaMenu === m ? ' active' : ''; }
+%>
+<%- include('hms-dept-shell-open', {
+  deptAppClass: 'pharmacy-odoo-app',
+  deptAppId: 'pharmOdooApp',
+  deptModuleHref: '/pharmacy?view=products',
+  deptModuleLabel: _top('pharmacy_odoo.module', 'Pharmacy'),
+  deptModuleIcon: 'pharmacy',
+  deptExtraCss: ['/css/pharmacy-odoo.css?v=3', '/css/pharmacy-ui-revamp.css?v=3'],
+  deptNavUser: _phaUser
+}) %>
+      <a href="/pharmacy?view=overview" class="o_nav_link<%= _phaActive('overview') %>"><i class="fa fa-tachometer pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy.tab_overview', 'Dashboard') %></a>
+      <div class="o_nav_dropdown<%= _phaActive('sales') || _phaActive('dispensing') || _phaActive('prescriptions') ? ' active' : '' %>">
+        <button type="button" class="o_nav_link o_nav_drop_btn"><i class="fa fa-shopping-bag pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.sales', 'Sales') %> <i class="fa fa-caret-down" aria-hidden="true"></i></button>
+        <div class="o_nav_drop_panel">
+          <a href="/pharmacy?view=dispensing"><i class="fa fa-medkit pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy.link_dispensing', 'Dispensing queue') %></a>
+          <a href="/pharmacy?view=prescriptions"><i class="fa fa-file-text-o pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy.tab_prescriptions', 'Prescriptions') %></a>
+          <a href="/prescriptions"><i class="fa fa-list-alt pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.prescription_registry', 'Prescription registry') %></a>
+          <a href="/pharmacy/nursing-requests"><i class="fa fa-heartbeat pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.nursing_requests', 'Nursing requests') %><% if (_nursingBadge > 0) { %> <span class="o_nav_badge"><%= _nursingBadge %></span><% } %></a>
+        </div>
+      </div>
+      <div class="o_nav_dropdown<%= _phaActive('purchase') ? ' active' : '' %>">
+        <button type="button" class="o_nav_link o_nav_drop_btn"><i class="fa fa-shopping-cart pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.purchase', 'Purchase') %> <i class="fa fa-caret-down" aria-hidden="true"></i></button>
+        <div class="o_nav_drop_panel">
+          <a href="/pharmacy/purchase-orders"><i class="fa fa-file-text pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.purchase_orders', 'Purchase orders') %></a>
+          <a href="/pharmacy/purchase-orders/new"><i class="fa fa-plus-circle pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.new_purchase_order', 'New purchase order') %></a>
+          <a href="/pharmacy?view=products" data-pha-open-receive="1"><i class="fa fa-download pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.quick_receive', 'Quick receive stock') %></a>
+          <a href="/procurement"><i class="fa fa-truck pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.full_procurement', 'Full procurement') %></a>
+        </div>
+      </div>
+      <a href="/pharmacy?view=products" class="o_nav_link<%= _phaActive('products') %>"><i class="fa fa-cubes pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy.tab_products', 'Products') %></a>
+      <div class="o_nav_dropdown<%= _phaActive('reporting') ? ' active' : '' %>">
+        <button type="button" class="o_nav_link o_nav_drop_btn"><i class="fa fa-bar-chart pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.reporting', 'Reporting') %> <i class="fa fa-caret-down" aria-hidden="true"></i></button>
+        <div class="o_nav_drop_panel">
+          <a href="/pharmacy/reporting"><i class="fa fa-line-chart pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_reports.hub', 'Intelligence Reports') %></a>
+          <span class="o_nav_drop_heading"><%= _top('pharmacy_reports.ops', 'Operations') %></span>
+          <a href="/pharmacy/reporting/stock-movement"><i class="fa fa-exchange pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_reports.stock_movement', 'Stock Movement Ledger') %></a>
+          <a href="/pharmacy/reporting/dispensing"><i class="fa fa-pie-chart pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_reports.dispensing', 'Product Dispensing Analysis') %></a>
+          <a href="/pharmacy/reporting/fast-moving"><i class="fa fa-bolt pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_reports.fast_moving', 'Fast-Moving Products') %></a>
+          <a href="/pharmacy/reporting/dormant"><i class="fa fa-hourglass-half pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_reports.dormant', 'Dormant Products') %></a>
+          <span class="o_nav_drop_heading"><%= _top('pharmacy_reports.inventory', 'Inventory') %></span>
+          <a href="/pharmacy/reporting/low-stock"><i class="fa fa-exclamation-triangle pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_reports.low_stock', 'Low Stock Alert') %></a>
+          <a href="/pharmacy/reporting/stock-valuation"><i class="fa fa-money pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_reports.valuation', 'Inventory Valuation') %></a>
+          <a href="/pharmacy/reporting/purchase-activity"><i class="fa fa-truck pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_reports.purchase', 'Purchase Activity') %></a>
+          <a href="/pharmacy/reporting/negative-stock"><i class="fa fa-minus-circle pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_reports.negative', ' Negative Stock') %></a>
+          <a href="/pharmacy/reporting/expiry"><i class="fa fa-calendar-times-o pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.expiry_report', 'Medicine expiry report') %></a>
+          <a href="/pharmacy?view=overview"><i class="fa fa-tachometer pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.overview_kpis', 'Overview & KPIs') %></a>
+        </div>
+      </div>
+      <div class="o_nav_dropdown<%= _phaActive('config') ? ' active' : '' %>">
+        <button type="button" class="o_nav_link o_nav_drop_btn"><i class="fa fa-cog pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.configuration', 'Configuration') %> <i class="fa fa-caret-down" aria-hidden="true"></i></button>
+        <div class="o_nav_drop_panel">
+          <span class="o_nav_drop_heading"><%= _top('pharmacy_odoo.medicine_setup', 'Medicine setup') %></span>
+          <a href="/pharmacy/config/medicine-types"><i class="fa fa-tags pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.medicine_types', 'Medicine types') %></a>
+          <a href="/pharmacy/config/medicine-categories"><i class="fa fa-folder-o pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.medicine_categories', 'Medicine categories') %></a>
+          <span class="o_nav_drop_heading"><%= _top('pharmacy_odoo.operations', 'Operations') %></span>
+          <a href="/pharmacy/validate"><i class="fa fa-check-circle pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.validate_pha', 'Validate PHA code') %></a>
+          <a href="/pharmacy/order-alerts"><i class="fa fa-bell pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.order_alerts', 'IPD/ER order alerts') %></a>
+          <a href="/catalog"><i class="fa fa-book pha-nav-ico" aria-hidden="true"></i><%= _top('catalog.title', 'Service catalog') %></a>
+          <span class="o_nav_drop_heading"><%= _top('pharmacy_odoo.inventory', 'Inventory') %></span>
+          <a href="/inventory"><i class="fa fa-archive pha-nav-ico" aria-hidden="true"></i><%= _top('pharmacy_odoo.product_categories', 'Product categories & SKUs') %></a>
+        </div>
+      </div>
+<%- include('hms-dept-shell-main-open') %>

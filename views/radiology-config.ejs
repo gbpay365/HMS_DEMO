@@ -1,0 +1,63 @@
+<%- include('partials/header') %>
+<%- include('partials/radiology-odoo-start', {
+  radOdooMenu: 'operations',
+  radOdooTitle: _tl('radiology_config.title', 'Radiology configuration'),
+  radOdooActions: ''
+}) %>
+
+<div class="o_content">
+<% if (flash) { %><div class="o_alert o_alert--ok"><%= flash %></div><% } %>
+<% if (error) { %><div class="o_alert o_alert--err"><%= error %></div><% } %>
+
+<div class="row">
+ <div class="col-lg-6 mb-4">
+  <h5 class="font-weight-bold mb-3"><%= _tl('radiology_config.rooms', 'Rooms') %></h5>
+  <table class="o_list_table mb-3">
+   <thead><tr><th><%= _tl('radiology_config.code', 'Code') %></th><th><%= _tl('radiology_config.name', 'Name') %></th><th><%= _tl('radiology_config.modality', 'Modality') %></th><th><%= _tl('radiology_config.active', 'Active') %></th></tr></thead>
+   <tbody>
+    <% (rooms || []).forEach(function(r) { %>
+    <tr><td><%= r.code %></td><td><%= r.name %></td><td><%= r.modality || '—' %></td><td><%= r.active ? _tl('radiology_config.yes', 'Yes') : _tl('radiology_config.no', 'No') %></td></tr>
+    <% }) %>
+   </tbody>
+  </table>
+  <form method="post" action="/radiology/configuration/rooms" class="o_form_sheet">
+   <div class="o_form_grid">
+    <div class="o_field"><label><%= _tl('radiology_config.code', 'Code') %></label><input name="code" required maxlength="20"></div>
+    <div class="o_field"><label><%= _tl('radiology_config.name', 'Name') %></label><input name="name" required></div>
+    <div class="o_field"><label><%= _tl('radiology_config.modality', 'Modality') %></label><input name="modality" placeholder="<%= _tl('radiology_config.modality_ph', 'X-Ray, CT, MRI…') %>"></div>
+   </div>
+   <button type="submit" class="o_btn_primary mt-2"><%= _tl('radiology_config.add_room', 'Add room') %></button>
+  </form>
+ </div>
+
+ <div class="col-lg-6 mb-4">
+  <h5 class="font-weight-bold mb-3"><%= _tl('radiology_config.test_groups', 'Test groups') %></h5>
+  <% (testGroups || []).forEach(function(g) { %>
+  <div class="o_form_sheet mb-3">
+   <strong><%= g.name %></strong>
+   <% if (g.description) { %><div class="small text-muted"><%= g.description %></div><% } %>
+   <ul class="small mb-0 mt-2">
+    <% (g.lines || []).forEach(function(ln) { %>
+    <li><%= ln.exam_name %> <% if (ln.modality) { %>(<%= ln.modality %>)<% } %></li>
+    <% }) %>
+   </ul>
+  </div>
+  <% }) %>
+
+  <form method="post" action="/radiology/configuration/groups" class="o_form_sheet">
+   <div class="o_field"><label><%= _tl('radiology_config.group_name', 'Group name') %></label><input name="name" required></div>
+   <div class="o_field"><label><%= _tl('radiology_config.description', 'Description') %></label><input name="description"></div>
+   <div class="o_field mt-2"><label><%= _tl('radiology_config.line1_exam', 'Line 1 exam') %></label><input name="exam_name[]" required></div>
+   <div class="o_field"><label><%= _tl('radiology_config.modality', 'Modality') %></label><input name="line_modality[]" value="X-Ray"></div>
+   <div class="o_field"><label><%= _tl('radiology_config.line2_exam_optional', 'Line 2 exam (optional)') %></label><input name="exam_name[]"></div>
+   <div class="o_field"><label><%= _tl('radiology_config.modality', 'Modality') %></label><input name="line_modality[]"></div>
+   <button type="submit" class="o_btn_primary mt-2"><%= _tl('radiology_config.add_test_group', 'Add test group') %></button>
+  </form>
+ </div>
+</div>
+
+<p class="text-muted small"><%- _tl('radiology_config.footer_note', 'Individual imaging tests are managed in the {{catalog}} (category: {{category}}). Exam report templates: {{templates}}.', { catalog: '<a href="/catalog">' + _tl('radiology_config.service_catalog', 'service catalog') + '</a>', category: _tl('radiology_config.scans_imaging', 'Scans & Imaging'), templates: '<a href="/radiology/templates">' + _tl('radiology_config.templates', 'Templates') + '</a>' }) %></p>
+</div>
+
+<%- include('partials/radiology-odoo-end') %>
+<%- include('partials/footer') %>

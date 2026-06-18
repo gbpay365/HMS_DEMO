@@ -1,0 +1,190 @@
+
+============================================================
+  1. Runtime Environment
+============================================================
+  Node.js  : v24.12.0
+  Platform : win32 x64
+  PID      : 37696
+  cwd      : C:\HMS_JS
+  __dirname: C:\HMS_JS
+  PORT     : (not set -- correct for Passenger)
+  NODE_ENV : production
+
+============================================================
+  2. .env File Inspection (MOST COMMON CAUSE OF 500)
+============================================================
+  [OK]   .env found (690 bytes)
+  [OK]   No BOM
+  [OK]   Unix LF line endings
+
+  Active (uncommented) key=value lines:
+    DB_HOST = localhost
+    DB_USER = root
+    DB_PASSWORD = (empty)
+    DB_NAME = hms
+    SESSION_SECRET = ****(set)
+
+============================================================
+  3. Environment Variables After dotenv.config()
+============================================================
+  [OK]   dotenv.config() succeeded
+  [OK]   DB_HOST = localhost
+  [FAIL] DB_PORT = (MISSING)  <- REQUIRED
+  [OK]   DB_USER = root
+  [FAIL] DB_PASSWORD = (MISSING)  <- REQUIRED
+  [OK]   DB_NAME = hms
+  [OK]   NODE_ENV = production
+  [OK]   SESSION_SECRET = ****(set)
+
+============================================================
+  4. Database Connection Test
+============================================================
+  [OK]   Connected to DB!
+  [OK]     MariaDB/MySQL version : 10.4.32-MariaDB
+  [OK]     Active database       : hms
+  [OK]     Tables in schema      : 142
+
+  Critical table checks:
+  [OK]       tbl_employee
+  [OK]       tbl_patient
+  [OK]       tbl_appointment
+  [OK]       tbl_admission
+  [OK]       tbl_opd_visit
+  [OK]       tbl_consultation
+  [OK]       tbl_lab_result
+  [OK]       tbl_billing_document
+  [OK]       tbl_invoice
+  [OK]       tbl_payment_ticket
+  [OK]       tbl_role
+  [OK]       sessions
+
+============================================================
+  5. Crash Log & Boot Trace
+============================================================
+  [OK]   tmp/ directory exists and is writable
+  [WARN] crash.log has 200 entries (0.01 MB)
+  Last 15 lines:
+        at process.emit (node:events:508:28)
+        at process._fatalException (node:internal/process/execution:159:25)
+        at Socket._write (node:internal/net:75:18)
+        at writeOrBuffer (node:internal/streams/writable:570:12)
+        at _write (node:internal/streams/writable:499:10)
+        at Writable.write (node:internal/streams/writable:508:10)
+        at console.value (node:internal/console/constructor:313:16)
+        at console.error (node:internal/console/constructor:444:26)
+        at process.<anonymous> (C:\HMS_JS\app.js:18:57)
+        at process.emit (node:events:508:28)
+        at process._fatalException (node:internal/process/execution:159:25)
+        at C:\HMS_JS\node_modules\express-mysql-session\index.js:384:30
+        at new Promise (<anonymous>)
+        at MySQLStore.query (C:\HMS_JS\node_modules\express-mysql-session\index.js:381:10)
+        at C:\HMS_JS\node_modules\express-mysql-session\index.js:372:16
+  [OK]   last-boot.json: all 41 boot steps OK
+  Last 5 boot steps:
+    [ok] migrate:ensureIpdMedSchema
+    [ok] migrate:ensureConsultationRoomsSchema
+    [ok] migrate:ensureNursingSupplyRequestSchema
+    [ok] migrate:ensureInventorySchema
+    [ok] migrate:aclLayout:init
+
+============================================================
+  6. Route Files
+============================================================
+  [OK]   routes/emergency.js (56638 bytes)
+  [OK]   routes/ipdMed.js (68781 bytes)
+  [OK]   routes/portals.js (29373 bytes)
+  [OK]   routes/nursingSupply.js (9213 bytes)
+  [OK]   routes/staff.js (71219 bytes)
+  [OK]   routes/hrPayroll.js (31207 bytes)
+  [OK]   routes/taxHub.js (9363 bytes)
+  [OK]   routes/paymentValidity.js (2635 bytes)
+
+============================================================
+  7. Library Files
+============================================================
+  [OK]   lib/aclLayout.js (6835 bytes) loads OK
+  [OK]   lib/receiptNumber.js (1633 bytes) loads OK
+  [OK]   lib/invoiceNumber.js (1835 bytes) loads OK
+  [OK]   lib/amountInWords.js (4353 bytes) loads OK
+  [OK]   lib/ensureFacilityRow.js (910 bytes) loads OK
+  [OK]   lib/clinicalDeptAlerts.js (4967 bytes) loads OK
+  [OK]   lib/labTestTemplates.js (74422 bytes) loads OK
+  [OK]   lib/paymentValidity.js (21704 bytes) loads OK
+  [OK]   lib/ensureDiagnosticCorrectionSchema.js (2768 bytes) loads OK
+  [OK]   lib/patientAge.js (2113 bytes) loads OK
+  [OK]   lib/clinicalNotAssignedBypass.js (579 bytes) loads OK
+  [OK]   lib/opdVisitRoomQueue.js (5343 bytes) loads OK
+  [OK]   lib/opdVisitCarryForward.js (7729 bytes) loads OK
+  [OK]   lib/pagination.js (3522 bytes) loads OK
+  [OK]   lib/hmsListUi.js (3020 bytes) loads OK
+  [OK]   lib/hmsDisplay.js (783 bytes) loads OK
+
+============================================================
+  8. Critical node_modules
+============================================================
+  [OK]   express
+  [OK]   express-session
+  [OK]   mysql2
+  [OK]   bcryptjs
+  [OK]   express-mysql-session
+  [OK]   cookie-parser
+  [OK]   multer
+  [OK]   ejs
+  [OK]   dotenv
+
+============================================================
+  9. Stale Lock Files (Passenger)
+============================================================
+  [OK]   No lock files found
+
+============================================================
+  10. Filesystem & Permissions
+============================================================
+  Hostname : GHOUENZEN
+  Home dir : C:\Users\Souleman
+  [OK]   app.js readable  size=502474 bytes  modified=2026-05-16T08:36:13.107Z
+  [OK]   app.js has resilient aclLayout loader (500-fix build)
+  [OK]   public/ readable
+  [OK]   tmp/ writable
+
+============================================================
+  11. App Boot Test (require app.js)
+============================================================
+  [OK]   require("./app.js") succeeded ? Express app exported for Passenger
+
+============================================================
+  12. Summary & Action Plan
+============================================================
+
+  The Phusion Passenger "t.forEach is not a function" error in
+  content-all.js is Passengers own UI code crashing while
+  rendering a 500 error page -- the real bug is in your app.
+
+  Most likely causes on iFastNet shared hosting:
+
+  [CAUSE A] .env has production DB credentials commented out
+    FIX: Edit .env and uncomment DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+         OR upload .env.production to server root, rename to .env
+
+  [CAUSE B] DB user lacks permissions (ER_ACCESS_DENIED / table errors)
+    FIX: cPanel -> MySQL Databases -> grant ALL PRIVILEGES to DB user
+
+  [CAUSE C] Route or lib file missing on server
+    FIX: Re-upload routes/ and lib/ directories
+
+  [CAUSE D] node_modules not on server
+    FIX: cPanel -> Setup Node.js App -> Run NPM Install
+
+  [CAUSE E] Stale Passenger process
+    FIX: Stop -> wait 2 min -> Start in Setup Node.js App
+
+  [CAUSE F] crash.log bloated with ECONNRESET noise (confirmed locally)
+    FIX: Upload updated app.js -- it now filters ECONNRESET from crash.log
+
+  AFTER FIXING:
+    1. Upload app.js + diagnostic2.js
+    2. cPanel: Stop -> Run NPM Install -> Start
+    3. Visit https://localhost:3004/__health  (should return {"ok":true})
+    4. Visit https://localhost:3004/__boot    (shows boot trace)
+    5. Re-run: npm run diagnose  (or diagnostic2.js) and confirm section 11 [OK]
+

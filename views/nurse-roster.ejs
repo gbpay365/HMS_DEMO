@@ -1,0 +1,330 @@
+<%- include('partials/header') %>
+<link rel="stylesheet" href="/css/hms-roster-nurse.css?v=3">
+
+<div class="page-wrapper nr-roster-page">
+ <div class="content">
+ <% if (flash) { %>
+ <div class="hms-flash hms-flash--success alert-dismissible fade show" role="alert">
+ <%= flash %>
+ <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+ </div>
+ <% } %>
+ <% if (error) { %>
+ <div class="hms-flash hms-flash--error alert-dismissible fade show" role="alert">
+ <%= error %>
+ <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+ </div>
+ <% } %>
+
+ <div class="nr-hero d-flex flex-wrap justify-content-between align-items-start">
+ <div class="nr-hero-main">
+ <h4 class="mb-1 font-weight-bold">
+  <span class="nr-hero-icon"><i class="fa fa-user-nurse"></i></span>
+  <%= _tl('nurse_roster.title', 'Ward Shift Board') %>
+ </h4>
+ <p class="mb-2 small opacity-90"><%= _tl('nurse_roster.subtitle', 'Nursing coverage — day, relay, night, and monthly staffing at a glance.') %></p>
+ <div class="nr-coverage-row">
+  <span class="nr-coverage-stat nr-stat-day"><i class="fa fa-sun"></i> <%= _tl('nurse_roster.day_shifts_count', '{{count}} day', { count: period.day }) %></span>
+  <span class="nr-coverage-stat nr-stat-relay"><i class="fa fa-exchange-alt"></i> <%= _tl('nurse_roster.relay_shifts_count', '{{count}} relay', { count: period.relay || 0 }) %></span>
+  <span class="nr-coverage-stat nr-stat-night"><i class="fa fa-moon"></i> <%= _tl('nurse_roster.night_shifts_count', '{{count}} night', { count: period.night }) %></span>
+ </div>
+ </div>
+ <% if (isAdminOrSuper) { %>
+ <button class="btn btn-light btn-sm font-weight-bold rounded-pill px-3 nr-copy-btn" data-toggle="modal" data-target="#copyRosterModal">
+ <i class="fa fa-copy mr-1"></i> <%= _tl('nurse_roster.copy_day', 'Copy day') %>
+ </button>
+ <% } %>
+ </div>
+
+ <div class="nr-shift-legend mb-3">
+  <div class="nr-legend-item nr-legend-day">
+   <i class="fa fa-sun"></i>
+   <div>
+    <strong><%= _tl('nurse_roster.shift_day', 'Day') %></strong>
+    <span><%= _tl('nurse_roster.shift_day_hours', '08:00 – 14:00') %></span>
+   </div>
+  </div>
+  <div class="nr-legend-item nr-legend-relay">
+   <i class="fa fa-exchange-alt"></i>
+   <div>
+    <strong><%= _tl('nurse_roster.shift_relay', 'Relay') %></strong>
+    <span><%= _tl('nurse_roster.shift_relay_hours', '14:00 – 20:00') %></span>
+   </div>
+  </div>
+  <div class="nr-legend-item nr-legend-night">
+   <i class="fa fa-moon"></i>
+   <div>
+    <strong><%= _tl('nurse_roster.shift_night', 'Night') %></strong>
+    <span><%= _tl('nurse_roster.shift_night_hours', '20:00 – 08:00') %></span>
+   </div>
+  </div>
+  <div class="nr-legend-item nr-legend-off">
+   <i class="fa fa-bed"></i>
+   <div>
+    <strong><%= _tl('nurse_roster.shift_off', 'Off') %></strong>
+    <span><%= _tl('nurse_roster.shift_off_hours', 'No duty') %></span>
+   </div>
+  </div>
+ </div>
+
+ <div class="nr-toolbar d-flex flex-wrap align-items-center justify-content-between">
+ <div class="btn-group nr-view-pills">
+ <a href="/nurse-roster?view=day&date=<%= date %>" class="btn btn-sm btn-white <%= view === 'day' ? 'active' : '' %>"><i class="fa fa-calendar-day mr-1"></i><%= _tl('nurse_roster.view_day', 'Day') %></a>
+ <a href="/nurse-roster?view=week&date=<%= weekStart || date %>" class="btn btn-sm btn-white <%= view === 'week' ? 'active' : '' %>"><i class="fa fa-calendar-week mr-1"></i><%= _tl('nurse_roster.view_week', 'Week') %></a>
+ <a href="/nurse-roster?view=month&date=<%= monthMeta.start %>" class="btn btn-sm btn-white <%= view === 'month' ? 'active' : '' %>"><i class="fa fa-calendar-alt mr-1"></i><%= _tl('nurse_roster.view_month', 'Month') %></a>
+ </div>
+
+ <div class="d-flex align-items-center flex-wrap mt-2 mt-md-0" style="gap:8px;">
+ <a href="/nurse-roster?view=<%= view %>&date=<%= prevNavDate %>" class="hms-btn hms-btn-secondary btn-sm rounded-circle nr-nav-btn" title="<%= _tl('nurse_roster.prev', 'Previous') %>"><i class="fa fa-chevron-left"></i></a>
+ <% if (view === 'month') { %>
+ <span class="font-weight-bold text-dark px-2"><%= monthMeta.label %></span>
+ <% } else if (view === 'week') { %>
+ <span class="font-weight-bold text-dark px-2 small"><%= _tl('nurse_roster.week_of', 'Week of {{date}}', { date: (typeof fmtDateShort === 'function' ? fmtDateShort(weekStart) : weekStart) }) %></span>
+ <% } else { %>
+ <form action="/nurse-roster" method="GET" class="d-flex align-items-center mb-0" style="gap:6px;">
+ <input type="hidden" name="view" value="day">
+ <input type="date" name="date" class="hms-input w-full text-sm" value="<%= date %>">
+ <button type="submit" class="btn btn-sm text-white font-weight-bold nr-go-btn"><%= _tl('nurse_roster.go', 'Go') %></button>
+ </form>
+ <% } %>
+ <a href="/nurse-roster?view=<%= view %>&date=<%= nextNavDate %>" class="hms-btn hms-btn-secondary btn-sm rounded-circle nr-nav-btn" title="<%= _tl('nurse_roster.next', 'Next') %>"><i class="fa fa-chevron-right"></i></a>
+ <% if (view !== 'day') { %>
+ <a href="/nurse-roster?view=day" class="btn btn-sm btn-link"><%= _tl('nurse_roster.today', 'Today') %></a>
+ <% } %>
+ </div>
+ </div>
+
+ <% if (view === 'day') { %>
+ <% if (isAdminOrSuper) { %>
+ <form action="/nurse-roster/save" method="POST" id="nrSaveForm">
+ <input type="hidden" name="date" value="<%= date %>">
+ <input type="hidden" name="view" value="day">
+ <div class="row">
+ <% nurses.forEach(n => { %>
+ <% const detail = (staffDayDetails && staffDayDetails[String(n.id)]) || { type: 'off', start_time: null, end_time: null };
+    const currentShift = detail.type || 'off';
+    const defs = shiftDefaults || {};
+    const startVal = detail.start_time || (defs[currentShift] && defs[currentShift].start) || '';
+    const endVal = detail.end_time || (defs[currentShift] && defs[currentShift].end) || ''; %>
+ <div class="col-md-6 col-lg-4 col-xl-3 mb-3">
+ <div class="nr-nurse-tile p-3 shift-<%= currentShift %>" data-nurse-tile="<%= n.id %>">
+ <div class="nr-initials shift-<%= currentShift %>-avatar"><%= (n.first_name||'')[0] %><%= (n.last_name||'')[0] %></div>
+ <h6 class="font-weight-bold mb-0 text-center"><%= n.first_name %> <%= n.last_name %></h6>
+ <p class="text-muted text-center small mb-2"><%= n.primary_department || _tl('nurse_roster.dept_nursing', 'Nursing') %></p>
+ <div class="nr-shift-lanes" data-emp="<%= n.id %>">
+  <label class="nr-lane-day" title="<%= _tl('nurse_roster.shift_day_long', 'Day shift') %>">
+   <input type="radio" name="shifts[<%= n.id %>]" value="day" <%= currentShift === 'day' ? 'checked' : '' %>>
+   <span><i class="fa fa-sun"></i> <%= _tl('nurse_roster.shift_day', 'Day') %></span>
+  </label>
+  <label class="nr-lane-relay" title="<%= _tl('nurse_roster.shift_relay_long', 'Relay shift') %>">
+   <input type="radio" name="shifts[<%= n.id %>]" value="relay" <%= currentShift === 'relay' ? 'checked' : '' %>>
+   <span><i class="fa fa-exchange-alt"></i> <%= _tl('nurse_roster.shift_relay', 'Relay') %></span>
+  </label>
+  <label class="nr-lane-night" title="<%= _tl('nurse_roster.shift_night_long', 'Night shift') %>">
+   <input type="radio" name="shifts[<%= n.id %>]" value="night" <%= currentShift === 'night' ? 'checked' : '' %>>
+   <span><i class="fa fa-moon"></i> <%= _tl('nurse_roster.shift_night', 'Night') %></span>
+  </label>
+  <label class="nr-lane-off" title="<%= _tl('nurse_roster.shift_off_long', 'Off') %>">
+   <input type="radio" name="shifts[<%= n.id %>]" value="off" <%= currentShift === 'off' ? 'checked' : '' %>>
+   <span><i class="fa fa-bed"></i> <%= _tl('nurse_roster.shift_off', 'Off') %></span>
+  </label>
+ </div>
+ <div class="nr-time-row mt-2 <%= currentShift === 'off' ? 'is-hidden' : '' %>" data-time-row="<%= n.id %>">
+  <div class="nr-time-field">
+   <label class="small font-weight-bold mb-0"><i class="fa fa-clock mr-1"></i><%= _tl('nurse_roster.start_time', 'Start') %></label>
+   <input type="time" name="shift_start[<%= n.id %>]" class="hms-input w-full text-sm nr-time-input" value="<%= startVal %>" data-role="start">
+  </div>
+  <div class="nr-time-field">
+   <label class="small font-weight-bold mb-0"><i class="fa fa-clock mr-1"></i><%= _tl('nurse_roster.end_time', 'End') %></label>
+   <input type="time" name="shift_end[<%= n.id %>]" class="hms-input w-full text-sm nr-time-input" value="<%= endVal %>" data-role="end">
+  </div>
+ </div>
+ </div>
+ </div>
+ <% }); %>
+ </div>
+ <div class="text-center mt-2">
+ <button type="submit" class="btn btn-lg font-weight-bold text-white px-5 rounded-pill shadow nr-save-btn">
+ <i class="fa fa-save mr-2"></i><%= _tl('nurse_roster.save_shifts', 'Save {{date}}', { date: (typeof fmtDate === 'function' ? fmtDate(date) : date) }) %>
+ </button>
+ </div>
+ </form>
+ <% } else { %>
+ <div class="row">
+ <% nurses.forEach(n => { %>
+ <% const detail = (staffDayDetails && staffDayDetails[String(n.id)]) || { type: 'off' };
+    const currentShift = detail.type || 'off';
+    const shiftLabels = {
+      day: _tl('nurse_roster.shift_day_long', 'Day shift'),
+      relay: _tl('nurse_roster.shift_relay_long', 'Relay shift'),
+      night: _tl('nurse_roster.shift_night_long', 'Night shift'),
+      off: _tl('nurse_roster.shift_off_long', 'Off')
+    };
+    const shiftIcons = { day: 'fa-sun', relay: 'fa-exchange-alt', night: 'fa-moon', off: 'fa-bed' };
+    const label = shiftLabels[currentShift] || shiftLabels.off;
+    const icon = shiftIcons[currentShift] || shiftIcons.off;
+    const timeLabel = currentShift !== 'off' && detail.start_time && detail.end_time
+      ? detail.start_time + ' – ' + detail.end_time
+      : ''; %>
+ <div class="col-md-6 col-lg-4 col-xl-3 mb-3">
+ <div class="nr-nurse-tile p-3 text-center shift-<%= currentShift %>">
+ <div class="nr-initials shift-<%= currentShift %>-avatar"><%= (n.first_name||'')[0] %><%= (n.last_name||'')[0] %></div>
+ <h6 class="font-weight-bold mb-1"><%= n.first_name %> <%= n.last_name %></h6>
+ <span class="nr-view-badge shift-<%= currentShift %>-badge">
+  <i class="fa <%= icon %> mr-1"></i><%= label %>
+ </span>
+ <% if (timeLabel) { %>
+ <div class="nr-view-time small text-muted mt-1"><i class="fa fa-clock mr-1"></i><%= timeLabel %></div>
+ <% } %>
+ </div>
+ </div>
+ <% }); %>
+ </div>
+ <p class="text-muted small text-center mt-2"><i class="fa fa-lock mr-1"></i><%= _tl('nurse_roster.view_only', 'View only — contact admin to edit shifts.') %></p>
+ <% } %>
+
+ <% } else if (view === 'week') { %>
+ <div class="nr-week-board table-responsive bg-white">
+ <table class="table table-bordered mb-0 text-center">
+ <thead>
+ <tr>
+ <th class="text-left pl-3"><%= _tl('nurse_roster.col_nurse', 'Nurse') %></th>
+ <% weekDays.forEach(wd => { %>
+ <th class="<%= wd.isWeekend ? 'text-muted' : '' %> <%= wd.isToday ? 'bg-warning' : '' %>">
+ <%= wd.weekday %><br><span class="text-muted font-weight-normal"><%= wd.dayNum %></span>
+ </th>
+ <% }); %>
+ </tr>
+ </thead>
+ <tbody>
+ <% staffWithWeek.forEach(sw => { %>
+ <tr>
+ <td class="text-left pl-3 font-weight-bold small"><%= sw.first_name %> <%= sw.last_name %></td>
+ <% sw.weekDays.forEach(wd => { %>
+ <td>
+ <% if (wd.shift === 'day') { %>
+ <span class="nr-week-cell day" title="<%= _tl('nurse_roster.shift_day', 'Day') %>"><i class="fa fa-sun"></i></span>
+ <% } else if (wd.shift === 'relay') { %>
+ <span class="nr-week-cell relay" title="<%= _tl('nurse_roster.shift_relay', 'Relay') %>"><i class="fa fa-exchange-alt"></i></span>
+ <% } else if (wd.shift === 'night') { %>
+ <span class="nr-week-cell night" title="<%= _tl('nurse_roster.shift_night', 'Night') %>"><i class="fa fa-moon"></i></span>
+ <% } else { %>
+ <span class="nr-week-cell off">—</span>
+ <% } %>
+ </td>
+ <% }); %>
+ </tr>
+ <% }); %>
+ </tbody>
+ </table>
+ </div>
+ <p class="text-muted small mt-2"><%= _tl('nurse_roster.week_legend', 'Sun = day · arrows = relay · moon = night · Switch to Day to edit.') %></p>
+
+ <% } else { %>
+ <div class="nr-month-grid mb-1">
+ <% var nrDows = [_tl('nurse_roster.dow_mon','Mon'),_tl('nurse_roster.dow_tue','Tue'),_tl('nurse_roster.dow_wed','Wed'),_tl('nurse_roster.dow_thu','Thu'),_tl('nurse_roster.dow_fri','Fri'),_tl('nurse_roster.dow_sat','Sat'),_tl('nurse_roster.dow_sun','Sun')]; nrDows.forEach(d => { %>
+ <div class="nr-month-dow"><%= d %></div>
+ <% }); %>
+ </div>
+ <% monthWeeks.forEach(week => { %>
+ <div class="nr-month-grid mb-1">
+ <% week.forEach(cell => { %>
+ <div class="nr-month-cell <%= !cell.inMonth ? 'outside' : '' %> <%= cell.isToday ? 'today' : '' %> <%= cell.isWeekend ? 'weekend' : '' %>">
+ <a class="day-link d-block" href="/nurse-roster?view=day&date=<%= cell.ymd %>" title="<%= _tl('nurse_roster.open_day', 'Open day editor') %>">
+ <div class="day-num"><%= cell.dayNum %></div>
+ </a>
+ <% if (cell.shifts && cell.shifts.day && cell.shifts.day.length) { %>
+ <div class="nr-month-shift-block day-shift"><i class="fa fa-sun mr-1"></i><%= cell.shifts.day.join(', ') %></div>
+ <% } %>
+ <% if (cell.shifts && cell.shifts.relay && cell.shifts.relay.length) { %>
+ <div class="nr-month-shift-block relay-shift"><i class="fa fa-exchange-alt mr-1"></i><%= cell.shifts.relay.join(', ') %></div>
+ <% } %>
+ <% if (cell.shifts && cell.shifts.night && cell.shifts.night.length) { %>
+ <div class="nr-month-shift-block night-shift"><i class="fa fa-moon mr-1"></i><%= cell.shifts.night.join(', ') %></div>
+ <% } %>
+ <% if (cell.inMonth && (!cell.shifts || (!cell.shifts.day.length && !(cell.shifts.relay && cell.shifts.relay.length) && !cell.shifts.night.length))) { %>
+ <span class="text-muted">—</span>
+ <% } %>
+ </div>
+ <% }); %>
+ </div>
+ <% }); %>
+ <p class="text-muted small mt-2"><%= _tl('nurse_roster.month_legend', 'Click a date to edit. Amber = day · orange = relay · indigo = night.') %></p>
+ <% } %>
+
+ </div>
+</div>
+
+<% if (isAdminOrSuper) { %>
+<div class="modal fade" id="copyRosterModal" tabindex="-1" role="dialog" aria-labelledby="copyRosterModalTitle">
+ <div class="modal-dialog modal-dialog-centered">
+ <div class="modal-content border-0 nr-modal">
+ <form action="/nurse-roster/copy" method="POST">
+ <div class="modal-header border-0">
+ <h5 class="modal-title font-weight-bold" id="copyRosterModalTitle"><i class="fa fa-copy mr-2 text-teal" aria-hidden="true"></i><%= _tl('nurse_roster.copy_title', 'Copy nursing shifts') %></h5>
+ <button type="button" class="close" data-dismiss="modal" aria-label="<%= _tl('nurse_roster.close', 'Close') %>"><span aria-hidden="true">&times;</span></button>
+ </div>
+ <div class="modal-body">
+ <input type="hidden" name="view" value="<%= view %>">
+ <div class="form-group">
+ <label class="small font-weight-bold"><%= _tl('nurse_roster.from_date', 'From date') %></label>
+ <input type="date" name="from_date" class="hms-input w-full" required>
+ </div>
+ <div class="form-group mb-0">
+ <label class="small font-weight-bold"><%= _tl('nurse_roster.to_date', 'To date') %></label>
+ <input type="date" name="to_date" class="hms-input w-full" value="<%= date %>" required>
+ </div>
+ </div>
+ <div class="modal-footer border-0">
+ <button type="button" class="hms-btn hms-btn-secondary" data-dismiss="modal"><%= _tl('nurse_roster.cancel', 'Cancel') %></button>
+ <button type="submit" class="hms-btn hms-btn-primary nr-copy-submit-btn"><%= _tl('nurse_roster.copy_shifts', 'Copy shifts') %></button>
+ </div>
+ </form>
+ </div>
+ </div>
+</div>
+<script>
+(function () {
+ var el = document.getElementById('copyRosterModal');
+ if (el && el.parentNode !== document.body) document.body.appendChild(el);
+
+ var defaults = <%- JSON.stringify(shiftDefaults || {}) %>;
+
+ function applyShiftUi(tile, shift) {
+  if (!tile) return;
+  tile.classList.remove('shift-day', 'shift-relay', 'shift-night', 'shift-off');
+  tile.classList.add('shift-' + shift);
+  var avatar = tile.querySelector('.nr-initials');
+  if (avatar) {
+   avatar.classList.remove('shift-day-avatar', 'shift-relay-avatar', 'shift-night-avatar', 'shift-off-avatar');
+   avatar.classList.add('shift-' + shift + '-avatar');
+  }
+  var timeRow = tile.querySelector('.nr-time-row');
+  if (timeRow) {
+   if (shift === 'off') {
+    timeRow.classList.add('is-hidden');
+   } else {
+    timeRow.classList.remove('is-hidden');
+    var def = defaults[shift] || {};
+    var startIn = timeRow.querySelector('[data-role="start"]');
+    var endIn = timeRow.querySelector('[data-role="end"]');
+    if (startIn && def.start) startIn.value = def.start;
+    if (endIn && def.end) endIn.value = def.end;
+   }
+  }
+ }
+
+ document.querySelectorAll('.nr-shift-lanes').forEach(function (lanes) {
+  lanes.querySelectorAll('input[type="radio"]').forEach(function (radio) {
+   radio.addEventListener('change', function () {
+    if (!radio.checked) return;
+    var tile = lanes.closest('.nr-nurse-tile');
+    applyShiftUi(tile, radio.value);
+   });
+  });
+ });
+})();
+</script>
+<% } %>
+
+<%- include('partials/footer') %>

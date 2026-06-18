@@ -1,0 +1,78 @@
+<%- include('partials/header') %>
+
+<div class="page-wrapper">
+ <div class="content">
+ <!-- Header -->
+ <div class="row align-items-center mb-4">
+ <div class="col-sm-8">
+ <h4 class="page-title font-weight-bold text-dark"><%= _tl('lab_worklist.title', 'Laboratory Worklist') %></h4>
+ <p class="text-muted small"><%= _tl('lab_worklist.subtitle', 'Manage pending samples and result entry for all medical tests.') %></p>
+ </div>
+ <div class="col-sm-4 text-right">
+ <button class="btn btn-primary hms-btn-premium" data-toggle="modal" data-target="#newTestModal">
+ <i class="fa fa-flask mr-2"></i> <%= _tl('lab_worklist.register_test_order', 'Register Test Order') %>
+ </button>
+ </div>
+ </div>
+
+ <!-- Worklist Table -->
+ <div class="card border-0 shadow-sm rounded-xl overflow-hidden">
+ <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center">
+ <h5 class="mb-0 font-weight-bold text-dark"><%= _tl('lab_worklist.active_orders', 'Active Lab Orders') %></h5>
+ <span class="badge badge-info-light"><%= _tl('lab_worklist.pending_samples', '{{count}} Pending Samples', { count: worklist.length }) %></span>
+ </div>
+ <div class="table-responsive">
+ <table class="table table-hover mb-0 hms-table-v3">
+ <thead class="bg-light">
+ <tr>
+ <th><%= _tl('lab_worklist.col_order_id', 'Order ID') %></th>
+ <th><%= _tl('lab_worklist.col_patient_name', 'Patient Name') %></th>
+ <th><%= _tl('lab_worklist.col_test_description', 'Test Description') %></th>
+ <th><%= _tl('lab_worklist.col_scheduled_for', 'Scheduled For') %></th>
+ <th><%= _tl('lab_worklist.col_status', 'Status') %></th>
+ <th class="text-right"><%= _tl('lab_worklist.col_action', 'Action') %></th>
+ </tr>
+ </thead>
+ <tbody>
+ <% worklist.forEach(item => { %>
+ <tr>
+ <td><code>#LAB-<%= String(item.id).padStart(4, '0') %></code></td>
+ <td>
+ <div class="font-weight-bold text-dark"><%= item.first_name %> <%= item.last_name %></div>
+ <div class="small text-muted"><%= item.gender %></div>
+ </td>
+ <td class="font-weight-bold text-indigo"><%= item.test_name %></td>
+ <td><span class="small text-muted"><%= fmtDate(item.appointment_date) %></span></td>
+ <td>
+ <% 
+ let badge = 'badge-secondary';
+ if(item.status === 'pending') badge = 'badge-warning';
+ if(item.status === 'in_progress') badge = 'badge-info';
+ %>
+ <span class="badge <%= badge %>-light px-2 py-1 text-uppercase">
+ <%= item.status.replace('_', ' ') %>
+ </span>
+ </td>
+ <td class="text-right">
+ <a href="/lab/edit/<%= item.id %>" class="btn btn-indigo-light btn-sm rounded-pill px-3">
+ <i class="fa fa-pencil mr-1"></i> <%= _tl('lab_worklist.enter_results', 'Enter Results') %>
+ </a>
+ </td>
+ </tr>
+ <% }) %>
+ <% if(worklist.length === 0) { %>
+ <tr>
+ <td colspan="6" class="text-center py-5 text-muted">
+ <i class="fa fa-check-circle fa-3x mb-3 opacity-25"></i>
+ <p><%= _tl('lab_worklist.empty_state', 'All clear! No pending lab orders at this moment.') %></p>
+ </td>
+ </tr>
+ <% } %>
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,326 @@
+/* Medical Passport — compact flowing booklet (minimal pages) */
+@media print {
+  @page {
+    size: A5 portrait;
+    margin: 5mm 6mm 6mm 6mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+.passport-booklet {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #0f172a;
+}
+
+.passport-booklet-screen {
+  background: #cbd5e1;
+  padding: 1rem;
+}
+
+@media print {
+  .passport-booklet-screen {
+    background: #fff;
+    padding: 0;
+  }
+}
+
+/* Single flowing document — no forced page-per-section */
+.booklet-flow {
+  width: 148mm;
+  margin: 0 auto 1rem;
+  background: #fff;
+  border: 1px solid #94a3b8;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.1);
+  padding: 5mm 7mm 6mm;
+}
+
+@media print {
+  .booklet-flow {
+    width: auto;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+}
+
+/* Compact cover — only breaks after if followed by more content */
+.booklet-cover {
+  background: linear-gradient(160deg, #0f172a 0%, #1e293b 100%);
+  color: #fff;
+  padding: 5mm 6mm;
+  margin: -5mm -7mm 4mm;
+  page-break-after: always;
+  break-after: page;
+}
+
+@media print {
+  .booklet-cover {
+    margin: 0 0 3mm;
+    padding: 4mm 5mm;
+  }
+}
+
+.booklet-cover-logo {
+  max-height: 11mm;
+  width: 100%;
+  object-fit: contain;
+  object-position: left;
+  margin-bottom: 3mm;
+}
+
+.booklet-cover-badge {
+  display: inline-block;
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  background: rgba(251, 191, 36, 0.1);
+  color: #fde68a;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 6px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.booklet-cover-title {
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.1;
+  margin: 2mm 0 1mm;
+}
+
+.booklet-cover-name {
+  font-size: 11px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.booklet-cover-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 2mm;
+  margin-top: 3mm;
+  font-size: 6.5px;
+}
+
+.booklet-cover-meta dt {
+  color: #94a3b8;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 5px;
+}
+
+.booklet-cover-meta dd {
+  margin: 0;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.booklet-cover-foot {
+  margin-top: 3mm;
+  padding-top: 2mm;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 6px;
+  color: #94a3b8;
+}
+
+/* Sections flow together — no page break between them */
+.booklet-block {
+  margin-bottom: 3mm;
+  break-inside: auto;
+}
+
+.booklet-block-title {
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #0f172a;
+  margin: 0 0 2px;
+  padding-bottom: 2px;
+  border-bottom: 1.5px solid #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.booklet-block-title i {
+  color: #b45309;
+  font-size: 8px;
+}
+
+.booklet-block-sub {
+  font-size: 5.5px;
+  color: #64748b;
+  margin: 0 0 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.booklet-dense-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px 6px;
+  font-size: 6.5px;
+  line-height: 1.25;
+  margin-bottom: 2mm;
+}
+
+.booklet-field {
+  display: flex;
+  gap: 3px;
+  padding: 1px 0;
+  border-bottom: 1px dotted #e2e8f0;
+}
+
+.booklet-field i {
+  width: 9px;
+  color: #64748b;
+  font-size: 6px;
+  flex-shrink: 0;
+}
+
+.booklet-field-label {
+  color: #64748b;
+  font-weight: 700;
+  font-size: 5.5px;
+  text-transform: uppercase;
+  min-width: 36px;
+}
+
+.booklet-field-value {
+  flex: 1;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.booklet-mini-block {
+  margin-bottom: 2mm;
+}
+
+.booklet-mini-block h3 {
+  margin: 0 0 1px;
+  font-size: 6px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #475569;
+}
+
+.booklet-sub-table {
+  margin: 2px 0 1px;
+  font-size: 6px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #475569;
+}
+
+.booklet-bullets {
+  margin: 0;
+  padding: 0 0 0 9px;
+  font-size: 6.5px;
+  line-height: 1.25;
+}
+
+.booklet-bullets li {
+  margin-bottom: 1px;
+}
+
+.booklet-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 6px;
+  line-height: 1.2;
+  table-layout: fixed;
+  margin-bottom: 1mm;
+}
+
+.booklet-table thead {
+  display: table-header-group;
+}
+
+.booklet-table th {
+  background: #0f172a;
+  color: #fde68a;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 5px;
+  padding: 1px 3px;
+  text-align: left;
+  border: 1px solid #0f172a;
+}
+
+.booklet-table td {
+  padding: 1px 3px;
+  border: 1px solid #e2e8f0;
+  vertical-align: top;
+  word-wrap: break-word;
+}
+
+.booklet-table tbody tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+.booklet-table .col-date { width: 14%; }
+.booklet-table .col-src { width: 9%; }
+.booklet-table .col-type { width: 10%; }
+.booklet-table .col-title { width: 27%; font-weight: 700; }
+.booklet-table .col-detail { width: 40%; color: #475569; }
+
+.booklet-empty {
+  font-size: 6px;
+  color: #94a3b8;
+  font-style: italic;
+  margin: 0;
+}
+
+.booklet-footer {
+  margin-top: 3mm;
+  padding-top: 2mm;
+  border-top: 1px solid #e2e8f0;
+  break-inside: avoid;
+}
+
+.booklet-disclaimer {
+  font-size: 6px;
+  line-height: 1.35;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  padding: 2mm 3mm;
+  margin-bottom: 2mm;
+}
+
+.booklet-back-foot {
+  font-size: 5.5px;
+  color: #64748b;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.booklet-print-hint {
+  font-size: 11px;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 0 auto 12px;
+  max-width: 148mm;
+}
+
+@media print {
+  .booklet-print-hint {
+    display: none;
+  }
+}

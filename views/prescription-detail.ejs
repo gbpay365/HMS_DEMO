@@ -1,0 +1,127 @@
+<%- include('partials/header') %>
+
+<% if (locals.printMode && printMode) { %>
+<script>window.onload = function() { window.print(); }</script>
+<style>
+  @media print { .no-print { display: none !important; } }
+  .rx-print-header { border-bottom: 3px double #1e40af; padding-bottom: 12px; margin-bottom: 20px; }
+</style>
+<% } %>
+
+<div class="page-wrapper">
+ <div class="content">
+
+  <!-- Back bar -->
+  <div class="d-flex align-items-center justify-content-between mb-4 no-print">
+   <a href="/prescriptions" class="btn btn-outline-secondary rounded-pill btn-sm"><i class="fa fa-arrow-left mr-1"></i> <%= _tl('prescription_detail.back_to_registry', 'Back to Registry') %></a>
+   <div>
+    <a href="/patient-chart/<%= rx.patient_id %>" class="btn btn-outline-primary btn-sm rounded-pill mr-2"><i class="fa fa-folder-open-o mr-1"></i> <%= _tl('prescription_detail.patient_chart', 'Patient Chart') %></a>
+    <a href="/prescriptions/<%= rx.id %>/print" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill"><i class="fa fa-print mr-1"></i> <%= _tl('prescription_detail.print_rx', 'Print Rx') %></a>
+   </div>
+  </div>
+
+  <!-- Prescription Card -->
+  <div class="card border-0 shadow-lg rounded-xl overflow-hidden">
+
+   <!-- Header -->
+   <div class="card-body p-4" style="background:linear-gradient(135deg,#1e40af,#3b82f6);">
+    <div class="d-flex justify-content-between align-items-start">
+     <div>
+      <div class="text-white-50 small font-weight-bold text-uppercase mb-1" style="letter-spacing:.08em;"><%= _tl('prescription_detail.prescription_order', 'Prescription Order') %></div>
+      <h3 class="text-white font-weight-bold mb-1">#RX-<%= rx.id %></h3>
+      <div class="text-white-50 small"><%= rx.created_at ? new Date(rx.created_at).toLocaleString() : '' %></div>
+     </div>
+     <span class="badge badge-light px-3 py-2 font-weight-bold text-uppercase" style="font-size:.8rem;">
+      <i class="fa fa-circle mr-1 text-success"></i><%= rx.status || _tl('prescription_detail.status_active', 'Active') %>
+     </span>
+    </div>
+   </div>
+
+   <div class="card-body p-4">
+    <div class="row mb-4">
+     <!-- Patient Info -->
+     <div class="col-md-6">
+      <div class="p-3 bg-light rounded-lg border">
+       <div class="small text-muted font-weight-bold text-uppercase mb-2" style="letter-spacing:.05em;"><%= _tl('prescription_detail.patient', 'Patient') %></div>
+       <div class="d-flex align-items-center">
+        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white font-weight-bold mr-3" style="width:44px;height:44px;font-size:1rem;flex-shrink:0;">
+         <%= rx.first_name[0] %><%= rx.last_name[0] %>
+        </div>
+        <div>
+         <div class="font-weight-bold text-dark"><%= rx.first_name %> <%= rx.last_name %></div>
+         <div class="small text-muted">#P-<%= rx.patient_id %> &middot; <%= rx.gender || '' %> &middot; <%= rx.phone || '' %></div>
+        </div>
+       </div>
+      </div>
+     </div>
+     <!-- Prescriber -->
+     <div class="col-md-6">
+      <div class="p-3 bg-light rounded-lg border">
+       <div class="small text-muted font-weight-bold text-uppercase mb-2" style="letter-spacing:.05em;"><%= _tl('prescription_detail.prescribed_by', 'Prescribed By') %></div>
+       <% if (rx.doc_fn) { %>
+       <div class="font-weight-bold text-dark"><i class="fa fa-user-md mr-1 text-primary"></i>Dr. <%= rx.doc_fn %> <%= rx.doc_ln %></div>
+       <% } else { %>
+       <div class="text-muted small font-italic"><%= _tl('prescription_detail.not_specified', 'Not specified') %></div>
+       <% } %>
+       <div class="small text-muted mt-1">
+        <i class="fa fa-calendar mr-1"></i>
+        <%= rx.created_at ? fmtDate(rx.created_at) : '&mdash;' %>
+       </div>
+      </div>
+     </div>
+    </div>
+
+    <!-- Title -->
+    <div class="mb-4">
+     <h5 class="font-weight-bold text-dark border-bottom pb-2 mb-3">
+      <i class="fa fa-medkit mr-2 text-primary"></i><%= rx.title || _tl('prescription_detail.prescription_default', 'Prescription') %>
+     </h5>
+
+     <!-- Medication Items -->
+     <% if (rx.items && rx.items.trim()) { %>
+     <div class="p-3 bg-light border rounded-lg mb-3">
+      <div class="small text-muted font-weight-bold text-uppercase mb-2" style="letter-spacing:.05em;"><%= _tl('prescription_detail.medication_items', 'Medication Items') %></div>
+      <div style="white-space:pre-line; font-family:'Courier New',monospace; font-size:.9rem; color:#1e293b; line-height:1.8;"><%- rx.items.replace(/</g,'&lt;').replace(/>/g,'&gt;') %></div>
+     </div>
+     <% } %>
+
+     <!-- Notes -->
+     <% if (rx.notes && rx.notes.trim()) { %>
+     <div class="p-3 border-left-4 bg-warning-soft rounded-lg" style="border-left:4px solid #f59e0b;">
+      <div class="small text-muted font-weight-bold text-uppercase mb-1" style="letter-spacing:.05em;"><%= _tl('prescription_detail.clinical_notes', 'Clinical Notes') %></div>
+      <div class="small" style="white-space:pre-line;"><%= rx.notes %></div>
+     </div>
+     <% } %>
+    </div>
+
+    <% if (locals.verifyUrl && locals.printMode) { %>
+    <div class="row mt-4 no-print">
+     <div class="col-md-6 text-center">
+      <div class="small text-muted font-weight-bold mb-2"><%= _tl('prescription_detail.verify_qr', 'VERIFY AT PHARMACY (SCAN QR)') %></div>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=<%= encodeURIComponent(verifyUrl) %>" alt="<%= _tl('prescription_detail.rx_qr_alt', 'Rx QR') %>" width="160" height="160" class="border rounded p-2 bg-white">
+      <div class="small text-muted mt-2 font-monospace" style="font-size:.65rem;word-break:break-all;"><%= verifyUrl %></div>
+     </div>
+    </div>
+    <% } %>
+
+    <!-- Footer signature line (print-friendly) -->
+    <div class="row mt-5" style="border-top:1px dashed #cbd5e1;padding-top:20px;">
+     <div class="col-6">
+      <div class="small text-muted mb-1"><%= _tl('prescription_detail.prescribing_doctor', 'Prescribing Doctor') %></div>
+      <div style="border-bottom:1px solid #94a3b8;height:40px;"></div>
+      <div class="small text-muted mt-1"><%= rx.doc_fn ? 'Dr. ' + rx.doc_fn + ' ' + rx.doc_ln : '___________________' %></div>
+     </div>
+     <div class="col-6 text-right">
+      <div class="small text-muted mb-1"><%= _tl('prescription_detail.pharmacy_dispensed_by', 'Pharmacy / Dispensed By') %></div>
+      <div style="border-bottom:1px solid #94a3b8;height:40px;"></div>
+      <div class="small text-muted mt-1"><%= _tl('prescription_detail.signature_date_line', '___________________ / Date: ________') %></div>
+     </div>
+    </div>
+
+   </div>
+  </div>
+
+ </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,140 @@
+<%- include('partials/header') %>
+<link rel="stylesheet" href="/vendor/select2/select2.min.css">
+<script src="/vendor/select2/select2.min.js"></script>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+
+<div class="page-wrapper">
+ <div class="content">
+ <!-- Header -->
+ <div class="row align-items-center mb-4">
+ <div class="col-sm-8">
+ <h4 class="page-title font-weight-bold text-dark"><%= _t('nursing_vitals.title', { ns: 'legacy', defaultValue: 'Nursing Station: Vitals Registry' }) %></h4>
+ <p class="text-muted small"><%= _t('nursing_vitals.subtitle', { ns: 'legacy', defaultValue: 'Record and monitor patient vital signs for clinical pre-assessment.' }) %></p>
+ <% if (locals.flash) { %>
+ <div class="alert alert-success border-0 shadow-sm mt-2 mb-0 py-2 small"><%= flash %></div>
+ <% } %>
+ <% if (locals.error) { %>
+ <div class="alert alert-danger border-0 shadow-sm mt-2 mb-0 py-2 small"><%= error %></div>
+ <% } %>
+ </div>
+ </div>
+
+ <div class="row justify-content-center">
+ <div class="col-lg-10">
+ <div class="card border-0 shadow-sm rounded-xl bg-white overflow-hidden">
+ <div class="card-header bg-indigo p-4">
+ <h5 class="mb-0 text-white font-weight-bold"><i class="fa fa-heartbeat mr-2"></i> <%= _t('nursing_vitals.record_title', { ns: 'legacy', defaultValue: 'Record Patient Vitals' }) %></h5>
+ </div>
+ <div class="card-body p-5">
+ <form action="/nursing/vitals/save" method="POST">
+ <% if (locals.prefillVisitId) { %>
+ <input type="hidden" name="opd_visit_id" value="<%= prefillVisitId %>">
+ <% } %>
+ <% if (locals.redirectTo) { %>
+ <input type="hidden" name="redirect_to" value="<%= redirectTo %>">
+ <% } %>
+ <div class="form-group mb-5">
+ <label class="h6 font-weight-bold text-dark"><%= _t('nursing_vitals.patient_selection', { ns: 'legacy', defaultValue: 'Patient Selection' }) %> <span class="text-danger">*</span></label>
+ <select name="patient_id" id="nv-patient-select" class="form-control select2 hms-select-pill" required>
+ <option value=""><%= _t('nursing_vitals.search_patient', { ns: 'legacy', defaultValue: '— Search Patient —' }) %></option>
+ <% const _pre = locals.prefillPatientId ? Number(prefillPatientId) : 0; %>
+ <% patients.forEach(p => { %>
+ <option value="<%= p.id %>"<%= (_pre && Number(p.id) === _pre) ? ' selected' : '' %>><%= p.first_name %> <%= p.last_name %></option>
+ <% }) %>
+ </select>
+ </div>
+
+ <div class="row">
+ <!-- Cardiovascular -->
+ <div class="col-md-4 mb-4">
+ <div class="p-4 bg-light rounded-xl border h-100">
+ <h6 class="font-weight-bold text-indigo mb-3"><i class="fa fa-dashboard mr-2"></i> <%= _t('nursing_vitals.circulation', { ns: 'legacy', defaultValue: 'Circulation' }) %></h6>
+ <div class="form-group">
+ <label class="small font-weight-bold"><%= _t('nursing_vitals.bp_sys', { ns: 'legacy', defaultValue: 'BP Systolic (mmHg)' }) %></label>
+ <input type="number" name="bp_sys" class="form-control hms-input-pill" placeholder="<%= _t('nursing_vitals.bp_sys_ph', { ns: 'legacy', defaultValue: 'e.g. 120' }) %>">
+ </div>
+ <div class="form-group">
+ <label class="small font-weight-bold"><%= _t('nursing_vitals.bp_dia', { ns: 'legacy', defaultValue: 'BP Diastolic (mmHg)' }) %></label>
+ <input type="number" name="bp_dia" class="form-control hms-input-pill" placeholder="<%= _t('nursing_vitals.bp_dia_ph', { ns: 'legacy', defaultValue: 'e.g. 80' }) %>">
+ </div>
+ <div class="form-group mb-0">
+ <label class="small font-weight-bold"><%= _t('nursing_vitals.heart_rate', { ns: 'legacy', defaultValue: 'Heart Rate (bpm)' }) %></label>
+ <input type="number" name="heart_rate" class="form-control hms-input-pill" placeholder="<%= _t('nursing_vitals.heart_rate_ph', { ns: 'legacy', defaultValue: 'e.g. 72' }) %>">
+ </div>
+ </div>
+ </div>
+
+ <!-- Respiratory & Temperature -->
+ <div class="col-md-4 mb-4">
+ <div class="p-4 bg-light rounded-xl border h-100">
+ <h6 class="font-weight-bold text-success mb-3"><i class="fa fa-thermometer-half mr-2"></i> <%= _t('nursing_vitals.metabolism', { ns: 'legacy', defaultValue: 'Metabolism' }) %></h6>
+ <div class="form-group">
+ <label class="small font-weight-bold"><%= _t('nursing_vitals.temperature', { ns: 'legacy', defaultValue: 'Temperature (°C)' }) %></label>
+ <input type="number" step="0.1" name="temp_c" class="form-control hms-input-pill" placeholder="<%= _t('nursing_vitals.temperature_ph', { ns: 'legacy', defaultValue: 'e.g. 36.5' }) %>">
+ </div>
+ <div class="form-group">
+ <label class="small font-weight-bold"><%= _t('nursing_vitals.spo2', { ns: 'legacy', defaultValue: 'SpO2 (%)' }) %></label>
+ <input type="number" name="spo2" class="form-control hms-input-pill" placeholder="<%= _t('nursing_vitals.spo2_ph', { ns: 'legacy', defaultValue: 'e.g. 98' }) %>">
+ </div>
+ <div class="form-group mb-0">
+ <label class="small font-weight-bold"><%= _t('nursing_vitals.resp_rate', { ns: 'legacy', defaultValue: 'Resp. Rate (/min)' }) %></label>
+ <input type="number" name="rr" class="form-control hms-input-pill" placeholder="<%= _t('nursing_vitals.resp_rate_ph', { ns: 'legacy', defaultValue: 'e.g. 18' }) %>">
+ </div>
+ </div>
+ </div>
+
+ <!-- Anthropometrics -->
+ <div class="col-md-4 mb-4">
+ <div class="p-4 bg-light rounded-xl border h-100">
+ <h6 class="font-weight-bold text-orange mb-3"><i class="fa fa-balance-scale mr-2"></i> <%= _t('nursing_vitals.measurements', { ns: 'legacy', defaultValue: 'Measurements' }) %></h6>
+ <div class="form-group">
+ <label class="small font-weight-bold"><%= _t('nursing_vitals.weight', { ns: 'legacy', defaultValue: 'Weight (kg)' }) %></label>
+ <input type="number" step="0.1" name="weight_kg" class="form-control hms-input-pill" placeholder="<%= _t('nursing_vitals.weight_ph', { ns: 'legacy', defaultValue: 'e.g. 70.0' }) %>">
+ </div>
+ <div class="form-group">
+ <label class="small font-weight-bold"><%= _t('nursing_vitals.height', { ns: 'legacy', defaultValue: 'Height (cm)' }) %></label>
+ <input type="number" step="0.1" name="height_cm" class="form-control hms-input-pill" placeholder="<%= _t('nursing_vitals.height_ph', { ns: 'legacy', defaultValue: 'e.g. 175.0' }) %>">
+ </div>
+ <div class="form-group mb-0">
+ <label class="small font-weight-bold"><%= _t('nursing_vitals.waist', { ns: 'legacy', defaultValue: 'Waist (cm)' }) %></label>
+ <input type="number" step="0.1" name="waist_cm" class="form-control hms-input-pill" placeholder="<%= _t('nursing_vitals.waist_ph', { ns: 'legacy', defaultValue: 'e.g. 85.0' }) %>">
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <div class="text-right mt-4">
+ <button type="reset" class="btn btn-light px-5 mr-2"><%= _t('nursing_vitals.clear', { ns: 'legacy', defaultValue: 'Clear' }) %></button>
+ <button type="submit" class="btn btn-indigo px-5 hms-btn-premium"><%= _t('nursing_vitals.save_sync', { ns: 'legacy', defaultValue: 'Save & Sync to Doctor' }) %></button>
+ </div>
+ </form>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+</div>
+
+<style>
+ .rounded-xl { border-radius: 1rem; }
+ .hms-input-pill { border-radius: 8px; border: 1px solid #e2e8f0; padding: 0.6rem 1rem; }
+ .hms-input-pill:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+ .bg-indigo { background: #4f46e5; }
+ .text-indigo { color: #4f46e5; }
+</style>
+
+<script>
+ $(document).ready(function() {
+ var prePid = <%- (locals.prefillPatientId && Number(prefillPatientId) > 0) ? JSON.stringify(Number(prefillPatientId)) : 'null' %>;
+ var searchPh = <%- JSON.stringify(_t('nursing_vitals.search_patient', { ns: 'legacy', defaultValue: '— Search Patient —' })) %>;
+ $('#nv-patient-select').select2({
+ theme: 'bootstrap4',
+ placeholder: searchPh
+ });
+ if (prePid) {
+ $('#nv-patient-select').val(String(prePid)).trigger('change');
+ }
+ });
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--employees'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'employees',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.employees', { ns: 'common' }) : 'Loading Employees…')
+}) %>
+
+<%- include('partials/footer') %>

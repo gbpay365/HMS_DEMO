@@ -1,0 +1,65 @@
+<%- include('partials/header') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    var o = { ns: 'legacy', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+    return _t(key, o);
+  };
+}
+%>
+<%- include('partials/pharmacy-odoo-start', { phaOdooMenu: 'reporting', phaOdooTitle: _tl('pharmacy_report_expiry.title', 'Expiry report'), nursingSupplyPending, flash, error }) %>
+<div class="o_control_panel">
+  <div class="o_cp_breadcrumb"><span><%= _tl('pharmacy_report_expiry.breadcrumb', 'Medicine expiry report') %></span></div>
+  <form method="get" action="/pharmacy/reporting/expiry" class="d-flex align-items-center ml-auto" style="gap:8px;">
+    <label class="small mb-0 text-muted"><%= _tl('pharmacy_report_expiry.within', 'Within') %></label>
+    <select name="days" class="form-control form-control-sm" style="width:auto;" onchange="this.form.submit()">
+      <% [7,14,30,60,90].forEach(function(d){ %>
+      <option value="<%= d %>"<%= (days||30)===d?' selected':'' %>><%= d %> <%= _tl('pharmacy_report_expiry.days', 'days') %></option>
+      <% }); %>
+    </select>
+  </form>
+</div>
+<div class="o_content p-3">
+  <div class="o_list_renderer">
+    <table class="o_list_table">
+      <thead>
+        <tr>
+          <th><%= _tl('pharmacy_report_expiry.col_sku', 'SKU') %></th>
+          <th><%= _tl('pharmacy_shared.product', 'Product') %></th>
+          <th><%= _tl('pharmacy_shared.type', 'Type') %></th>
+          <th><%= _tl('pharmacy_report_expiry.col_category', 'Category') %></th>
+          <th><%= _tl('pharmacy_shared.expiry_label', 'Expiry') %></th>
+          <th style="text-align:right;"><%= _tl('pharmacy_report_expiry.col_on_hand', 'On hand') %></th>
+          <th><%= _tl('pharmacy_shared.status', 'Status') %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if ((rows||[]).length) { rows.forEach(function(r){ %>
+        <tr>
+          <td><%= r.sku %></td>
+          <td class="font-weight-bold"><%= r.name %></td>
+          <td class="text-muted small"><%= r.medicine_type_name || _tl('pharmacy_shared.em_dash', '—') %></td>
+          <td class="text-muted small"><%= r.medicine_category_name || _tl('pharmacy_shared.em_dash', '—') %></td>
+          <td><%= r.expiry_date %></td>
+          <td style="text-align:right;"><%= r.quantity %></td>
+          <td>
+            <% if (r.expired) { %>
+            <span class="o_status_pill" style="background:#fee2e2;color:#991b1b;"><%= _tl('pharmacy_report_expiry.status_expired', 'Expired') %></span>
+            <% } else { %>
+            <span class="o_status_pill o_status_preparing"><%= _tl('pharmacy_report_expiry.status_expiring_soon', 'Expiring soon') %></span>
+            <% } %>
+          </td>
+        </tr>
+        <% }); } else { %>
+        <tr><td colspan="7"><div class="o_list_empty"><i class="fa fa-check-circle"></i><%= _tl('pharmacy_report_expiry.empty', 'No items expiring in this window.') %></div></td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('partials/pharmacy-odoo-end') %>
+<%- include('partials/footer') %>

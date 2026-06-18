@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title><%= reportMeta.title %> — <%= reportRange.label %></title>
+  <link rel="stylesheet" href="/css/pharmacy-reports.css?v=4">
+  <style>
+    body { font-family: Inter, sans-serif; margin: 24px; color: #0f172a; }
+    @media print { body { margin: 12px; } }
+  </style>
+</head>
+<body>
+  <%- include('partials/print-letterhead', { variant: 'compact', docTitle: reportMeta.title, docMeta: reportRange.label }) %>
+  <header class="pha-report-hero" style="--report-accent:<%= reportMeta.accent %>;">
+    <h1 style="margin:0;font-size:1.4rem;"><%= reportMeta.title %></h1>
+    <p style="margin:0.5rem 0 0;opacity:0.9;"><%= reportMeta.subtitle %></p>
+    <p style="margin:0.35rem 0 0;font-size:0.9rem;"><Period: <strong><%= reportRange.label %></strong> · Generated <%= generatedAt %></p>
+  </header>
+
+  <% if ((reportData.kpis || []).length) { %>
+  <div class="pha-report-kpis" style="margin:1rem 0;">
+    <% reportData.kpis.forEach(function(k){ %>
+    <div class="pha-report-kpi">
+      <div class="pha-report-kpi-label"><%= k.label %></div>
+      <div class="pha-report-kpi-value"><%= k.value %></div>
+    </div>
+    <% }); %>
+  </div>
+  <% } %>
+
+  <div class="pha-report-table-wrap">
+    <table class="pha-report-table">
+      <thead>
+        <tr>
+          <% (reportData.columns || []).forEach(function(col){ %>
+          <th<%= col.align === 'right' ? ' style="text-align:right;"' : '' %>><%= col.label %></th>
+          <% }); %>
+        </tr>
+      </thead>
+      <tbody>
+        <% (reportData.rows || []).forEach(function(row){ %>
+        <tr>
+          <% (reportData.columns || []).forEach(function(col){ %>
+          <td<%= col.align === 'right' ? ' style="text-align:right;"' : '' %>><%= row[col.key] != null ? row[col.key] : '—' %></td>
+          <% }); %>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% if (typeof locals.autoPrint !== 'undefined' && locals.autoPrint) { %><%- include('partials/print-auto-once') %><% } %>
+</body>
+</html>

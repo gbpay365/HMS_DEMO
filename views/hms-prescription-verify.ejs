@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--prescription-verify'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'hms-prescription-verify',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.default', { ns: 'common' }) : 'Loading…')
+}) %>
+
+<%- include('partials/footer') %>

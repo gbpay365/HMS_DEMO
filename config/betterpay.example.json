@@ -1,0 +1,7 @@
+{
+  "partner_identifier": "YOUR_BETTERPAY_PARTNER_ID",
+  "pay_base_url": "https://pay.betterpay.online/pay",
+  "webhook_secret": "",
+  "status_url": "",
+  "api_key": ""
+}

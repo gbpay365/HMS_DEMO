@@ -1,0 +1,346 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<div class="page-wrapper"><div class="content">
+
+<style>
+/* Premium Theme */
+:root {
+  --manual-primary: #1a6bd8;
+  --manual-secondary: #0f172a;
+  --manual-accent: #f59e0b;
+  --manual-bg: #f8fafc;
+  --manual-card-bg: #ffffff;
+}
+
+.manual-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  font-family: 'Inter', sans-serif;
+  color: var(--manual-secondary);
+  line-height: 1.6;
+}
+
+.manual-hero {
+  background: linear-gradient(135deg, var(--manual-secondary), #1e293b);
+  color: white;
+  padding: 3rem 2rem;
+  border-radius: 20px;
+  margin-bottom: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.manual-hero::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 300px;
+  height: 300px;
+  background: rgba(26, 107, 216, 0.2);
+  border-radius: 50%;
+  filter: blur(60px);
+}
+
+.manual-section {
+  background: var(--manual-card-bg);
+  border-radius: 16px;
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+  border: 1px solid #e2e8f0;
+  transition: transform 0.2s;
+}
+
+.manual-section:hover {
+  transform: translateY(-2px);
+}
+
+.manual-section h2 {
+  color: var(--manual-primary);
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 0.75rem;
+}
+
+.manual-section h3 {
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: #1e293b;
+}
+
+.manual-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.manual-list li {
+  position: relative;
+  padding-left: 2rem;
+  margin-bottom: 1rem;
+}
+
+.manual-list li::before {
+  content: '\f058';
+  font-family: 'FontAwesome';
+  position: absolute;
+  left: 0;
+  color: var(--manual-primary);
+  font-size: 1.1rem;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #475569;
+  margin-bottom: 1rem;
+}
+
+.alert-box {
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+.alert-box.note { background: #eff6ff; border-left: 4px solid #3b82f6; }
+.alert-box.warning { background: #fffbeb; border-left: 4px solid #f59e0b; }
+.alert-box.tip { background: #ecfdf5; border-left: 4px solid #10b981; }
+
+.alert-box i { font-size: 1.25rem; }
+.alert-box.note i { color: #3b82f6; }
+.alert-box.warning i { color: #f59e0b; }
+.alert-box.tip i { color: #10b981; }
+
+.print-btn-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+}
+
+.print-btn {
+  background: var(--manual-accent);
+  color: #1e293b;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-weight: 800;
+  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.print-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 30px rgba(245, 158, 11, 0.5);
+}
+
+/* Print Optimization */
+@media print {
+  .sidebar, .header, .print-btn-container, .breadcrumb-bar, .manual-hero::after {
+ display: none !important;
+  }
+  .page-wrapper {
+ margin: 0 !important;
+ padding: 0 !important;
+  }
+  .content {
+ padding: 0 !important;
+  }
+  .manual-container {
+ max-width: 100%;
+  }
+  .manual-section {
+ box-shadow: none !important;
+ border: none !important;
+ padding: 1rem 0 !important;
+ page-break-inside: avoid;
+  }
+  .manual-hero {
+ background: #000 !important;
+ color: #fff !important;
+ border-radius: 0 !important;
+ padding: 2rem !important;
+ box-shadow: none !important;
+  }
+  body {
+ background: #fff !important;
+  }
+  h2 {
+ color: #000 !important;
+ border-bottom: 2px solid #000 !important;
+  }
+  .role-badge {
+ border: 1px solid #ccc !important;
+  }
+}
+</style>
+
+<div class="manual-container">
+  
+  <div class="manual-hero text-center">
+ <h1 class="display-4 font-weight-bold mb-3"><%= _t('user_manual.hero_title', { ns: 'legacy', defaultValue: 'ZAIZENS User Manual' }) %></h1>
+ <p class="lead mb-0"><%= _t('user_manual.hero_subtitle', { ns: 'legacy', defaultValue: 'betterplanning Ltd Management System' }) %></p>
+ <div class="mt-4 small opacity-75"><%= _t('user_manual.hero_edition', { ns: 'legacy', defaultValue: 'Professional Edition • v3.0 • Premium Guidance' }) %></div>
+  </div>
+
+  <div class="manual-section">
+ <p class="lead">Welcome to the ZAIZENS Hospital Management System. This guide provides step-by-step instructions for each major role to help you navigate your daily tasks with precision and efficiency.</p>
+  </div>
+
+  <!-- Getting Started -->
+  <div class="manual-section" id="getting-started">
+ <h2><i class="fa fa-power-off"></i> 1. Getting Started</h2>
+ <p>All staff members access the system through the main login portal at <strong>https://localhost:3004</strong>.</p>
+ <ul class="manual-list">
+ <li>Enter your assigned <strong>Username</strong> and <strong>Password</strong>.</li>
+ <li>Click <strong>Login</strong>.</li>
+ <li>The system will automatically redirect you to your personalized <strong>Role Portal</strong>.</li>
+ </ul>
+ <div class="alert-box note">
+ <i class="fa fa-info-circle"></i>
+ <div><strong>Note:</strong> To return to your dashboard at any time, click the <strong>My Home</strong> button in the left sidebar.</div>
+ </div>
+  </div>
+
+  <!-- Front Desk -->
+  <div class="manual-section" id="front-desk">
+ <h2><i class="fa fa-user-plus"></i> 2. Front Desk / Reception</h2>
+ <span class="role-badge">Role: hmsdemo.frontdesk</span>
+ 
+ <h3>Registering a New Patient</h3>
+ <ul class="manual-list">
+ <li>Click the <strong>Register Patient</strong> quick-action tile.</li>
+ <li>Fill out the patient's demographic details accurately.</li>
+ <li>Click <strong>Save/Register</strong>. A unique Patient ID is generated instantly.</li>
+ </ul>
+
+ <h3>Adding to OPD Queue</h3>
+ <ul class="manual-list">
+ <li>After registration and payment, click the <strong>OPD Queue</strong> tile.</li>
+ <li>Select <strong>Add to Queue</strong>.</li>
+ <li>For life-threatening cases, check <strong>"Emergency / Waiver"</strong> to bypass prepayment.</li>
+ </ul>
+  </div>
+
+  <!-- Cashier -->
+  <div class="manual-section" id="cashier">
+ <h2><i class="fa fa-money"></i> 3. Cashier</h2>
+ <span class="role-badge">Role: hmsdemos accountant</span>
+ 
+ <h3>Collecting Payment</h3>
+ <ul class="manual-list">
+ <li>Click <strong>Issue Payment</strong> from your portal dashboard.</li>
+ <li>Select the patient and review the pending charges (Consultation, Lab, etc.).</li>
+ <li>Select the Payment Method and click <strong>Process Payment</strong>.</li>
+ <li>A receipt is generated, and the status updates across all clinical departments.</li>
+ </ul>
+ <div class="alert-box warning">
+ <i class="fa fa-exclamation-triangle"></i>
+ <div><strong>Critical:</strong> Clinical orders will remain "Pending Payment" until confirmed here.</div>
+ </div>
+  </div>
+
+  <!-- Nurse -->
+  <div class="manual-section" id="nurse">
+ <h2><i class="fa fa-heartbeat"></i> 4. Nurse / Nursing Aid</h2>
+ <span class="role-badge">Roles: hmsdemo.nurse, hmsdemo.nursingaid</span>
+ 
+ <h3>Triage and Vitals</h3>
+ <ul class="manual-list">
+ <li>Locate patients in the queue with status <strong>"Registered"</strong>.</li>
+ <li>Click <strong>Vitals</strong> and enter BP, Temp, Weight, SpO2, and Pulse.</li>
+ <li>Saving vitals moves the patient to <strong>"Waiting Doctor"</strong> status.</li>
+ </ul>
+
+ <h3>Ward Management</h3>
+ <ul class="manual-list">
+ <li>Use the <strong>Ward Board</strong> to monitor admitted patients.</li>
+ <li>Record daily vitals and administer medications as per the doctor's care plan.</li>
+ </ul>
+  </div>
+
+  <!-- Doctor -->
+  <div class="manual-section" id="doctor">
+ <h2><i class="fa fa-user-md"></i> 5. Doctor</h2>
+ <span class="role-badge">Role: oumarou</span>
+ 
+ <h3>Consultation Workflow</h3>
+ <ul class="manual-list">
+ <li>Open patients in <strong>"Waiting Doctor"</strong> status from the queue.</li>
+ <li>Review Triage details and enter your Clinical Notes & Diagnosis.</li>
+ <li>Create <strong>Orders</strong> for Lab tests, Radiology scans, or Prescriptions.</li>
+ <li>Click <strong>Save</strong>. The status changes to "In Consultation".</li>
+ </ul>
+ <div class="alert-box tip">
+ <i class="fa fa-lightbulb-o"></i>
+ <div><strong>Tip:</strong> Use the "Admit Patient" button to request hospitalization if needed.</div>
+ </div>
+  </div>
+
+  <!-- Lab & Radiology -->
+  <div class="manual-section" id="lab">
+ <h2><i class="fa fa-flask"></i> 6. Laboratory & Radiology</h2>
+ <span class="role-badge">Roles: hmsdemo.labtech, hmsdemo.radiologist</span>
+ 
+ <h3>Processing Orders</h3>
+ <ul class="manual-list">
+ <li>Check the <strong>Pending Tests</strong> queue (only shows paid orders).</li>
+ <li>Conduct the investigation and upload results/reports.</li>
+ <li>Mark as <strong>Completed</strong> to notify the doctor instantly.</li>
+ </ul>
+  </div>
+
+  <!-- Pharmacy -->
+  <div class="manual-section" id="pharmacy">
+ <h2><i class="fa fa-medkit"></i> 7. Pharmacy</h2>
+ <span class="role-badge">Role: hmsdemo.pharmacist</span>
+ 
+ <h3>Dispensing</h3>
+ <ul class="manual-list">
+ <li>Monitor the <strong>Pending Prescriptions</strong> queue.</li>
+ <li>Verify payment and dispense the required medications.</li>
+ <li>Mark items as <strong>Dispensed</strong> in the system.</li>
+ </ul>
+  </div>
+
+  <!-- Admin -->
+  <div class="manual-section" id="admin">
+ <h2><i class="fa fa-cogs"></i> 8. Administrative Management</h2>
+ <span class="role-badge">Role: admin</span>
+ 
+ <h3>System Configuration</h3>
+ <ul class="manual-list">
+ <li><strong>Staff Management:</strong> Add/edit employees and manage role IDs.</li>
+ <li><strong>Service Catalog:</strong> Configure prices for all hospital services.</li>
+ <li><strong>Financial Reports:</strong> Oversight of all revenue and expense flows.</li>
+ </ul>
+  </div>
+
+</div>
+
+<!-- Print Button -->
+<div class="print-btn-container">
+  <button class="print-btn" onclick="window.print()">
+ <i class="fa fa-print"></i> <%= _t('user_manual.print_pdf', { ns: 'legacy', defaultValue: 'Print to PDF' }) %>
+  </button>
+</div>
+
+</div></div>
+<%- include('partials/footer') %>

@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--subscriptions'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'solution-subscriptions',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.subscriptions', { ns: 'common' }) : 'Loading…')
+}) %>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,25 @@
+<%
+  var _page = locals.reactPage || 'cashier';
+  var _loadingLabel = locals.reactLoadingLabel || 'Loading…';
+  var _up = locals.userPerms || [];
+  var _finRole = String((locals.user && locals.user.role) || '');
+  function finHasP() {
+    if (_up.includes('*')) return true;
+    for (var i = 0; i < arguments.length; i++) {
+      if (_up.includes(arguments[i])) return true;
+    }
+    return false;
+  }
+  locals.finCanWrite =
+    _finRole === '1' || _finRole === '99' ||
+    finHasP('financials.write', 'accounting.write', 'billing.write');
+  locals.finNav = locals.finNavActive || locals.finNav || '';
+%>
+<link rel="stylesheet" href="/css/financials.css">
+<link rel="stylesheet" href="/css/accounting-odoo.css">
+<%- include('hms-module-odoo-start', { odooModule: 'accounting' }) %>
+<%- include('react-page-mount', {
+  reactPage: _page,
+  reactLoadingLabel: _loadingLabel
+}) %>
+<%- include('hms-module-odoo-end') %>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ZAIZENS License Server — Railway HTTPS Deployment</title>
+  <link rel="stylesheet" href="ops-doc-styles.css" />
+</head>
+<body>
+  <section class="cover">
+    <div class="cover-top">
+      <div class="cover-brand">
+        <div><p class="vendor"><strong>ZAIZENS</strong> · Licensing Operations</p></div>
+        <div class="cover-badge">Operations Guide · PDF</div>
+      </div>
+      <h1>License Server Deployment on Railway with HTTPS</h1>
+      <p class="subtitle">Public vendor license server — serial generation, client dashboard, remote revoke, push webhooks, and offline alerts</p>
+    </div>
+    <div class="cover-accent"></div>
+    <div class="cover-body">
+      <dl class="client-grid">
+        <div class="full"><dt>Document purpose</dt><dd>Deploy <code>license-generator/</code> as a secure HTTPS license server on Railway</dd></div>
+        <div><dt>Platform</dt><dd>Railway.app</dd></div>
+        <div><dt>Protocol</dt><dd>HTTPS (automatic TLS)</dd></div>
+        <div><dt>Repository path</dt><dd><code>HMS_JS/license-generator</code></dd></div>
+        <div><dt>Audience</dt><dd>Vendor / implementation team</dd></div>
+      </dl>
+      <div class="cover-meta">
+        <span><strong>Version</strong><br/>1.0 — June 2026</span>
+        <span><strong>Related scripts</strong><br/><code>license-generator/server.js</code></span>
+      </div>
+    </div>
+  </section>
+
+  <div class="doc-strip"><span><strong>ZAIZENS</strong> License Server</span><span>Railway HTTPS Deployment</span></div>
+  <main>
+    <div class="toc-block">
+      <h2>Table of contents</h2>
+      <ul class="toc-grid">
+        <li><a href="#overview"><span class="num">1</span> Overview &amp; architecture</a></li>
+        <li><a href="#prereq"><span class="num">2</span> Prerequisites</a></li>
+        <li><a href="#keys"><span class="num">3</span> Generate licensing keys</a></li>
+        <li><a href="#railway"><span class="num">4</span> Create Railway project</a></li>
+        <li><a href="#volume"><span class="num">5</span> Persistent SQLite volume</a></li>
+        <li><a href="#env"><span class="num">6</span> Environment variables</a></li>
+        <li><a href="#https"><span class="num">7</span> HTTPS &amp; custom domain</a></li>
+        <li><a href="#verify"><span class="num">8</span> Verification &amp; smoke tests</a></li>
+        <li><a href="#hospital"><span class="num">9</span> Connect hospital clients</a></li>
+        <li><a href="#ops"><span class="num">10</span> Operations &amp; security</a></li>
+        <li><a href="#trouble"><span class="num">11</span> Troubleshooting</a></li>
+      </ul>
+    </div>
+
+    <h2 id="overview">1. Overview &amp; architecture</h2>
+    <p>The ZAIZENS license server is a Node.js Express application in <code>license-generator/</code>. It depends on shared crypto modules in the parent repo:</p>
+    <ul>
+      <li><code>lib/hmsLicenseCrypto.js</code> — RSA request decryption, Ed25519 serial signing</li>
+      <li><code>lib/hmsLicenseCatalog.js</code> — sellable solution modules</li>
+    </ul>
+    <div class="diagram">Hospital HMS (HTTPS)                    Railway License Server (HTTPS)
+─────────────────────                   ────────────────────────────────
+Solution Subscriptions UI    ──sync──►  /api/v1/client/register
+  LICENSE_SERVER_URL         ◄──cmd──   /api/v1/client/heartbeat
+  LICENSE_SERVER_WEBHOOK_SECRET          /dashboard (vendor UI)
+  HMS_PUBLIC_URL              ◄─push──  POST /api/hms/license-server/push
+                                         SQLite (installations, licenses)
+                                         Private signing keys (env only)</div>
+    <div class="callout danger"><strong>Never deploy private keys to hospital servers.</strong> Hospitals receive public keys only (<code>LICENSE_RSA_PUBLIC_KEY_PEM</code>, <code>LICENSE_ED25519_PUBLIC_KEY_PEM</code>).</div>
+
+    <h2 id="prereq">2. Prerequisites</h2>
+    <table>
+      <thead><tr><th>Item</th><th>Requirement</th></tr></thead>
+      <tbody>
+        <tr><td>GitHub account</td><td>Repository containing full <code>HMS_JS</code> project</td></tr>
+        <tr><td>Railway account</td><td><a href="https://railway.app">railway.app</a> — Hobby or Pro plan recommended for volumes</td></tr>
+        <tr><td>Node.js locally</td><td>18+ for key generation</td></tr>
+        <tr><td>SMTP (optional)</td><td>For offline client email alerts</td></tr>
+        <tr><td>Custom domain (optional)</td><td>e.g. <code>licenses.zaizens.com</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="keys">3. Generate licensing keys (local, once)</h2>
+    <ol class="steps">
+      <li><strong>Install dependencies</strong><br/><pre>cd license-generator
+npm install
+npm run generate-keys</pre>Keys are written to <code>license-generator/keys/</code>.</li>
+      <li><strong>Configure license server private keys</strong> — copy into Railway variables (Section 6), never commit to Git.</li>
+      <li><strong>Configure each hospital</strong> — copy <strong>public</strong> keys to hospital <code>.env</code> or run <code>node scripts/setup-hms-license-env.js</code>.</li>
+      <li><strong>Generate webhook secret</strong> — use a long random string (32+ chars). Same value on license server and every hospital for instant push.</li>
+    </ol>
+
+    <h2 id="railway">4. Create Railway project</h2>
+    <ol class="steps">
+      <li>Push <code>HMS_JS</code> to GitHub if not already done.</li>
+      <li>Railway → <strong>New Project</strong> → <strong>Deploy from GitHub repo</strong> → select the repository.</li>
+      <li>Open the new service → <strong>Settings</strong>:
+        <ul>
+          <li><strong>Root Directory</strong>: leave empty (repo root) — required because <code>server.js</code> imports <code>../../lib/</code></li>
+          <li><strong>Build Command</strong>: <code>cd license-generator &amp;&amp; npm install</code></li>
+          <li><strong>Start Command</strong>: <code>cd license-generator &amp;&amp; npm start</code></li>
+        </ul>
+      </li>
+      <li>Railway sets <code>PORT</code> automatically. The server listens on <code>process.env.PORT</code>.</li>
+      <li>Wait for first deploy. Check <strong>Deploy Logs</strong> for: <code>ZAIZENS License Server listening</code>.</li>
+    </ol>
+    <div class="callout warn"><strong>Monorepo note:</strong> Do not set Root Directory to <code>license-generator</code> alone — the build will fail because parent <code>lib/</code> files are outside that folder.</div>
+
+    <h2 id="volume">5. Persistent SQLite volume</h2>
+    <p>Client registrations, license records, and remote commands are stored in SQLite at <code>license-generator/data/license-server.db</code>. Without a volume, data is lost on redeploy.</p>
+    <ol class="steps">
+      <li>Service → <strong>Volumes</strong> → <strong>Add Volume</strong>.</li>
+      <li>Mount path: <code>/app/license-generator/data</code> (confirm your Railway root path in deploy logs — often <code>/app</code>).</li>
+      <li>Add variable: <code>LICENSE_SERVER_DB_PATH=/app/license-generator/data/license-server.db</code></li>
+      <li>Redeploy once after attaching the volume.</li>
+    </ol>
+
+    <h2 id="env">6. Environment variables (Railway → Variables)</h2>
+    <table>
+      <thead><tr><th>Variable</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>LICENSE_RSA_PRIVATE_KEY_PEM</code></td><td>Yes</td><td>Decrypts hospital request codes</td></tr>
+        <tr><td><code>LICENSE_ED25519_PRIVATE_KEY_PEM</code></td><td>Yes</td><td>Signs serial numbers</td></tr>
+        <tr><td><code>LICENSE_GENERATOR_ADMIN_TOKEN</code></td><td>Strongly recommended</td><td>Protects dashboard &amp; admin API (<code>X-Admin-Token</code>)</td></tr>
+        <tr><td><code>LICENSE_SERVER_WEBHOOK_SECRET</code></td><td>For instant push</td><td>Shared with all hospitals</td></tr>
+        <tr><td><code>LICENSE_SERVER_ALERT_EMAIL</code></td><td>Optional</td><td>Offline alert recipients (comma-separated)</td></tr>
+        <tr><td><code>LICENSE_SERVER_OFFLINE_MINUTES</code></td><td>Optional</td><td>Default <code>45</code></td></tr>
+        <tr><td><code>LICENSE_SMTP_HOST</code>, <code>LICENSE_SMTP_FROM</code>, etc.</td><td>For email alerts</td><td>See <code>license-generator/.env.example</code></td></tr>
+        <tr><td><code>LICENSE_SERVER_DB_PATH</code></td><td>With volume</td><td>Absolute path on volume mount</td></tr>
+      </tbody>
+    </table>
+    <h3>PEM formatting in Railway</h3>
+    <p>Paste multi-line PEM directly, or single-line with <code>\n</code> between lines. The application normalizes both formats.</p>
+
+    <h2 id="https">7. HTTPS &amp; custom domain</h2>
+    <h3>7.1 Railway default domain (automatic HTTPS)</h3>
+    <ol class="steps">
+      <li>Settings → <strong>Networking</strong> → <strong>Generate Domain</strong>.</li>
+      <li>Railway provides e.g. <code>https://zaizens-license-production.up.railway.app</code> — TLS is automatic.</li>
+      <li>Use this URL as <code>LICENSE_SERVER_URL</code> on hospitals (no trailing slash).</li>
+    </ol>
+    <h3>7.2 Custom domain</h3>
+    <ol class="steps">
+      <li>Networking → <strong>Add Custom Domain</strong> → e.g. <code>licenses.zaizens.com</code>.</li>
+      <li>Create DNS <strong>CNAME</strong> pointing to Railway's target hostname.</li>
+      <li>Wait for certificate provisioning (Let's Encrypt, automatic).</li>
+      <li>Update hospital <code>LICENSE_SERVER_URL</code> to the custom domain.</li>
+    </ol>
+
+    <h2 id="verify">8. Verification &amp; smoke tests</h2>
+    <table>
+      <thead><tr><th>Test</th><th>URL / command</th><th>Expected</th></tr></thead>
+      <tbody>
+        <tr><td>Health</td><td><code>GET /api/health</code></td><td><code>ok: true</code>, <code>keysConfigured: true</code></td></tr>
+        <tr><td>Dashboard</td><td><code>/dashboard</code></td><td>Login with admin token; client list loads</td></tr>
+        <tr><td>Generator</td><td><code>/</code></td><td>Serial generator UI loads</td></tr>
+        <tr><td>From hospital</td><td>Subscriptions → Sync now</td><td>Installation appears in dashboard</td></tr>
+      </tbody>
+    </table>
+    <pre>curl https://YOUR-DOMAIN/api/health</pre>
+
+    <h2 id="hospital">9. Connect hospital clients</h2>
+    <p>On each Windows hospital server <code>.env</code>:</p>
+    <pre>LICENSE_SERVER_URL=https://licenses.zaizens.com
+LICENSE_SERVER_SYNC_INTERVAL_MS=900000
+LICENSE_SERVER_WEBHOOK_SECRET=same-secret-as-railway
+HMS_PUBLIC_URL=https://hms.client-hospital.org
+LICENSE_RSA_PUBLIC_KEY_PEM="..."
+LICENSE_ED25519_PUBLIC_KEY_PEM="..."
+HMS_LICENSE_DEPLOYMENT=1</pre>
+    <p>Restart Node HMS. Open <code>/hms-admin/subscriptions</code> → confirm license server panel → click <strong>Sync now</strong>.</p>
+
+    <h2 id="ops">10. Operations &amp; security</h2>
+    <ul class="checklist">
+      <li>Rotate <code>LICENSE_GENERATOR_ADMIN_TOKEN</code> periodically</li>
+      <li>Backup SQLite volume / export <code>license-server.db</code> weekly</li>
+      <li>Monitor Railway deploy logs for push webhook failures</li>
+      <li>Revoke compromised installations from dashboard immediately</li>
+      <li>Keep Railway project access limited to vendor staff</li>
+      <li>Document which hospitals share the same webhook secret</li>
+    </ul>
+
+    <h2 id="trouble">11. Troubleshooting</h2>
+    <table>
+      <thead><tr><th>Symptom</th><th>Cause / fix</th></tr></thead>
+      <tbody>
+        <tr><td><code>keysConfigured: false</code></td><td>Private PEM variables missing or malformed</td></tr>
+        <tr><td>Clients disappear after redeploy</td><td>No volume on <code>license-generator/data</code></td></tr>
+        <tr><td><code>Cannot find module '../../lib/hmsLicenseCrypto'</code></td><td>Root Directory must be repo root, not subfolder only</td></tr>
+        <tr><td>Push webhook fails</td><td>Hospital <code>HMS_PUBLIC_URL</code> must be public HTTPS; secret must match</td></tr>
+        <tr><td>better-sqlite3 build error</td><td>Ensure Node 18+; redeploy; check Railway build logs</td></tr>
+        <tr><td>No offline emails</td><td>Set <code>LICENSE_SERVER_ALERT_EMAIL</code> and SMTP variables</td></tr>
+      </tbody>
+    </table>
+
+    <p class="footer-note">© ZAIZENS · License Server Railway Deployment Guide v1.0 · Confidential</p>
+  </main>
+</body>
+</html>

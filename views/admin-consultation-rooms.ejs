@@ -1,0 +1,15 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--consultation-rooms'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'consultation-rooms',
+  pageData: {
+    rooms: rooms || [],
+    doctors: doctors || [],
+    flash: flash || null,
+    error: error || null
+  },
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.default', { ns: 'common' }) : 'Loading…')
+}) %>
+
+<%- include('partials/footer') %>

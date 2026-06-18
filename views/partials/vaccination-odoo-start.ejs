@@ -1,0 +1,32 @@
+<%- include('hms-perm-helpers') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _top = function (key, fallback, opts) {
+  return _t(key, Object.assign({ ns: 'ops', defaultValue: fallback }, opts || {}));
+};
+var _vacMenu = locals.vacOdooMenu || 'dashboard';
+var _vacTitle = locals.vacOdooTitle || _top('vaccination_odoo.default_title', 'Vaccination module');
+var _vacUser = locals.userDisplayName || (locals.user && locals.user.name) || _top('vaccination_odoo.user_fallback', 'User');
+function _vacActive(m) { return _vacMenu === m ? ' active' : ''; }
+%>
+<%- include('hms-dept-shell-open', {
+  deptAppClass: 'vaccination-odoo-app',
+  deptAppId: 'vacOdooApp',
+  deptModuleHref: '/vaccination',
+  deptModuleLabel: _top('vaccination_odoo.module', 'Vaccination'),
+  deptModuleIcon: 'vaccination',
+  deptExtraCss: ['/css/vaccination-odoo.css?v=1', '/css/vaccination.css?v=1'],
+  deptNavUser: _vacUser
+}) %>
+      <a href="/vaccination" class="o_nav_link<%= _vacActive('dashboard') %>"><i class="fa fa-tachometer hms-dept-nav-ico" aria-hidden="true"></i><%= _top('vaccination_odoo.dashboard', 'Dashboard') %></a>
+      <a href="/vaccination/patients" class="o_nav_link<%= _vacActive('patients') %>"><i class="fa fa-list-alt hms-dept-nav-ico" aria-hidden="true"></i><%= _top('vaccination_odoo.registry', 'Immunization registry') %></a>
+      <a href="/vaccination/administer" class="o_nav_link<%= _vacActive('administer') %>"><i class="fa fa-plus-circle hms-dept-nav-ico" aria-hidden="true"></i><%= _top('vaccination_odoo.administer', 'Administer dose') %></a>
+      <a href="/vaccination/patients?due=1" class="o_nav_link<%= _vacActive('due') %>"><i class="fa fa-bell hms-dept-nav-ico" aria-hidden="true"></i><%= _top('vaccination_odoo.due_followups', 'Due follow-ups') %></a>
+      <a href="/vaccination/vaccines" class="o_nav_link<%= _vacActive('vaccines') %>"><i class="fa fa-medkit hms-dept-nav-ico" aria-hidden="true"></i><%= _top('vaccination_odoo.vaccine_catalog', 'Vaccine catalog') %></a>
+<%- include('hms-dept-shell-main-open', {
+  deptPageTitle: locals.vacOdooTitle ? _vacTitle : null,
+  deptPageActions: locals.vacOdooActions || null,
+  deptNavUser: _vacUser
+}) %>

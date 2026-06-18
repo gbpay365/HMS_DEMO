@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--commission'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'hms-commission',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.default', { ns: 'common' }) : 'Loading…')
+}) %>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,100 @@
+<%- include('partials/header') %>
+<%
+var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+var _up = locals.userPerms || [];
+function hasP(){ if (_up.includes('*')) return true; for (var i=0;i<arguments.length;i++) if (_up.includes(arguments[i])) return true; return false; }
+var _fdName = userDisplayName || locals.user?.name || _t('portal_front_desk.default_role', { ns: 'legacy', defaultValue: 'Staff' });
+var _fdDate = fmtDate(new Date());
+var _fdKpis = [
+  [_t('portal_front_desk.kpi_appts_today', { ns: 'legacy', defaultValue: 'Appointments Today' }), stats.appts, 'fa-calendar-check-o','#1a6bd8','#dbeafe'],
+  [_t('portal_front_desk.kpi_new_patients', { ns: 'legacy', defaultValue: 'New Patients Today' }), stats.newPats, 'fa-user-plus', '#10b981','#d1fae5'],
+  [_t('portal_front_desk.kpi_opd_visits', { ns: 'legacy', defaultValue: 'OPD Visits Today' }), stats.opd, 'fa-list-ol', '#f59e0b','#fef3c7'],
+  [_t('portal_front_desk.kpi_total_patients', { ns: 'legacy', defaultValue: 'Total Patients' }), stats.total, 'fa-users', '#8b5cf6','#ede9fe']
+];
+%>
+<div class="page-wrapper"><div class="content">
+<%- include('partials/portal-flash') %>
+
+<!-- Hero Banner -->
+<div class="card border-0 shadow mb-4 hms-page-hero">
+  <div class="card-body py-4 px-4 d-flex align-items-center justify-content-between flex-wrap" style="gap:12px;">
+ <div>
+ <h1 class="h4 mb-1 font-weight-bold" style="color:#fff;"><i class="fa fa-desktop mr-2"></i><%= _t('portal_front_desk.title', { ns: 'legacy', defaultValue: 'Front Desk' }) %></h1>
+ <p class="mb-0 small" style="color:rgba(255,255,255,.85);"><%= _t('portal_shared.welcome_named_date', { ns: 'legacy', name: _fdName, date: _fdDate, defaultValue: 'Welcome, ' + _fdName + ' — ' + _fdDate }) %></p>
+ </div>
+ <div class="d-flex flex-wrap" style="gap:8px;">
+ <% if(hasP('patient.write')){ %><a href="/patients" class="btn btn-light btn-sm font-weight-bold" style="color:#0c8b8b;"><i class="fa fa-user-plus mr-1"></i><%= _t('portal_front_desk.register_patient', { ns: 'legacy', defaultValue: 'Register Patient' }) %></a><% } %>
+ <% if(hasP('scheduling.read','scheduling.write','opd.read')){ %><a href="/appointments" class="btn btn-outline-light btn-sm font-weight-bold"><i class="fa fa-calendar-plus-o mr-1"></i><%= _t('portal_front_desk.book_appointment', { ns: 'legacy', defaultValue: 'Book Appointment' }) %></a><% } %>
+ <% if(hasP('opd.read','clinical.read','clinical.write','scheduling.read')){ %><a href="/opd-queue" class="btn btn-outline-light btn-sm font-weight-bold"><i class="fa fa-list-alt mr-1"></i><%= _t('portal_front_desk.opd_queue', { ns: 'legacy', defaultValue: 'OPD Queue' }) %></a><% } %>
+ </div>
+  </div>
+</div>
+
+<!-- KPI Stats -->
+<div class="row mb-4">
+  <% _fdKpis.forEach(function(s){ %>
+  <div class="col-6 col-md-3 mb-3">
+ <div class="card border-0 shadow-sm h-100" style="border-left:4px solid <%=s[3]%>;border-radius:12px;">
+ <div class="card-body d-flex align-items-center">
+ <span class="rounded-circle mr-3 d-flex align-items-center justify-content-center" style="width:50px;height:50px;background:<%=s[4]%>;flex-shrink:0;">
+ <i class="fa <%=s[2]%>" style="color:<%=s[3]%>;font-size:1.2rem;"></i>
+ </span>
+ <div><div style="font-size:1.9rem;font-weight:800;color:#1e293b;"><%=s[1]%></div><div class="text-muted small"><%=s[0]%></div></div>
+ </div>
+ </div>
+  </div>
+  <% }); %>
+</div>
+
+<%- include('partials/portal-tiles', { portal: 'front_desk', title: _t('portal_front_desk.quick_actions', { ns: 'legacy', defaultValue: 'Quick Actions' }) }) %>
+
+<!-- Emergency + Appointments -->
+<div class="row">
+  <div class="col-lg-5 mb-4">
+ <div class="card border-0 shadow-sm h-100" style="border-radius:14px;border:2px solid #fecaca !important;">
+ <div class="card-header d-flex justify-content-between align-items-center py-3" style="background:#fef2f2;border-bottom:2px solid #fecaca;">
+ <span class="font-weight-bold" style="color:#ef4444;"><i class="fa fa-ambulance mr-1"></i><%= _t('portal_front_desk.active_emergency', { ns: 'legacy', defaultValue: 'Active Emergency' }) %></span>
+ <span class="badge badge-danger"><%= _t('portal_front_desk.active_count', { ns: 'legacy', count: emergency.length, defaultValue: emergency.length + ' Active' }) %></span>
+ </div>
+ <div class="card-body p-0" data-hms-table-paginate data-hms-page-size="5">
+ <% if(emergency.length===0){ %>
+ <div class="text-center py-5 text-muted"><i class="fa fa-check-circle text-success fa-2x mb-2 d-block"></i><%= _t('portal_front_desk.no_emergency_patients', { ns: 'legacy', defaultValue: 'No active emergency patients.' }) %></div>
+ <% } else { %>
+ <div class="table-responsive"><table class="table table-hover mb-0">
+ <thead style="background:#fef2f2;"><tr><th style="color:#ef4444;"><%= _t('portal_shared.patient', { ns: 'legacy', defaultValue: 'Patient' }) %></th><th style="color:#ef4444;"><%= _t('portal_shared.status', { ns: 'legacy', defaultValue: 'Status' }) %></th><th style="color:#ef4444;"><%= _t('portal_shared.time', { ns: 'legacy', defaultValue: 'Time' }) %></th></tr></thead>
+ <tbody>
+ <% emergency.forEach(function(e){ var t=e.queue_started_at?new Date(e.queue_started_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'—'; %>
+ <tr><td class="font-weight-bold"><%=e.first_name%> <%=e.last_name%></td>
+ <td><span class="badge badge-danger"><%=e.queue_status.replace(/_/g,' ')%></span></td>
+ <td class="text-muted small"><i class="fa fa-clock-o mr-1"></i><%=t%></td></tr>
+ <% }); %>
+ </tbody>
+ </table></div>
+ <% } %>
+ </div>
+ </div>
+  </div>
+  <div class="col-lg-7 mb-4">
+ <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
+ <div class="card-header bg-white d-flex justify-content-between align-items-center py-3" style="border-bottom:2px solid #e2e8f0;">
+ <span class="font-weight-bold"><i class="fa fa-calendar mr-1 text-primary"></i><%= _t('portal_front_desk.today_appointments', { ns: 'legacy', defaultValue: "Today's Appointments" }) %></span>
+ <a href="/appointments" class="btn btn-sm btn-primary" style="border-radius:8px;"><%= _t('portal_shared.view_all', { ns: 'legacy', defaultValue: 'View All' }) %></a>
+ </div>
+ <div class="card-body p-0" data-hms-table-paginate data-hms-page-size="5"><div class="table-responsive">
+ <table class="table table-hover mb-0">
+ <thead class="thead-light"><tr><th><%= _t('portal_shared.patient', { ns: 'legacy', defaultValue: 'Patient' }) %></th><th><%= _t('portal_shared.doctor', { ns: 'legacy', defaultValue: 'Doctor' }) %></th><th><%= _t('portal_shared.time', { ns: 'legacy', defaultValue: 'Time' }) %></th><th><%= _t('portal_shared.dept', { ns: 'legacy', defaultValue: 'Dept' }) %></th></tr></thead>
+ <tbody>
+ <% if(!todayAppts||todayAppts.length===0){ %>
+ <tr><td colspan="4" class="text-center text-muted py-4"><i class="fa fa-calendar text-muted mr-1"></i><%= _t('portal_front_desk.no_appts_today', { ns: 'legacy', defaultValue: 'No appointments scheduled today.' }) %></td></tr>
+ <% } else { todayAppts.forEach(function(r){ %>
+ <tr><td class="font-weight-bold"><%=r.patient_name||'—'%></td><td class="small"><%=r.doctor||'—'%></td>
+ <td class="small text-muted"><%=r.time||'—'%></td><td class="small text-muted"><%=r.department||'—'%></td></tr>
+ <% }); } %>
+ </tbody>
+ </table>
+ </div></div>
+ </div>
+  </div>
+</div>
+
+</div></div><%- include('partials/footer') %>

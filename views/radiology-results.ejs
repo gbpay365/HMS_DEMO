@@ -1,0 +1,47 @@
+<%- include('partials/header') %>
+<%- include('partials/radiology-odoo-start', {
+  radOdooMenu: 'results',
+  radOdooTitle: _tl('radiology_results.title', 'Test results'),
+  radOdooActions: '<a href="/radiology" class="o_btn_secondary">' + _tl('radiology_results.requests_link', 'Requests') + '</a>'
+}) %>
+
+<div class="o_content">
+<form class="o_searchbar" method="get" action="/radiology/results">
+ <input type="search" name="q" value="<%= locals.searchQ || '' %>" placeholder="<%= _tl('radiology_results.search_ph', 'Search patient or exam…') %>">
+ <button type="submit" class="o_btn_secondary"><%= _tl('radiology_results.search', 'Search') %></button>
+</form>
+
+<table class="o_list_table">
+ <thead>
+  <tr>
+   <th><%= _tl('radiology_results.patient', 'Patient') %></th>
+   <th><%= _tl('radiology_results.request', 'Request') %></th>
+   <th><%= _tl('radiology_results.exam', 'Exam') %></th>
+   <th><%= _tl('radiology_results.conclusion', 'Conclusion') %></th>
+   <th><%= _tl('radiology_results.updated', 'Updated') %></th>
+   <th></th>
+  </tr>
+ </thead>
+ <tbody>
+ <% (results || []).forEach(function(row) { %>
+ <tr>
+  <td><%= row.p_fn %> <%= row.p_ln %></td>
+  <td><%= row.request_no || ('RAD-' + String(row.id).padStart(5,'0')) %></td>
+  <td><strong><%= row.exam_name || row.test_name %></strong></td>
+  <td class="small"><%= row.conclusion_code || '—' %></td>
+  <td class="small text-muted"><%= row.updated_at ? new Date(row.updated_at).toLocaleString() : '—' %></td>
+  <td>
+   <a href="/radiology/report/<%= row.id %>" class="o_btn_secondary btn-sm"><%= _tl('radiology_results.view_report', 'View report') %></a>
+   <a href="/radiology/templates?registry_id=<%= row.id %>" class="o_btn_secondary btn-sm"><%= _tl('radiology_results.edit', 'Edit') %></a>
+  </td>
+ </tr>
+ <% }) %>
+ <% if (!(results && results.length)) { %>
+ <tr><td colspan="6" class="text-center text-muted py-4"><%= _tl('radiology_results.no_results', 'No completed results yet.') %></td></tr>
+ <% } %>
+ </tbody>
+</table>
+</div>
+
+<%- include('partials/radiology-odoo-end') %>
+<%- include('partials/footer') %>

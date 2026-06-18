@@ -1,0 +1,408 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--cashier-settle'; %>
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+
+<style>
+:root{
+  --settle-card-radius: var(--hms-surface-radius, 16px);
+}
+
+.settle-ticket-code{font-family:monospace;font-size:1.1rem;letter-spacing:.06em;opacity:.88;}
+.settle-ticket-amount{font-size:2.4rem;font-weight:800;line-height:1;margin:.25rem 0 0;}
+.settle-hero-meta{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:1rem;font-size:.82rem;opacity:.85;}
+.settle-pending-badge{display:inline-flex;align-items:center;gap:.35rem;background:rgba(251,191,36,.2);color:#fde68a;padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:700;border:1px solid rgba(251,191,36,.35);}
+
+.method-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:.85rem;margin-bottom:1.5rem;}
+.method-card{border-radius:14px;padding:1.15rem 1rem;cursor:pointer;text-align:center;border:2.5px solid transparent;
+ background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.06);transition:all .22s;user-select:none;position:relative;}
+.method-card:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(0,0,0,.1);}
+.method-card.active{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.2);}
+.method-card.wallet-card.active{border-color:#8b5cf6;box-shadow:0 0 0 3px rgba(139,92,246,.2);}
+.method-card.wallet-card.insufficient{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.15);opacity:.65;cursor:not-allowed;}
+.method-icon{font-size:1.6rem;margin-bottom:.5rem;display:block;}
+.method-label{font-weight:700;font-size:.8rem;color:#1e293b;}
+.method-badge{position:absolute;top:-6px;right:-6px;background:linear-gradient(135deg,#065f46,#10b981);color:#fff;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px;}
+
+.wallet-panel,.qr-panel{background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1.5px solid #c4b5fd;border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.25rem;display:none;}
+.qr-panel{background:linear-gradient(135deg,#ecfeff,#cffafe);border-color:#67e8f9;}
+.wallet-panel.show,.qr-panel.show{display:block;animation:fadeSlideIn .3s ease;}
+.wallet-bal-row{display:flex;justify-content:space-between;align-items:center;}
+.wallet-bal-num{font-size:1.7rem;font-weight:800;color:#5b21b6;}
+.wallet-status-ok{color:#059669;font-weight:700;font-size:.85rem;}
+.wallet-status-err{color:#dc2626;font-weight:700;font-size:.85rem;}
+.wallet-meter{height:8px;border-radius:99px;background:#e5e7eb;margin-top:.75rem;overflow:hidden;}
+.wallet-meter-fill{height:100%;border-radius:99px;background:linear-gradient(135deg,#5b21b6,#8b5cf6);transition:width .5s ease;}
+
+.lines-card{background:#fff;border-radius:var(--settle-card-radius);box-shadow:var(--hms-surface-shadow, 0 4px 24px -4px rgb(15 23 42 / 0.08));overflow:hidden;margin-bottom:1.5rem;border:1px solid var(--hms-surface-border, #e2e8f0);}
+.lines-card table{margin:0;}
+.lines-card thead th{background:#f8fafc;font-size:.73rem;text-transform:uppercase;letter-spacing:.04em;color:#64748b;font-weight:700;}
+.lines-card td{vertical-align:middle;font-size:.88rem;padding:.85rem 1rem;}
+
+.btn-collect{background:linear-gradient(135deg,#065f46,#10b981);border:none;color:#fff;font-weight:800;font-size:1rem;padding:.9rem 2.5rem;border-radius:14px;box-shadow:0 4px 16px rgba(16,185,129,.35);transition:all .2s;width:100%;}
+.btn-collect:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(16,185,129,.45);}
+.btn-collect:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-collect.wallet-mode{background:linear-gradient(135deg,#5b21b6,#8b5cf6);box-shadow:0 4px 16px rgba(139,92,246,.35);}
+
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+</style>
+
+<div class="page-wrapper hms-surface-module">
+  <div class="content" style="max-width:820px;margin:0 auto;">
+
+ <div class="hms-surface-hero mb-4">
+ <div class="d-flex justify-content-between align-items-start flex-wrap">
+ <div>
+ <div class="settle-ticket-code"><i class="fa fa-ticket mr-2"></i><%= ticket.ticket_code %></div>
+ <div class="settle-ticket-amount"><%= Number(ticket.total_amount).toLocaleString('fr-FR') %> <small style="font-size:1rem;opacity:.7;">FCFA</small></div>
+ <div class="settle-hero-meta">
+ <span><i class="fa fa-user mr-1"></i><%= ticket.first_name %> <%= ticket.last_name %></span>
+ <% if(ticket.phone){ %><span><i class="fa fa-phone mr-1"></i><%= ticket.phone %></span><% } %>
+ <span><i class="fa fa-calendar mr-1"></i><%= new Date(ticket.created_at).toLocaleString() %></span>
+ </div>
+ </div>
+ <div style="text-align:right;">
+ <span class="settle-pending-badge">
+ <i class="fa fa-clock-o"></i> <%= _t('cashier_settle.pending', { ns: 'legacy', defaultValue: 'PENDING' }) %>
+ </span>
+ </div>
+ </div>
+ </div>
+
+ <div class="row">
+ <!-- LEFT: Payment Method + Action -->
+ <div class="col-lg-7 mb-4">
+ <div class="lines-card p-4">
+ <h6 class="font-weight-bold mb-3" style="color:#1e293b;"><i class="fa fa-credit-card mr-2 text-primary"></i><%= _t('cashier_settle.select_method', { ns: 'legacy', defaultValue: 'Select Payment Method' }) %></h6>
+
+  <% if (locals.insurance && locals.insurance.coveragePct && locals.insurance.coveragePct > 0) { %>
+   <div class="mb-3 p-3" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;">
+    <div class="small font-weight-bold text-primary mb-1"><i class="fa fa-shield mr-1"></i><%= _t('cashier_settle.insurance_applied', { ns: 'legacy', defaultValue: 'Insurance coverage applied' }) %></div>
+    <div class="small text-muted">
+     <%= _t('cashier_settle.insurance_coverage', { ns: 'legacy', defaultValue: 'Coverage:' }) %> <strong><%= locals.insurance.coveragePct %>%</strong> ·
+     <%= _t('cashier_settle.insurer_pays', { ns: 'legacy', defaultValue: 'Insurer pays:' }) %> <strong><%= Number(locals.insurance.insurerTotal || 0).toLocaleString('fr-FR') %> FCFA</strong> ·
+     <%= _t('cashier_settle.patient_pays', { ns: 'legacy', defaultValue: 'Patient pays:' }) %> <strong><%= Number(locals.insurance.patientTotal || ticket.total_amount || 0).toLocaleString('fr-FR') %> FCFA</strong>
+    </div>
+   </div>
+  <% } %>
+
+ <!-- Method Cards -->
+ <div class="method-grid" id="methodGrid">
+ <div class="method-card active" data-method="Cash" onclick="pickMethod(this)">
+ <span class="method-icon">💵</span>
+ <div class="method-label"><%= _t('cashier_settle.method_cash', { ns: 'legacy', defaultValue: 'Cash' }) %></div>
+ </div>
+ <div class="method-card" data-method="MOMO" onclick="pickMethod(this)">
+ <span class="method-icon">📱</span>
+ <div class="method-label"><%= _t('cashier_settle.method_momo', { ns: 'legacy', defaultValue: 'MOMO' }) %></div>
+ </div>
+ <div class="method-card" data-method="OM" onclick="pickMethod(this)">
+ <span class="method-icon">🟠</span>
+ <div class="method-label"><%= _t('cashier_settle.method_om', { ns: 'legacy', defaultValue: 'OM' }) %></div>
+ </div>
+ <div class="method-card" data-method="BetterPay" onclick="pickMethod(this)">
+ <span class="method-icon">📲</span>
+ <div class="method-label"><%= _t('cashier_settle.method_betterpay', { ns: 'legacy', defaultValue: 'BetterPay' }) %></div>
+ </div>
+ <div class="method-card wallet-card" data-method="Wallet" id="walletMethodCard"
+ onclick="pickMethod(this)" title="<%= _t('cashier_settle.wallet_title', { ns: 'legacy', defaultValue: 'Pay from patient\'s pre-paid wallet' }) %>">
+ <span class="method-badge"><%= _t('cashier_settle.prepaid_badge', { ns: 'legacy', defaultValue: 'PRE-PAID' }) %></span>
+ <span class="method-icon">👛</span>
+ <div class="method-label"><%= _t('cashier_settle.method_wallet', { ns: 'legacy', defaultValue: 'Wallet' }) %></div>
+ </div>
+ </div>
+
+ <!-- Wallet Panel (shown when Wallet is selected) -->
+ <div class="wallet-panel" id="walletPanel">
+ <div class="wallet-bal-row">
+ <div>
+ <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#7c3aed;letter-spacing:.06em;"><%= _t('cashier_settle.wallet_balance', { ns: 'legacy', defaultValue: 'Patient Wallet Balance' }) %></div>
+ <div class="wallet-bal-num" id="walletBalDisplay">
+ <%= Number(walletBalance).toLocaleString('fr-FR') %> FCFA
+ </div>
+ </div>
+ <div id="walletStatusBadge">
+ <% if(walletBalance >= ticket.total_amount){ %>
+ <span class="wallet-status-ok"><i class="fa fa-check-circle mr-1"></i><%= _t('cashier_settle.sufficient', { ns: 'legacy', defaultValue: 'Sufficient' }) %></span>
+ <% } else { %>
+ <span class="wallet-status-err"><i class="fa fa-exclamation-triangle mr-1"></i><%= _t('cashier_settle.insufficient', { ns: 'legacy', defaultValue: 'Insufficient' }) %></span>
+ <% } %>
+ </div>
+ </div>
+ <div class="wallet-meter">
+ <div class="wallet-meter-fill" id="walletMeterFill"
+ style="width:<%= Math.min(100, (walletBalance / Math.max(ticket.total_amount, 1)) * 100) %>%"></div>
+ </div>
+ <div class="mt-2 small" style="color:#6d28d9;">
+ <%= _t('cashier_settle.after_deduction', { ns: 'legacy', defaultValue: 'After deduction:' }) %> <strong id="walletAfterAmt">
+ <%= (walletBalance >= ticket.total_amount ? Number(walletBalance - ticket.total_amount).toLocaleString('fr-FR') : '—') %> FCFA
+ </strong>
+ <% if(!walletId){ %>
+ <div class="mt-1" style="color:#dc2626;"><i class="fa fa-info-circle mr-1"></i><%= _t('cashier_settle.no_wallet', { ns: 'legacy', defaultValue: 'No active wallet found for this patient.' }) %></div>
+ <% } %>
+ </div>
+ </div>
+
+ <% if (typeof betterPayConfigured !== 'undefined' && betterPayConfigured && betterPayUrl) { %>
+ <div class="qr-panel" id="qrPanel">
+  <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#0e7490;letter-spacing:.06em;">
+   <i class="fa fa-qrcode mr-1"></i> <%= _t('cashier_settle.qr_title', { ns: 'legacy', defaultValue: 'BetterPay — scan to pay' }) %>
+  </div>
+  <p class="small text-muted mt-2 mb-2"><%= _t('cashier_settle.qr_hint', { ns: 'legacy', defaultValue: 'Patient scans the QR or opens the link, pays on BetterPay, then confirm collection below.' }) %></p>
+  <div class="d-flex flex-wrap align-items-start" style="gap:1rem;">
+   <div id="betterPayQrCanvas" style="background:#fff;padding:8px;border-radius:10px;border:1px solid #a5f3fc;"></div>
+   <div class="flex-grow-1" style="min-width:180px;">
+    <a href="<%= betterPayUrl %>" target="_blank" rel="noopener" class="btn btn-info btn-sm font-weight-bold mb-2" id="betterPayOpenLink">
+     <i class="fa fa-external-link mr-1"></i> <%= _t('cashier_settle.qr_open', { ns: 'legacy', defaultValue: 'Open BetterPay' }) %>
+    </a>
+    <button type="button" class="btn btn-outline-secondary btn-sm d-block mb-2" id="btnCopyBetterPay">
+     <i class="fa fa-copy mr-1"></i> <%= _t('cashier_settle.qr_copy', { ns: 'legacy', defaultValue: 'Copy payment link' }) %>
+    </button>
+    <code class="d-block small" style="word-break:break-all;font-size:.7rem;color:#155e75;" id="betterPayUrlText"><%= betterPayUrl %></code>
+   </div>
+  </div>
+ </div>
+ <% } %>
+
+ <!-- Collect Form -->
+ <form action="/cashier/collect" method="POST" id="collectForm">
+ <input type="hidden" name="ticket_id" value="<%= ticket.id %>">
+ <input type="hidden" name="payment_method" id="payMethodInput" value="Cash">
+ <button type="submit" class="btn-collect mt-3" id="btnCollect">
+ <i class="fa fa-check-circle mr-2"></i> <%= _t('cashier_settle.collect_payment', { ns: 'legacy', defaultValue: 'Collect Payment' }) %> — <%= Number(ticket.total_amount).toLocaleString('fr-FR') %> FCFA
+ </button>
+ </form>
+
+ <div class="mt-3 text-center">
+ <a href="/cashier" class="btn btn-link text-muted small"><i class="fa fa-arrow-left mr-1"></i><%= _t('cashier_settle.back', { ns: 'legacy', defaultValue: 'Back to Cashier' }) %></a>
+ </div>
+ </div>
+ </div>
+
+ <!-- RIGHT: Line Items -->
+ <div class="col-lg-5 mb-4">
+ <div class="lines-card">
+ <div class="px-4 pt-4 pb-2">
+ <h6 class="font-weight-bold mb-0" style="color:#1e293b;"><i class="fa fa-list-ul mr-2 text-primary"></i><%= _t('cashier_settle.service_lines', { ns: 'legacy', defaultValue: 'Service Lines' }) %></h6>
+ </div>
+ <table class="table">
+ <thead><tr>
+ <th><%= _t('cashier_settle.col_service', { ns: 'legacy', defaultValue: 'Service' }) %></th>
+ <th class="text-right"><%= _t('cashier_settle.col_amount', { ns: 'legacy', defaultValue: 'Amount' }) %></th>
+ </tr></thead>
+ <tbody>
+ <% ticket.lines.forEach(function(ln){ %>
+ <tr>
+ <td><div class="font-weight-bold" style="font-size:.85rem;"><%= ln.description || ln.kind || '—' %></div></td>
+ <td class="text-right font-weight-bold" style="color:<%= ln.paid ? '#10b981' : '#1e293b' %>;">
+ <%= Number(ln.unit_price || ln.amount || 0).toLocaleString('fr-FR') %> FCFA
+ <% if(ln.paid){ %><br><span class="badge badge-success" style="font-size:.65rem;"><%= _t('cashier_settle.paid', { ns: 'legacy', defaultValue: 'PAID' }) %></span><% } %>
+ </td>
+ </tr>
+ <% }); %>
+ <tr style="background:#f8fafc;">
+ <td class="font-weight-bold"><%= _t('cashier_settle.total', { ns: 'legacy', defaultValue: 'TOTAL' }) %></td>
+ <td class="text-right font-weight-bold" style="font-size:1.1rem;color:#059669;">
+ <%= Number(ticket.total_amount).toLocaleString('fr-FR') %> FCFA
+ </td>
+ </tr>
+ </tbody>
+ </table>
+ </div>
+
+ <%
+ const codes = sectionCodes || {};
+ const codeMeta = {
+   laboratory: { label: _t('cashier_settle.code_laboratory', { ns: 'legacy', defaultValue: 'Laboratory' }), icon: 'fa-flask',  color: '#7c3aed' },
+   radiology:  { label: _t('cashier_settle.code_imaging', { ns: 'legacy', defaultValue: 'Imaging' }),    icon: 'fa-x-ray',  color: '#0891b2' },
+   pharmacy:   { label: _t('cashier_settle.code_pharmacy', { ns: 'legacy', defaultValue: 'Pharmacy' }),   icon: 'fa-medkit', color: '#16a34a' }
+ };
+ const hasAnyCode = !!(codes.laboratory || codes.radiology || codes.pharmacy);
+ %>
+ <% if (hasAnyCode) { %>
+   <div class="card border-0 shadow-sm mt-3" style="border-radius:14px;overflow:hidden;">
+     <div class="px-4 pt-3 pb-2" style="background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;">
+       <div class="font-weight-bold" style="font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;opacity:.85;">
+         <i class="fa fa-qrcode mr-2"></i> <%= _t('cashier_settle.service_codes_title', { ns: 'legacy', defaultValue: 'Service codes — present at each station' }) %>
+       </div>
+       <div class="small mt-1" style="opacity:.7;">
+         <%= _t('cashier_settle.service_codes_hint', { ns: 'legacy', defaultValue: 'The patient takes the code below to lab, imaging or pharmacy. Each station enters the code to load this order.' }) %>
+       </div>
+     </div>
+     <div class="px-3 py-3" style="background:#f8fafc;">
+       <% Object.keys(codes).forEach(function(k){ if (!codes[k]) return; const m = codeMeta[k]; %>
+         <div class="d-flex align-items-center justify-content-between mb-2 p-2"
+              style="background:#fff;border:1px solid <%= m.color %>30;border-left:4px solid <%= m.color %>;border-radius:10px;">
+           <div class="d-flex align-items-center" style="gap:.6rem;">
+             <i class="fa <%= m.icon %>" style="color:<%= m.color %>;font-size:1.1rem;"></i>
+             <div>
+               <div class="font-weight-bold" style="font-size:.78rem;color:#0f172a;letter-spacing:.04em;text-transform:uppercase;"><%= m.label %></div>
+               <code style="font-size:.95rem;color:<%= m.color %>;font-weight:700;letter-spacing:.05em;"><%= codes[k] %></code>
+             </div>
+           </div>
+           <a href="/<%= k %>/validate/<%= encodeURIComponent(codes[k]) %>" class="btn btn-sm" style="background:<%= m.color %>;color:#fff;font-size:.74rem;font-weight:700;border-radius:8px;">
+             <i class="fa fa-arrow-right mr-1"></i> <%= _t('cashier_settle.open_station', { ns: 'legacy', defaultValue: 'Open station' }) %>
+           </a>
+         </div>
+       <% }) %>
+     </div>
+   </div>
+ <% } %>
+
+ <!-- Wallet Top-up Shortcut -->
+ <% if(walletBalance < ticket.total_amount && walletId){ %>
+ <div class="card border-0 shadow-sm p-3 mt-3" style="border-radius:14px;background:linear-gradient(135deg,#fef3c7,#fde68a);">
+ <div class="small font-weight-bold mb-1" style="color:#92400e;"><i class="fa fa-info-circle mr-1"></i><%= _t('cashier_settle.wallet_topup_title', { ns: 'legacy', defaultValue: 'Wallet needs top-up' }) %></div>
+ <div class="small" style="color:#78350f;"><%= _t('cashier_settle.wallet_topup_body', { ns: 'legacy', defaultValue: 'Patient wallet has insufficient funds. Top up then retry wallet payment.' }) %></div>
+ <a href="/wallet" class="btn btn-sm btn-warning rounded-pill px-3 mt-2 font-weight-bold">
+ <i class="fa fa-plus mr-1"></i> <%= _t('cashier_settle.wallet_topup_btn', { ns: 'legacy', defaultValue: 'Go to Wallet & Top-up' }) %>
+ </a>
+ </div>
+ <% } %>
+ </div>
+ </div>
+
+  </div>
+</div>
+
+<script>
+window.__CASHIER_SETTLE_I18N = <%- JSON.stringify({
+  noWallet: _t('cashier_settle.js_no_wallet', { ns: 'legacy', defaultValue: 'No active wallet found' }),
+  insufficientBtn: _t('cashier_settle.js_insufficient_btn', { ns: 'legacy', defaultValue: 'Insufficient Wallet Balance' }),
+  deductWallet: _t('cashier_settle.js_deduct_wallet', { ns: 'legacy', defaultValue: 'Deduct from Wallet' }),
+  collectPayment: _t('cashier_settle.collect_payment', { ns: 'legacy', defaultValue: 'Collect Payment' }),
+  confirmTitle: _t('cashier_settle.js_confirm_title', { ns: 'legacy', defaultValue: 'Confirm Wallet Deduction?' }),
+  confirmBody: _t('cashier_settle.js_confirm_body', { ns: 'legacy', defaultValue: 'Deduct {{amount}} FCFA from wallet? \n Remaining after: {{remaining}} FCFA' }),
+  confirmYes: _t('cashier_settle.js_confirm_yes', { ns: 'legacy', defaultValue: 'Yes, Deduct Now' }),
+  qrConfirmTitle: _t('cashier_settle.js_qr_confirm_title', { ns: 'legacy', defaultValue: 'Confirm BetterPay received?' }),
+  qrConfirmBody: _t('cashier_settle.js_qr_confirm_body', { ns: 'legacy', defaultValue: 'Only confirm after the patient has paid {{amount}} FCFA on BetterPay.' }),
+  qrConfirmYes: _t('cashier_settle.js_qr_confirm_yes', { ns: 'legacy', defaultValue: 'Yes, payment received' }),
+  qrNotConfigured: _t('cashier_settle.js_qr_not_configured', { ns: 'legacy', defaultValue: 'BetterPay partner ID is missing. Set it under Accounting → Settings → Payments.' }),
+  linkCopied: _t('cashier_settle.js_link_copied', { ns: 'legacy', defaultValue: 'Payment link copied' })
+}) %>;
+var betterPayUrl = <%- JSON.stringify(typeof betterPayUrl !== 'undefined' ? betterPayUrl : null) %>;
+var walletBalance = <%= walletBalance || 0 %>;
+var ticketTotal = <%= ticket.total_amount || 0 %>;
+var walletId = <%= walletId ? walletId : 'null' %>;
+var selectedMethod = 'Cash';
+var CS_I18N = window.__CASHIER_SETTLE_I18N || {};
+
+function pickMethod(el) {
+  // Prevent picking wallet if no wallet
+  if (el.dataset.method === 'Wallet' && (!walletId)) {
+    HMS.toast.fire({ icon: 'error', title: CS_I18N.noWallet || 'No active wallet found' });
+    return;
+  }
+
+  document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  selectedMethod = el.dataset.method;
+  document.getElementById('payMethodInput').value = selectedMethod;
+
+  var wp = document.getElementById('walletPanel');
+  var qp = document.getElementById('qrPanel');
+  var btn = document.getElementById('btnCollect');
+
+  if (qp) qp.classList.remove('show');
+
+  if (selectedMethod === 'Wallet') {
+ wp.classList.add('show');
+ btn.classList.add('wallet-mode');
+ if (walletBalance < ticketTotal) {
+ btn.disabled = true;
+ btn.innerHTML = '<i class="fa fa-ban mr-2"></i> ' + (CS_I18N.insufficientBtn || 'Insufficient Wallet Balance');
+ } else {
+ btn.disabled = false;
+ btn.innerHTML = '<i class="fa fa-check-circle mr-2"></i> ' + (CS_I18N.deductWallet || 'Deduct from Wallet') + ' — ' + fmt(ticketTotal) + ' FCFA';
+ }
+  } else if (selectedMethod === 'BetterPay' || selectedMethod === 'QR Code') {
+ wp.classList.remove('show');
+ btn.classList.remove('wallet-mode');
+ if (!betterPayUrl) {
+   btn.disabled = true;
+   HMS.toast.fire({ icon: 'warning', title: CS_I18N.qrNotConfigured || 'BetterPay not configured' });
+ } else {
+   if (qp) qp.classList.add('show');
+   btn.disabled = false;
+   btn.innerHTML = '<i class="fa fa-qrcode mr-2"></i> ' + (CS_I18N.collectPayment || 'Collect Payment') + ' — ' + fmt(ticketTotal) + ' FCFA';
+ }
+  } else {
+ wp.classList.remove('show');
+ btn.classList.remove('wallet-mode');
+ btn.disabled = false;
+ btn.innerHTML = '<i class="fa fa-check-circle mr-2"></i> ' + (CS_I18N.collectPayment || 'Collect Payment') + ' — ' + fmt(ticketTotal) + ' FCFA';
+  }
+}
+
+function fmt(n) { return Number(n).toLocaleString('fr-FR'); }
+
+function renderBetterPayQr() {
+  if (!betterPayUrl) return;
+  var host = document.getElementById('betterPayQrCanvas');
+  if (!host) return;
+  function drawLocal() {
+    if (typeof QRCode === 'undefined') return false;
+    QRCode.toCanvas(host, betterPayUrl, { width: 168, margin: 1 }, function () {});
+    return true;
+  }
+  if (drawLocal()) return;
+  var img = document.createElement('img');
+  img.alt = 'QR';
+  img.width = 168;
+  img.height = 168;
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=168x168&data=' + encodeURIComponent(betterPayUrl);
+  host.appendChild(img);
+}
+if (betterPayUrl) {
+  var qrScript = document.createElement('script');
+  qrScript.src = '/vendor/qrcode/qrcode.min.js';
+  qrScript.onload = renderBetterPayQr;
+  qrScript.onerror = renderBetterPayQr;
+  document.head.appendChild(qrScript);
+}
+var copyBtn = document.getElementById('btnCopyBetterPay');
+if (copyBtn && betterPayUrl) {
+  copyBtn.addEventListener('click', function () {
+    var done = function () {
+      if (window.HMS && HMS.toast) HMS.toast.fire({ icon: 'success', title: CS_I18N.linkCopied || 'Copied', timer: 2000 });
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(betterPayUrl).then(done).catch(function () { window.prompt('Copy:', betterPayUrl); });
+    } else {
+      window.prompt('Copy:', betterPayUrl);
+      done();
+    }
+  });
+}
+
+// Confirm before submitting wallet / QR payment
+document.getElementById('collectForm').addEventListener('submit', function(e) {
+  if (selectedMethod === 'BetterPay' || selectedMethod === 'QR Code') {
+    e.preventDefault();
+    if (!betterPayUrl) {
+      HMS.toast.fire({ icon: 'error', title: CS_I18N.qrNotConfigured || 'BetterPay not configured' });
+      return;
+    }
+    var qrBody = (CS_I18N.qrConfirmBody || '').replace('{{amount}}', fmt(ticketTotal));
+    HMS.confirm(CS_I18N.qrConfirmTitle || 'Confirm BetterPay received?',
+      qrBody, 'question', CS_I18N.qrConfirmYes || 'Yes, payment received', '#0891b2'
+    ).then(function (result) {
+      if (result.isConfirmed) document.getElementById('collectForm').submit();
+    });
+    return;
+  }
+  if (selectedMethod === 'Wallet') {
+    e.preventDefault();
+    var bodyTpl = CS_I18N.confirmBody || 'Deduct {{amount}} FCFA from wallet? \n Remaining after: {{remaining}} FCFA';
+    HMS.confirm(CS_I18N.confirmTitle || 'Confirm Wallet Deduction?', 
+      bodyTpl.replace('{{amount}}', fmt(ticketTotal)).replace('{{remaining}}', fmt(walletBalance - ticketTotal)),
+      'question', CS_I18N.confirmYes || 'Yes, Deduct Now', '#7c3aed'
+    ).then((result) => {
+      if (result.isConfirmed) {
+        this.submit();
+      }
+    });
+  }
+});
+</script>
+
+<%- include('partials/footer') %>

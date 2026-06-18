@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZAIZENS License Server — Dashboard</title>
+  <style>
+    :root { --brand:#0891b2; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --ok:#059669; --warn:#d97706; --bad:#dc2626; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Inter,system-ui,sans-serif; background:#f1f5f9; color:var(--ink); }
+    .wrap { max-width:1200px; margin:0 auto; padding:20px 16px 48px; }
+    header { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; margin-bottom:20px; }
+    h1 { margin:0; font-size:1.4rem; }
+    .sub { color:var(--muted); font-size:.9rem; margin-top:4px; }
+    .nav a { color:var(--brand); font-weight:600; text-decoration:none; margin-right:14px; font-size:.9rem; }
+    .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:20px; }
+    .stat { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; }
+    .stat .n { font-size:1.6rem; font-weight:800; }
+    .stat .l { font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:700; }
+    .panel { background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:16px; }
+    .panel h2 { margin:0 0 12px; font-size:1rem; }
+    label { display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin-bottom:4px; }
+    input, select, textarea { width:100%; border:1px solid var(--line); border-radius:10px; padding:9px 11px; font:inherit; }
+    textarea { min-height:80px; font-family:ui-monospace,monospace; font-size:12px; }
+    button { border:0; border-radius:10px; padding:9px 14px; font-weight:700; cursor:pointer; background:var(--brand); color:#fff; }
+    button.secondary { background:#fff; color:var(--ink); border:1px solid var(--line); }
+    button.danger { background:var(--bad); }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:end; }
+    .row > * { flex:1; min-width:140px; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+    tr.clickable { cursor:pointer; }
+    tr.clickable:hover { background:#f8fafc; }
+    .badge { display:inline-block; border-radius:999px; padding:2px 8px; font-size:11px; font-weight:700; }
+    .badge.ok { background:#d1fae5; color:#047857; }
+    .badge.warn { background:#fef3c7; color:#b45309; }
+    .badge.bad { background:#fee2e2; color:#b91c1c; }
+    .badge.muted { background:#f1f5f9; color:#475569; }
+    .msg { padding:10px 12px; border-radius:10px; font-size:14px; margin-bottom:12px; display:none; }
+    .msg.show { display:block; }
+    .msg.error { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
+    .msg.ok { background:#ecfdf5; color:#047857; border:1px solid #bbf7d0; }
+    .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    @media (max-width:800px) { .detail-grid { grid-template-columns:1fr; } }
+    .mono { font-family:ui-monospace,monospace; font-size:12px; word-break:break-all; }
+    .muted { color:var(--muted); font-size:12px; }
+    #detailPanel[hidden] { display:none !important; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>License Server Dashboard</h1>
+        <p class="sub">Manage hospital installations, issue serials, and revoke licenses remotely.</p>
+      </div>
+      <div class="nav">
+        <a href="/">Serial generator</a>
+        <a href="/dashboard">Dashboard</a>
+        <button type="button" class="secondary" id="btnRefresh">Refresh</button>
+      </div>
+    </header>
+
+    <div id="flash" class="msg"></div>
+
+    <label for="adminToken">Admin token</label>
+    <input id="adminToken" type="password" placeholder="LICENSE_GENERATOR_ADMIN_TOKEN" autocomplete="off" style="max-width:360px;margin-bottom:16px;">
+
+    <div class="stats" id="stats"></div>
+
+    <div class="panel">
+      <h2>Client installations</h2>
+      <div style="overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Facility</th>
+              <th>Installation ID</th>
+              <th>Last heartbeat</th>
+              <th>Licenses</th>
+              <th>Pending cmds</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="installRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="detailPanel" hidden>
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h2 id="detailTitle" style="margin:0;">Installation</h2>
+        <button type="button" class="secondary" id="btnCloseDetail">Close</button>
+      </div>
+      <div class="detail-grid">
+        <div>
+          <p class="muted" id="detailMeta"></p>
+          <h3 style="font-size:.9rem;margin:16px 0 8px;">Licenses</h3>
+          <div id="licenseList"></div>
+          <h3 style="font-size:.9rem;margin:16px 0 8px;">Remote actions</h3>
+          <div class="row">
+            <div>
+              <label>Solution to revoke</label>
+              <select id="revokeSolution"></select>
+            </div>
+            <div>
+              <label>Reason</label>
+              <input id="revokeReason" placeholder="suspected tampering">
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button type="button" class="danger" id="btnRevokeOne">Revoke module</button>
+            <button type="button" class="danger" id="btnRevokeAll">Revoke all licenses</button>
+            <button type="button" class="secondary" id="btnPushNow">Push now (instant sync)</button>
+          </div>
+          <h3 style="font-size:.9rem;margin:16px 0 8px;">Issue serial</h3>
+          <label>Request code (or use pending below)</label>
+          <textarea id="issueRequestCode" placeholder="ZAI1-REQ-…"></textarea>
+          <div class="row" style="margin-top:10px;">
+            <button type="button" id="btnIssueSerial">Generate &amp; queue delivery</button>
+          </div>
+          <div id="issuedSerial" class="mono" style="margin-top:10px;display:none;"></div>
+        </div>
+        <div>
+          <h3 style="font-size:.9rem;margin:0 0 8px;">Recent commands</h3>
+          <div id="commandList" class="muted"></div>
+          <h3 style="font-size:.9rem;margin:16px 0 8px;">Audit</h3>
+          <div id="auditList" class="muted"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const flash = document.getElementById('flash');
+    const adminToken = document.getElementById('adminToken');
+    const statsEl = document.getElementById('stats');
+    const installRows = document.getElementById('installRows');
+    const detailPanel = document.getElementById('detailPanel');
+    let selectedId = null;
+    let installations = [];
+
+    adminToken.value = localStorage.getItem('ls_admin_token') || '';
+    adminToken.addEventListener('change', () => localStorage.setItem('ls_admin_token', adminToken.value));
+
+    function showMsg(text, ok) {
+      flash.textContent = text;
+      flash.className = 'msg show ' + (ok ? 'ok' : 'error');
+    }
+
+    function headers() {
+      const h = { Accept: 'application/json' };
+      if (adminToken.value.trim()) h['X-Admin-Token'] = adminToken.value.trim();
+      return h;
+    }
+
+    async function api(path, opts = {}) {
+      const res = await fetch(path, {
+        ...opts,
+        headers: { ...headers(), ...(opts.headers || {}), ...(opts.body ? { 'Content-Type': 'application/json' } : {}) },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.ok === false) throw new Error(data.error || 'Request failed (' + res.status + ')');
+      return data;
+    }
+
+    function fmtDate(v) {
+      if (!v) return '—';
+      const d = new Date(v);
+      return Number.isNaN(d.getTime()) ? v : d.toLocaleString();
+    }
+
+    function statusBadge(status, lastHb, connectivity) {
+      if (status === 'suspended') return '<span class="badge bad">Suspended</span>';
+      if (connectivity === 'offline') return '<span class="badge bad">Offline</span>';
+      if (!lastHb) return '<span class="badge muted">Never synced</span>';
+      const age = Date.now() - new Date(lastHb).getTime();
+      if (age > 86400000 * 2) return '<span class="badge warn">Stale</span>';
+      return '<span class="badge ok">Online</span>';
+    }
+
+    function renderStats(stats) {
+      statsEl.innerHTML = [
+        ['Installations', stats.installations],
+        ['Active licenses', stats.activeLicenses],
+        ['Pending requests', stats.pendingRequests],
+        ['Pending commands', stats.pendingCommands],
+      ].map(([l, n]) => `<div class="stat"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+    }
+
+    function renderInstallations(rows) {
+      installations = rows;
+      if (!rows.length) {
+        installRows.innerHTML = '<tr><td colspan="6" class="muted">No installations yet. Clients appear after first sync or request.</td></tr>';
+        return;
+      }
+      installRows.innerHTML = rows.map((r) => `
+        <tr class="clickable" data-id="${r.installationId}">
+          <td><strong>${r.facilityName || 'Unknown facility'}</strong><br><span class="muted">${r.contactEmail || ''}</span></td>
+          <td class="mono">${r.installationId}</td>
+          <td>${fmtDate(r.lastHeartbeatAt)}<br><span class="muted">${r.lastIp || ''}</span></td>
+          <td>${r.activeLicenses} active · ${r.pendingLicenses} pending</td>
+          <td>${r.pendingCommands || 0}</td>
+          <td>${statusBadge(r.status, r.lastHeartbeatAt, r.connectivityStatus)}</td>
+        </tr>
+      `).join('');
+      installRows.querySelectorAll('tr.clickable').forEach((tr) => {
+        tr.addEventListener('click', () => openDetail(tr.dataset.id));
+      });
+    }
+
+    async function loadDashboard() {
+      try {
+        const [{ stats }, { installations: rows }] = await Promise.all([
+          api('/api/admin/stats'),
+          api('/api/admin/installations'),
+        ]);
+        renderStats(stats);
+        renderInstallations(rows);
+      } catch (err) {
+        showMsg(err.message, false);
+      }
+    }
+
+    async function openDetail(installationId) {
+      selectedId = installationId;
+      detailPanel.hidden = false;
+      document.getElementById('detailTitle').textContent = 'Installation ' + installationId.slice(0, 8) + '…';
+      try {
+        const data = await api('/api/admin/installations/' + encodeURIComponent(installationId));
+        const i = data.installation;
+        document.getElementById('detailMeta').innerHTML =
+          `<strong>${i.facility_name || 'Unknown'}</strong><br>` +
+          `ID: <span class="mono">${i.installation_id}</span><br>` +
+          `Mode: ${i.product_mode || '—'} · Slices: ${i.product_slices || '[]'}<br>` +
+          `Push webhook: <span class="mono">${i.push_webhook_url || '—'}</span><br>` +
+          `Connectivity: ${i.connectivity_status || 'unknown'}<br>` +
+          `Last heartbeat: ${fmtDate(i.last_heartbeat_at)} · App: ${i.app_version || '—'}`;
+
+        const licenses = data.licenses || [];
+        document.getElementById('licenseList').innerHTML = licenses.length
+          ? `<table><thead><tr><th>Module</th><th>Status</th><th>Expires</th></tr></thead><tbody>` +
+            licenses.map((l) => `<tr><td>${l.solution_key}</td><td>${l.status}</td><td>${fmtDate(l.expires_at)}</td></tr>`).join('') +
+            '</tbody></table>'
+          : '<p class="muted">No license records.</p>';
+
+        const revokeSel = document.getElementById('revokeSolution');
+        revokeSel.innerHTML = licenses.map((l) => `<option value="${l.solution_key}">${l.solution_key} (${l.status})</option>`).join('');
+
+        const pending = licenses.filter((l) => l.status === 'pending' && l.request_code);
+        if (pending.length) {
+          document.getElementById('issueRequestCode').value = pending[0].request_code;
+        }
+
+        document.getElementById('commandList').innerHTML = (data.commands || []).slice(0, 10).map((c) =>
+          `<div style="margin-bottom:6px;">#${c.id} ${c.command_type} ${c.solution_key || ''} · ${c.status} · ${fmtDate(c.created_at)}</div>`
+        ).join('') || '<p>No commands.</p>';
+
+        document.getElementById('auditList').innerHTML = (data.auditLog || []).map((a) =>
+          `<div style="margin-bottom:6px;">${a.action} · ${fmtDate(a.created_at)}</div>`
+        ).join('') || '<p>No audit entries.</p>';
+      } catch (err) {
+        showMsg(err.message, false);
+      }
+    }
+
+    document.getElementById('btnCloseDetail').addEventListener('click', () => {
+      detailPanel.hidden = true;
+      selectedId = null;
+    });
+
+    document.getElementById('btnRefresh').addEventListener('click', loadDashboard);
+
+    document.getElementById('btnRevokeOne').addEventListener('click', async () => {
+      if (!selectedId) return;
+      if (!confirm('Revoke this module on the client? Access stops on next sync or push.')) return;
+      try {
+        const data = await api('/api/admin/installations/' + encodeURIComponent(selectedId) + '/revoke-solution', {
+          method: 'POST',
+          body: JSON.stringify({
+            solution_key: document.getElementById('revokeSolution').value,
+            reason: document.getElementById('revokeReason').value || 'remote_revocation',
+          }),
+        });
+        showMsg((data.message || 'Queued.') + (data.push && data.push.pushed ? ' Push delivered.' : ''), true);
+        await openDetail(selectedId);
+        await loadDashboard();
+      } catch (err) {
+        showMsg(err.message, false);
+      }
+    });
+
+    document.getElementById('btnRevokeAll').addEventListener('click', async () => {
+      if (!selectedId) return;
+      if (!confirm('Revoke ALL licenses on this client?')) return;
+      try {
+        const data = await api('/api/admin/installations/' + encodeURIComponent(selectedId) + '/revoke-all', {
+          method: 'POST',
+          body: JSON.stringify({ reason: document.getElementById('revokeReason').value || 'remote_bulk_revocation' }),
+        });
+        showMsg((data.message || 'Queued.') + (data.push && data.push.pushed ? ' Push delivered.' : ''), true);
+        await openDetail(selectedId);
+        await loadDashboard();
+      } catch (err) {
+        showMsg(err.message, false);
+      }
+    });
+
+    document.getElementById('btnPushNow').addEventListener('click', async () => {
+      if (!selectedId) return;
+      try {
+        const data = await api('/api/admin/installations/' + encodeURIComponent(selectedId) + '/push-now', {
+          method: 'POST',
+          body: JSON.stringify({ reason: 'admin_dashboard_push' }),
+        });
+        showMsg(data.message || 'Push sent.', true);
+      } catch (err) {
+        showMsg(err.message, false);
+      }
+    });
+
+    document.getElementById('btnIssueSerial').addEventListener('click', async () => {
+      if (!selectedId) return;
+      try {
+        const data = await api('/api/admin/installations/' + encodeURIComponent(selectedId) + '/generate-serial', {
+          method: 'POST',
+          body: JSON.stringify({
+            request_code: document.getElementById('issueRequestCode').value.trim(),
+            queue_delivery: true,
+          }),
+        });
+        const out = document.getElementById('issuedSerial');
+        out.style.display = 'block';
+        out.textContent = data.serial;
+        showMsg('Serial generated and queued for client delivery on next sync.', true);
+        await openDetail(selectedId);
+        await loadDashboard();
+      } catch (err) {
+        showMsg(err.message, false);
+      }
+    });
+
+    loadDashboard();
+    setInterval(loadDashboard, 60000);
+  </script>
+</body>
+</html>

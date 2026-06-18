@@ -1,0 +1,257 @@
+/**
+ * HMS Clinical Station theme — teal/emerald (Cashier Station style).
+ * Brand tokens inherit from hms-tokens.css; only layout overrides here.
+ */
+:root {
+  --hms-hero-gradient: linear-gradient(135deg, var(--hms-brand) 0%, var(--hms-brand-dark) 100%);
+}
+
+body.hms-body--odoo,
+.hms-odoo-app,
+body.hms-body--module-odoo .hms-module-odoo-app {
+  --hms-brand: #10b981;
+  --hms-brand-hover: #059669;
+  --hms-brand-soft: rgba(16, 185, 129, 0.12);
+  --o-brand: #10b981;
+  --o-brand-hover: #059669;
+  --hms-bg: #f9fafb;
+}
+
+body.hms-body--odoo {
+  --hms-brand-glow: rgba(16, 185, 129, 0.25);
+}
+
+body.hms-body--odoo .main-wrapper,
+body.hms-body--odoo .hms-odoo-app,
+body.hms-body--odoo .o_action_manager {
+  background: var(--hms-bg) !important;
+}
+
+/* ── Page hero (portal dashboards & module home) ── */
+.hms-page-hero {
+  background: var(--hms-hero-gradient) !important;
+  color: #fff !important;
+  border-radius: 16px !important;
+  border: none !important;
+  margin-bottom: 1.5rem;
+}
+
+.hms-page-hero .card-body {
+  padding: 1.25rem 1.5rem !important;
+}
+
+.hms-page-hero__title,
+.hms-page-hero h1,
+.hms-page-hero .h4 {
+  color: #fff !important;
+  font-weight: 800 !important;
+  margin-bottom: 0.25rem !important;
+}
+
+.hms-page-hero__sub,
+.hms-page-hero p.small {
+  color: rgba(255, 255, 255, 0.88) !important;
+  margin-bottom: 0 !important;
+}
+
+.hms-page-hero .btn-light {
+  color: var(--hms-brand) !important;
+  font-weight: 700;
+  border-radius: 8px;
+}
+
+.hms-page-hero .btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.65);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.hms-page-hero .btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+/* ── Stat / KPI cards ── */
+.hms-stat-card,
+.page-wrapper .content > .row.mb-4 .card.border-0.shadow-sm {
+  border-radius: 12px !important;
+  border: none !important;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06) !important;
+}
+
+.page-wrapper > .content {
+  background: transparent;
+}
+
+/* ── Content cards & tables ── */
+.page-wrapper .card.border-0.shadow-sm,
+.page-wrapper .card.border-0.shadow,
+.hms-table-fill-card,
+.premium-card,
+.fin-module .card {
+  border-radius: 14px !important;
+  border: none !important;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06) !important;
+}
+
+.page-wrapper .card-header.bg-white,
+.premium-card .pc-head {
+  background: #fff !important;
+  border-bottom: 2px solid var(--hms-border-v3) !important;
+  font-weight: 700;
+}
+
+.page-wrapper .card-header .text-success,
+.page-wrapper .card-header .fa.text-success {
+  color: var(--hms-brand) !important;
+}
+
+/* ── Buttons ── */
+.btn-primary,
+.hms-btn-premium.btn-primary,
+body.hms-body--odoo .btn-primary {
+  background: var(--hms-hero-gradient) !important;
+  border: none !important;
+  box-shadow: 0 4px 12px var(--hms-brand-glow) !important;
+  font-weight: 700;
+}
+
+.btn-primary:hover,
+.hms-btn-premium.btn-primary:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.btn-outline-primary,
+.btn-outline-success {
+  color: var(--hms-brand) !important;
+  border-color: var(--hms-brand) !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover {
+  background: var(--hms-brand-soft) !important;
+  color: var(--hms-brand-hover) !important;
+}
+
+/* ── Odoo shell chrome (teal, not purple) ── */
+.hms-odoo-app .o_web_navbar {
+  background: #fff !important;
+  border-bottom: 2px solid var(--hms-border-v3) !important;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+}
+
+.hms-odoo-app .o_menu_sections .o_nav_entry.active,
+.hms-odoo-app .o_menu_sections .dropdown-toggle.active,
+.hms-odoo-app .o_nav_entry.o_active {
+  color: var(--hms-brand) !important;
+  border-bottom-color: var(--hms-brand) !important;
+}
+
+.hms-odoo-app .o_menu_brand,
+.hms-odoo-app .o_menu_brand:hover {
+  color: var(--hms-brand-hover) !important;
+}
+
+.hms-odoo-app .o_cp_new,
+.hms-odoo-app .o_btn_primary {
+  background: var(--hms-brand) !important;
+  border-color: var(--hms-brand) !important;
+}
+
+.hms-odoo-app .o_control_panel {
+  background: #fff !important;
+  border-bottom: 2px solid var(--hms-border-v3) !important;
+  padding: 0.65rem 1rem !important;
+}
+
+.hms-odoo-app .o_stat_card {
+  background: #fff !important;
+  border: none !important;
+  border-left: 4px solid var(--hms-brand) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hms-odoo-app .o_stat_card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08) !important;
+}
+
+.hms-odoo-app .o_stat_value {
+  color: #1e293b !important;
+  font-weight: 800 !important;
+}
+
+.hms-odoo-app .o_form_sheet,
+.hms-odoo-app .o_list_view .o_list_table {
+  border-radius: 12px !important;
+  border: 1px solid var(--hms-border-v3) !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
+}
+
+.hms-odoo-app a.o_btn_link:hover {
+  color: var(--hms-brand) !important;
+}
+
+/* ── Portal tool tiles ── */
+.portal-tiles .card-header .text-warning,
+.card-header .fa-bolt.text-warning {
+  color: var(--hms-brand) !important;
+}
+
+/* ── Tables ── */
+.hms-table-v3 thead,
+.table thead.thead-light,
+.table thead.bg-light {
+  background: #f8fafc !important;
+}
+
+.hms-list-pager {
+  background: #f8fafc !important;
+  border-color: var(--hms-border-v3) !important;
+}
+
+/* ── Page titles (list pages without hero) ── */
+.page-wrapper .page-title,
+.page-wrapper h4.page-title {
+  color: #1e293b !important;
+  font-weight: 800 !important;
+}
+
+.page-wrapper .page-title + .text-muted,
+.page-wrapper h4.page-title ~ p.text-muted {
+  color: #64748b !important;
+}
+
+/* ── Sidebar active (when not using Odoo shell) ── */
+#hms-sidebar .sidebar-menu li.active > a,
+#hms-sidebar .sidebar-menu li a.active {
+  color: var(--hms-brand) !important;
+}
+
+/* ── Links & accents ── */
+.text-primary:not(.btn) {
+  color: var(--hms-brand) !important;
+}
+
+a.text-primary:hover {
+  color: var(--hms-brand-hover) !important;
+}
+
+.badge-primary {
+  background: var(--hms-brand) !important;
+}
+
+.badge-soft-primary {
+  background: var(--hms-brand-soft) !important;
+  color: var(--hms-brand-hover) !important;
+}
+
+/* ── Search boxes ── */
+.hms-search-box:focus-within {
+  border-color: var(--hms-brand) !important;
+  box-shadow: 0 0 0 3px var(--hms-brand-soft) !important;
+}

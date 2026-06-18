@@ -1,0 +1,88 @@
+/**
+ * Login bundle — surface mesh + hero card (staff + visiting doctor claim)
+ * Requires: hms-tokens.css, login.css
+ */
+body.login-page.hms-body--login {
+  --login-brand: var(--hms-brand-dark, #047857);
+  --login-accent: var(--hms-brand, #10b981);
+  --login-brand-hover: var(--hms-brand-hover, #059669);
+  background-color: var(--hms-surface-bg, #f0f4f8);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 10% 0%, var(--hms-surface-mesh-a, rgba(16, 185, 129, 0.07)), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(6, 78, 59, 0.06), transparent 50%),
+    linear-gradient(180deg, #f8fafc 0%, var(--hms-surface-bg, #f0f4f8) 100%);
+  background-attachment: fixed;
+}
+
+.login-shell--wide {
+  max-width: 720px;
+}
+
+.login-card--surface {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  border-radius: 18px;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 16px 40px rgba(15, 23, 42, 0.08);
+}
+
+.login-card__hero {
+  height: 5.5rem;
+  background: linear-gradient(135deg, #0f172a 0%, #134e4a 48%, #047857 100%);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.login-card__body {
+  padding: 0 32px 28px;
+}
+
+.login-card--surface .login-brand {
+  margin-top: -2.75rem;
+  margin-bottom: 24px;
+}
+
+.login-card--surface .login-brand__icon {
+  box-shadow:
+    0 4px 14px rgba(4, 120, 87, 0.25),
+    0 0 0 3px #fff;
+}
+
+.login-submit:hover:not(:disabled) {
+  background: var(--login-brand-hover, #059669);
+}
+
+.login-card--surface .login-meta {
+  margin-top: 20px;
+  padding-top: 18px;
+}
+
+.login-vd-title {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--login-ink);
+}
+
+.login-vd-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.login-vd-actions .login-submit {
+  width: auto;
+  flex: 1;
+  min-width: 140px;
+}
+
+@media (max-width: 420px) {
+  .login-card__body {
+    padding: 0 22px 24px;
+  }
+
+  .login-card--surface .login-brand {
+    margin-top: -2.5rem;
+  }
+}

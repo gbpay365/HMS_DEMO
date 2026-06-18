@@ -1,0 +1,12 @@
+<% /* React Add Charge modal mount — replaces legacy Bootstrap hms-add-charge-modal.ejs
+   Locals: chargeFormAction, chargeContextName, chargeContextValue, chargeSubmitLabel */ %>
+<% var _ctxName = chargeContextName || 'admission_id'; %>
+<% var _ctxVal = (typeof chargeContextValue !== 'undefined' && chargeContextValue !== null && chargeContextValue !== '') ? chargeContextValue : ''; %>
+<% var _submitLbl = (typeof chargeSubmitLabel !== 'undefined' && chargeSubmitLabel) ? chargeSubmitLabel : ((typeof t === 'function') ? t('charge_modal.submit', { ns: 'ipd', defaultValue: 'Add to running bill' }) : 'Add to running bill'); %>
+<script type="application/json" id="hms-add-charge-data"><%- JSON.stringify({
+  formAction: chargeFormAction,
+  contextName: _ctxName,
+  contextValue: _ctxVal,
+  submitLabel: _submitLbl
+}).replace(/</g, '\\u003c') %></script>
+<div id="hms-add-charge-root" class="hms-ui" aria-hidden="true"></div>

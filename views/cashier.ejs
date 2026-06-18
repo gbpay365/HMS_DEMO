@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--cashier'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-accounting-page-mount', {
+  reactPage: 'cashier',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.cashier', { ns: 'common' }) : 'Loading…')
+}) %>
+
+<%- include('partials/footer') %>

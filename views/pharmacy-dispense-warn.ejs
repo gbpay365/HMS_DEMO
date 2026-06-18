@@ -1,0 +1,53 @@
+<%- include('partials/header') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    var o = { ns: 'legacy', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+    return _t(key, o);
+  };
+}
+var chk = check || {};
+var ln = chk.line || {};
+var inv = chk.inventory || {};
+var pname = (ln.first_name||'') + ' ' + (ln.last_name||'');
+%>
+<%- include('partials/pharmacy-odoo-start', { phaOdooMenu: 'dispensing', phaOdooTitle: _tl('pharmacy_dispense_warn.title', 'Expiry warning'), nursingSupplyPending }) %>
+<div class="o_control_panel">
+  <div class="o_cp_breadcrumb"><span><%= _tl('pharmacy_dispense_warn.breadcrumb', 'Confirm dispense') %></span></div>
+  <a href="/pharmacy?view=dispensing" class="o_btn_link"><%= _tl('pharmacy_dispense_warn.back_queue', 'Back to queue') %></a>
+</div>
+<div class="o_content p-3">
+  <div class="alert alert-danger" style="max-width:640px;border-radius:8px;">
+    <h5 class="alert-heading font-weight-bold"><i class="fa fa-exclamation-triangle"></i> <%= _tl('pharmacy_dispense_warn.alert_heading', 'Expired medicine') %></h5>
+    <p class="mb-2"><%= _tl('pharmacy_dispense_warn.alert_body', 'You are about to dispense stock that is past its expiry date. This action should only proceed with pharmacist approval.') %></p>
+    <ul class="mb-0 pl-3">
+      <% (chk.warnings||[]).forEach(function(w){ %><li><%= w %></li><% }); %>
+    </ul>
+  </div>
+  <div class="card" style="max-width:640px;border-radius:8px;">
+    <div class="card-body">
+      <div class="row small">
+        <div class="col-md-6 mb-2"><strong><%= _tl('pharmacy_shared.patient', 'Patient:') %></strong> <%= pname %></div>
+        <div class="col-md-6 mb-2"><strong><%= _tl('pharmacy_dispense_warn.line', 'Line:') %></strong> RX-<%= ln.prescription_id %>-<%= ln.id %></div>
+        <div class="col-md-6 mb-2"><strong><%= _tl('pharmacy_dispense_warn.medication', 'Medication:') %></strong> <%= ln.medication_name %></div>
+        <div class="col-md-6 mb-2"><strong><%= _tl('pharmacy_dispense_warn.product', 'Product:') %></strong> <%= inv.name || _tl('pharmacy_shared.em_dash', '—') %></div>
+        <div class="col-md-6 mb-2"><strong><%= _tl('pharmacy_shared.expiry', 'Expiry:') %></strong> <span class="text-danger font-weight-bold"><%= chk.expiry_date || _tl('pharmacy_shared.em_dash', '—') %></span></div>
+        <div class="col-md-6 mb-2"><strong><%= _tl('pharmacy_dispense_warn.on_hand', 'On hand:') %></strong> <%= inv.quantity != null ? inv.quantity : _tl('pharmacy_shared.em_dash', '—') %></div>
+      </div>
+    </div>
+    <div class="card-footer bg-white d-flex" style="gap:8px;">
+      <a href="/pharmacy?view=dispensing" class="btn btn-light"><%= _tl('pharmacy_shared.cancel', 'Cancel') %></a>
+      <form method="post" action="/pharmacy/dispense/<%= lineId %>" style="margin:0;"
+            onsubmit="return confirm('<%= _tl('pharmacy_dispense_warn.confirm_override', 'Override expiry warning and dispense anyway?').replace(/'/g, "\\'") %>');">
+        <input type="hidden" name="force" value="1">
+        <button type="submit" class="o_cp_new border-0" style="background:#dc2626;"><%= _tl('pharmacy_dispense_warn.dispense_anyway', 'Dispense anyway') %></button>
+      </form>
+    </div>
+  </div>
+</div>
+<%- include('partials/pharmacy-odoo-end') %>
+<%- include('partials/footer') %>

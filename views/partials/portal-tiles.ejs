@@ -1,0 +1,59 @@
+<%
+/**
+ * Reusable "Quick Actions" tile grid for portal dashboards.
+ */
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _portal = (typeof portal !== 'undefined' && portal) ? portal : null;
+var _title  = (typeof title  !== 'undefined' && title)  ? title  : _t('tiles.quick_actions', { ns: 'portal', defaultValue: 'Quick Actions' });
+var _layout = locals.aclLayout || null;
+var _perms  = locals.userPerms || [];
+var _role   = (locals.user && locals.user.role != null) ? String(locals.user.role) : '';
+var _tiles  = [];
+if (_portal && _layout && typeof _layout.forPortal === 'function') {
+  try { _tiles = (_layout.forPortal(_portal, _perms, _role) || {}).tiles || []; } catch (_) { _tiles = []; }
+}
+var _accTheme = _portal === 'accountant';
+var _colClass = _accTheme ? 'col-6 col-md-4 col-lg-3 mb-3' : 'col-4 col-md-2 mb-3';
+var _wrapClass = _accTheme ? 'acc-tiles-wrap card border-0 shadow-sm mb-4 acc-table-card' : 'card border-0 shadow-sm mb-4';
+var _wrapStyle = _accTheme ? 'border-radius:16px;' : 'border-radius:14px;';
+%>
+<% if (_tiles.length) { %>
+<div class="<%= _wrapClass %> portal-tiles" style="<%= _wrapStyle %>">
+  <div class="card-header bg-white font-weight-bold py-3" style="border-bottom:2px solid #e2e8f0;">
+    <i class="fa fa-bolt mr-2 <%= _accTheme ? 'text-primary' : 'text-success' %>"></i><%= _title %>
+  </div>
+  <div class="card-body"><div class="row">
+    <% _tiles.forEach(function(t){
+         var clr = t.color || '#1a6bd8';
+         var ic  = t.icon  || 'fa-cube';
+         var url = t.url   || '#';
+         var tileCls = _accTheme ? 'acc-tile text-center p-3 d-flex flex-column align-items-center justify-content-center h-100 text-decoration-none' : 'card border-0 shadow-sm text-center p-3 d-block text-decoration-none h-100';
+         var tileStyle = _accTheme ? '' : 'border-radius:12px;transition:transform .15s,box-shadow .15s;';
+    %>
+    <div class="<%= _colClass %>">
+      <a href="<%= url %>"
+         data-acl-tile="<%= t.code %>"
+         class="<%= tileCls %>"
+         style="<%= tileStyle %>"
+         <% if (!_accTheme) { %>
+         onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.1)';"
+         onmouseout="this.style.transform='';this.style.boxShadow='';"
+         <% } %>>
+        <% if (_accTheme) { %>
+        <span class="acc-tile-icon" style="background:<%= clr %>18;"><i class="fa <%= ic %>" style="color:<%= clr %>;font-size:1.2rem;"></i></span>
+        <span class="acc-tile-label"><%= t.label %></span>
+        <% } else { %>
+        <span class="d-flex align-items-center justify-content-center rounded-circle mx-auto mb-2"
+              style="width:48px;height:48px;background:<%= clr %>18;">
+          <i class="fa <%= ic %>" style="color:<%= clr %>;font-size:1.15rem;"></i>
+        </span>
+        <span class="small font-weight-bold" style="color:#1e293b;font-size:.76rem;"><%= t.label %></span>
+        <% } %>
+      </a>
+    </div>
+    <% }); %>
+  </div></div>
+</div>
+<% } %>

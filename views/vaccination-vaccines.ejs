@@ -1,0 +1,42 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<%- include('partials/vaccination-odoo-start', {
+  vacOdooMenu: 'vaccines',
+  vacOdooTitle: _t('vaccination_vaccines.title', { ns: 'legacy', defaultValue: 'Vaccine catalog' })
+}) %>
+<div class="o_content">
+
+<div class="vac-card">
+ <div class="table-responsive">
+  <table class="table table-hover mb-0 vac-table">
+   <thead><tr>
+    <th><%= _t('vaccination_vaccines.col_code', { ns: 'legacy', defaultValue: 'Code' }) %></th>
+    <th><%= _t('vaccination_vaccines.col_name', { ns: 'legacy', defaultValue: 'Vaccine' }) %></th>
+    <th><%= _t('vaccination_vaccines.col_doses', { ns: 'legacy', defaultValue: 'Doses' }) %></th>
+    <th><%= _t('vaccination_vaccines.col_interval', { ns: 'legacy', defaultValue: 'Interval (days)' }) %></th>
+    <th><%= _t('vaccination_vaccines.col_route', { ns: 'legacy', defaultValue: 'Route / Site' }) %></th>
+    <th><%= _t('vaccination_vaccines.col_category', { ns: 'legacy', defaultValue: 'Category' }) %></th>
+    <th><%= _t('vaccination_vaccines.col_given', { ns: 'legacy', defaultValue: 'Doses given' }) %></th>
+   </tr></thead>
+   <tbody>
+    <% (vaccines || []).forEach(function(v){ %>
+    <tr class="<%= v.active ? '' : 'text-muted' %>">
+     <td><code><%= v.code %></code></td>
+     <td><strong><%= v.name %></strong></td>
+     <td><%= v.doses_required %></td>
+     <td><%= v.interval_days || '—' %></td>
+     <td><%= v.route || '—' %><% if (v.site) { %><br><span class="small text-muted"><%= v.site %></span><% } %></td>
+     <td><span class="status-pill scheduled"><%= v.category %></span></td>
+     <td><%= v.doses_given || 0 %></td>
+    </tr>
+    <% }) %>
+   </tbody>
+  </table>
+ </div>
+</div>
+
+<p class="small text-muted mt-3"><%= _t('vaccination_vaccines.hint', { ns: 'legacy', defaultValue: 'Catalog seeded from EPI / routine immunization schedule. Contact system admin to add custom vaccines.' }) %></p>
+
+</div>
+<%- include('partials/vaccination-odoo-end') %>
+<%- include('partials/footer') %>

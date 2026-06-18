@@ -1,0 +1,165 @@
+<%- include('partials/header') %>
+<% var _sa = function(k, d, opts) {
+  if (typeof t !== 'function') return d || k;
+  var o = { ns: 'superAdmin', defaultValue: d || k };
+  if (opts) Object.assign(o, opts);
+  return t(k, o);
+}; %>
+<div class="page-wrapper"><div class="content hms-module">
+
+<% if(locals.flash){%><div class="alert alert-success border-0 shadow-sm mb-3 py-2"><i class="fa fa-check-circle mr-2"></i><%=locals.flash%></div><%}%>
+<% if(locals.error){%><div class="alert alert-danger border-0 shadow-sm mb-3 py-2"><i class="fa fa-exclamation-circle mr-2"></i><%=locals.error%></div><%}%>
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap" style="gap:12px;">
+  <div>
+ <h1 class="h4 font-weight-bold mb-1" style="color:#1b2559;">
+ <i class="fa fa-shield mr-2" style="color:#7c3aed;"></i><%= _sa('title', 'Super Admin — Product Configuration') %>
+ </h1>
+ <p class="text-muted small mb-0"><%= _sa('subtitle', 'Named profiles, module overrides, legacy global slices, and system audit logs. Normal Admin cannot open this page.') %></p>
+  </div>
+  <div class="d-flex align-items-center" style="gap:8px;">
+ <a href="/dashboard" class="btn btn-outline-secondary btn-sm font-weight-bold" style="border-radius:8px;"><i class="fa fa-dashboard mr-1"></i><%= _sa('open_dashboard', 'Open Dashboard') %></a>
+ <a href="/hms-admin/access" class="btn btn-outline-primary btn-sm font-weight-bold" style="border-radius:8px;"><i class="fa fa-sitemap mr-1"></i><%= _sa('access_workflow', 'Access & Workflow') %></a>
+ <a href="/hms-admin/subscriptions" class="btn btn-outline-success btn-sm font-weight-bold" style="border-radius:8px;"><i class="fa fa-key mr-1"></i><%= _sa('solution_subscriptions', 'Solution Subscriptions') %></a>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-3 mb-3">
+ <div class="card border-0 shadow-sm p-4" style="border-radius:14px;">
+ <div class="d-flex align-items-center">
+ <div style="width:46px;height:46px;border-radius:12px;background:#f5f3ff;display:flex;align-items:center;justify-content:center;margin-right:1rem;flex-shrink:0;">
+ <i class="fa fa-users" style="color:#7c3aed;font-size:1.2rem;"></i>
+ </div>
+ <div><div style="font-size:1.6rem;font-weight:700;color:#1e293b;"><%=totalStaff||0%></div><div class="small text-muted"><%= _sa('stats.total_staff', 'Total Staff') %></div></div>
+ </div>
+ </div>
+  </div>
+  <div class="col-md-3 mb-3">
+ <div class="card border-0 shadow-sm p-4" style="border-radius:14px;">
+ <div class="d-flex align-items-center">
+ <div style="width:46px;height:46px;border-radius:12px;background:#ecfdf5;display:flex;align-items:center;justify-content:center;margin-right:1rem;flex-shrink:0;">
+ <i class="fa fa-check-circle" style="color:#059669;font-size:1.2rem;"></i>
+ </div>
+ <div><div style="font-size:1.6rem;font-weight:700;color:#1e293b;"><%=activeStaff||0%></div><div class="small text-muted"><%= _sa('stats.active_staff', 'Active Staff') %></div></div>
+ </div>
+ </div>
+  </div>
+  <div class="col-md-3 mb-3">
+ <div class="card border-0 shadow-sm p-4" style="border-radius:14px;">
+ <div class="d-flex align-items-center">
+ <div style="width:46px;height:46px;border-radius:12px;background:#eff6ff;display:flex;align-items:center;justify-content:center;margin-right:1rem;flex-shrink:0;">
+ <i class="fa fa-hospital-o" style="color:#1a6bd8;font-size:1.2rem;"></i>
+ </div>
+ <div><div style="font-size:1.6rem;font-weight:700;color:#1e293b;"><%=facilities.length%></div><div class="small text-muted"><%= _sa('stats.facilities', 'Facilities') %></div></div>
+ </div>
+ </div>
+  </div>
+  <div class="col-md-3 mb-3">
+ <div class="card border-0 shadow-sm p-4" style="border-radius:14px;">
+ <div class="d-flex align-items-center">
+ <div style="width:46px;height:46px;border-radius:12px;background:#fef2f2;display:flex;align-items:center;justify-content:center;margin-right:1rem;flex-shrink:0;">
+ <i class="fa fa-tags" style="color:#dc2626;font-size:1.2rem;"></i>
+ </div>
+ <div><div style="font-size:1.6rem;font-weight:700;color:#1e293b;"><%=roles.length%></div><div class="small text-muted"><%= _sa('stats.roles_defined', 'Roles Defined') %></div></div>
+ </div>
+ </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+
+ <%- include('partials/super-admin-deployment-odoo') %>
+
+ <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;overflow:hidden;">
+ <div class="card-header bg-white d-flex justify-content-between align-items-center" style="border-bottom:2px solid #f1f5f9;">
+ <span class="font-weight-bold"><i class="fa fa-hospital-o mr-2 text-primary"></i><%= _sa('facilities.title', 'Hospital Facilities') %></span>
+ <a href="/facilities/add" class="btn btn-sm btn-outline-primary" style="border-radius:8px;"><%= _sa('facilities.add_site', 'Add Site') %></a>
+ </div>
+ <div class="card-body p-0">
+ <% if(!facilities||facilities.length===0){ %>
+ <div class="text-center text-muted py-5 small"><i class="fa fa-hospital-o fa-2x mb-2 d-block opacity-25"></i><%= _sa('facilities.empty', 'No facilities configured.') %></div>
+ <% } else { %>
+ <div class="table-responsive">
+ <table class="table table-hover mb-0" style="font-size:.85rem;">
+ <thead style="background:#f8fafc;"><tr>
+ <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;"><%= _sa('facilities.col_id', 'ID') %></th>
+ <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;"><%= _sa('facilities.col_name', 'Facility Name') %></th>
+ <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;"><%= _sa('facilities.col_status', 'Status') %></th>
+ <th style="font-size:.7rem;text-transform:uppercase;color:#64748b;" class="text-right"><%= _sa('facilities.col_action', 'Action') %></th>
+ </tr></thead>
+ <tbody>
+ <% facilities.forEach(function(f){ %>
+ <tr>
+ <td><code style="font-size:.78rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;">#<%=f.id%></code></td>
+ <td class="font-weight-bold" style="color:#1e293b;"><%=f.name||'—'%><% if(f.code){ %> <span class="text-muted font-weight-normal small">(<%=f.code%>)</span><% } %></td>
+ <td><span class="badge" style="background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;border-radius:20px;padding:.25rem .6rem;font-size:.72rem;"><%= _sa('facilities.status_active', 'Active') %></span></td>
+ <td class="text-right"><a href="/facilities/<%=f.id%>/edit" class="btn btn-sm btn-outline-primary" style="border-radius:6px;"><%= _sa('facilities.manage', 'Manage') %></a></td>
+ </tr>
+ <% }); %>
+ </tbody>
+ </table>
+ </div>
+ <% } %>
+ </div>
+ </div>
+
+ <%- include('partials/super-admin-roles-odoo') %>
+
+  </div>
+
+  <div class="col-lg-4">
+
+ <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#1e1b4b,#312e81);">
+ <div class="card-body p-4 text-white">
+ <div class="d-flex align-items-center mb-3">
+ <div style="width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin-right:1rem;flex-shrink:0;">
+ <i class="fa fa-shield" style="font-size:1.4rem;"></i>
+ </div>
+ <div>
+ <div style="font-weight:700;font-size:1rem;"><%= _sa('account.title', 'Super Admin Account') %></div>
+ <div style="opacity:.7;font-size:.82rem;"><%= _sa('account.subtitle', 'Unrestricted system access') %></div>
+ </div>
+ </div>
+ <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:.75rem 1rem;margin-bottom:1rem;">
+ <div class="small" style="opacity:.7;margin-bottom:.25rem;"><%= _sa('account.logged_in', 'Logged in as') %></div>
+ <div class="font-weight-bold"><%=locals.user?.name||_sa('account.default_name', 'Super Admin')%></div>
+ </div>
+ <p class="small mb-3" style="opacity:.75;"><%= _sa('account.hint_before', 'Normal Admin cannot open this page. Change password under') %> <a href="/my-profile" class="text-white font-weight-bold"><%= _sa('account.my_profile', 'My Profile') %></a>.</p>
+ <div class="d-flex" style="gap:8px;">
+ <a href="/users" class="btn btn-sm btn-light font-weight-bold flex-fill text-center" style="border-radius:8px;color:#312e81;"><i class="fa fa-shield mr-1"></i><%= _sa('account.users', 'System Users') %></a>
+ <a href="/employees" class="btn btn-sm font-weight-bold flex-fill text-center" style="border-radius:8px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);"><i class="fa fa-id-badge mr-1"></i><%= _sa('account.staff', 'Staff') %></a>
+ </div>
+ </div>
+ </div>
+
+ <div class="card border-0 shadow-sm" style="border-radius:14px;overflow:hidden;">
+ <div class="card-header bg-white font-weight-bold" style="border-bottom:2px solid #f1f5f9;">
+ <i class="fa fa-history mr-2 text-primary"></i><%= _sa('audit.title', 'System Audit Trail') %>
+ </div>
+ <div class="list-group list-group-flush" style="max-height:500px;overflow-y:auto;">
+ <% if(!logs||logs.length===0){ %>
+ <div class="list-group-item text-muted small text-center py-4"><i class="fa fa-info-circle mr-1"></i><%= _sa('audit.empty', 'No audit logs found.') %></div>
+ <% } else { logs.forEach(function(log){ var ts=log.created_at?new Date(log.created_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):' '; %>
+ <div class="list-group-item p-3">
+ <div class="d-flex justify-content-between mb-1">
+ <span class="badge border" style="font-size:.65rem;text-transform:uppercase;background:#f8fafc;color:#475569;border-radius:4px;"><%=log.action_type||log.event||'action'%></span>
+ <span style="font-size:.65rem;color:#94a3b8;"><%=ts%></span>
+ </div>
+ <div class="small font-weight-600" style="color:#1e293b;"><%=log.description||log.detail||'—'%></div>
+ <div style="font-size:.7rem;color:#94a3b8;margin-top:2px;"><%= _sa('audit.user', 'User #{{id}}', { id: log.user_id||log.employee_id||'?' }) %></div>
+ </div>
+ <% }); } %>
+ </div>
+ </div>
+
+  </div>
+</div>
+
+</div></div>
+<%- include('partials/footer') %>
+
+<style>
+.hms-superadmin-only { display: block; }
+</style>

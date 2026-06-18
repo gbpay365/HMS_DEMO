@@ -1,0 +1,85 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _tc = function (key, fallback, opts) {
+  return _t(key, Object.assign({ ns: 'clinical', defaultValue: fallback }, opts || {}));
+};
+%><% var v = qv; %>
+<% var qs=v.queue_status||'registered';
+   var docName=v.doc_fn ? ('Dr.'+v.doc_fn+' '+v.doc_ln) : '—';
+   var prevL=v.prev_visit_date ? fmtDate(v.prev_visit_date) : _tc('opd_queue_vc.first_visit', 'First visit');
+   var _vid=parseInt(v.id,10)||0;
+   var hasV=false;
+   for(var _vi=0;_vi<(visitIdsWithVitals||[]).length;_vi++){
+    if((parseInt(visitIdsWithVitals[_vi],10)||0)===_vid){ hasV=true; break; }
+   } %>
+<% var vf=v.vitals_first_at||v.vitals_last_at; var vitalsStr='—'; if(vf){ try { vitalsStr=new Date(vf).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); } catch(e){ vitalsStr='—'; } } %>
+<% var arrNo = (typeof v.arrival_no !== 'undefined' && v.arrival_no) ? v.arrival_no : 0; %>
+<% var _adoc = parseInt(v.assigned_doctor_id||0)||0; var _me = parseInt(locals.staffDoctorId||0)||0; %>
+<article class="vc<%= (_me && _adoc===_me) ? ' vc--mine' : '' %>">
+ <div class="d-flex align-items-center mb-2" style="gap:10px;">
+ <div class="vc__av"><%=(v.first_name||'?')[0]%><%=(v.last_name||'?')[0]%></div>
+ <div style="flex:1;min-width:0;">
+ <div style="font-weight:700;font-size:.88rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><%=v.first_name%> <%=v.last_name%>
+ <% if (_me && _adoc===_me) { %><span class="badge badge-success ml-1" style="font-size:.58rem;"><%= _tc('opd_queue_vc.yours', 'Yours') %></span><% } %>
+ <% if (_me && _adoc && _adoc!==_me) { %><span class="badge badge-light border ml-1" style="font-size:.58rem;color:#64748b;"><%= _tc('opd_queue_vc.other_dr', 'Other Dr') %></span><% } %>
+ </div>
+ <div style="font-size:.7rem;color:#94a3b8;"><%= _tc('opd_queue_vc.last', 'Last') %>: <%=prevL%></div>
+ <% if (v.carried_forward_from) { var _cf = String(v.carried_forward_from).slice(0,10); %>
+ <div style="font-size:.68rem;color:#0369a1;font-weight:700;"><i class="fa fa-repeat mr-1"></i><%= _tc('opd_queue_vc.from', 'From') %> <%= fmtDate(_cf+'T12:00:00') %></div>
+ <% } %>
+ </div>
+ <% if(v.priority==='urgent'){%><span class="pill p-urgent">!</span><%}%>
+ </div>
+ <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap" style="gap:6px;">
+ <% if(arrNo){ %><span class="badge badge-light border font-weight-bold" style="font-size:.72rem;"><%= _tc('opd_queue_vc.no', 'No') %> <%= arrNo %></span><% } %>
+ <% var _dispRm = v.display_room_name || v.display_room_code; %>
+ <% if (_dispRm) { %>
+ <span class="badge font-weight-bold <%= v.display_room_auto ? 'badge-light border text-secondary' : 'badge-info' %>" style="font-size:.68rem;" title="<%= v.display_room_auto ? _tc('opd_queue_vc.room_auto_title', 'Default from this doctor\'s consultation seat — tap Room if they moved') : _tc('opd_queue_vc.room_assigned_title', 'Consultation room (assigned)') %>"><i class="fa fa-door-open mr-1"></i><%= _dispRm %><% if (v.room_queue_no) { %> · #<%= v.room_queue_no %><% } %><% if (v.display_room_auto) { %> <span style="font-size:.58rem;opacity:.85;"><%= _tc('opd_queue_vc.auto', 'auto') %></span><% } %></span>
+ <% } %>
+ <span class="small text-muted" title="<%= _tc('opd_queue_vc.vitals_title', 'First / latest vitals for this visit') %>"><i class="fa fa-heartbeat mr-1" style="color:#ea580c;"></i><%= vitalsStr %></span>
+ <% if(qs==='waiting_doctor' && v.wait_start_iso){ %>
+ <span class="small font-weight-bold text-warning"><i class="fa fa-hourglass-half mr-1"></i><%= _tc('opd_queue_vc.wait', 'Wait') %> <span class="js-opd-wait-dur" data-start="<%= v.wait_start_iso %>">…</span></span>
+ <% } %>
+ </div>
+ <div class="d-flex justify-content-between align-items-center mb-2">
+ <span class="pill p-<%=qs%>"><%=qs.replace(/_/g,' ')%></span>
+ <small class="text-muted font-weight-bold"><%=v.ticket_number%></small>
+ </div>
+ <div class="small text-muted mb-1"><i class="fa fa-stethoscope mr-1"></i><%=docName%></div>
+ <div class="small text-muted mb-2"><i class="fa fa-map-marker mr-1"></i><%=v.department||_tc('opd_queue_vc.general', 'General')%></div>
+ <div class="pt-2 border-top" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+ <a href="/patient-chart/<%=v.patient_id%>" class="btn btn-sm btn-outline-primary" style="font-size:.75rem;"><%= _tc('opd_queue_vc.chart', 'Chart') %></a>
+ <% var _opdUp = locals.userPerms || []; function _opdHasP(){ if(_opdUp.includes('*'))return true; for(var _oi=0;_oi<arguments.length;_oi++){ if(_opdUp.includes(arguments[_oi])) return true; } return false; } %>
+<% var isFD = !_opdHasP('clinical.write','prescription.write'); %>
+ <% var _roomBtn = (consultationRooms||[]).length || (parseInt(v.suggested_room_id||0,10)||0); %>
+ <% if(_opdHasP('opd.write','nursing.write','clinical.write','scheduling.read') && _roomBtn){ %>
+ <button type="button" class="btn btn-sm btn-outline-info" style="font-size:.72rem;" onclick="openAssignRoom(<%=v.id%>, <%= v.consultation_room_id || v.suggested_room_id || 0 %>)"><i class="fa fa-door-open mr-1"></i><%= _tc('opd_queue_vc.room', 'Room') %></button>
+ <% } %>
+ <% var _canVitals=_opdHasP('nursing.write','opd.write','clinical.write'); %>
+ <% if(_canVitals && qs!=='completed' && qs!=='cancelled'){ %>
+ <button type="button" class="btn btn-sm btn-warning" style="font-size:.75rem;" title="<%= _tc('opd_queue_vc.vitals_record_title', 'Record or update vitals') %>" onclick="openTriage(<%=v.id%>,<%=v.patient_id%>,'<%=v.first_name%> <%=v.last_name%>')"><i class="fa fa-heartbeat mr-1"></i><%= _tc('opd_queue_vc.vitals', 'Vitals') %></button>
+ <% } %>
+ <% if(qs==='triage'||qs==='waiting_doctor'||(qs==='registered'&&hasV)){ %>
+ <% if(!isFD){ %>
+ <% if(hasV){ %><a href="/consultation-new?patient_id=<%=v.patient_id%>&visit_id=<%=v.id%>" class="btn btn-sm btn-success" style="font-size:.75rem;"><%= _tc('opd_queue_vc.consult', 'Consult') %></a>
+ <% } else if(!_canVitals){ %><span class="badge badge-warning" style="font-size:.72rem;padding:5px 8px;" title="<%= _tc('opd_queue_vc.vitals_required_title', 'Record vitals first') %>"><i class="fa fa-heartbeat mr-1"></i><%= _tc('opd_queue_vc.vitals_required', 'Vitals required') %></span><% } %>
+ <% } else { %><span class="badge badge-secondary" style="font-size:.72rem;padding:5px 8px;opacity:.7;"><%= _tc('opd_queue_vc.locked_waiting', 'Locked: Waiting for Doctor') %></span><% } %>
+ <% } else if(qs==='in_consultation'||qs==='orders_pending'||qs==='billing'){ %>
+ <% if(!isFD){ %>
+ <form action="/opd-queue/status" method="POST" class="mb-0 d-inline">
+ <input type="hidden" name="visit_id" value="<%=v.id%>">
+ <input type="hidden" name="new_status" value="completed">
+ <button type="submit" class="btn btn-sm btn-success" style="font-size:.75rem;"><%= _tc('opd_queue_vc.complete', 'Complete') %></button>
+ </form>
+ <% } else { %><span class="badge badge-secondary" style="font-size:.72rem;padding:5px 8px;opacity:.7;"><%= _tc('opd_queue_vc.locked_consultation', 'Locked: In Consultation') %></span><% } %>
+ <% } %>
+ <% if(!isFD && qs!=='completed' && qs!=='cancelled'){ %>
+ <form action="/opd-queue/advance" method="POST" class="mb-0 d-inline">
+ <input type="hidden" name="visit_id" value="<%=v.id%>">
+ <button type="submit" class="btn btn-sm btn-outline-secondary" style="font-size:.75rem;" title="<%= _tc('opd_queue_vc.advance_title', 'Advance status') %>">--></button>
+ </form>
+ <% } %>
+ </div>
+</article>

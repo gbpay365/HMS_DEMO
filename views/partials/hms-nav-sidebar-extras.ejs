@@ -1,0 +1,72 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    var o = { ns: 'legacy', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+    return _t(key, o);
+  };
+}
+var _tn = function (key, fallback) {
+  return _t(key, { ns: 'nav', defaultValue: fallback });
+};
+%>
+<!-- Supplemental sidebar blocks not yet in tbl_acl_ui_element (admin shell). -->
+<div class="sb-section"><%= _tn('sidebar_extras.portals_section', 'Portals') %></div>
+<div class="sb-item" data-sub="sub-portals" data-label="<%= _tn('sidebar_extras.portals_section', 'Portals') %>">
+  <i class="fa fa-th-large sb-item-icon"></i>
+  <span class="sb-item-label"><%= _tn('sidebar_extras.staff_portals', 'Staff Portals') %></span>
+  <i class="fa fa-chevron-right sb-chevron"></i>
+</div>
+<div class="sb-sub-wrap" id="sub-portals">
+  <a href="/portal/front-desk" class="sb-sub-item"><i class="fa fa-desktop"></i>&nbsp; <%= _tn('sidebar_extras.front_desk', 'Front Desk') %></a>
+  <a href="/portal/patient" class="sb-sub-item"><i class="fa fa-users"></i>&nbsp; <%= _tn('sidebar_extras.patient_directory', 'Patient directory (staff)') %></a>
+  <a href="/portal/login" target="_blank" rel="noopener" class="sb-sub-item" style="color:#0369a1;"><i class="fa fa-heartbeat"></i>&nbsp; <%= _tn('sidebar_extras.patient_signin', 'Patient sign-in (public)') %></a>
+  <a href="/portal/doctor" class="sb-sub-item"><i class="fa fa-user-md"></i>&nbsp; <%= _tn('sidebar_extras.doctor', 'Doctor') %></a>
+  <a href="/portal/doctor/er-alerts" class="sb-sub-item" style="color:#b91c1c;font-weight:700;"><i class="fa fa-bell"></i>&nbsp; <%= _tn('sidebar_extras.doctor_er_alerts', 'ER doctor alerts') %></a>
+  <a href="/portal/nurse" class="sb-sub-item"><i class="fa fa-heartbeat"></i>&nbsp; <%= _tn('sidebar_extras.nurse', 'Nurse') %></a>
+  <a href="/portal/lab" class="sb-sub-item"><i class="fa fa-flask"></i>&nbsp; <%= _tn('sidebar_extras.laboratory', 'Laboratory') %></a>
+  <a href="/portal/pharmacy" class="sb-sub-item"><i class="fa fa-medkit"></i>&nbsp; <%= _tn('sidebar_extras.pharmacy', 'Pharmacy') %></a>
+  <a href="/portal/radiology" class="sb-sub-item"><i class="fa fa-film"></i>&nbsp; <%= _tn('sidebar_extras.radiology', 'Radiology') %></a>
+  <a href="/portal/accountant" class="sb-sub-item"><i class="fa fa-calculator"></i>&nbsp; <%= _tn('sidebar_extras.accountant', 'Accountant') %></a>
+  <a href="/portal/cashier" class="sb-sub-item"><i class="fa fa-money"></i>&nbsp; <%= _tn('sidebar_extras.cashier', 'Cashier') %></a>
+</div>
+
+<% if (hasP('lab.write') && !sbHidden('sb.lab')) { %>
+<a href="/laboratory/order-alerts" class="sb-item" data-label="<%= _tn('sidebar_extras.lab_alerts_label', 'Lab alerts') %>" style="padding-left:2.5rem;font-size:.88rem;">
+  <i class="fa fa-bell sb-item-icon"></i>
+  <span class="sb-item-label"><%= _tn('sidebar_extras.lab_alerts', 'IPD/ER test alerts') %></span>
+</a>
+<% } %>
+<% if (hasP('lab.read','lab.write') && !sbHidden('sb.lab')) { %>
+<a href="/lab/templates" class="sb-item" data-label="<%= _tn('sidebar_extras.lab_templates_label', 'Lab templates') %>" style="padding-left:2.5rem;font-size:.88rem;opacity:.95;">
+  <i class="fa fa-list-alt sb-item-icon"></i>
+  <span class="sb-item-label"><%= _tn('sidebar_extras.lab_templates', 'Test templates') %></span>
+</a>
+<% } %>
+<% if (hasP('pharmacy.write') && !sbHidden('sb.pharmacy')) { %>
+<a href="/pharmacy/order-alerts" class="sb-item" data-label="<%= _tn('sidebar_extras.rx_alerts_label', 'Rx alerts') %>" style="padding-left:2.5rem;font-size:.88rem;">
+  <i class="fa fa-bell sb-item-icon"></i>
+  <span class="sb-item-label"><%= _tn('sidebar_extras.rx_alerts', 'IPD/ER medication alerts') %></span>
+</a>
+<% } %>
+<% if (hasP('radiology.write') && !sbHidden('sb.radiology')) { %>
+<a href="/radiology/order-alerts" class="sb-item" data-label="<%= _tn('sidebar_extras.rad_alerts_label', 'Rad alerts') %>" style="padding-left:2.5rem;font-size:.88rem;">
+  <i class="fa fa-bell sb-item-icon"></i>
+  <span class="sb-item-label"><%= _tn('sidebar_extras.rad_alerts', 'IPD/ER imaging alerts') %></span>
+</a>
+<% } %>
+<% if (canManageConsultationRooms && !sbHidden('sb.access')) { %>
+<a href="/admin/consultation-rooms" class="sb-item" data-label="<%= _tn('sidebar_extras.consultation_rooms_label', 'Consultation rooms') %>">
+  <i class="fa fa-door-open sb-item-icon"></i>
+  <span class="sb-item-label"><%= _tn('sidebar_extras.consultation_rooms', 'Consultation Rooms') %></span>
+</a>
+<% } %>
+<% if (role === '99') { %>
+<a href="/super-admin" class="sb-item" data-label="<%= _tn('sidebar_extras.super_admin_label', 'Super Admin') %>" style="color:#7c3aed;font-weight:700;">
+  <i class="fa fa-cog sb-item-icon"></i>
+  <span class="sb-item-label"><%= _tn('sidebar_extras.super_admin', 'Super Admin Console') %></span>
+</a>
+<% } %>

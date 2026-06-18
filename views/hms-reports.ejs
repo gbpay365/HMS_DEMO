@@ -1,0 +1,65 @@
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<% locals.hmsSurfaceBodyClass = ' hms-body--hms-hub'; %>
+<div class="page-wrapper hms-surface-module"><div class="content">
+<p class="mb-2"><a href="/hms" class="small text-muted"><%= _t('hms_reports.back_hub', { ns: 'legacy', defaultValue: 'HMS hub' }) %></a></p>
+
+<div class="hms-surface-hero mb-4">
+ <div class="hms-surface-hero-icon"><i class="fa fa-print" aria-hidden="true"></i></div>
+ <h1 class="hms-surface-hero-title"><%= _t('hms_reports.title', { ns: 'legacy', defaultValue: 'Reports & printing' }) %></h1>
+ <p><%= _t('hms_reports.subtitle', { ns: 'legacy', defaultValue: 'Clinical documents, cashier receipts, and management analytics' }) %></p>
+</div>
+
+<% var sections = [
+ {titleKey:'hms_reports.sec_exec',items:[
+  {h:'/portal/hub/director',i:'fa-bar-chart',tKey:'hms_reports.mgmt_reports_t',dKey:'hms_reports.mgmt_reports_d',accent:'finance'},
+  {h:'/portal/hub/director?report=daily',i:'fa-dashboard',tKey:'hms_reports.director_daily_t',dKey:'hms_reports.director_daily_d',accent:'slate'},
+  {h:'/management-reports?tab=financial&legacy=1',i:'fa-money',tKey:'hms_reports.financial_unit_t',dKey:'hms_reports.financial_unit_d',accent:'amber'},
+ ]},
+ {titleKey:'hms_reports.sec_clinical',items:[
+  {h:'/reports',i:'fa-bar-chart',tKey:'hms_reports.hospital_intel_t',dKey:'hms_reports.hospital_intel_d',accent:'brand'},
+  {h:'/opd-queue?status=completed',i:'fa-list-alt',tKey:'hms_reports.completed_opd_t',dKey:'hms_reports.completed_opd_d',accent:'amber'},
+  {h:'/lims/requests?filter=all',i:'fa-flask',tKey:'hms_reports.lab_requests_t',dKey:'hms_reports.lab_requests_d',accent:'violet'},
+  {h:'/radiology',i:'fa-film',tKey:'hms_reports.rad_registry_t',dKey:'hms_reports.rad_registry_d',accent:'sky'}
+ ]},
+ {titleKey:'hms_reports.sec_billing',items:[
+  {h:'/cashier',i:'fa-money',tKey:'hms_reports.cashier_desk_t',dKey:'hms_reports.cashier_desk_d',accent:'amber'},
+  {h:'/billing',i:'fa-file-text-o',tKey:'hms_reports.billing_tx_t',dKey:'hms_reports.billing_tx_d',accent:'finance'},
+  {h:'/transactions',i:'fa-exchange',tKey:'hms_reports.transactions_t',dKey:'hms_reports.transactions_d',accent:'slate'},
+  {h:'/pharmacy/reporting',i:'fa-medkit',tKey:'hms_reports.pharmacy_intel_t',dKey:'hms_reports.pharmacy_intel_d',accent:'emerald'},
+  {h:'/tax/statutory-reports',i:'fa-gavel',tKey:'hms_reports.tax_statutory_t',dKey:'hms_reports.tax_statutory_d',accent:'indigo'}
+ ]},
+ {titleKey:'hms_reports.sec_print',items:[
+  {h:'/cashier',i:'fa-ticket',tKey:'hms_reports.payment_tickets_t',dKey:'hms_reports.payment_tickets_d',accent:'sky'},
+  {h:'#',i:'fa-file-text',tKey:'hms_reports.receipt_invoice_t',dKey:'hms_reports.receipt_invoice_d',note:true,accent:'slate'}
+ ]},
+ {titleKey:'hms_reports.sec_accounting',items:[
+  {h:'/financials',i:'fa-line-chart',tKey:'hms_reports.financials_hub_t',dKey:'hms_reports.financials_hub_d',accent:'finance'},
+  {h:'/financials/trial-balance',i:'fa-balance-scale',tKey:'hms_reports.trial_balance_t',dKey:'hms_reports.trial_balance_d',accent:'indigo'},
+  {h:'/financials/general-ledger',i:'fa-book',tKey:'hms_reports.general_ledger_t',dKey:'hms_reports.general_ledger_d',accent:'violet'},
+  {h:'/financials/statement-monthly',i:'fa-calendar',tKey:'hms_reports.monthly_stmt_t',dKey:'hms_reports.monthly_stmt_d',accent:'sky'}
+ ]},
+ {titleKey:'hms_reports.sec_hr',items:[
+  {h:'/payroll',i:'fa-users',tKey:'hms_reports.payroll_t',dKey:'hms_reports.payroll_d',accent:'indigo'},
+  {h:'/hr/my-payslips',i:'fa-file-o',tKey:'hms_reports.my_payslips_t',dKey:'hms_reports.my_payslips_d',accent:'slate'}
+ ]}
+]; var _reportAccents = { brand:'var(--hms-brand)', sky:'var(--hms-dept-radiology)', violet:'var(--hms-dept-laboratory)', emerald:'var(--hms-brand)', amber:'var(--hms-warning)', finance:'var(--hms-dept-finance)', indigo:'var(--hms-dept-finance)', slate:'var(--hms-ink-muted)' }; %>
+
+<% sections.forEach(function(sec){ %>
+<h2 class="hms-stat-section__title mt-4 mb-3"><%= _t(sec.titleKey, { ns: 'legacy', defaultValue: sec.titleKey }) %></h2>
+<div class="hms-hub-module-grid mb-2">
+ <% sec.items.forEach(function(m){ %>
+ <a href="<%=m.h%>" class="hms-surface-card hms-hub-module-tile<%= m.note ? ' text-muted' : '' %>" style="--hms-tile-accent: <%= _reportAccents[m.accent] || _reportAccents.brand %>; text-decoration:none;">
+  <i class="fa <%=m.i%> hms-hub-module-tile__ico" aria-hidden="true"></i>
+  <strong><%= _t(m.tKey, { ns: 'legacy', defaultValue: m.tKey }) %></strong>
+  <div class="small"><%= _t(m.dKey, { ns: 'legacy', defaultValue: m.dKey }) %></div>
+ </a>
+ <% }); %>
+</div>
+<% }); %>
+
+<div class="hms-flash hms-flash--success mt-4 small">
+ <strong><%= _t('hms_reports.print_tip_title', { ns: 'legacy', defaultValue: 'Printing tip:' }) %></strong> <%= _t('hms_reports.print_tip_body', { ns: 'legacy', defaultValue: 'After consultation, use Final invoice on the OPD queue.' }) %>
+</div>
+
+</div></div><%- include('partials/footer') %>

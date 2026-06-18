@@ -1,0 +1,9 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--visiting-doctor-setup'; %>
+<%- include('partials/header') %>
+
+<%- include('partials/react-page-mount', {
+  reactPage: 'visiting-doctor-setup',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.default', { ns: 'common', defaultValue: 'Loading…' }) : 'Loading setup…')
+}) %>
+
+<%- include('partials/footer') %>
