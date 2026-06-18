@@ -48,7 +48,8 @@ const { flashT } = require('./lib/flashI18n');
 const { pageTitle } = require('./lib/pageTitle');
 const hmsI18n = require('./lib/hmsI18n');
 const session = require('express-session');
-const mysql = require('mysql2/promise');
+const { createDbPool, resolveDbConfig: resolveDbEnv } = require('./lib/dbPool');
+const DB_BOOT_CONFIG = resolveDbEnv();
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const cookieParser = require('cookie-parser');
@@ -96,15 +97,25 @@ try {
   _writeCrash('WARN-self-heal', _rmErr);
 }
 
-// Self-heal step 2: load express-mysql-session; fall back to MemoryStore if
-// it still fails for any other reason.
+// Self-heal step 2: load session store backends
 const MySQLStore = (() => {
+ if (DB_BOOT_CONFIG.driver === 'postgres') return null;
  try {
   return require('express-mysql-session')(session);
  } catch (e) {
   _writeCrash('WARN-MySQLStore-load', e);
   console.warn('[WARN] express-mysql-session failed to load:', e.message);
   console.warn('[WARN] Falling back to MemoryStore. Run npm install on server to fix.');
+  return null;
+ }
+})();
+const PgSessionStore = (() => {
+ if (DB_BOOT_CONFIG.driver !== 'postgres') return null;
+ try {
+  return require('connect-pg-simple')(session);
+ } catch (e) {
+  _writeCrash('WARN-PgSessionStore-load', e);
+  console.warn('[WARN] connect-pg-simple not installed — sessions will use MemoryStore.');
   return null;
  }
 })();
@@ -403,11 +414,12 @@ app.get('/__health', async (req, res) => {
   pid: process.pid,
   uptime_s: Math.round(process.uptime()),
   env: {
-   DB_HOST: process.env.DB_HOST ? '(set)' : '(missing)',
-   DB_PORT: process.env.DB_PORT ? '(set)' : '(default 3306)',
-   DB_USER: process.env.DB_USER ? '(set)' : '(missing)',
-   DB_PASSWORD: process.env.DB_PASSWORD ? '(set)' : '(missing)',
-   DB_NAME: process.env.DB_NAME ? '(set)' : '(missing)',
+   DB_DRIVER: pool && pool.driver ? pool.driver : DB_BOOT_CONFIG.driver,
+   DB_HOST: DB_BOOT_CONFIG.host || '(missing)',
+   DB_PORT: String(DB_BOOT_CONFIG.port || ''),
+   DB_USER: DB_BOOT_CONFIG.user ? '(set)' : '(missing)',
+   DB_PASSWORD: DB_BOOT_CONFIG.password ? '(set)' : '(missing)',
+   DB_NAME: DB_BOOT_CONFIG.database || '(missing)',
    PORT: process.env.PORT || '(default)',
    NODE_ENV: process.env.NODE_ENV || '(unset)'
   },
@@ -423,7 +435,7 @@ app.get('/__health', async (req, res) => {
    `SELECT COLUMN_NAME FROM information_schema.COLUMNS
      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tbl_appointment'`
   ).catch(() => [[]]);
-  out.db.appointment_columns = cols.map(c => c.COLUMN_NAME);
+  out.db.appointment_columns = cols.map((c) => c.COLUMN_NAME || c.column_name);
   const [empTables] = await pool.query(
    `SELECT 1 FROM information_schema.TABLES
      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tbl_employee' LIMIT 1`
@@ -436,7 +448,7 @@ app.get('/__health', async (req, res) => {
     `SELECT COLUMN_NAME FROM information_schema.COLUMNS
       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tbl_employee'`
    ).catch(() => [[]]);
-   const names = empCols.map(c => c.COLUMN_NAME);
+   const names = empCols.map((c) => c.COLUMN_NAME || c.column_name);
    out.db.tbl_employee.has_specialisation = names.includes('specialisation');
    try {
     await pool.query(
@@ -484,34 +496,14 @@ app.get('/__boot', (req, res) => {
  res.set('Cache-Control', 'no-store').json(out);
 });
 
-// Database Pool — wrapped in try/catch so that a bad DB config does not
-// prevent the process from even starting (we want /__health to be reachable).
-//
-// iFastNet shared-host hardening: the server drops idle MySQL connections
-// after ~60 s, causing ECONNRESET / PROTOCOL_CONNECTION_LOST on the next
-// query. enableKeepAlive + connectTimeout let the pool replace stale
-// connections before mysql2 tries to reuse them.
+// Database pool — MySQL (mysql2) or PostgreSQL (pg) via lib/dbPool.js
 let pool = null;
 try {
- pool = mysql.createPool({
-  host:                    process.env.DB_HOST || 'localhost',
-  port:                    parseInt(process.env.DB_PORT || '3306'),
-  user:                    process.env.DB_USER,
-  password:                process.env.DB_PASSWORD,
-  database:                process.env.DB_NAME,
-  charset:                 'utf8mb4',
-  waitForConnections:      true,
-  connectionLimit:         5,    // keep low on shared hosting
-  queueLimit:              0,
-  // ── Reconnect / keepalive (prevents ECONNRESET on idle shared hosts) ───
-  enableKeepAlive:         true,
-  keepAliveInitialDelay:   10000, // start keepalive after 10 s of idle
-  connectTimeout:          10000, // fail fast on bad host rather than hanging
- });
- bootStep('mysql-pool', 'ok');
+ pool = createDbPool();
+ bootStep('db-pool', 'ok', pool.driver || 'mysql');
  betterPayConfig.init(pool).catch((e) => console.warn('[BetterPay] init:', e.message));
 } catch (e) {
- bootStep('mysql-pool', 'fail', e);
+ bootStep('db-pool', 'fail', e);
 }
 
 /** Ensures tbl_patient_insurance exists and columns match INSERTs (MySQL 5.7+ / MariaDB: no IF NOT EXISTS on ADD COLUMN). */
@@ -665,7 +657,14 @@ app.locals.db = pool;
 // events + absorbing the unhandledRejection from its internal Promise chain.
 let sessionStore = null;
 try {
- if (pool && MySQLStore) {
+ if (pool && pool.driver === 'postgres' && PgSessionStore && pool.nativePool) {
+  sessionStore = new PgSessionStore({
+   pool: pool.nativePool,
+   createTableIfMissing: true,
+   tableName: 'session',
+  });
+  bootStep('session-store', 'ok', 'postgres');
+ } else if (pool && MySQLStore) {
   sessionStore = new MySQLStore({
    // Don't let the store create its own connection — use our pool
    createDatabaseTable: true,
@@ -16748,6 +16747,10 @@ if (require.main === module && !underPassenger()) {
 // outcomes show up in /__health → boot.
 (async () => {
  if (!pool) { bootStep('migrations', 'skip', 'No DB pool'); return; }
+ if (pool.driver === 'postgres' || process.env.HMS_SKIP_SCHEMA_MIGRATIONS === '1') {
+  bootStep('migrations', 'skip', 'PostgreSQL / HMS_SKIP_SCHEMA_MIGRATIONS — schema assumed migrated');
+  return;
+ }
  const steps = [
   ['migratePatientInsuranceSchema', () => migratePatientInsuranceSchema(pool)],
   ['ensureOpdOrderItemsSchema',     () => ensureOpdOrderItemsSchema(pool)],

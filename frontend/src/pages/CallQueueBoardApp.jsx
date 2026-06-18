@@ -443,7 +443,7 @@ export function CallQueueBoardApp({
       </main>
 
       <footer className="cq-board__footer">
-        ZAIZENS · ZAIZENS · {t('callQueue.footer_in_queue', { count: rows.length })}
+        ZAIZENS · {t('callQueue.footer_in_queue', { count: rows.length })}
       </footer>
     </div>
   );
