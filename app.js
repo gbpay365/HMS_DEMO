@@ -16814,6 +16814,23 @@ if (require.main === module && !underPassenger()) {
  if (!pool) { bootStep('migrations', 'skip', 'No DB pool'); return; }
  if (pool.driver === 'postgres' || process.env.HMS_SKIP_SCHEMA_MIGRATIONS === '1') {
   bootStep('migrations', 'skip', 'PostgreSQL / HMS_SKIP_SCHEMA_MIGRATIONS — schema assumed migrated');
+  try {
+   const { ensureRuntimeAcl } = require('./lib/ensureRuntimeAcl');
+   const aclBoot = await ensureRuntimeAcl(pool);
+   bootStep(
+    'ensureRuntimeAcl',
+    'ok',
+    aclBoot.directorRole ? `directorRole=${aclBoot.directorRole}` : 'no director role in tbl_role'
+   );
+  } catch (e) {
+   bootStep('ensureRuntimeAcl', 'fail', e);
+  }
+  try {
+   await aclLayout.init(pool);
+   bootStep('aclLayout:init', 'ok', 'runtime ACL cache loaded (postgres/skip-migrations path)');
+  } catch (e) {
+   bootStep('aclLayout:init', 'fail', e);
+  }
   return;
  }
  const steps = [
