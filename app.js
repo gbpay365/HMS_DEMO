@@ -3135,24 +3135,33 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
   }
 
   await ensurePatientInsuranceTables();
+  await ensurePatientAgeColumns(pool);
+
+  // Schema patches must run outside the transaction (PostgreSQL aborts the whole txn on any error).
+  if (pool.driver !== 'postgres') {
+    const patientColumnAlters = [
+      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS patient_type VARCHAR(30) NULL",
+      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS cni_number VARCHAR(100) NULL",
+      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS cni_issue_date DATE NULL",
+      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS next_of_kin_name VARCHAR(255) NULL",
+      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS next_of_kin_phone VARCHAR(50) NULL",
+      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS next_of_kin_relationship VARCHAR(100) NULL",
+      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS emergency_contact_name VARCHAR(255) NULL",
+      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS emergency_contact_phone VARCHAR(50) NULL",
+      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS portal_enabled TINYINT DEFAULT 0",
+      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS status TINYINT DEFAULT 1",
+      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS created_at DATETIME NULL",
+    ];
+    for (const sql of patientColumnAlters) {
+      await pool.query(sql).catch(() => {});
+    }
+  }
+  const ensurePatientCodeSchema = require('./lib/ensurePatientCodeSchema');
+  await ensurePatientCodeSchema(pool).catch((e) => console.warn('[ensurePatientCodeSchema]', e.message));
 
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
-
-    // Ensure schema columns exist (some deployments have older tbl_patient)
-    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS patient_type VARCHAR(30) NULL").catch(() => {});
-    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS cni_number VARCHAR(100) NULL").catch(() => {});
-    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS cni_issue_date DATE NULL").catch(() => {});
-    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS next_of_kin_name VARCHAR(255) NULL").catch(() => {});
-    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS next_of_kin_phone VARCHAR(50) NULL").catch(() => {});
-    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS next_of_kin_relationship VARCHAR(100) NULL").catch(() => {});
-    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS emergency_contact_name VARCHAR(255) NULL").catch(() => {});
-    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS emergency_contact_phone VARCHAR(50) NULL").catch(() => {});
-    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS portal_enabled TINYINT DEFAULT 0").catch(() => {});
-    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS status TINYINT DEFAULT 1").catch(() => {});
-    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS created_at DATETIME NULL").catch(() => {});
-    await ensurePatientAgeColumns(conn);
 
     const phoneNorm = normalizePatientPhone(phone);
     const nokPhoneNorm = normalizePatientPhone(next_of_kin_phone);
@@ -3190,8 +3199,6 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
       return res.redirect('/patients?err=' + encodeURIComponent(flashT(res, 'flash.duplicate_patient', { id: duplicate.id, name: ((duplicate.first_name||'')+' '+(duplicate.last_name||'')).trim() || flashT(res, 'flash.patient') })));
     }
 
-    const ensurePatientCodeSchema = require('./lib/ensurePatientCodeSchema');
-    await ensurePatientCodeSchema(conn).catch(() => {});
     const { allocateNextPatientCodeLocked } = require('./lib/hmsPatientCode');
     const patientCode = await allocateNextPatientCodeLocked(conn);
 
@@ -3212,15 +3219,14 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
     );
     const newPid = result.insertId;
     const { refreshPatientIdentityKey } = require('./lib/ensurePatientIdentitySchema');
-    await refreshPatientIdentityKey(conn, newPid).catch(() => {});
+    await refreshPatientIdentityKey(conn, newPid);
 
     if (newPid > 0) {
-      // 2. Auto-wallet
-      const qrToken = 'GBPAY-' + newPid + '-' + Date.now();
-      await conn.query(
-        "INSERT IGNORE INTO tbl_patient_wallet (patient_id, balance, status, qr_token, created_at, updated_at) VALUES (?,0,'active',?,NOW(),NOW())",
-        [newPid, qrToken]
-      ).catch(() => {});
+      // 2. Auto-wallet (Postgres-safe — no INSERT IGNORE inside txn)
+      const { ensureWalletForPatient } = require('./lib/walletHub');
+      await ensureWalletForPatient(conn, newPid, req.session.facilityId || 1).catch((e) => {
+        console.warn('[patient-add] wallet:', e.message);
+      });
 
       // 3. Open Credit Line
       if (open_credit_line) {
