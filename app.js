@@ -573,6 +573,7 @@ try {
 
 /** Ensures tbl_patient_insurance exists and columns match INSERTs (MySQL 5.7+ / MariaDB: no IF NOT EXISTS on ADD COLUMN). */
 async function migratePatientInsuranceSchema(db) {
+ if (db && db.driver === 'postgres') return;
  await db.query(`
   CREATE TABLE IF NOT EXISTS tbl_patient_insurance (
    id INT AUTO_INCREMENT PRIMARY KEY,
@@ -618,6 +619,7 @@ async function migratePatientInsuranceSchema(db) {
 }
 
 async function ensureOpdOrderItemsSchema(db) {
+ if (db && db.driver === 'postgres') return;
  // Core queue table: per-item billing state for consultation-prescribed lab/radiology
  await db.query(`
   CREATE TABLE IF NOT EXISTS tbl_opd_order_item (
@@ -686,6 +688,7 @@ async function ensureOpdOrderItemsSchema(db) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function ensureServiceCatalogSchema(db) {
+ if (db && db.driver === 'postgres') return;
  await db.query(`
   CREATE TABLE IF NOT EXISTS tbl_service_catalog (
    id INT AUTO_INCREMENT PRIMARY KEY,
@@ -6635,6 +6638,7 @@ app.get(
 );
 
 async function ensureFinancialSettingsTable(db) {
+ if (db && db.driver === 'postgres') return;
  await db.query(`
   CREATE TABLE IF NOT EXISTS tbl_hms_fin_setting (
    k VARCHAR(96) PRIMARY KEY,
@@ -13471,6 +13475,7 @@ async function getAppointmentColumns(db) {
 function invalidateAppointmentColumnsCache() { __apptColsCache = null; }
 
 async function ensureAppointmentTelemedColumns(db) {
+ if (db && db.driver === 'postgres') return;
  const stmts = [
   "ALTER TABLE tbl_appointment ADD COLUMN visit_type VARCHAR(20) NOT NULL DEFAULT 'in_person'",
   "ALTER TABLE tbl_appointment ADD COLUMN meeting_room VARCHAR(120) DEFAULT NULL",
@@ -13522,6 +13527,7 @@ async function ensureAppointmentTelemedColumns(db) {
 }
 
 async function ensurePortalTables(pool) {
+ if (pool && pool.driver === 'postgres') return;
  await pool.query(`
   CREATE TABLE IF NOT EXISTS tbl_patient_portal (
    id INT AUTO_INCREMENT PRIMARY KEY,
