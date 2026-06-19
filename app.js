@@ -9644,6 +9644,22 @@ function cashierBatchPrintAccess(req, res) {
  return { ok: false };
 }
 
+function cashierDailySummaryOpts(req, access) {
+ return {
+  period: req.query.period || 'day',
+  date: req.query.date || '',
+  allCashiers: access.allCashiers,
+  paidBy: access.paidBy,
+  filters: {
+   category: req.query.category,
+   method: req.query.method,
+   patient: req.query.patient,
+   min_amount: req.query.min_amount,
+   max_amount: req.query.max_amount,
+  },
+ };
+}
+
 app.get('/api/cashier/batch-print', requireAuth, async (req, res) => {
  try {
   const access = cashierBatchPrintAccess(req, res);
@@ -9673,17 +9689,14 @@ app.get('/cashier/daily-summary', requireAuth, requirePerm('cashier.read', 'cash
   if (!access.ok) {
    return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.access_denied', { defaultValue: 'Access denied' })));
   }
-  const { buildCashierDailySummary } = require('./lib/cashierDailySummary');
-  const report = await buildCashierDailySummary(pool, {
-   period: req.query.period || 'day',
-   date: req.query.date || '',
-   allCashiers: access.allCashiers,
-   paidBy: access.paidBy,
-  });
+  const { buildCashierDailySummary, filtersToQueryString } = require('./lib/cashierDailySummary');
+  const opts = cashierDailySummaryOpts(req, access);
+  const report = await buildCashierDailySummary(pool, opts);
   res.render('cashier-daily-summary', {
    title: pageTitle(res, 'cashier.daily_summary.title', 'Daily transactions summary', { ns: 'clinical' }),
    report,
    facilityName: hmsBrand.facilityName,
+   filterQueryString: filtersToQueryString(report.filters, { period: opts.period, date: opts.date }),
   });
  } catch (err) {
   console.error('cashier daily-summary:', err.message);
@@ -9697,17 +9710,14 @@ app.get('/cashier/daily-summary/print', requireAuth, requirePerm('cashier.read',
   if (!access.ok) {
    return res.status(403).send('Access denied');
   }
-  const { buildCashierDailySummary } = require('./lib/cashierDailySummary');
-  const report = await buildCashierDailySummary(pool, {
-   period: req.query.period || 'day',
-   date: req.query.date || '',
-   allCashiers: access.allCashiers,
-   paidBy: access.paidBy,
-  });
+  const { buildCashierDailySummary, filtersToQueryString } = require('./lib/cashierDailySummary');
+  const opts = cashierDailySummaryOpts(req, access);
+  const report = await buildCashierDailySummary(pool, opts);
   res.render('cashier-daily-summary-print', {
    title: pageTitle(res, 'cashier.daily_summary.title', 'Daily transactions summary', { ns: 'clinical' }),
    report,
    facilityName: hmsBrand.facilityName,
+   filterQueryString: filtersToQueryString(report.filters, { period: opts.period, date: opts.date }),
   });
  } catch (err) {
   console.error('cashier daily-summary print:', err.message);
@@ -9722,12 +9732,7 @@ app.get('/api/cashier/daily-summary', requireAuth, requirePerm('cashier.read', '
    return res.status(403).json({ ok: false, error: 'Access denied' });
   }
   const { buildCashierDailySummary } = require('./lib/cashierDailySummary');
-  const report = await buildCashierDailySummary(pool, {
-   period: req.query.period || 'day',
-   date: req.query.date || '',
-   allCashiers: access.allCashiers,
-   paidBy: access.paidBy,
-  });
+  const report = await buildCashierDailySummary(pool, cashierDailySummaryOpts(req, access));
   return res.json({ ok: true, report });
  } catch (err) {
   console.error('cashier daily-summary api:', err.message);

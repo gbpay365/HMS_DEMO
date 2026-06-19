@@ -31,6 +31,7 @@ var _tc = function (key, fallback, opts) {
 var _catLabel = function (key) {
   return _tc('cat_' + key, key.replace(/_/g, ' '));
 };
+var _f = report.filters || {};
 %>
 <div class="no-print" style="margin-bottom:12px;">
   <button onclick="window.print()"><%= _tc('print', 'Print report') %></button>
@@ -42,6 +43,17 @@ var _catLabel = function (key) {
   · <%= _tc('kpi_tickets', 'Paid tickets') %>: <%= report.summary.ticketCount %>
   · <%= _tc('kpi_collected', 'Total collected') %>: <%= report.summary.grandTotal_fmt %>
 </div>
+<% if (report.filtersActive) { %>
+<div class="meta"><strong><%= _tc('filter_title', 'Filters') %>:</strong>
+  <% var _parts = []; %>
+  <% if (_f.category && _f.category !== 'all') _parts.push(_tc('filter_category', 'Category') + ': ' + _catLabel(_f.category)); %>
+  <% if (_f.method && _f.method !== 'all') _parts.push(_tc('filter_method', 'Method') + ': ' + _f.method); %>
+  <% if (_f.patient) _parts.push(_tc('filter_patient', 'Patient') + ': ' + _f.patient); %>
+  <% if (_f.min_amount != null) _parts.push(_tc('filter_min_amount', 'Min') + ': ' + _f.min_amount); %>
+  <% if (_f.max_amount != null) _parts.push(_tc('filter_max_amount', 'Max') + ': ' + _f.max_amount); %>
+  <%= _parts.join(' · ') %>
+</div>
+<% } %>
 
 <div class="section-title"><%= _tc('by_category', 'By service category') %></div>
 <table>
