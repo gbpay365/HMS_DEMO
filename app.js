@@ -10682,101 +10682,11 @@ app.post('/cashier/lookup', requireAuth, async (req, res) => {
  }
 });
 
-/** Visit Registry: mark paid codes that are past validity or have no uses left (blood-red column). */
-async function enrichOpdVisitsPaymentCodeValidity(pool, visitRows, facilityId) {
- const fid = Number(facilityId) || 1;
- const list = (visitRows || []).filter(Boolean);
- const startOfDay = (d) => {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
- };
- const byNorm = new Map();
- for (const v of list) {
-  v.payment_code_blood_red = false;
-  v.payment_code_alert_title = '';
-  v.payment_code_remaining_uses = null;
-  v.payment_code_stale_reason = null;
-  v.payment_code_max_uses = null;
-  v.payment_code_uses_so_far = null;
-  v.payment_code_valid_until_display = null;
-  v.payment_code_validity_tooltip = '';
-  const norm = paymentValidity.normalizePaymentCodeInput(v.payment_code);
-  if (!norm) continue;
-  if (!byNorm.has(norm)) byNorm.set(norm, []);
-  byNorm.get(norm).push(v);
- }
- for (const [norm, visits] of byNorm) {
-  let ticket = null;
-  try {
-   ticket = await paymentValidity.findPaidTicketByNormalizedCode(pool, norm);
-  } catch (_) {
-   ticket = null;
-  }
-  const st = String((ticket && ticket.status) || '').trim().toLowerCase();
-  if (!ticket || st !== 'paid') continue;
-
-  for (const v of visits) {
-   let bloodRed = false;
-   let title = '';
-   let remainingUses = null;
-   let staleReason = null;
-   let maxUses = null;
-   let usesSoFar = null;
-   let validUntilDisplay = null;
-   let validityTooltip = '';
-   try {
-    const qs = String(v.queue_status || '').toLowerCase();
-    const excludeVisitId =
-     qs !== 'completed' && qs !== 'cancelled' ? parseInt(String(v.id || ''), 10) || 0 : 0;
-    const win = await paymentValidity.computePaidTicketValidityWindow(pool, ticket, norm, fid, {
-     excludeVisitId,
-    });
-    const usesTimeValidity = paymentValidity.kindUsesConsultationValidity(win.kind);
-    remainingUses = Math.max(0, win.maxUses - win.uses);
-    maxUses = win.maxUses;
-    usesSoFar = win.uses;
-    if (usesTimeValidity) {
-     try {
-      validUntilDisplay = hmsFormatDate.formatDisplayDate(win.expires);
-     } catch (_) {
-      validUntilDisplay = paymentValidity.toLocalDateISO(win.expires) || '—';
-     }
-     const polLabel = paymentValidity.intervalPolicyLabel(win.policy);
-     validityTooltip =
-      'Payment validity · Days (system ' +
-      win.systemDays +
-      ', effective ' +
-      win.effectiveDays +
-      ') + Policy: ' +
-      polLabel +
-      '. Calendar end.';
-     const today = startOfDay(new Date());
-     if (today > win.expires) {
-      bloodRed = true;
-      staleReason = 'expired';
-      title = 'Payment code expired on ' + hmsFormatDate.formatDisplayDate(win.expires) + '.';
-     }
-    }
-    if (win.uses >= win.maxUses) {
-     bloodRed = true;
-     staleReason = 'depleted';
-     title = 'No remaining uses (' + win.uses + ' of ' + win.maxUses + ' visit(s)).';
-    }
-   } catch (_) {
-    /* ignore */
-   }
-   v.payment_code_blood_red = bloodRed;
-   v.payment_code_alert_title = title;
-   v.payment_code_remaining_uses = remainingUses;
-   v.payment_code_stale_reason = staleReason;
-   v.payment_code_max_uses = maxUses;
-   v.payment_code_uses_so_far = usesSoFar;
-   v.payment_code_valid_until_display = validUntilDisplay;
-   v.payment_code_validity_tooltip = validityTooltip;
-  }
- }
-}
+const {
+ enrichOpdVisitsPaymentCodeValidity,
+ parseRegistryFilters,
+ fetchOpdVisitRegistry,
+} = require('./lib/opdVisitRegistry');
 
 /** Only same-origin relative paths (prevents open redirects). */
 function safeInternalRedirectPath(s) {
@@ -10806,15 +10716,45 @@ app.post('/clinical/accept-not-assigned', requireAuth, (req, res) => {
 
 // OPD QUEUE & VISITS REGISTRY
 // VISITS & OPD QUEUE === Æ’ ===   Full legacy-parity
+app.get('/api/opd-queue/registry', requireAuth, requirePerm('opd.read','clinical.read','clinical.write','scheduling.read','nursing.read','lab.read','radiology.read','pharmacy.read'), async (req, res) => {
+ try {
+  const fid = req.session.facilityId || 1;
+  const filters = parseRegistryFilters(req.query);
+  const { page: registryPage, pageSize: registryPageSize } = pagination.parsePage(req);
+  const data = await fetchOpdVisitRegistry(pool, {
+   facilityId: fid,
+   ...filters,
+   page: registryPage,
+   pageSize: registryPageSize,
+  });
+  return res.json({
+   ok: true,
+   visits: data.visits,
+   total: data.total,
+   pager: data.pager,
+   filters: {
+    q: filters.q,
+    dateFrom: filters.dateFrom,
+    dateTo: filters.dateTo,
+    status: filters.status,
+    sort: filters.sort,
+    dept: filters.dept,
+    doctor: filters.doctor || 0,
+    page: data.pager.page,
+    totalPages: data.pager.totalPages,
+    total: data.pager.total,
+   },
+  });
+ } catch (e) {
+  console.error('OPD REGISTRY API:', e.message);
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
 app.get('/opd-queue', requireAuth, requirePerm('opd.read','clinical.read','clinical.write','scheduling.read','nursing.read','lab.read','radiology.read','pharmacy.read'), async (req, res) => {
- const q = (req.query.q || '').trim();
+ const filters = parseRegistryFilters(req.query);
+ const { q, dateFrom, dateTo, status, sort, dept, doctor } = filters;
  const today = new Date().toISOString().split('T')[0];
- const d90ago = new Date(Date.now() - 90*24*60*60*1000).toISOString().split('T')[0];
- const dateFrom = req.query.date_from || d90ago;
- const dateTo = req.query.date_to || today;
- const status = req.query.status || 'all';
- const sort = req.query.sort || 'newest';
- const dept = req.query.dept || '';
  const fid = req.session.facilityId || 1;
 
  try {
@@ -10882,91 +10822,21 @@ app.get('/opd-queue', requireAuth, requirePerm('opd.read','clinical.read','clini
  await enrichOpdVisitsDoctorFromPaymentTicket(pool, todayVisits || []);
  await enrichOpdVisitsRoomContext(pool, todayVisits || []);
 
- // 2. Build WHERE for registry
- let where  = 'v.facility_id = ? AND COALESCE(v.is_emergency, 0) = 0';
- const params = [fid];
-
- where += ' AND v.visit_date BETWEEN ? AND ?';
- params.push(dateFrom, dateTo);
-
- if (q) {
- where += ' AND (p.first_name LIKE ? OR p.last_name LIKE ? OR CONCAT(p.first_name," ",p.last_name) LIKE ? OR v.ticket_number LIKE ? OR COALESCE(v.department,"") LIKE ? OR COALESCE(v.chief_complaint,"") LIKE ?)';
- const like = `%${q}%`;
- params.push(like,like,like,like,like,like);
- }
- if (dept) {
- where += ' AND v.department = ?';
- params.push(dept);
- }
- if (status === 'active') {
- where += " AND v.queue_status NOT IN ('completed','cancelled')";
- } else if (status !== 'all') {
- where += ' AND v.queue_status = ?';
- params.push(status);
- }
-
- const orderSql = sort === 'oldest'
- ? 'v.visit_date ASC,  v.queue_started_at ASC,  v.id ASC'
- : 'v.visit_date DESC, v.queue_started_at DESC, v.id DESC';
-
- const registryPagerQuery = { q, date_from: dateFrom, date_to: dateTo, status, sort, dept };
- const { page: registryPage, pageSize: registryPageSize, offset: registryOffset } = pagination.parsePage(req);
- const [[registryCountRow]] = await pool.query(
-  `SELECT COUNT(DISTINCT v.id) AS total FROM tbl_opd_visit v JOIN tbl_patient p ON p.id = v.patient_id WHERE ${where}`,
-  params
- );
- const registryPager = pagination.metaFromTotal(registryCountRow?.total || 0, registryPage, registryPageSize);
- registryPager.basePath = '/opd-queue';
- registryPager.query = registryPagerQuery;
- registryPager.pageParam = 'p';
-
- // Paginated registry with doctor join + prev_visit_date
- const [allVisits] = await pool.query(`
- SELECT v.*, p.first_name, p.last_name, p.patient_type,
- doc.id AS doc_id,
- COALESCE(
-  doc.first_name,
-  (SELECT ept.first_name
-     FROM tbl_payment_ticket pt
-     LEFT JOIN tbl_employee ept ON ept.id = CAST(JSON_UNQUOTE(JSON_EXTRACT(pt.lines_json, '$[0].assigned_doctor_id')) AS UNSIGNED)
-    WHERE pt.ticket_code = v.payment_code AND pt.patient_id = v.patient_id
-    ORDER BY pt.id DESC
-    LIMIT 1)
- ) AS ref_fn,
- COALESCE(
-  doc.last_name,
-  (SELECT ept.last_name
-     FROM tbl_payment_ticket pt
-     LEFT JOIN tbl_employee ept ON ept.id = CAST(JSON_UNQUOTE(JSON_EXTRACT(pt.lines_json, '$[0].assigned_doctor_id')) AS UNSIGNED)
-    WHERE pt.ticket_code = v.payment_code AND pt.patient_id = v.patient_id
-    ORDER BY pt.id DESC
-    LIMIT 1)
- ) AS ref_ln,
- (SELECT es.first_name
-    FROM tbl_consultation c2
-    JOIN tbl_employee es ON es.id = c2.created_by
-   WHERE c2.opd_visit_id = v.id
-   ORDER BY c2.id DESC
-   LIMIT 1) AS seen_fn,
- (SELECT es.last_name
-    FROM tbl_consultation c2
-    JOIN tbl_employee es ON es.id = c2.created_by
-   WHERE c2.opd_visit_id = v.id
-   ORDER BY c2.id DESC
-   LIMIT 1) AS seen_ln,
- cr.code AS consultation_room_code,
- cr.name AS consultation_room_name,
- (SELECT MAX(v3.visit_date) FROM tbl_opd_visit v3
- WHERE v3.patient_id = v.patient_id AND v3.id <> v.id) AS prev_visit_date,
- (SELECT COUNT(*) FROM tbl_consultation cx WHERE cx.opd_visit_id = v.id) AS consult_count
- FROM tbl_opd_visit v
- JOIN tbl_patient p ON p.id = v.patient_id
- LEFT JOIN tbl_employee doc ON doc.id = v.assigned_doctor_id
- LEFT JOIN tbl_consultation_room cr ON cr.id = v.consultation_room_id
- WHERE ${where}
- ORDER BY ${orderSql}
- LIMIT ? OFFSET ?
- `, [...params, registryPager.pageSize, registryPager.offset]);
+ const { page: registryPage, pageSize: registryPageSize } = pagination.parsePage(req);
+ const registryResult = await fetchOpdVisitRegistry(pool, {
+  facilityId: fid,
+  q,
+  dateFrom,
+  dateTo,
+  status,
+  sort,
+  dept,
+  doctor,
+  page: registryPage,
+  pageSize: registryPageSize,
+ });
+ const allVisits = registryResult.visits;
+ const registryPager = registryResult.pager;
 
  // 5. Modal data (active doctors incl. custom role catalogues, e.g. role 100)
  const hmsDoctorStaff = require('./lib/hmsDoctorStaff');
@@ -10983,7 +10853,7 @@ app.get('/opd-queue', requireAuth, requirePerm('opd.read','clinical.read','clini
   .filter((id, i, a) => id && a.indexOf(id) === i);
  const visitIdsWithVitals = await fetchVisitIdsWithVitals(pool, visitIdsForVitals);
 
- await enrichOpdVisitsPaymentCodeValidity(pool, [...(todayVisits || []), ...(allVisits || [])], fid);
+ await enrichOpdVisitsPaymentCodeValidity(pool, todayVisits || [], fid);
  await enrichOpdVisitsDoctorFromPaymentTicket(pool, allVisits || []);
  await enrichOpdVisitsRoomContext(pool, allVisits || []);
 
@@ -11074,6 +10944,7 @@ app.get('/opd-queue', requireAuth, requirePerm('opd.read','clinical.read','clini
   allVisits,
   visitIdsWithVitals,
   doctors,
+  departments: (departments || []).map((d) => d.department_name).filter(Boolean),
   filters: {
    q,
    dateFrom,
@@ -11081,6 +10952,7 @@ app.get('/opd-queue', requireAuth, requirePerm('opd.read','clinical.read','clini
    status,
    sort,
    dept,
+   doctor: doctor || 0,
    page: registryPager.page,
    totalPages: registryPager.totalPages,
    total: registryPager.total,

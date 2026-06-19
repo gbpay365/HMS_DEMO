@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionMenu } from '../components/ActionMenu';
 import { FilterChip } from '../components/FilterChip';
@@ -30,12 +30,89 @@ function aclOk(aclMenu, key) {
   return !!aclMenu?.[key];
 }
 
+function isoToday() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function isoDaysAgo(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString().split('T')[0];
+}
+
+const ACTIVE_TERMINAL = new Set(['completed', 'cancelled', 'clinical_discharged', 'ipd_pending_admit']);
+
+const DATE_PRESETS = [
+  { key: 'today', days: 0 },
+  { key: '7d', days: 7 },
+  { key: '30d', days: 30 },
+  { key: '90d', days: 90 },
+];
+
 const STATUS_FILTERS = [
   { key: 'all', labelKey: 'shared.all' },
   { key: 'active', labelKey: 'shared.active' },
+  { key: 'waiting_doctor', labelKey: 'opd.status.waiting_doctor' },
+  { key: 'triage', labelKey: 'opd.status.triage' },
+  { key: 'registered', labelKey: 'opd.status.registered' },
+  { key: 'in_consultation', labelKey: 'opd.status.in_consultation' },
   { key: 'completed', labelKey: 'shared.completed' },
   { key: 'cancelled', labelKey: 'shared.cancelled' },
 ];
+
+function visitMatchesRegistryFilters(v, { q, dept, doctor, status }) {
+  if (dept && String(v.department || '') !== dept) return false;
+  if (doctor > 0) {
+    const ad =
+      parseInt(v.assigned_doctor_id, 10) ||
+      parseInt(v.ticket_doctor_id, 10) ||
+      parseInt(v.doc_id, 10) ||
+      0;
+    if (ad !== doctor) return false;
+  }
+  const qs = String(v.queue_status || '').toLowerCase();
+  if (status && status !== 'all') {
+    if (status === 'active') {
+      if (ACTIVE_TERMINAL.has(qs)) return false;
+    } else if (qs !== status) return false;
+  }
+  if (q) {
+    const needle = q.toLowerCase();
+    const hay = [
+      v.first_name,
+      v.last_name,
+      v.ticket_number,
+      v.department,
+      v.chief_complaint,
+      v.payment_code,
+      v.patient_code,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    if (!hay.includes(needle)) return false;
+  }
+  return true;
+}
+
+function buildRegistryQuery({ q, dateFrom, dateTo, status, sort, dept, doctor, page }) {
+  const o = {};
+  if (q.trim()) o.q = q.trim();
+  if (dateFrom) o.date_from = dateFrom;
+  if (dateTo) o.date_to = dateTo;
+  if (status && status !== 'all') o.status = status;
+  if (sort) o.sort = sort;
+  if (dept) o.dept = dept;
+  if (doctor > 0) o.doctor = String(doctor);
+  if (page > 1) o.p = String(page);
+  return o;
+}
+
+function registryQueryString(params) {
+  const parts = Object.entries(params).filter(([, v]) => v != null && v !== '');
+  if (!parts.length) return '';
+  return new URLSearchParams(Object.fromEntries(parts)).toString();
+}
 
 export function OpdQueuePageApp({
   todayVisits = [],
@@ -48,6 +125,7 @@ export function OpdQueuePageApp({
   canManageConsultationRooms = false,
   staffDoctorId = 0,
   doctors = [],
+  departments = [],
   filters = {},
   pager = null,
   registryToday = '',
@@ -62,15 +140,154 @@ export function OpdQueuePageApp({
   const [triageVisit, setTriageVisit] = useState(null);
   const [roomState, setRoomState] = useState({ open: false, visitId: 0, roomId: 0 });
 
+  const defaultDateFrom = isoDaysAgo(90);
+  const defaultDateTo = isoToday();
+
   const [q, setQ] = useState(filters.q || '');
-  const [dateFrom, setDateFrom] = useState(filters.dateFrom || '');
-  const [dateTo, setDateTo] = useState(filters.dateTo || '');
+  const [debouncedQ, setDebouncedQ] = useState(filters.q || '');
+  const [dateFrom, setDateFrom] = useState(filters.dateFrom || defaultDateFrom);
+  const [dateTo, setDateTo] = useState(filters.dateTo || defaultDateTo);
   const [status, setStatus] = useState(filters.status || 'all');
   const [sort, setSort] = useState(filters.sort || 'newest');
+  const [dept, setDept] = useState(filters.dept || '');
+  const [doctor, setDoctor] = useState(parseInt(filters.doctor, 10) || 0);
+
+  const [registryVisits, setRegistryVisits] = useState(allVisits);
+  const [registryPager, setRegistryPager] = useState(pager);
+  const [registryTotal, setRegistryTotal] = useState(filters.total || 0);
+  const [registryLoading, setRegistryLoading] = useState(false);
+
+  const skipFetchRef = useRef(true);
 
   const canWrite = hasPerm(userPerms, ['opd.write']);
   const mayCallPatient = hasPerm(userPerms, ['clinical.write', 'prescription.write']);
   const hasVitals = (id) => visitIdInVitalsList(visitIdsWithVitals, id);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQ(q.trim()), 350);
+    return () => clearTimeout(timer);
+  }, [q]);
+
+  const activeFilterState = useMemo(
+    () => ({ q: debouncedQ, dept, doctor, status }),
+    [debouncedQ, dept, doctor, status]
+  );
+
+  const hasActiveFilters =
+    debouncedQ !== '' ||
+    dept !== '' ||
+    doctor > 0 ||
+    status !== 'all' ||
+    dateFrom !== defaultDateFrom ||
+    dateTo !== defaultDateTo ||
+    sort !== 'newest';
+
+  const syncUrl = useCallback(
+    (page = registryPager?.page || 1) => {
+      const qs = registryQueryString(
+        buildRegistryQuery({
+          q: debouncedQ,
+          dateFrom,
+          dateTo,
+          status,
+          sort,
+          dept,
+          doctor,
+          page,
+        })
+      );
+      window.history.replaceState({}, '', qs ? `/opd-queue?${qs}` : '/opd-queue');
+    },
+    [debouncedQ, dateFrom, dateTo, status, sort, dept, doctor, registryPager?.page]
+  );
+
+  const loadRegistry = useCallback(
+    async (page = 1) => {
+      setRegistryLoading(true);
+      try {
+        const params = buildRegistryQuery({
+          q: debouncedQ,
+          dateFrom,
+          dateTo,
+          status,
+          sort,
+          dept,
+          doctor,
+          page,
+        });
+        const qs = registryQueryString(params);
+        const res = await fetch(`/api/opd-queue/registry${qs ? `?${qs}` : ''}`, {
+          credentials: 'same-origin',
+          headers: { Accept: 'application/json' },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!data.ok) throw new Error(data.error || 'Registry load failed');
+        setRegistryVisits(Array.isArray(data.visits) ? data.visits : []);
+        setRegistryPager(data.pager || null);
+        setRegistryTotal(data.filters?.total ?? data.total ?? 0);
+        syncUrl(page);
+      } catch (e) {
+        notifyError(e.message);
+      } finally {
+        setRegistryLoading(false);
+      }
+    },
+    [debouncedQ, dateFrom, dateTo, status, sort, dept, doctor, syncUrl]
+  );
+
+  useEffect(() => {
+    if (skipFetchRef.current) {
+      skipFetchRef.current = false;
+      syncUrl(filters.page || 1);
+      return;
+    }
+    loadRegistry(1);
+  }, [debouncedQ, dateFrom, dateTo, status, sort, dept, doctor]);
+
+  const resetFilters = () => {
+    setQ('');
+    setDebouncedQ('');
+    setDateFrom(defaultDateFrom);
+    setDateTo(defaultDateTo);
+    setStatus('all');
+    setSort('newest');
+    setDept('');
+    setDoctor(0);
+  };
+
+  const applyDatePreset = (days) => {
+    const to = isoToday();
+    const from = days === 0 ? to : isoDaysAgo(days);
+    setDateFrom(from);
+    setDateTo(to);
+  };
+
+  const activePresetKey = useMemo(() => {
+    const to = isoToday();
+    for (const p of DATE_PRESETS) {
+      const from = p.days === 0 ? to : isoDaysAgo(p.days);
+      if (dateFrom === from && dateTo === to) return p.key;
+    }
+    return '';
+  }, [dateFrom, dateTo]);
+
+  const filterTodayVisits = useCallback(
+    (list) => {
+      if (!hasActiveFilters) return list;
+      return (list || []).filter((v) => visitMatchesRegistryFilters(v, activeFilterState));
+    },
+    [hasActiveFilters, activeFilterState]
+  );
+
+  const filteredTodayVisits = useMemo(() => filterTodayVisits(todayVisits), [todayVisits, filterTodayVisits]);
+  const filteredTodayVisitsMine = useMemo(
+    () => filterTodayVisits(todayVisitsMine),
+    [todayVisitsMine, filterTodayVisits]
+  );
+  const filteredTodayVisitsOthers = useMemo(
+    () => filterTodayVisits(todayVisitsOthers),
+    [todayVisitsOthers, filterTodayVisits]
+  );
 
   const callNextPatient = async () => {
     try {
@@ -107,47 +324,20 @@ export function OpdQueuePageApp({
     setTriageVisit(v);
   };
 
-  const registryQuery = useMemo(() => {
-    const o = {};
-    if (q.trim()) o.q = q.trim();
-    if (dateFrom) o.date_from = dateFrom;
-    if (dateTo) o.date_to = dateTo;
-    if (status && status !== 'all') o.status = status;
-    if (sort) o.sort = sort;
-    if (filters.dept) o.dept = filters.dept;
-    return o;
-  }, [q, dateFrom, dateTo, status, sort, filters.dept]);
-
-  const applyFilters = (e) => {
-    e.preventDefault();
-    const params = new URLSearchParams(registryQuery);
-    window.location.href = params.toString() ? `/opd-queue?${params}` : '/opd-queue';
-  };
-
-  const navigateWithStatus = (nextStatus) => {
-    setStatus(nextStatus);
-    const o = { ...registryQuery };
-    if (nextStatus && nextStatus !== 'all') o.status = nextStatus;
-    else delete o.status;
-    const params = new URLSearchParams(o);
-    window.location.href = params.toString() ? `/opd-queue?${params}` : '/opd-queue';
-  };
-
   const queueStats = useMemo(() => {
-    const waiting = todayVisits.filter((v) => (v.queue_status || '') === 'waiting_doctor').length;
+    const waiting = filteredTodayVisits.filter((v) => (v.queue_status || '') === 'waiting_doctor').length;
     return {
-      active: todayVisits.length,
+      active: filteredTodayVisits.length,
       waiting,
-      registry: filters.total || 0,
+      registry: registryTotal,
       rooms: consultationRooms.length};
-  }, [todayVisits, filters.total, consultationRooms.length]);
+  }, [filteredTodayVisits, registryTotal, consultationRooms.length]);
 
   const canAssignRoom =
     hasPerm(userPerms, ['opd.write', 'nursing.write', 'clinical.write', 'scheduling.read']) &&
     consultationRooms.length > 0;
 
-  // When split by doctor: "mine" section shows todayVisitsMine; main grid must only show others (never all visits).
-  const queueList = queueShowDoctorSplit ? todayVisitsOthers : todayVisits;
+  const queueList = queueShowDoctorSplit ? filteredTodayVisitsOthers : filteredTodayVisits;
 
   const menuForVisit = (v) => {
     const qs = v.queue_status || 'registered';
@@ -302,7 +492,27 @@ export function OpdQueuePageApp({
           </div>
         ) : null}
 
-        <form onSubmit={applyFilters} className="mb-6 rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
+        <div className="mb-6 rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500">{t('opd.registry_filters_title')}</h3>
+            <div className="flex flex-wrap items-center gap-2">
+              {hasActiveFilters ? (
+                <button type="button" className="hms-btn-secondary px-3 py-1.5 text-xs" onClick={resetFilters}>
+                  <i className="fa fa-times mr-1" aria-hidden="true" />
+                  {t('opd.registry_reset')}
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="hms-btn-secondary px-3 py-1.5 text-xs"
+                onClick={() => loadRegistry(registryPager?.page || 1)}
+                title={t('shared.refresh')}
+              >
+                <i className={`fa fa-refresh ${registryLoading ? 'fa-spin' : ''}`} aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+
           <div className="mb-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
             <div className="lg:col-span-2">
               <label className="hms-label">{t('shared.search')}</label>
@@ -327,35 +537,86 @@ export function OpdQueuePageApp({
                 <option value="oldest">{t('shared.oldest')}</option>
               </select>
             </div>
-            <div className="flex items-end">
-              <button type="submit" className="hms-btn-primary w-full shrink-0">
-                <i className="fa fa-filter" aria-hidden="true" />
-                {t('shared.filter')}
-              </button>
+            <div>
+              <label className="hms-label">{t('opd.filter_department')}</label>
+              <select value={dept} onChange={(e) => setDept(e.target.value)} className="hms-input">
+                <option value="">{t('opd.filter_all_departments')}</option>
+                {departments.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
+
+          <div className="mb-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+            <div className="lg:col-span-2">
+              <label className="hms-label">{t('opd.filter_physician')}</label>
+              <select
+                value={doctor || ''}
+                onChange={(e) => setDoctor(parseInt(e.target.value, 10) || 0)}
+                className="hms-input"
+              >
+                <option value="">{t('opd.filter_all_physicians')}</option>
+                {doctors.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    Dr. {d.first_name} {d.last_name}
+                    {d.primary_department ? ` — ${d.primary_department}` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="lg:col-span-4 flex flex-wrap items-end gap-2">
+              <span className="mb-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                {t('opd.filter_period')}
+              </span>
+              {DATE_PRESETS.map((p) => (
+                <FilterChip key={p.key} active={activePresetKey === p.key} onClick={() => applyDatePreset(p.days)}>
+                  {t(`opd.preset_${p.key}`)}
+                </FilterChip>
+              ))}
+            </div>
+          </div>
+
           <div className="flex flex-wrap gap-2">
             {STATUS_FILTERS.map(({ key, labelKey }) => (
-              <FilterChip key={key} active={status === key} onClick={() => navigateWithStatus(key)}>
+              <FilterChip key={key} active={status === key} onClick={() => setStatus(key)}>
                 {t(labelKey)}
               </FilterChip>
             ))}
           </div>
-        </form>
+
+          {hasActiveFilters ? (
+            <p className="mt-3 text-xs text-slate-500">
+              {registryLoading
+                ? t('opd.registry_loading')
+                : t('opd.registry_active_hint', {
+                    shown: registryVisits.length,
+                    total: registryTotal,
+                    queue: filteredTodayVisits.length,
+                  })}
+            </p>
+          ) : null}
+        </div>
 
         <div className="mb-6 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card">
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-            <h2 className="text-sm font-bold text-ink">{t('opd.active_queue_today')}</h2>
+            <h2 className="text-sm font-bold text-ink">
+              {hasActiveFilters ? t('opd.active_queue_filtered') : t('opd.active_queue_today')}
+            </h2>
             <span className="rounded-full bg-brand px-3 py-0.5 text-xs font-bold text-white">
-              {t('opd.active_count', { count: todayVisits.length })}
+              {t('opd.active_count', { count: filteredTodayVisits.length })}
             </span>
           </div>
           <div className="p-4">
-            {todayVisits.length === 0 ? (
-              <p className="py-8 text-center text-slate-500">{t('opd.queue_clear')}</p>
+            {filteredTodayVisits.length === 0 ? (
+              <p className="py-8 text-center text-slate-500">
+                {hasActiveFilters ? t('opd.queue_no_match') : t('opd.queue_clear')}
+              </p>
             ) : (
               <>
-                {queueShowDoctorSplit && todayVisitsMine.length > 0 ? (
+                {queueShowDoctorSplit && filteredTodayVisitsMine.length > 0 ? (
                   <>
                     <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                       <p className="text-xs font-bold text-emerald-700">{t('opd.assigned_to_you')}</p>
@@ -371,7 +632,7 @@ export function OpdQueuePageApp({
                       ) : null}
                     </div>
                     <div className="mb-4 grid grid-cols-[repeat(auto-fill,minmax(230px,260px))] gap-3">
-                      {todayVisitsMine.map((v) => (
+                      {filteredTodayVisitsMine.map((v) => (
                         <OpdVisitCard
                           key={v.id}
                           visit={v}
@@ -417,7 +678,10 @@ export function OpdQueuePageApp({
             <h2 className="text-sm font-bold text-ink">
               {t('opd.visit_registry')}{' '}
               <span className="ml-2 rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-normal text-slate-600">
-                {filters.total || 0} {t('shared.records')}
+                {registryTotal} {t('shared.records')}
+                {registryLoading ? (
+                  <i className="fa fa-spinner fa-spin ml-1 text-brand" aria-hidden="true" />
+                ) : null}
               </span>
             </h2>
             <p className="mt-1 text-xs text-slate-500">{t('opd.registry_hint')}</p>
@@ -442,20 +706,27 @@ export function OpdQueuePageApp({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {allVisits.length === 0 ? (
+                {registryLoading && registryVisits.length === 0 ? (
+                  <tr>
+                    <td colSpan={13} className="px-4 py-12 text-center text-slate-500">
+                      <i className="fa fa-spinner fa-spin mr-2 text-brand" aria-hidden="true" />
+                      {t('opd.registry_loading')}
+                    </td>
+                  </tr>
+                ) : registryVisits.length === 0 ? (
                   <tr>
                     <td colSpan={13} className="px-4 py-12 text-center text-slate-500">
                       {t('opd.no_visits_filters')}
                     </td>
                   </tr>
                 ) : (
-                  allVisits.map((v) => {
+                  registryVisits.map((v) => {
                     const qs = v.queue_status || 'registered';
                     const st = opdQueueStatus(qs);
                     const items = menuForVisit(v);
                     const regRm = v.display_room_name || v.display_room_code || v.consultation_room_name || v.consultation_room_code;
                     return (
-                      <tr key={v.id} className="hover:bg-slate-50/80">
+                      <tr key={v.id} className={`hover:bg-slate-50/80 ${registryLoading ? 'opacity-60' : ''}`}>
                         <td className="px-3 py-2.5 font-bold text-brand">{v.ticket_number}</td>
                         <td className="px-3 py-2.5">
                           <div className="font-semibold">
@@ -502,7 +773,20 @@ export function OpdQueuePageApp({
               </tbody>
             </table>
           </div>
-          <Pager pager={pager} basePath="/opd-queue" query={registryQuery} />
+          <Pager
+            pager={registryPager}
+            onPageChange={(page) => loadRegistry(page)}
+            query={buildRegistryQuery({
+              q: debouncedQ,
+              dateFrom,
+              dateTo,
+              status,
+              sort,
+              dept,
+              doctor,
+              page: registryPager?.page || 1,
+            })}
+          />
         </div>
       </div>
 
