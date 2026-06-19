@@ -9785,19 +9785,21 @@ app.get('/api/patients/search', requireAuth, async (req, res) => {
  const q = String(req.query.q || req.query.term || '').trim();
  try {
  if (!q) return res.json([]);
- const like = `%${q}%`;
+ const like = `%${q.toLowerCase()}%`;
+ const idLike = `%${q}%`;
  const [rows] = await pool.query(
   `SELECT id, first_name, last_name, phone, patient_code
      FROM tbl_patient
     WHERE status = 1
       AND (
-        first_name LIKE ? OR last_name LIKE ? OR phone LIKE ?
-        OR patient_code LIKE ? OR CAST(id AS CHAR) LIKE ?
-        OR CONCAT(COALESCE(first_name,''), ' ', COALESCE(last_name,'')) LIKE ?
+        LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ? OR phone LIKE ?
+        OR LOWER(COALESCE(patient_code, '')) LIKE ? OR CAST(id AS CHAR) LIKE ?
+        OR LOWER(CONCAT(COALESCE(first_name,''), ' ', COALESCE(last_name,''))) LIKE ?
+        OR LOWER(CONCAT(COALESCE(last_name,''), ' ', COALESCE(first_name,''))) LIKE ?
       )
     ORDER BY last_name, first_name
     LIMIT 25`,
-  [like, like, like, like, like, like]
+  [like, like, idLike, like, idLike, like, like]
  );
  res.json(rows);
  } catch (err) {

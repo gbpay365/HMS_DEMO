@@ -50,7 +50,8 @@ var _resetQs = 'period=' + encodeURIComponent(_period) + '&date=' + encodeURICom
       </div>
       <div class="form-group col-6 col-md-3 mb-2 mb-md-0">
         <label class="small font-weight-bold"><%= _tc('anchor_date', 'Date') %></label>
-        <input type="date" name="date" class="form-control form-control-sm" value="<%= _dateVal %>">
+        <input type="hidden" name="date" value="<%= _dateVal %>" data-hms-dmy-hidden>
+        <input type="text" class="form-control form-control-sm" value="<%= _dateVal && fmtDate(_dateVal) !== '—' ? fmtDate(_dateVal) : '' %>" placeholder="DD/MM/YYYY" inputmode="numeric" autocomplete="off" data-hms-dmy-display>
       </div>
     </div>
     <hr class="my-3">
@@ -247,4 +248,5 @@ var _resetQs = 'period=' + encodeURIComponent(_period) + '&date=' + encodeURICom
 </div>
 
 </div></div>
+<script src="/js/hms-date-dmy-field.js"></script>
 <%- include('partials/footer') %>
