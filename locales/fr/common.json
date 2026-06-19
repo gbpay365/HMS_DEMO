@@ -17,6 +17,18 @@
     "edit": "Modifier",
     "delete": "Supprimer"
   },
+  "diag_batch_picker": {
+    "title_lab": "Sélectionner les résultats labo à imprimer",
+    "title_lab_code": "Sélectionner les résultats labo pour ce code",
+    "title_rad": "Sélectionner les résultats radiologie à imprimer",
+    "title_rad_code": "Sélectionner les résultats radiologie pour ce code",
+    "subtitle": "Choisissez un ou plusieurs comptes rendus terminés, puis imprimez un dossier remise patient combiné.",
+    "subtitle_code": "Choisissez les comptes rendus terminés sur ce code service à inclure dans l'impression.",
+    "select_all": "Tout sélectionner",
+    "clear_all": "Tout effacer",
+    "print_selected": "Imprimer la sélection",
+    "print_all": "Tout imprimer"
+  },
   "aria": {
     "close_dialog": "Fermer la fenêtre",
     "close": "Fermer",

@@ -1,8 +1,14 @@
 <%- include('partials/header') %>
+<%
+var _radTitle = (typeof t === 'function' ? t('radiology_odoo.default_title', { ns: 'ops', defaultValue: 'Radiology requests' }) : 'Radiology requests');
+var _radBoard = (typeof t === 'function' ? t('radiology_odoo.board_short', { ns: 'ops', defaultValue: 'Board' }) : 'Board');
+var _radTpl = (typeof t === 'function' ? t('radiology_odoo.exam_templates', { ns: 'ops', defaultValue: 'Templates' }) : 'Templates');
+var _radNew = (typeof t === 'function' ? t('radiology_odoo.new_request', { ns: 'ops', defaultValue: '+ New request' }) : '+ New request');
+%>
 <%- include('partials/radiology-odoo-start', {
   radOdooMenu: 'requests',
-  radOdooTitle: 'Radiology requests',
-  radOdooActions: '<a href="/radiology/workflow" class="o_btn_secondary">Board</a><a href="/radiology/templates" class="o_btn_secondary">Templates</a><a href="/radiology/validate" class="o_btn_primary">+ New request</a>'
+  radOdooTitle: _radTitle,
+  radOdooActions: '<a href="/radiology/workflow" class="o_btn_secondary">' + _radBoard + '</a><a href="/radiology/templates" class="o_btn_secondary">' + _radTpl + '</a><a href="/radiology/validate" class="o_btn_primary">' + _radNew + '</a>'
 }) %>
 
 <%- include('partials/react-page-mount', {

@@ -710,6 +710,8 @@
     "module": "Radiology",
     "requests": "Requests",
     "workflow_board": "Workflow board",
+    "board_short": "Board",
+    "new_request": "+ New request",
     "test_results": "Test results",
     "operations": "Operations",
     "settings": "Settings",
