@@ -32,6 +32,9 @@ var _resetQs = 'period=' + encodeURIComponent(_period) + '&date=' + encodeURICom
       <a href="/cashier/daily-summary/print?<%= _printQs %>" target="_blank" rel="noopener" class="btn btn-light btn-sm font-weight-bold rounded-pill">
         <i class="fa fa-print mr-1"></i><%= _tc('print', 'Print report') %>
       </a>
+      <a href="/cashier/eod-reconciliation?date=<%= encodeURIComponent(_dateVal) %>" class="btn btn-light btn-sm font-weight-bold rounded-pill">
+        <i class="fa fa-balance-scale mr-1"></i><%= _t('cashier.eod_reconciliation_link', { ns: 'clinical', defaultValue: 'End of day reconciliation' }) %>
+      </a>
     </div>
   </div>
 </div>

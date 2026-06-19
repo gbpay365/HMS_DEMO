@@ -7692,7 +7692,9 @@ app.get('/cashier', requireAuth, requirePerm('cashier.read','cashier.write'), as
 
  const { fetchCashierBillingInvoices } = require('./lib/cashierBillingInvoices');
  const { ensureCashierInvoiceSchema } = require('./lib/ensureCashierInvoiceSchema');
+ const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
  await ensureCashierInvoiceSchema(pool).catch(() => {});
+ await ensureCashierEodSchema(pool).catch(() => {});
  let billingInvoices = [];
  let billingSummary = { pending_count: 0, pending_total: 0, paid_today_count: 0, paid_today_total: 0 };
  let billingTotal = 0;
@@ -9742,6 +9744,92 @@ app.get('/api/cashier/daily-summary', requireAuth, requirePerm('cashier.read', '
   return res.json({ ok: true, report });
  } catch (err) {
   console.error('cashier daily-summary api:', err.message);
+  return res.status(500).json({ ok: false, error: err.message || 'Report failed' });
+ }
+});
+
+function cashierEodOpts(req, access) {
+ return {
+  date: req.query.date || req.body?.date || '',
+  allCashiers: access.allCashiers,
+  paidBy: access.paidBy,
+  facilityId: req.session.facilityId || 1,
+ };
+}
+
+// CASHIER: end-of-day report & reconciliation
+app.get('/cashier/eod-reconciliation', requireAuth, requirePerm('cashier.read', 'cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
+ try {
+  const access = cashierBatchPrintAccess(req, res);
+  if (!access.ok) {
+   return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.access_denied', { defaultValue: 'Access denied' })));
+  }
+  const { buildCashierEodReport } = require('./lib/cashierEodReconciliation');
+  const report = await buildCashierEodReport(pool, cashierEodOpts(req, access));
+  res.render('cashier-eod-reconciliation', {
+   title: pageTitle(res, 'cashier.eod.title', 'End of day reconciliation', { ns: 'clinical' }),
+   report,
+   facilityName: hmsBrand.facilityName,
+   flash: req.query.msg || null,
+   error: req.query.err || null,
+  });
+ } catch (err) {
+  console.error('cashier eod-reconciliation:', err.message);
+  res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.page_load_error', { defaultValue: 'Could not load EOD report.' })));
+ }
+});
+
+app.post('/cashier/eod-reconciliation', requireAuth, requirePerm('cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
+ try {
+  const access = cashierBatchPrintAccess(req, res);
+  if (!access.ok) {
+   return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.access_denied', { defaultValue: 'Access denied' })));
+  }
+  const { saveCashierEodReconciliation } = require('./lib/cashierEodReconciliation');
+  await saveCashierEodReconciliation(pool, {
+   ...cashierEodOpts(req, access),
+   body: req.body,
+   userId: req.session.userId || req.session.user?.id,
+  });
+  const qs = req.body.date ? `?date=${encodeURIComponent(String(req.body.date).slice(0, 10))}&msg=` : '?msg=';
+  return res.redirect('/cashier/eod-reconciliation' + qs + encodeURIComponent(flashT(res, 'cashier.eod.saved', { ns: 'clinical', defaultValue: 'End-of-day reconciliation saved.' })));
+ } catch (err) {
+  console.error('cashier eod-reconciliation save:', err.message);
+  const d = req.body?.date ? `&date=${encodeURIComponent(String(req.body.date).slice(0, 10))}` : '';
+  return res.redirect('/cashier/eod-reconciliation?err=' + encodeURIComponent(err.message || 'Save failed') + d);
+ }
+});
+
+app.get('/cashier/eod-reconciliation/print', requireAuth, requirePerm('cashier.read', 'cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
+ try {
+  const access = cashierBatchPrintAccess(req, res);
+  if (!access.ok) {
+   return res.status(403).send('Access denied');
+  }
+  const { buildCashierEodReport } = require('./lib/cashierEodReconciliation');
+  const report = await buildCashierEodReport(pool, cashierEodOpts(req, access));
+  res.render('cashier-eod-reconciliation-print', {
+   title: pageTitle(res, 'cashier.eod.title', 'End of day reconciliation', { ns: 'clinical' }),
+   report,
+   facilityName: hmsBrand.facilityName,
+  });
+ } catch (err) {
+  console.error('cashier eod-reconciliation print:', err.message);
+  res.status(500).send(err.message || 'Print failed');
+ }
+});
+
+app.get('/api/cashier/eod-reconciliation', requireAuth, requirePerm('cashier.read', 'cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
+ try {
+  const access = cashierBatchPrintAccess(req, res);
+  if (!access.ok) {
+   return res.status(403).json({ ok: false, error: 'Access denied' });
+  }
+  const { buildCashierEodReport } = require('./lib/cashierEodReconciliation');
+  const report = await buildCashierEodReport(pool, cashierEodOpts(req, access));
+  return res.json({ ok: true, report });
+ } catch (err) {
+  console.error('cashier eod-reconciliation api:', err.message);
   return res.status(500).json({ ok: false, error: err.message || 'Report failed' });
  }
 });

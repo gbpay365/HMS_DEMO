@@ -1,0 +1,234 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--cashier'; %>
+<%- include('partials/header') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _te = function (key, fallback, opts) {
+  var o = { ns: 'clinical', defaultValue: fallback };
+  if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+  return _t('cashier.eod.' + key, o);
+};
+var _tc = function (key, fallback, opts) {
+  var o = { ns: 'clinical', defaultValue: fallback };
+  if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+  return _t('cashier.daily_summary.' + key, o);
+};
+var _catLabel = function (key) {
+  return _tc('cat_' + key, key.replace(/_/g, ' '));
+};
+var _dateVal = report.bounds.start || '';
+var _printQs = 'date=' + encodeURIComponent(_dateVal);
+var _decl = report.declaredTotals || {};
+%>
+<link rel="stylesheet" href="/css/hms-app-surface.css?v=2">
+<div class="page-wrapper hms-surface-module"><div class="content px-3 pb-5">
+
+<div class="hms-surface-hero mb-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+    <div>
+      <p class="mb-2"><a href="/cashier" class="small text-white-50"><i class="fa fa-arrow-left"></i> <%= _te('back_cashier', 'Back to cashier') %></a></p>
+      <h1 class="hms-surface-hero-title mb-1"><i class="fa fa-balance-scale mr-2"></i><%= _te('title', 'End of day reconciliation') %></h1>
+      <p class="mb-0"><%= _te('subtitle', 'Close the day — compare system totals with physical counts') %> · <strong><%= report.bounds.label %></strong></p>
+    </div>
+    <div class="no-print d-flex flex-wrap gap-2">
+      <a href="/cashier/daily-summary?date=<%= encodeURIComponent(_dateVal) %>" class="btn btn-light btn-sm font-weight-bold rounded-pill">
+        <i class="fa fa-bar-chart mr-1"></i><%= _te('daily_summary', 'Daily summary') %>
+      </a>
+      <a href="/cashier/eod-reconciliation/print?<%= _printQs %>" target="_blank" rel="noopener" class="btn btn-light btn-sm font-weight-bold rounded-pill">
+        <i class="fa fa-print mr-1"></i><%= _te('print', 'Print report') %>
+      </a>
+    </div>
+  </div>
+</div>
+
+<% if (flash) { %>
+<div class="alert alert-success border-0 shadow-sm small mb-3 no-print" style="border-radius:12px;"><i class="fa fa-check-circle mr-1"></i><%= flash %></div>
+<% } %>
+<% if (error) { %>
+<div class="alert alert-danger border-0 shadow-sm small mb-3 no-print" style="border-radius:12px;"><i class="fa fa-exclamation-circle mr-1"></i><%= error %></div>
+<% } %>
+<% if (report.saved) { %>
+<div class="alert alert-info border-0 shadow-sm small mb-3 no-print" style="border-radius:12px;">
+  <i class="fa fa-lock mr-1"></i> <%= _te('saved_hint', 'Reconciliation submitted for this date.') %>
+  <% if (report.saved.submitted_at) { %> · <%= _te('submitted_at', 'Submitted') %>: <%= report.saved.submitted_at %><% } %>
+</div>
+<% } %>
+
+<form method="GET" action="/cashier/eod-reconciliation" class="card border-0 shadow-sm mb-4 no-print" style="border-radius:14px;">
+  <div class="card-body p-3">
+    <div class="form-row align-items-end">
+      <div class="form-group col-6 col-md-3 mb-0">
+        <label class="small font-weight-bold"><%= _te('business_date', 'Business date') %></label>
+        <input type="hidden" name="date" value="<%= _dateVal %>" data-hms-dmy-hidden>
+        <input type="text" class="form-control form-control-sm" value="<%= _dateVal && fmtDate(_dateVal) !== '—' ? fmtDate(_dateVal) : '' %>" placeholder="DD/MM/YYYY" inputmode="numeric" autocomplete="off" data-hms-dmy-display>
+      </div>
+      <div class="form-group col-6 col-md-3 mb-0">
+        <button type="submit" class="btn btn-primary btn-sm font-weight-bold rounded-pill px-4"><i class="fa fa-refresh mr-1"></i><%= _te('load', 'Load report') %></button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<div class="row mb-4">
+  <div class="col-md-3 mb-3">
+    <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
+      <div class="card-body">
+        <div class="small text-muted font-weight-bold text-uppercase"><%= _tc('kpi_collected', 'Total collected') %></div>
+        <div class="h4 font-weight-bold mb-0"><%= report.summary.summary.grandTotal_fmt %></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
+      <div class="card-body">
+        <div class="small text-muted font-weight-bold text-uppercase"><%= _tc('kpi_tickets', 'Paid tickets') %></div>
+        <div class="h4 font-weight-bold mb-0"><%= report.summary.summary.ticketCount %></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
+      <div class="card-body">
+        <div class="small text-muted font-weight-bold text-uppercase"><%= _te('pending_open', 'Open pending') %></div>
+        <div class="h4 font-weight-bold mb-0"><%= report.dayStats.pending_count %> <span class="small text-muted font-weight-normal">· <%= report.dayStats.pending_total_fmt %></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
+      <div class="card-body">
+        <div class="small text-muted font-weight-bold text-uppercase"><%= _te('refunds', 'Refunds today') %></div>
+        <div class="h4 font-weight-bold mb-0"><%= report.dayStats.refund_count %> <span class="small text-muted font-weight-normal">· <%= report.dayStats.refund_total_fmt %></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<form method="POST" action="/cashier/eod-reconciliation" class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+  <input type="hidden" name="date" value="<%= _dateVal %>">
+  <div class="card-header bg-white border-0 pt-3 pb-0">
+    <h5 class="font-weight-bold mb-0"><i class="fa fa-check-square-o text-muted mr-1"></i> <%= _te('reconciliation', 'Reconciliation') %></h5>
+    <p class="small text-muted mb-0 mt-1"><%= _te('reconciliation_hint', 'Enter physical / terminal counts. Variance = declared − system.') %></p>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="thead-light">
+          <tr>
+            <th><%= _tc('col_method', 'Method') %></th>
+            <th class="text-right"><%= _te('col_system', 'System') %></th>
+            <th class="text-right" style="min-width:140px;"><%= _te('col_declared', 'Declared count') %></th>
+            <th class="text-right"><%= _te('col_variance', 'Variance') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% report.reconciliationRows.forEach(function(row){ %>
+          <tr class="<%= row.balanced ? '' : 'table-warning' %>">
+            <td><strong><%= row.label %></strong></td>
+            <td class="text-right font-weight-bold"><%= row.system_fmt %></td>
+            <td class="text-right">
+              <input type="number" name="declared_<%= row.key %>" class="form-control form-control-sm text-right ml-auto" style="max-width:160px;" min="0" step="1" value="<%= _decl[row.key] != null ? _decl[row.key] : '' %>" placeholder="0">
+            </td>
+            <td class="text-right font-weight-bold <%= row.variance === 0 ? 'text-success' : (row.variance > 0 ? 'text-primary' : 'text-danger') %>"><%= row.variance_fmt %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+        <tfoot class="thead-light">
+          <tr class="font-weight-bold">
+            <td><%= _te('total_variance', 'Net variance') %></td>
+            <td colspan="2"></td>
+            <td class="text-right <%= report.isBalanced ? 'text-success' : 'text-danger' %>"><%= report.totalVariance_fmt %></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="p-3 border-top">
+      <div class="form-row">
+        <div class="form-group col-md-4 mb-2">
+          <label class="small font-weight-bold"><%= _te('opening_float', 'Opening float (cash)') %></label>
+          <input type="number" name="opening_float" class="form-control form-control-sm" min="0" step="1" value="<%= report.openingFloat || '' %>" placeholder="0">
+        </div>
+        <div class="form-group col-md-4 mb-2">
+          <label class="small font-weight-bold"><%= _te('expected_drawer', 'Expected cash in drawer') %></label>
+          <div class="form-control form-control-sm bg-light font-weight-bold"><%= report.expectedCashDrawer_fmt %></div>
+          <small class="text-muted"><%= _te('expected_drawer_hint', 'Opening float + system cash collections') %></small>
+        </div>
+        <div class="form-group col-md-12 mb-2">
+          <label class="small font-weight-bold"><%= _te('notes', 'Notes / explanation of variance') %></label>
+          <textarea name="notes" class="form-control form-control-sm" rows="2" placeholder="<%= _te('notes_ph', 'Optional notes for finance review…') %>"><%= report.saved && report.saved.notes ? report.saved.notes : '' %></textarea>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-success btn-sm font-weight-bold rounded-pill px-4 no-print"><i class="fa fa-save mr-1"></i><%= _te('submit', 'Submit reconciliation') %></button>
+    </div>
+  </div>
+</form>
+
+<div class="row">
+  <div class="col-lg-6 mb-4">
+    <div class="card border-0 shadow-sm" style="border-radius:14px;">
+      <div class="card-header bg-white border-0 pt-3 pb-0">
+        <h5 class="font-weight-bold mb-0"><i class="fa fa-pie-chart text-muted mr-1"></i> <%= _tc('by_category', 'By service category') %></h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+            <thead class="thead-light">
+              <tr>
+                <th><%= _tc('col_category', 'Category') %></th>
+                <th class="text-right"><%= _tc('col_amount', 'Amount') %></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% report.summary.categoryRows.forEach(function(row){ %>
+              <tr>
+                <td><%= _catLabel(row.key) %></td>
+                <td class="text-right font-weight-bold"><%= row.amount_fmt %></td>
+              </tr>
+              <% }); %>
+              <% if (!report.summary.categoryRows.length) { %>
+              <tr><td colspan="2" class="text-center text-muted py-3"><%= _tc('empty', 'No paid transactions for this period.') %></td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6 mb-4">
+    <div class="card border-0 shadow-sm" style="border-radius:14px;">
+      <div class="card-header bg-white border-0 pt-3 pb-0">
+        <h5 class="font-weight-bold mb-0"><i class="fa fa-user text-muted mr-1"></i> <%= _te('by_cashier', 'By cashier') %></h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+            <thead class="thead-light">
+              <tr>
+                <th><%= _te('cashier', 'Cashier') %></th>
+                <th class="text-right"><%= _tc('kpi_tickets', 'Paid tickets') %></th>
+                <th class="text-right"><%= _tc('col_amount', 'Amount') %></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!report.cashierBreakdown.length) { %>
+              <tr><td colspan="3" class="text-center text-muted py-3">—</td></tr>
+              <% } %>
+              <% report.cashierBreakdown.forEach(function(row){ %>
+              <tr>
+                <td><%= row.cashier_name %></td>
+                <td class="text-right"><%= row.ticket_count %></td>
+                <td class="text-right font-weight-bold"><%= row.total_collected_fmt %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div></div>
+<script src="/js/hms-date-dmy-field.js"></script>
+<%- include('partials/footer') %>

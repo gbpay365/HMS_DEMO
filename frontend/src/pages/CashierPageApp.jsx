@@ -336,6 +336,9 @@ export function CashierPageApp({
             <a href="/cashier/daily-summary" className="hms-btn-secondary inline-flex items-center gap-2 px-6 py-3 text-base no-underline">
               <FaIcon name="bar-chart" /> {t('cashier.daily_summary_link')}
             </a>
+            <a href="/cashier/eod-reconciliation" className="hms-btn-secondary inline-flex items-center gap-2 px-6 py-3 text-base no-underline">
+              <FaIcon name="balance-scale" /> {t('cashier.eod_reconciliation_link')}
+            </a>
           </div>
         </SurfaceHero>
 
