@@ -10,7 +10,7 @@ var _f = filter || 'today';
 <%- include('partials/laboratory-odoo-start', {
   labOdooMenu: 'operations',
   labOdooTitle: _tl('lims_requests.title', 'Lab requests'),
-  labOdooActions: '<a href="/lims/request/new" class="o_btn_primary"><i class="fa fa-plus"></i> ' + _tl('lims_requests.new_request', 'New request') + '</a>'
+  labOdooActions: '<a href="/lims/request/new" class="o_btn_primary" data-hms-lims-new-request><i class="fa fa-plus"></i> ' + _tl('lims_requests.new_request', 'New request') + '</a>'
 }) %>
 <div class="o_content">
 
@@ -54,5 +54,6 @@ var _f = filter || 'today';
 </div>
 
 </div>
+<%- include('partials/diagnostic-validate-code-modal', { validateModalDept: 'laboratory' }) %>
 <%- include('partials/laboratory-odoo-end') %>
 <%- include('partials/footer') %>

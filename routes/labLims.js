@@ -67,6 +67,24 @@ module.exports = function labLimsRoutes(app, pool, requireAuth, requirePerm) {
 
   app.get('/lims/request/new', requireAuth, labWrite, async (req, res) => {
     try {
+      const code = String(req.query.code || '').trim().toUpperCase();
+      if (!code) {
+        return res.redirect('/lims?err=' + encodeURIComponent('Validate the LAB payment code before creating a new request.'));
+      }
+      const fid = Math.max(1, parseInt(String(req.session.facilityId || 1), 10) || 1);
+      const { authorizeServiceCodeValidate } = require('../lib/authorizeLabTest');
+      const { isPaymentCodeFormat } = require('../lib/paymentTicketCode');
+      if (!isPaymentCodeFormat(code, 'LAB')) {
+        return res.redirect('/lims?err=' + encodeURIComponent('Format: LAB-####-XXXXXXXX (e.g. LAB-4829-K7HM3R9Q).'));
+      }
+      const auth = await authorizeServiceCodeValidate(pool, code, fid);
+      if (!auth.ok) {
+        return res.redirect('/lims?err=' + encodeURIComponent(auth.error || 'Code not valid for laboratory work.'));
+      }
+      if (auth.meta && auth.meta.kind && auth.meta.kind !== 'laboratory') {
+        return res.redirect('/lims?err=' + encodeURIComponent(`Code belongs to ${auth.meta.kind}, not laboratory.`));
+      }
+      const prefPatientId = parseInt(String(auth.meta?.patientId || ''), 10) || null;
       const [patients] = await pool.query(
         `SELECT id, first_name, last_name FROM tbl_patient WHERE status=1 ORDER BY first_name LIMIT 500`
       ).catch(() => [[]]);
@@ -87,6 +105,8 @@ module.exports = function labLimsRoutes(app, pool, requireAuth, requirePerm) {
         groups: groups || [],
         catalog: catalog || [],
         today,
+        validatedCode: code,
+        prefPatientId,
         flash: null,
         error: req.query.err,
       });
@@ -99,9 +119,21 @@ module.exports = function labLimsRoutes(app, pool, requireAuth, requirePerm) {
     const conn = await pool.getConnection();
     try {
       await conn.beginTransaction();
+      const validatedCode = String(req.body.validated_code || '').trim().toUpperCase();
+      if (!validatedCode) throw new Error('Payment code validation is required.');
+      const fid = await ensureFacilityRow(pool, req.session.facilityId || 1);
+      const { authorizeServiceCodeValidate } = require('../lib/authorizeLabTest');
+      const auth = await authorizeServiceCodeValidate(pool, validatedCode, fid);
+      if (!auth.ok) throw new Error(auth.error || 'Service code not valid.');
+      if (auth.meta && auth.meta.kind && auth.meta.kind !== 'laboratory') {
+        throw new Error(`Code belongs to ${auth.meta.kind}, not laboratory.`);
+      }
       const patientId = parseInt(req.body.patient_id, 10) || 0;
       if (patientId < 1) throw new Error('Patient is required');
-      const fid = await ensureFacilityRow(pool, req.session.facilityId || 1);
+      const authPatientId = parseInt(String(auth.meta?.patientId || ''), 10) || 0;
+      if (authPatientId > 0 && patientId !== authPatientId) {
+        throw new Error('Patient does not match the validated payment code.');
+      }
       const uid = req.session.userId || req.session.user?.id || null;
       const requestNo = await labLims.nextRequestNo(conn);
       const scheduledDate = req.body.scheduled_date || new Date().toISOString().split('T')[0];
@@ -174,7 +206,7 @@ module.exports = function labLimsRoutes(app, pool, requireAuth, requirePerm) {
       res.redirect(`/lims/request/${requestId}?msg=Lab+request+created`);
     } catch (e) {
       await conn.rollback();
-      res.redirect('/lims/request/new?err=' + encodeURIComponent(e.message));
+      res.redirect('/lims?err=' + encodeURIComponent(e.message));
     } finally {
       conn.release();
     }

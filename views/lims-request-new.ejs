@@ -1,11 +1,19 @@
 <% locals.hmsSurfaceBodyClass = ' hms-body--lims'; %>
 <%- include('partials/header') %>
 <h4 class="font-weight-bold mb-3"><a href="/lims/requests" class="small text-muted"><%= _tl('lims_request_new.requests', 'Requests') %></a> / <%= _tl('lims_request_new.title', 'New lab request') %></h4>
+<% if (typeof validatedCode !== 'undefined' && validatedCode) { %>
+<div class="alert alert-success border-0 shadow-sm small mb-3" style="border-radius:12px;">
+  <i class="fa fa-check-circle mr-1"></i>
+  <%= _tl('lims_request_new.validated_code', 'Validated payment code') %>: <strong class="font-monospace"><%= validatedCode %></strong>
+</div>
+<% } %>
 <form method="POST" action="/lims/request" class="card p-4 shadow-sm">
+<input type="hidden" name="validated_code" value="<%= typeof validatedCode !== 'undefined' ? validatedCode : '' %>">
 <div class="row">
 <div class="col-md-6 mb-2"><label class="small font-weight-bold"><%= _tl('lims_request_new.patient', 'Patient') %></label>
 <select name="patient_id" class="hms-input w-full text-sm" required><option value="">—</option>
-<% patients.forEach(function(p){ %><option value="<%=p.id%>"><%=p.first_name%> <%=p.last_name%></option><% }); %></select></div>
+<% var _prefPid = typeof prefPatientId !== 'undefined' ? prefPatientId : null; %>
+<% patients.forEach(function(p){ %><option value="<%=p.id%>"<%= _prefPid && String(p.id) === String(_prefPid) ? ' selected' : '' %>><%=p.first_name%> <%=p.last_name%></option><% }); %></select></div>
 <div class="col-md-6 mb-2"><label class="small font-weight-bold"><%= _tl('lims_request_new.prescribing_doctor', 'Prescribing doctor') %></label>
 <select name="prescribing_doctor_id" class="hms-input w-full text-sm"><option value="">—</option>
 <% doctors.forEach(function(d){ %><option value="<%=d.id%>">Dr. <%=d.first_name%> <%=d.last_name%></option><% }); %></select></div>

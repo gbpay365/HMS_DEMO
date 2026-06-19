@@ -121,5 +121,24 @@
         });
       });
     },
+
+    /** LIMS hub / requests — validate LAB code before opening new request form. */
+    bindLimsNewRequestLinks: function bindLimsNewRequestLinks(root) {
+      var scope = root && root.querySelectorAll ? root : document;
+      scope.querySelectorAll('[data-hms-lims-new-request]').forEach(function (el) {
+        if (el.dataset.hmsLimsNewBound === '1') return;
+        el.dataset.hmsLimsNewBound = '1';
+        el.addEventListener('click', function (e) {
+          e.preventDefault();
+          window.HmsDiagnosticCodeValidate.prompt({ dept: 'laboratory' }).then(function (code) {
+            window.location.href = '/lims/request/new?code=' + encodeURIComponent(code);
+          });
+        });
+      });
+    },
   };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    window.HmsDiagnosticCodeValidate.bindLimsNewRequestLinks(document);
+  });
 })();

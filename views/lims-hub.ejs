@@ -6,6 +6,9 @@
 }) %>
 <div class="o_content">
 <%- include('partials/clinical-dept-alerts-strip', { clinicalDeptStripDept: 'laboratory' }) %>
+<% if (typeof error !== 'undefined' && error) { %>
+<div class="alert alert-danger border-0 shadow-sm small mb-3" style="border-radius:12px;"><i class="fa fa-exclamation-circle mr-1"></i><%= error %></div>
+<% } %>
 
 <div class="hms-surface-hero mb-4">
  <div class="hms-surface-hero-icon"><i class="fa fa-flask" aria-hidden="true"></i></div>
@@ -28,18 +31,19 @@
 <div class="hms-menu-tile-grid">
  <% [
   {h:'/lims/requests?filter=today',i:'fa-list',tKey:'menu_requests',def:'Lab requests'},
-  {h:'/lims/request/new',i:'fa-plus',tKey:'menu_new_request',def:'New request'},
+  {h:'/lims/request/new',i:'fa-plus',tKey:'menu_new_request',def:'New request',gate:true},
   {h:'/lims/samples',i:'fa-tint',tKey:'menu_samples',def:'Lab samples'},
   {h:'/lims/results',i:'fa-file-text-o',tKey:'menu_results',def:'Test results'},
   {h:'/laboratory/validate',i:'fa-qrcode',tKey:'menu_validate',def:'Validate code'},
   {h:'/lab/templates',i:'fa-list-alt',tKey:'menu_templates',def:'Templates'},
   {h:'/lims/config',i:'fa-cog',tKey:'menu_config',def:'Configuration'}
  ].forEach(function(m){ %>
- <a href="<%= m.h %>" class="hms-surface-card hms-menu-tile">
+ <a href="<%= m.h %>" class="hms-surface-card hms-menu-tile"<% if (m.gate) { %> data-hms-lims-new-request<% } %>>
   <i class="fa <%= m.i %> hms-menu-tile__ico" aria-hidden="true"></i><strong><%= _t('lims_hub_page.' + m.tKey, { ns: 'legacy', defaultValue: m.def }) %></strong>
  </a>
  <% }); %>
 </div>
 </div>
+<%- include('partials/diagnostic-validate-code-modal', { validateModalDept: 'laboratory' }) %>
 <%- include('partials/laboratory-odoo-end') %>
 <%- include('partials/footer') %>
