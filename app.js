@@ -9666,6 +9666,75 @@ app.get('/api/cashier/batch-print', requireAuth, async (req, res) => {
  }
 });
 
+// CASHIER: daily cumulative transactions summary (by service category)
+app.get('/cashier/daily-summary', requireAuth, requirePerm('cashier.read', 'cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
+ try {
+  const access = cashierBatchPrintAccess(req, res);
+  if (!access.ok) {
+   return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.access_denied', { defaultValue: 'Access denied' })));
+  }
+  const { buildCashierDailySummary } = require('./lib/cashierDailySummary');
+  const report = await buildCashierDailySummary(pool, {
+   period: req.query.period || 'day',
+   date: req.query.date || '',
+   allCashiers: access.allCashiers,
+   paidBy: access.paidBy,
+  });
+  res.render('cashier-daily-summary', {
+   title: pageTitle(res, 'cashier.daily_summary.title', 'Daily transactions summary', { ns: 'clinical' }),
+   report,
+   facilityName: hmsBrand.facilityName,
+  });
+ } catch (err) {
+  console.error('cashier daily-summary:', err.message);
+  res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.page_load_error', { defaultValue: 'Could not load report.' })));
+ }
+});
+
+app.get('/cashier/daily-summary/print', requireAuth, requirePerm('cashier.read', 'cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
+ try {
+  const access = cashierBatchPrintAccess(req, res);
+  if (!access.ok) {
+   return res.status(403).send('Access denied');
+  }
+  const { buildCashierDailySummary } = require('./lib/cashierDailySummary');
+  const report = await buildCashierDailySummary(pool, {
+   period: req.query.period || 'day',
+   date: req.query.date || '',
+   allCashiers: access.allCashiers,
+   paidBy: access.paidBy,
+  });
+  res.render('cashier-daily-summary-print', {
+   title: pageTitle(res, 'cashier.daily_summary.title', 'Daily transactions summary', { ns: 'clinical' }),
+   report,
+   facilityName: hmsBrand.facilityName,
+  });
+ } catch (err) {
+  console.error('cashier daily-summary print:', err.message);
+  res.status(500).send(err.message || 'Print failed');
+ }
+});
+
+app.get('/api/cashier/daily-summary', requireAuth, requirePerm('cashier.read', 'cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
+ try {
+  const access = cashierBatchPrintAccess(req, res);
+  if (!access.ok) {
+   return res.status(403).json({ ok: false, error: 'Access denied' });
+  }
+  const { buildCashierDailySummary } = require('./lib/cashierDailySummary');
+  const report = await buildCashierDailySummary(pool, {
+   period: req.query.period || 'day',
+   date: req.query.date || '',
+   allCashiers: access.allCashiers,
+   paidBy: access.paidBy,
+  });
+  return res.json({ ok: true, report });
+ } catch (err) {
+  console.error('cashier daily-summary api:', err.message);
+  return res.status(500).json({ ok: false, error: err.message || 'Report failed' });
+ }
+});
+
 // CASHIER: ISSUE TICKET (legacy simple flow === Æ’ ===   kept for backwards compat)
 app.post('/cashier/issue-ticket', requireAuth, async (req, res) => {
  let { patient_id, service_id, amount } = req.body;

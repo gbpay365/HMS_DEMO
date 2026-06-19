@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="<%= locals.lang || 'en' %>">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/print-epson-lq.css?v=40" media="print">
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 12px; color: #111; margin: 16px; }
+    h1 { font-size: 16px; margin: 0 0 4px; }
+    .meta { font-size: 11px; color: #444; margin-bottom: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+    th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: left; }
+    th { background: #f3f4f6; font-size: 11px; }
+    .text-right { text-align: right; }
+    .total-row { font-weight: bold; background: #f9fafb; }
+    .section-title { font-size: 13px; font-weight: bold; margin: 12px 0 6px; }
+    @media print { .no-print { display: none; } }
+  </style>
+</head>
+<body>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _tc = function (key, fallback, opts) {
+  var o = { ns: 'clinical', defaultValue: fallback };
+  if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+  return _t('cashier.daily_summary.' + key, o);
+};
+var _catLabel = function (key) {
+  return _tc('cat_' + key, key.replace(/_/g, ' '));
+};
+%>
+<div class="no-print" style="margin-bottom:12px;">
+  <button onclick="window.print()"><%= _tc('print', 'Print report') %></button>
+</div>
+
+<h1><%= facilityName %> — <%= _tc('title', 'Daily transactions summary') %></h1>
+<div class="meta">
+  <%= _tc('period_label', 'Period') %>: <strong><%= report.bounds.label %></strong>
+  · <%= _tc('kpi_tickets', 'Paid tickets') %>: <%= report.summary.ticketCount %>
+  · <%= _tc('kpi_collected', 'Total collected') %>: <%= report.summary.grandTotal_fmt %>
+</div>
+
+<div class="section-title"><%= _tc('by_category', 'By service category') %></div>
+<table>
+  <thead>
+    <tr>
+      <th><%= _tc('col_category', 'Category') %></th>
+      <th class="text-right"><%= _tc('col_lines', 'Lines') %></th>
+      <th class="text-right"><%= _tc('col_share', 'Share') %></th>
+      <th class="text-right"><%= _tc('col_amount', 'Amount') %></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% report.categoryRows.forEach(function(row){ %>
+    <tr>
+      <td><%= _catLabel(row.key) %></td>
+      <td class="text-right"><%= row.line_count %></td>
+      <td class="text-right"><%= row.share_pct %>%</td>
+      <td class="text-right"><%= row.amount_fmt %></td>
+    </tr>
+    <% }); %>
+    <tr class="total-row">
+      <td><%= _tc('total', 'Total') %></td>
+      <td class="text-right"><%= report.summary.lineCount %></td>
+      <td class="text-right">100%</td>
+      <td class="text-right"><%= report.summary.grandTotal_fmt %></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="section-title"><%= _tc('by_payment', 'By payment method') %></div>
+<table>
+  <thead>
+    <tr>
+      <th><%= _tc('col_method', 'Method') %></th>
+      <th class="text-right"><%= _tc('col_share', 'Share') %></th>
+      <th class="text-right"><%= _tc('col_amount', 'Amount') %></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% report.paymentRows.forEach(function(row){ %>
+    <tr>
+      <td><%= row.label %></td>
+      <td class="text-right"><%= row.share_pct %>%</td>
+      <td class="text-right"><%= row.amount_fmt %></td>
+    </tr>
+    <% }); %>
+  </tbody>
+</table>
+
+<div class="section-title"><%= _tc('txn_detail', 'Transaction detail') %></div>
+<table>
+  <thead>
+    <tr>
+      <th><%= _tc('col_time', 'Time') %></th>
+      <th><%= _tc('col_ticket', 'Ticket') %></th>
+      <th><%= _tc('col_patient', 'Patient') %></th>
+      <th><%= _tc('col_category', 'Category') %></th>
+      <th><%= _tc('col_method', 'Method') %></th>
+      <th class="text-right"><%= _tc('col_amount', 'Amount') %></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% report.transactions.forEach(function(row){ %>
+    <tr>
+      <td><%= row.paid_time %></td>
+      <td><%= row.ticket_code %></td>
+      <td><%= row.patient %></td>
+      <td><%= _catLabel(row.category) %></td>
+      <td><%= row.payment_method %></td>
+      <td class="text-right"><%= row.amount_fmt %></td>
+    </tr>
+    <% }); %>
+  </tbody>
+</table>
+
+<p class="meta"><%= _tc('generated', 'Generated') %>: <%= new Date(report.generatedAt).toLocaleString('en-GB') %></p>
+</body>
+</html>

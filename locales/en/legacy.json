@@ -309,6 +309,8 @@
     "sec_billing": "Billing & invoices",
     "cashier_desk_t": "Cashier desk",
     "cashier_desk_d": "Settle tickets & print",
+    "cashier_daily_summary_t": "Cashier daily summary",
+    "cashier_daily_summary_d": "Cumulative transactions — consultations, lab, radiology, hospitalizations…",
     "billing_tx_t": "Billing transactions",
     "billing_tx_d": "Payment history",
     "transactions_t": "Transactions",

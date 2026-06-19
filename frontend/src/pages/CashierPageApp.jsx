@@ -333,6 +333,9 @@ export function CashierPageApp({
                 </span>
               ) : null}
             </button>
+            <a href="/cashier/daily-summary" className="hms-btn-secondary inline-flex items-center gap-2 px-6 py-3 text-base no-underline">
+              <FaIcon name="bar-chart" /> {t('cashier.daily_summary_link')}
+            </a>
           </div>
         </SurfaceHero>
 
