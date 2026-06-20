@@ -42,11 +42,13 @@ function consultNeedsDoctor(name) {
     || /\bspecialist\s+consultation\b/.test(n);
 }
 
-function computePatientDue(listPrice, coveragePct) {
+function computePatientDue(listPrice, quantity, coveragePct) {
   const price = Number(listPrice) || 0;
+  const qty = Math.max(1, parseInt(quantity, 10) || 1);
   const pct = Math.min(100, Math.max(0, Number(coveragePct) || 0));
-  const insurer = Math.round(price * pct / 100);
-  return price - insurer;
+  const total = price * qty;
+  const insurer = Math.round(total * pct / 100);
+  return total - insurer;
 }
 
 function getEffectiveCoveragePct(manualIns, manualPct, patientCoveragePct) {
@@ -96,6 +98,8 @@ export function CashierPrepayModal({
   const [patientLabel, setPatientLabel] = useState('');
   const [serviceType, setServiceType] = useState('consultation');
   const [catalogId, setCatalogId] = useState('');
+  const [draftQty, setDraftQty] = useState('1');
+  const [draftComments, setDraftComments] = useState('');
   const [specialistSpec, setSpecialistSpec] = useState('');
   const [doctorId, setDoctorId] = useState('');
   const [payMethod, setPayMethod] = useState('Cash');
@@ -202,6 +206,8 @@ export function CashierPrepayModal({
             const catId = row.prepay_catalog_id || row.catalog_id;
             const cat = findCatalogItem(type, catId);
             const listPrice = cat ? Number(cat.price || 0) : 0;
+            const quantity = Math.max(1, parseInt(row.prepay_quantity ?? row.quantity, 10) || 1);
+            const comments = String(row.prepay_comments ?? row.comments ?? '').trim();
             return {
               key: makeCartLineKey(type, catId),
               prepay_service_type: type,
@@ -210,13 +216,17 @@ export function CashierPrepayModal({
               prepay_specialist_spec: row.prepay_specialist_spec || row.specialist_spec || undefined,
               name: cat?.name || t('modals.cashierPrepay.service'),
               listPrice,
-              patientDue: computePatientDue(listPrice, retryCoverage),
+              quantity,
+              comments,
+              patientDue: computePatientDue(listPrice, quantity, retryCoverage),
             };
           }));
         } else if (prepay.prepay_catalog_id && prepay.prepay_service_type) {
           const cat = findCatalogItem(prepay.prepay_service_type, prepay.prepay_catalog_id);
           if (cat) {
             const listPrice = Number(cat.price || 0);
+            const quantity = Math.max(1, parseInt(prepay.prepay_quantity ?? prepay.quantity, 10) || 1);
+            const comments = String(prepay.prepay_comments ?? prepay.comments ?? '').trim();
             setCartLines([{
               key: makeCartLineKey(prepay.prepay_service_type, prepay.prepay_catalog_id),
               prepay_service_type: prepay.prepay_service_type,
@@ -225,7 +235,9 @@ export function CashierPrepayModal({
               prepay_specialist_spec: prepay.prepay_specialist_spec || undefined,
               name: cat.name,
               listPrice,
-              patientDue: computePatientDue(listPrice, retryCoverage),
+              quantity,
+              comments,
+              patientDue: computePatientDue(listPrice, quantity, retryCoverage),
             }]);
           }
         }
@@ -252,6 +264,8 @@ export function CashierPrepayModal({
     setCartLines([]);
     setServiceType('consultation');
     setCatalogId('');
+    setDraftQty('1');
+    setDraftComments('');
     setSpecialistSpec('');
     setDoctorId('');
     setPayMethod('Cash');
@@ -281,7 +295,7 @@ export function CashierPrepayModal({
   useEffect(() => {
     setCartLines((lines) => lines.map((line) => ({
       ...line,
-      patientDue: computePatientDue(line.listPrice, coveragePct),
+      patientDue: computePatientDue(line.listPrice, line.quantity, coveragePct),
     })));
   }, [coveragePct]);
 
@@ -358,10 +372,14 @@ export function CashierPrepayModal({
   };
 
   const toPrepayLineRow = useCallback((line) => {
+    const qty = Math.max(1, parseInt(line.quantity ?? line.prepay_quantity, 10) || 1);
+    const comments = String(line.comments ?? line.prepay_comments ?? '').trim();
     const row = {
       prepay_service_type: line.prepay_service_type,
       prepay_catalog_id: String(line.prepay_catalog_id ?? '').trim(),
+      prepay_quantity: String(qty),
     };
+    if (comments) row.prepay_comments = comments;
     if (line.prepay_assigned_doctor_id) {
       row.prepay_assigned_doctor_id = String(line.prepay_assigned_doctor_id);
     }
@@ -390,11 +408,13 @@ export function CashierPrepayModal({
     return toPrepayLineRow({
       prepay_service_type: serviceType,
       prepay_catalog_id: String(catalogId),
+      quantity: draftQty,
+      comments: draftComments,
       prepay_assigned_doctor_id: showDoctorPicker && doctorId ? doctorId : undefined,
       prepay_specialist_spec: showSpecialistSpecPicker && specialistSpec ? specialistSpec : undefined,
     });
   }, [
-    catalogId, selectedCatalog, validateLineDraft, toPrepayLineRow, serviceType,
+    catalogId, selectedCatalog, validateLineDraft, toPrepayLineRow, serviceType, draftQty, draftComments,
     showDoctorPicker, doctorId, showSpecialistSpecPicker, specialistSpec,
   ]);
 
@@ -438,6 +458,8 @@ export function CashierPrepayModal({
     }
     if (!selectedCatalog) return;
     const listPrice = Number(selectedCatalog.price || 0);
+    const quantity = Math.max(1, parseInt(draftQty, 10) || 1);
+    const comments = String(draftComments || '').trim();
     setCartLines((prev) => [
       ...prev,
       {
@@ -448,17 +470,38 @@ export function CashierPrepayModal({
         prepay_specialist_spec: showSpecialistSpecPicker && specialistSpec ? specialistSpec : undefined,
         name: selectedCatalog.name,
         listPrice,
-        patientDue: computePatientDue(listPrice, coveragePct),
+        quantity,
+        comments,
+        patientDue: computePatientDue(listPrice, quantity, coveragePct),
       },
     ]);
     setCatalogId('');
+    setDraftQty('1');
+    setDraftComments('');
     setSpecialistSpec('');
     setDoctorId('');
     resetPaymentUi();
   }, [
-    validateLineDraft, selectedCatalog, serviceType, catalogId, showDoctorPicker, doctorId,
+    validateLineDraft, selectedCatalog, serviceType, catalogId, draftQty, draftComments, showDoctorPicker, doctorId,
     showSpecialistSpecPicker, specialistSpec, coveragePct, resetPaymentUi,
   ]);
+
+  const updateCartLine = useCallback((key, patch) => {
+    setCartLines((prev) => prev.map((line) => {
+      if (line.key !== key) return line;
+      const quantity = patch.quantity != null
+        ? Math.max(1, parseInt(patch.quantity, 10) || 1)
+        : line.quantity;
+      const comments = patch.comments != null ? String(patch.comments).slice(0, 500) : line.comments;
+      return {
+        ...line,
+        quantity,
+        comments,
+        patientDue: computePatientDue(line.listPrice, quantity, coveragePct),
+      };
+    }));
+    resetPaymentUi();
+  }, [coveragePct, resetPaymentUi]);
 
   const removeCartLine = useCallback((key) => {
     setCartLines((prev) => prev.filter((line) => line.key !== key));
@@ -719,6 +762,10 @@ export function CashierPrepayModal({
             {line.prepay_specialist_spec ? (
               <input type="hidden" name={`prepay_lines[${idx}][prepay_specialist_spec]`} value={line.prepay_specialist_spec} readOnly />
             ) : null}
+            <input type="hidden" name={`prepay_lines[${idx}][prepay_quantity]`} value={line.prepay_quantity || '1'} readOnly />
+            {line.prepay_comments ? (
+              <input type="hidden" name={`prepay_lines[${idx}][prepay_comments]`} value={line.prepay_comments} readOnly />
+            ) : null}
           </span>
         ))}
         {formIssueLines.length === 1 ? (
@@ -808,6 +855,8 @@ export function CashierPrepayModal({
                 onClick={() => {
                   setServiceType(st.id);
                   setCatalogId('');
+                  setDraftQty('1');
+                  setDraftComments('');
                   setSpecialistSpec('');
                   setDoctorId('');
                   resetPaymentUi();
@@ -826,6 +875,8 @@ export function CashierPrepayModal({
               value={catalogId}
               onChange={(e) => {
                 setCatalogId(e.target.value);
+                setDraftQty('1');
+                setDraftComments('');
                 setSpecialistSpec('');
                 setDoctorId('');
                 resetPaymentUi();
@@ -890,6 +941,32 @@ export function CashierPrepayModal({
               </select>
             </FormField>
           ) : null}
+          {catalogId ? (
+            <>
+              <FormField label={t('modals.cashierPrepay.line_qty')} htmlFor="cpp-qty">
+                <input
+                  id="cpp-qty"
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={draftQty}
+                  onChange={(e) => { setDraftQty(e.target.value); setFormError(''); }}
+                  className="hms-input w-full max-w-[120px]"
+                />
+              </FormField>
+              <FormField label={t('modals.cashierPrepay.line_comments')} htmlFor="cpp-comments" className="sm:col-span-2">
+                <input
+                  id="cpp-comments"
+                  type="text"
+                  value={draftComments}
+                  onChange={(e) => { setDraftComments(e.target.value); setFormError(''); }}
+                  className="hms-input w-full"
+                  placeholder={t('modals.cashierPrepay.line_comments_ph')}
+                  maxLength={500}
+                />
+              </FormField>
+            </>
+          ) : null}
           <div className="flex items-end sm:col-span-2">
             <button
               type="button"
@@ -928,18 +1005,53 @@ export function CashierPrepayModal({
                   <div className="mb-1.5 text-xs font-bold text-slate-700">{group.label}</div>
                   <ul className="space-y-1">
                     {group.lines.map((line) => (
-                      <li key={line.key} className="flex items-center justify-between gap-2 text-sm">
-                        <span className="min-w-0 flex-1 truncate text-slate-800">{line.name}</span>
-                        <span className="shrink-0 font-semibold tabular-nums text-slate-700">
-                          {Number(line.patientDue || 0).toLocaleString('fr-FR')} FCFA
-                        </span>
-                        <button
-                          type="button"
-                          className="shrink-0 text-xs font-bold text-red-600 hover:text-red-800"
-                          onClick={() => removeCartLine(line.key)}
-                        >
-                          {t('modals.cashierPrepay.remove')}
-                        </button>
+                      <li key={line.key} className="rounded-md border border-slate-200 bg-white p-2">
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-sm font-semibold text-slate-800">{line.name}</div>
+                            {line.listPrice ? (
+                              <div className="text-xs text-slate-500">
+                                {Number(line.listPrice || 0).toLocaleString('fr-FR')} FCFA × {line.quantity || 1}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <span className="font-semibold tabular-nums text-slate-700">
+                              {Number(line.patientDue || 0).toLocaleString('fr-FR')} FCFA
+                            </span>
+                            <button
+                              type="button"
+                              className="text-xs font-bold text-red-600 hover:text-red-800"
+                              onClick={() => removeCartLine(line.key)}
+                            >
+                              {t('modals.cashierPrepay.remove')}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                          <FormField label={t('modals.cashierPrepay.line_qty')} htmlFor={`cart-qty-${line.key}`}>
+                            <input
+                              id={`cart-qty-${line.key}`}
+                              type="number"
+                              min={1}
+                              step={1}
+                              value={line.quantity ?? 1}
+                              onChange={(e) => updateCartLine(line.key, { quantity: e.target.value })}
+                              className="hms-input w-full"
+                            />
+                          </FormField>
+                          <FormField label={t('modals.cashierPrepay.line_comments')} htmlFor={`cart-comments-${line.key}`} className="sm:col-span-2">
+                            <input
+                              id={`cart-comments-${line.key}`}
+                              type="text"
+                              value={line.comments || ''}
+                              onChange={(e) => updateCartLine(line.key, { comments: e.target.value })}
+                              className="hms-input w-full"
+                              placeholder={t('modals.cashierPrepay.line_comments_ph')}
+                              maxLength={500}
+                            />
+                          </FormField>
+                        </div>
                       </li>
                     ))}
                   </ul>

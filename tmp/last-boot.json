@@ -1,360 +1,360 @@
 [
   {
-    "t": "2026-06-20T09:09:35.637Z",
+    "t": "2026-06-20T09:36:01.801Z",
     "step": "app-construct",
     "status": "ok",
     "detail": "node=v23.11.1 port=3004"
   },
   {
-    "t": "2026-06-20T09:09:35.643Z",
+    "t": "2026-06-20T09:36:01.808Z",
     "step": "middleware-base",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:35.659Z",
+    "t": "2026-06-20T09:36:01.826Z",
     "step": "db-pool",
     "status": "ok",
     "detail": "postgres → turntable.proxy.rlwy.net:41969 ssl=on (DATABASE_PUBLIC_URL)"
   },
   {
-    "t": "2026-06-20T09:09:35.694Z",
+    "t": "2026-06-20T09:36:01.875Z",
     "step": "session-store",
     "status": "ok",
     "detail": "postgres"
   },
   {
-    "t": "2026-06-20T09:09:35.731Z",
+    "t": "2026-06-20T09:36:01.911Z",
     "step": "route-mount:visitingDoctor",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:35.743Z",
+    "t": "2026-06-20T09:36:01.919Z",
     "step": "route-mount:emergency",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:35.760Z",
+    "t": "2026-06-20T09:36:01.940Z",
     "step": "route-mount:ipdMed",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:35.769Z",
+    "t": "2026-06-20T09:36:01.953Z",
     "step": "route-mount:opdMed",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:35.783Z",
+    "t": "2026-06-20T09:36:01.969Z",
     "step": "route-mount:deathRegistry",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:35.799Z",
+    "t": "2026-06-20T09:36:01.994Z",
     "step": "route-mount:ipdHospitalization",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:35.815Z",
+    "t": "2026-06-20T09:36:02.011Z",
     "step": "route-mount:labLims",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:35.834Z",
+    "t": "2026-06-20T09:36:02.029Z",
     "step": "route-mount:hmsClinical",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:35.856Z",
+    "t": "2026-06-20T09:36:02.052Z",
     "step": "route-mount:portals",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:35.865Z",
+    "t": "2026-06-20T09:36:02.059Z",
     "step": "route-mount:nursingSupply",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:35.883Z",
+    "t": "2026-06-20T09:36:02.076Z",
     "step": "route-mount:patientPassport",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:35.896Z",
+    "t": "2026-06-20T09:36:02.092Z",
     "step": "route-mount:doctorErAlerts",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:35.926Z",
+    "t": "2026-06-20T09:36:02.122Z",
     "step": "route-mount:procurement",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:35.933Z",
+    "t": "2026-06-20T09:36:02.137Z",
     "step": "route-mount:assetManagement",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:35.950Z",
+    "t": "2026-06-20T09:36:02.153Z",
     "step": "route-mount:pharmacyModule",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.190Z",
+    "t": "2026-06-20T09:36:02.482Z",
     "step": "route-mount:pharmacyReporting",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.224Z",
+    "t": "2026-06-20T09:36:02.510Z",
     "step": "route-mount:staff",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.233Z",
+    "t": "2026-06-20T09:36:02.519Z",
     "step": "route-mount:hmsLicense",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.255Z",
+    "t": "2026-06-20T09:36:02.545Z",
     "step": "route-mount:hmsDirectorReports",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.280Z",
+    "t": "2026-06-20T09:36:02.569Z",
     "step": "route-mount:hrPayroll",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.285Z",
+    "t": "2026-06-20T09:36:02.575Z",
     "step": "route-mount:taxHub",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.297Z",
+    "t": "2026-06-20T09:36:02.587Z",
     "step": "route-mount:statutoryReports",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.315Z",
+    "t": "2026-06-20T09:36:02.604Z",
     "step": "route-mount:internalBusinessRules",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.337Z",
+    "t": "2026-06-20T09:36:02.634Z",
     "step": "route-mount:financialsTrialBalance",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.349Z",
+    "t": "2026-06-20T09:36:02.642Z",
     "step": "route-mount:financialsJournalLoader",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.364Z",
+    "t": "2026-06-20T09:36:02.656Z",
     "step": "route-mount:financialsSyncGl",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.381Z",
+    "t": "2026-06-20T09:36:02.671Z",
     "step": "route-mount:financialsGeneralLedger",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.399Z",
+    "t": "2026-06-20T09:36:02.686Z",
     "step": "route-mount:financialsCashFlow",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.419Z",
+    "t": "2026-06-20T09:36:02.702Z",
     "step": "route-mount:financialsAccountsReceivable",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.434Z",
+    "t": "2026-06-20T09:36:02.717Z",
     "step": "route-mount:financialsAccountsPayable",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.451Z",
+    "t": "2026-06-20T09:36:02.736Z",
     "step": "route-mount:financialsTreasury",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.467Z",
+    "t": "2026-06-20T09:36:02.750Z",
     "step": "route-mount:financialsBankReconciliation",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.484Z",
+    "t": "2026-06-20T09:36:02.764Z",
     "step": "route-mount:financialsStatementMonthly",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.501Z",
+    "t": "2026-06-20T09:36:02.776Z",
     "step": "route-mount:financialsYearEnd",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.519Z",
+    "t": "2026-06-20T09:36:02.790Z",
     "step": "route-mount:financialsChartOfAccounts",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.533Z",
+    "t": "2026-06-20T09:36:02.801Z",
     "step": "route-mount:financialsJournalDiagnostics",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.552Z",
+    "t": "2026-06-20T09:36:02.815Z",
     "step": "route-mount:financialsJournal",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.568Z",
+    "t": "2026-06-20T09:36:02.823Z",
     "step": "route-mount:financialsExpenses",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.585Z",
+    "t": "2026-06-20T09:36:02.834Z",
     "step": "route-mount:financialsPlatformOverview",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.615Z",
+    "t": "2026-06-20T09:36:02.862Z",
     "step": "route-mount:hmsDocs",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.617Z",
+    "t": "2026-06-20T09:36:02.863Z",
     "step": "route-mount:financialsStubs",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.632Z",
+    "t": "2026-06-20T09:36:02.874Z",
     "step": "route-mount:paymentValidity",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.650Z",
+    "t": "2026-06-20T09:36:02.888Z",
     "step": "route-mount:financialsHub",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.669Z",
+    "t": "2026-06-20T09:36:02.903Z",
     "step": "route-mount:financialsSettings",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.695Z",
+    "t": "2026-06-20T09:36:02.926Z",
     "step": "route-mount:maternity",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.704Z",
+    "t": "2026-06-20T09:36:02.939Z",
     "step": "route-mount:vaccination",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.735Z",
+    "t": "2026-06-20T09:36:02.969Z",
     "step": "route-mount:labApi",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.759Z",
+    "t": "2026-06-20T09:36:02.977Z",
     "step": "route-mount:radApi",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:36.789Z",
+    "t": "2026-06-20T09:36:03.013Z",
     "step": "module-export",
     "status": "ok",
     "detail": "module.exports = app"
   },
   {
-    "t": "2026-06-20T09:09:36.807Z",
+    "t": "2026-06-20T09:36:03.018Z",
     "step": "listen",
     "status": "ok",
     "detail": "local listen (node app.js)"
   },
   {
-    "t": "2026-06-20T09:09:36.808Z",
+    "t": "2026-06-20T09:36:03.030Z",
     "step": "migrations",
     "status": "skip",
     "detail": "PostgreSQL / HMS_SKIP_SCHEMA_MIGRATIONS — schema assumed migrated"
   },
   {
-    "t": "2026-06-20T09:09:36.813Z",
+    "t": "2026-06-20T09:36:03.035Z",
     "step": "listen",
     "status": "ok",
     "detail": "port=3004"
   },
   {
-    "t": "2026-06-20T09:09:39.859Z",
+    "t": "2026-06-20T09:36:04.564Z",
     "step": "db-pool-probe",
     "status": "ok",
     "detail": null
   },
   {
-    "t": "2026-06-20T09:09:45.360Z",
+    "t": "2026-06-20T09:36:10.033Z",
     "step": "ensureRuntimeAcl",
     "status": "fail",
     "detail": "ER_BAD_FIELD_ERROR: column \"id\" does not exist"
   },
   {
-    "t": "2026-06-20T09:09:47.703Z",
+    "t": "2026-06-20T09:36:12.068Z",
     "step": "aclLayout:init",
     "status": "ok",
     "detail": "runtime ACL cache loaded (postgres/skip-migrations path)"
   },
   {
-    "t": "2026-06-20T09:09:47.914Z",
+    "t": "2026-06-20T09:36:12.257Z",
     "step": "ensureCashierEodSchema",
     "status": "ok",
     "detail": "tbl_cashier_eod_reconciliation"
