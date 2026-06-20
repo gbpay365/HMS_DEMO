@@ -196,6 +196,7 @@ function buildAclUiVis(res, codes) {
 }
 const { nextReceiptNumber, ensureReceiptSeqTable, ensurePostgresReceiptInvoiceSeq } = require('./lib/receiptNumber');
 const { nextInvoiceNumber, ensureInvoiceSeqTable } = require('./lib/invoiceNumber');
+const { insertReceiptForPaymentTicket } = require('./lib/cashierInsertBillingDocument');
 const { amountPaidWords } = require('./lib/amountInWords');
 const ensureFacilityRow = require('./lib/ensureFacilityRow');
 const wardBoard = require('./lib/wardBoard');
@@ -10206,15 +10207,16 @@ app.post('/cashier/collect', requireAuth, async (req, res) => {
  );
 
  //  -  Æ’ ============================== Æ’ === ¬ BILLING DOCUMENT === Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ === ¬
- const [result] = await conn.query(
- `INSERT INTO tbl_billing_document
- (facility_id, patient_id, doc_type, doc_number, invoice_doc_number, total_amount, payment_method,
- status, source_module, source_pk, created_by, created_at)
- SELECT ?, patient_id, 'receipt', ?, ?, total_amount, ?, 'paid',
- 'payment_ticket', id, ?, NOW()
- FROM tbl_payment_ticket WHERE id = ?`,
- [facilityId, receipt_no, invoice_no, payment_method, userId, ticket_id]
- );
+ const billingDocId = await insertReceiptForPaymentTicket(conn, {
+  facilityId,
+  patientId: ticket.patient_id,
+  ticketId: ticket_id,
+  totalAmount,
+  paymentMethod: payment_method,
+  receiptNo: receipt_no,
+  invoiceNo: invoice_no,
+  userId,
+ });
 
  // OPD Orders hook: mark selected consultation-prescribed items as paid and create downstream requests
  try {
@@ -10330,7 +10332,7 @@ app.post('/cashier/collect', requireAuth, async (req, res) => {
  if (payment_method === 'Wallet') {
   res.redirect('/cashier/print-ticket/' + encodeURIComponent(ticket.ticket_code));
  } else {
-  res.redirect('/cashier?msg=' + encodeURIComponent(flashT(res, 'flash.payment_collected', { receipt: receipt_no, invoice: invoice_no })) + '&print_receipt=' + result.insertId);
+  res.redirect('/cashier?msg=' + encodeURIComponent(flashT(res, 'flash.payment_collected', { receipt: receipt_no, invoice: invoice_no })) + '&print_receipt=' + billingDocId);
  }
  } catch (err) {
  await conn.rollback().catch(() => {});
