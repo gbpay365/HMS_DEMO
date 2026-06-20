@@ -194,8 +194,8 @@ function buildAclUiVis(res, codes) {
  }
  return out;
 }
-const { nextReceiptNumber } = require('./lib/receiptNumber');
-const { nextInvoiceNumber } = require('./lib/invoiceNumber');
+const { nextReceiptNumber, ensureReceiptSeqTable, ensurePostgresReceiptInvoiceSeq } = require('./lib/receiptNumber');
+const { nextInvoiceNumber, ensureInvoiceSeqTable } = require('./lib/invoiceNumber');
 const { amountPaidWords } = require('./lib/amountInWords');
 const ensureFacilityRow = require('./lib/ensureFacilityRow');
 const wardBoard = require('./lib/wardBoard');
@@ -10159,6 +10159,13 @@ app.post('/cashier/collect', requireAuth, async (req, res) => {
 
  const userId = req.session.userId || req.session.user?.id || null;
  const facilityId = req.session.facilityId || 1;
+
+ if (pool.driver === 'postgres') {
+  await ensurePostgresReceiptInvoiceSeq(pool);
+ } else {
+  await ensureReceiptSeqTable(pool);
+  await ensureInvoiceSeqTable(pool);
+ }
 
  await conn.beginTransaction();
  const receipt_no = await nextReceiptNumber(conn, facilityId);
