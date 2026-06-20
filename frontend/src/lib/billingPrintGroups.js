@@ -40,10 +40,11 @@ export function lineItemCategory(it) {
 }
 
 export function lineItemAmount(it) {
-  return (
-    Number(it.amount || 0) ||
-    Number(it.unit_price || 0) * (Number(it.quantity || 1) || 1)
-  );
+  const qty = Number(it.quantity || 1) || 1;
+  const unit = Number(it.unit_price || 0) || 0;
+  const patientDue = Number(it.patient_due);
+  if (Number.isFinite(patientDue) && patientDue >= 0) return patientDue;
+  return Number(it.amount || 0) || unit * qty;
 }
 
 export function categoryLabelKey(category) {

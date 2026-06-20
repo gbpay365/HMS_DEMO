@@ -35,6 +35,7 @@ export function BillingGroupedLinesTable({
             <td className={`${cellPad} text-center`}>{row.rowNo}</td>
             <td className={cellPad}>
               {it.description}
+              {it.comments ? <div className="text-[11px] text-slate-500">{it.comments}</div> : null}
               {it.department ? <div className="text-[11px] text-slate-500">{it.department}</div> : null}
             </td>
             <td className={`${cellPad} text-right font-mono`}>{fmt(it.unit_price)}</td>

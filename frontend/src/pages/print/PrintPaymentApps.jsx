@@ -54,7 +54,11 @@ export function PrintPaymentSlipApp({
   const { t } = useTranslation('print');
   const lines = ticket.lines || [];
   const patientName = `${ticket.first_name || ''} ${ticket.last_name || ''}`.trim() || '—';
-  const lineTotal = lines.reduce((sum, ln) => sum + Number(ln.unit_price || 0) * Number(ln.quantity || 1), 0);
+  const lineTotal = lines.reduce((sum, ln) => {
+    const patientDue = Number(ln.patient_due);
+    if (Number.isFinite(patientDue) && patientDue >= 0) return sum + patientDue;
+    return sum + Number(ln.list_unit_price || ln.unit_price || 0) * Number(ln.quantity || 1);
+  }, 0);
   const total = Number(ticket.total_amount || 0) || lineTotal;
   const displayCode = String(paymentCode || ticket.ticket_code || '').trim();
   const serviceCodesSummary = formatPrintServiceCodesSummary(sectionCodes);
@@ -182,6 +186,7 @@ export function PrintPaymentTicketApp({
             t={t}
             titleKey="ticket.services"
             serviceFallbackKey="ticket.service"
+            compact
           />
           <div className="mt-3 text-right text-sm font-extrabold">{t('ticket.total')} {formatMoney(ticket.total_amount || 0)}</div>
           {refundLine && Number(refundLine.unit_price || 0) < 0 ? (
