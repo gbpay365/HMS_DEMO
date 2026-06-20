@@ -346,5 +346,17 @@
     "step": "ensureRuntimeAcl",
     "status": "fail",
     "detail": "ER_BAD_FIELD_ERROR: column \"id\" does not exist"
+  },
+  {
+    "t": "2026-06-20T10:41:13.109Z",
+    "step": "aclLayout:init",
+    "status": "ok",
+    "detail": "runtime ACL cache loaded (postgres/skip-migrations path)"
+  },
+  {
+    "t": "2026-06-20T10:41:13.303Z",
+    "step": "ensureCashierEodSchema",
+    "status": "ok",
+    "detail": "tbl_cashier_eod_reconciliation"
   }
 ]
