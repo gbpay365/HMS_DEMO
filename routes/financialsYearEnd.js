@@ -3,7 +3,8 @@
  */
 const { formatXaf } = require('../lib/hmsFinGeneralLedger');
 const { finYearEndReport } = require('../lib/hmsFinYearEnd');
-const ensureFinJournal019 = require('../lib/ensureFinJournal019');
+const ensureFinAccountingSchema = require('../lib/ensureFinAccountingSchema');
+const { fiscalYearStatus } = require('../lib/finFiscalClose');
 
 function facilityId(req) {
  return Math.max(1, parseInt(req.session.facilityId, 10) || 1);
@@ -14,16 +15,19 @@ module.exports = function registerFinancialsYearEnd(app, pool, requireAuth, requ
 
  app.get('/financials/year-end', requireAuth, finRead, async (req, res) => {
   try {
-   await ensureFinJournal019(pool).catch(() => {});
+   await ensureFinAccountingSchema(pool).catch(() => {});
    const fid = facilityId(req);
    const data = await finYearEndReport(pool, fid, req.query.y);
-   const reportDate = new Date().toISOString().slice(0, 10);
+   const fiscalYear = parseInt(String(req.query.y || data.y || new Date().getFullYear()), 10);
+   const fyStatus = await fiscalYearStatus(pool, fid, fiscalYear);
 
    const { yearEndPayload } = require('../lib/finReactPayloads');
    res.render('financials-year-end', {
     title: 'Profit & Loss Year End - ZAIZENS',
     ...yearEndPayload({
      ...data,
+     fiscalYear,
+     fiscalYearStatus: fyStatus.status || 'open',
      flash: req.query.msg || null,
      error: req.query.err || null,
     }),

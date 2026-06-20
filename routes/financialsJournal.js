@@ -2,7 +2,7 @@
 
 const { finPageData } = require('../lib/reactRouteHelpers');
 const { journalViewPayload, journalNewPayload } = require('../lib/finReactPayloads');
-const ensureFinJournal019 = require('../lib/ensureFinJournal019');
+const ensureFinAccountingSchema = require('../lib/ensureFinAccountingSchema');
 const { finTablesOk } = require('../lib/hmsFinGeneralLedger');
 const { loadPostingAccounts } = require('../lib/hmsFinPostingCatalog');
 const { journalPostManualWithResult, journalPostLastError } = require('../lib/hmsFinJournalPost');
@@ -47,7 +47,7 @@ function parseMoneyXaf(raw) {
 module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
  async function ensureTables(req, res, next) {
   try {
-   await ensureFinJournal019(pool);
+   await ensureFinAccountingSchema(pool, { facilityId: parseInt(String(req.session.facilityId || 1), 10) || 1 });
   } catch (_) {
    /* ignore */
   }
@@ -68,6 +68,9 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
             h.entry_date AS journal_date,
             h.narration AS description,
             h.reference,
+            h.journal_code,
+            h.piece_number,
+            h.status,
             h.source_type AS source,
             (SELECT COALESCE(SUM(debit),0) FROM tbl_fin_journal_line jl WHERE jl.journal_id = h.id) AS total_dr
      FROM tbl_fin_journal_header h
@@ -87,8 +90,10 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
      subtitle: `${from} → ${to}`,
      columns: [
       { key: 'journal_date', label: 'Date' },
+      { key: 'journal_code', label: 'Journal' },
+      { key: 'piece_number', label: 'Piece' },
       { key: 'description', label: 'Description' },
-      { key: 'source', label: 'Source' },
+      { key: 'status', label: 'Status' },
       { key: 'total_dr', label: 'Amount', align: 'right', format: 'money' },
       { key: 'id', label: '', format: 'link', linkTemplate: '/financials/journal-view?id={id}', linkLabel: 'View' },
      ],
@@ -117,7 +122,7 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
    if (header) {
     const [lr] = await pool.query(
      `SELECT jl.id, jl.account_code AS acode, jl.account_label AS alabel,
-             jl.debit, jl.credit
+             jl.debit, jl.credit, jl.line_memo
       FROM tbl_fin_journal_line jl
       WHERE jl.journal_id = ?
       ORDER BY jl.id ASC`,
@@ -125,8 +130,7 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
     );
     lines = (Array.isArray(lr) ? lr : []).map((row) => ({
      ...row,
-     line_memo: '',
-     ccode: '—',
+     line_memo: row.line_memo || '',
     }));
    }
   } catch (e) {
@@ -246,6 +250,7 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
      label: lab,
      debit: ln.dr,
      credit: ln.cr,
+     line_memo: ln.memo,
     });
    }
   }
@@ -257,7 +262,11 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
    });
   }
 
-  const result = await journalPostManualWithResult(pool, fid, jdate, ref, desc, uid, glLines);
+  const asDraft = req.body.save_as_draft === '1';
+  const result = await journalPostManualWithResult(pool, fid, jdate, ref, desc, uid, glLines, {
+    asDraft,
+    journalCode: String(req.body.journal_code || 'OD').trim().slice(0, 8) || 'OD',
+  });
   if (!result.ok || !result.journalId) {
    return res.render('financials-journal-new', {
     title: 'New journal entry — ZAIZENS',
@@ -269,7 +278,11 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
     }),
    });
   }
-  const msg = result.duplicate ? 'Journal was already posted (duplicate source).' : 'Journal posted.';
+  const msg = result.duplicate
+    ? 'Journal was already posted (duplicate source).'
+    : asDraft
+      ? 'Draft journal saved.'
+      : 'Journal posted.';
   return res.redirect(`/financials/journal-view?id=${result.journalId}&msg=` + encodeURIComponent(msg));
  });
 };

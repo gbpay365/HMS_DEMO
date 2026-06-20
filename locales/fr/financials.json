@@ -108,7 +108,18 @@
     "account": "Compte",
     "debit_ph": "Débit",
     "credit_ph": "Crédit",
-    "post": "Comptabiliser"
+    "post": "Comptabiliser",
+    "double_entry_hint": "Partie double : le total des débits doit égaler le total des crédits. Saisissez un côté par ligne — la contrepartie peut être équilibrée automatiquement.",
+    "balance_entry": "Équilibrer l'écriture",
+    "total_debit": "Total débit",
+    "total_credit": "Total crédit",
+    "difference": "Écart",
+    "balanced_ok": "Écriture équilibrée — prête à comptabiliser.",
+    "balanced_pending": "Écriture déséquilibrée — complétez la contrepartie ou cliquez sur Équilibrer l'écriture.",
+    "memo_ph": "Libellé ligne",
+    "add_line": "Ajouter une ligne",
+    "save_draft": "Enregistrer brouillon",
+    "journal_code": "Code journal"
   },
   "settings": {
     "legal_name": "Raison sociale",

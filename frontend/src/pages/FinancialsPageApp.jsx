@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FormField } from '../components/FormField';
 import { StatCard } from '../components/StatCard';
@@ -6,6 +7,7 @@ import { SurfaceHero } from '../components/SurfaceHero';
 const FIN_NAV = [
   { key: 'dashboard', href: '/financials', labelKey: 'nav.dashboard' },
   { key: 'journal', href: '/financials/journal', labelKey: 'nav.journal' },
+  { key: 'livre-journal', href: '/financials/livre-journal', labelKey: 'nav.livre_journal' },
   { key: 'ledger', href: '/financials/general-ledger', labelKey: 'nav.ledger' },
   { key: 'accounts', href: '/financials/accounts', labelKey: 'nav.accounts' },
   { key: 'ar', href: '/financials/accounts-receivable', labelKey: 'nav.ar' },
@@ -171,30 +173,308 @@ function GlAccountsView({ glAccounts = [] }) {
   );
 }
 
-function JournalDetailView({ journal, lines = [], columns = [] }) {
+function JournalDetailView({ journal, lines = [], columns = [], finCanWrite = false }) {
   const { t } = useTranslation('financials');
   if (!journal) return <p className="text-slate-400">{t('journal_not_found')}</p>;
+  const isDraft = String(journal.status || '') === 'draft';
+  const isPosted = String(journal.status || '') === 'posted';
+  const isReversed = String(journal.status || '') === 'reversed';
   return (
     <>
       <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
         <div className="text-xs font-bold uppercase text-slate-500">{t('journal_entry_title')}</div>
-        <div className="text-lg font-extrabold">{journal.narration || journal.description}</div>
+        <div className="text-lg font-extrabold">{journal.piece_number || `#${journal.id}`}</div>
         <div className="mt-2 flex flex-wrap gap-4 text-sm text-slate-600">
           <span>{t('date_label')} {journal.entry_date || journal.journal_date}</span>
           <span>{t('ref_label')} {journal.reference || '—'}</span>
+          <span>Journal: {journal.journal_code || 'OD'}</span>
+          <span>Status: {journal.status || 'posted'}</span>
           <span>{t('source_label')} {journal.source_type || journal.source || '—'}</span>
         </div>
+        {finCanWrite && isDraft ? (
+          <form method="POST" action={`/financials/journal/${journal.id}/post`} className="mt-3">
+            <button type="submit" className="hms-btn-primary text-sm">{t('journal_post_draft', { defaultValue: 'Post draft' })}</button>
+          </form>
+        ) : null}
+        {finCanWrite && isPosted && !journal.reversed_by_id ? (
+          <form method="POST" action={`/financials/journal/${journal.id}/reverse`} className="mt-3 flex flex-wrap gap-2">
+            <input name="reason" className="hms-input text-sm" placeholder={t('journal_reverse_reason', { defaultValue: 'Reversal reason' })} />
+            <button type="submit" className="hms-btn-secondary text-sm">{t('journal_reverse', { defaultValue: 'Reverse entry' })}</button>
+          </form>
+        ) : null}
+        {isReversed ? <p className="mt-2 text-sm text-amber-700">{t('journal_reversed_note', { defaultValue: 'This entry has been reversed.' })}</p> : null}
       </div>
       <DataTable columns={columns} rows={lines} />
-      <div className="mt-3">
+      <div className="mt-3 flex flex-wrap gap-3">
         <a href="/financials/journal" className="text-sm font-bold text-blue-600">
           {t('back_journal')}
+        </a>
+        <a href="/financials/livre-journal" className="text-sm font-bold text-blue-600">
+          {t('nav.livre_journal', { defaultValue: 'Livre-journal' })}
         </a>
       </div>
     </>
   );
 }
 
+function parseJournalAmount(raw) {
+  const n = parseInt(String(raw ?? '').replace(/\D+/g, ''), 10);
+  return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
+function emptyJournalLine() {
+  return { accountId: '', debit: '', credit: '', memo: '' };
+}
+
+function journalLinesFromBody(body, min = 2) {
+  const keys = Object.keys(body || {}).filter((k) => /^acc_\d+$/.test(k));
+  const count = Math.max(min, keys.length ? Math.max(...keys.map((k) => parseInt(k.split('_')[1], 10))) + 1 : min);
+  const lines = [];
+  for (let i = 0; i < count; i++) {
+    lines.push({
+      accountId: String(body[`acc_${i}`] ?? ''),
+      debit: String(body[`dr_${i}`] ?? ''),
+      credit: String(body[`cr_${i}`] ?? ''),
+      memo: String(body[`memo_${i}`] ?? ''),
+    });
+  }
+  while (lines.length < min) lines.push(emptyJournalLine());
+  return lines;
+}
+
+function journalLineTotals(lines) {
+  let debit = 0;
+  let credit = 0;
+  for (const ln of lines) {
+    debit += parseJournalAmount(ln.debit);
+    credit += parseJournalAmount(ln.credit);
+  }
+  return { debit, credit, diff: debit - credit, balanced: debit === credit && debit > 0 };
+}
+
+function JournalNewForm({ accounts = [], body = {}, error = null }) {
+  const { t } = useTranslation('financials');
+  const [lines, setLines] = useState(() => journalLinesFromBody(body, 2));
+  const totals = journalLineTotals(lines);
+  const validLineCount = lines.filter(
+    (ln) => ln.accountId && (parseJournalAmount(ln.debit) > 0 || parseJournalAmount(ln.credit) > 0)
+  ).length;
+  const canPost = totals.balanced && validLineCount >= 2;
+
+  function patchLine(index, patch) {
+    setLines((prev) => prev.map((ln, i) => (i === index ? { ...ln, ...patch } : ln)));
+  }
+
+  function onDebitChange(index, value) {
+    setLines((prev) =>
+      prev.map((ln, i) => {
+        if (i !== index) return ln;
+        return { ...ln, debit: value, credit: parseJournalAmount(value) > 0 ? '' : ln.credit };
+      })
+    );
+  }
+
+  function onCreditChange(index, value) {
+    setLines((prev) =>
+      prev.map((ln, i) => {
+        if (i !== index) return ln;
+        return { ...ln, credit: value, debit: parseJournalAmount(value) > 0 ? '' : ln.debit };
+      })
+    );
+  }
+
+  /** Apply remaining imbalance to the first open line (prefer line 1 for classic 2-line entry). */
+  function autoBalance(targetIndex = null) {
+    setLines((prev) => {
+      const { diff } = journalLineTotals(prev);
+      if (diff === 0) return prev;
+      const idx =
+        targetIndex ??
+        prev.findIndex((ln, i) => i > 0 && ln.accountId && !parseJournalAmount(ln.debit) && !parseJournalAmount(ln.credit));
+      const useIdx = idx >= 0 ? idx : prev.length >= 2 ? 1 : -1;
+      if (useIdx < 0) return prev;
+      const abs = Math.abs(diff);
+      return prev.map((ln, i) => {
+        if (i !== useIdx) return ln;
+        if (diff > 0) return { ...ln, credit: String(abs), debit: '' };
+        return { ...ln, debit: String(abs), credit: '' };
+      });
+    });
+  }
+
+  function onAccountChange(index, accountId) {
+    setLines((prev) => {
+      const next = prev.map((ln, i) => (i === index ? { ...ln, accountId } : ln));
+      if (index === 1 && accountId) {
+        const { diff } = journalLineTotals(next);
+        if (diff !== 0) {
+          const abs = Math.abs(diff);
+          next[1] =
+            diff > 0
+              ? { ...next[1], credit: String(abs), debit: '' }
+              : { ...next[1], debit: String(abs), credit: '' };
+        }
+      }
+      return next;
+    });
+  }
+
+  function onAmountBlur(index) {
+    if (index === 0) autoBalance(1);
+  }
+
+  return (
+    <form method="POST" action="/financials/journal-new" className="max-w-4xl rounded-xl border bg-white p-6">
+      {error ? <div className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{error}</div> : null}
+      <p className="mb-4 text-sm text-slate-600">
+        {t('journal_form.double_entry_hint', {
+          defaultValue: 'Double entry: every debit must equal credits. Enter one side on each line — the counterpart line can be balanced automatically.',
+        })}
+      </p>
+      <div className="mb-4 grid gap-3 sm:grid-cols-3">
+        <FormField label={t('journal_form.date')} required>
+          <input name="journal_date" type="date" className="hms-input w-full" defaultValue={body.journal_date || ''} required />
+        </FormField>
+        <FormField label={t('journal_form.reference')}>
+          <input name="reference" className="hms-input w-full" defaultValue={body.reference || ''} />
+        </FormField>
+        <FormField label={t('journal_form.journal_code', { defaultValue: 'Journal code' })}>
+          <select name="journal_code" className="hms-input w-full" defaultValue={body.journal_code || 'OD'}>
+            <option value="OD">OD — Miscellaneous</option>
+            <option value="VTE">VTE — Sales</option>
+            <option value="ACH">ACH — Purchases</option>
+            <option value="BQ">BQ — Bank</option>
+            <option value="CA">CA — Cash</option>
+          </select>
+        </FormField>
+      </div>
+      <FormField label={t('journal_form.description')} className="mb-4" required>
+        <input name="description" className="hms-input w-full" defaultValue={body.description || ''} required />
+      </FormField>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="text-xs font-bold uppercase text-slate-500">{t('journal_form.lines')}</div>
+        <button type="button" className="text-xs font-bold text-blue-600" onClick={() => autoBalance()} disabled={totals.balanced}>
+          {t('journal_form.balance_entry', { defaultValue: 'Balance entry' })}
+        </button>
+      </div>
+      <div className="mb-1 hidden gap-2 text-[10px] font-bold uppercase tracking-wide text-slate-400 sm:grid sm:grid-cols-5">
+        <span className="sm:col-span-2">{t('journal_form.account')}</span>
+        <span>{t('journal_form.debit_ph')}</span>
+        <span>{t('journal_form.credit_ph')}</span>
+        <span>{t('journal_form.memo_ph', { defaultValue: 'Memo' })}</span>
+      </div>
+      {lines.map((ln, i) => (
+        <div key={i} className="mb-2 grid gap-2 sm:grid-cols-5">
+          <select
+            name={`acc_${i}`}
+            className="hms-input sm:col-span-2"
+            value={ln.accountId}
+            onChange={(e) => onAccountChange(i, e.target.value)}
+            required={i < 2}
+          >
+            <option value="">{t('journal_form.account')}</option>
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.account_code || a.code} — {a.account_label || a.label || a.label_en}
+              </option>
+            ))}
+          </select>
+          <input
+            name={`dr_${i}`}
+            inputMode="numeric"
+            placeholder={t('journal_form.debit_ph')}
+            className="hms-input font-mono"
+            value={ln.debit}
+            onChange={(e) => onDebitChange(i, e.target.value)}
+            onBlur={() => onAmountBlur(i)}
+          />
+          <input
+            name={`cr_${i}`}
+            inputMode="numeric"
+            placeholder={t('journal_form.credit_ph')}
+            className="hms-input font-mono"
+            value={ln.credit}
+            onChange={(e) => onCreditChange(i, e.target.value)}
+            onBlur={() => onAmountBlur(i)}
+          />
+          <input
+            name={`memo_${i}`}
+            placeholder={t('journal_form.memo_ph', { defaultValue: 'Line memo' })}
+            className="hms-input"
+            value={ln.memo}
+            onChange={(e) => patchLine(i, { memo: e.target.value })}
+          />
+        </div>
+      ))}
+      <button type="button" className="mb-4 text-sm font-bold text-blue-600" onClick={() => setLines((prev) => [...prev, emptyJournalLine()])}>
+        + {t('journal_form.add_line', { defaultValue: 'Add line' })}
+      </button>
+      <div
+        className={`mb-4 rounded-lg border px-4 py-3 text-sm ${
+          totals.balanced ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-amber-200 bg-amber-50 text-amber-900'
+        }`}
+      >
+        <div className="flex flex-wrap gap-x-6 gap-y-1 font-mono">
+          <span>
+            {t('journal_form.total_debit', { defaultValue: 'Total debit' })}: <strong>{totals.debit.toLocaleString('fr-FR')}</strong>
+          </span>
+          <span>
+            {t('journal_form.total_credit', { defaultValue: 'Total credit' })}: <strong>{totals.credit.toLocaleString('fr-FR')}</strong>
+          </span>
+          <span>
+            {t('journal_form.difference', { defaultValue: 'Difference' })}:{' '}
+            <strong>{Math.abs(totals.diff).toLocaleString('fr-FR')}</strong>
+            {totals.diff > 0 ? ' Dr' : totals.diff < 0 ? ' Cr' : ''}
+          </span>
+        </div>
+        <div className="mt-1 text-xs">
+          {totals.balanced
+            ? t('journal_form.balanced_ok', { defaultValue: 'Entry is balanced — ready to post.' })
+            : t('journal_form.balanced_pending', {
+                defaultValue: 'Out of balance — complete the counterpart line or click Balance entry.',
+              })}
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <button type="submit" name="save_as_draft" value="0" className="hms-btn hms-btn-primary" disabled={!canPost}>
+          {t('journal_form.post', { defaultValue: 'Post entry' })}
+        </button>
+        <button type="submit" name="save_as_draft" value="1" className="hms-btn hms-btn-secondary" disabled={!canPost}>
+          {t('journal_form.save_draft', { defaultValue: 'Save draft' })}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function LivreJournalView({ rows = [], filterFrom, filterTo, filterJournal = 'all' }) {
+  const qs = new URLSearchParams({ from: filterFrom || '', to: filterTo || '', journal: filterJournal || 'all' });
+  return (
+    <>
+      <div className="mb-4 flex flex-wrap gap-2">
+        <a href={`/financials/livre-journal/print?${qs}`} target="_blank" rel="noreferrer" className="hms-btn-secondary text-xs">
+          PDF / Print
+        </a>
+        <a href={`/financials/livre-journal/export.xlsx?${qs}`} className="hms-btn-secondary text-xs">
+          Sage / Excel export
+        </a>
+      </div>
+      <DataTable
+        columns={[
+          { key: 'entry_date', label: 'Date' },
+          { key: 'journal_code', label: 'Journal' },
+          { key: 'piece_number', label: 'Piece' },
+          { key: 'account_code', label: 'Account' },
+          { key: 'account_label', label: 'Label' },
+          { key: 'debit', label: 'Debit', align: 'right', format: 'money' },
+          { key: 'credit', label: 'Credit', align: 'right', format: 'money' },
+          { key: 'narration', label: 'Narration' },
+        ]}
+        rows={rows}
+      />
+    </>
+  );
+}
 function ExpenseNewForm({ categories = [], body = {}, error = null }) {
   const { t } = useTranslation('financials');
   return (
@@ -224,48 +504,6 @@ function ExpenseNewForm({ categories = [], body = {}, error = null }) {
       </FormField>
       <button type="submit" className="hms-btn hms-btn-primary">
         {t('expense_form.save')}
-      </button>
-    </form>
-  );
-}
-
-function JournalNewForm({ accounts = [], body = {}, error = null }) {
-  const { t } = useTranslation('financials');
-  const lineCount = 4;
-  return (
-    <form method="POST" action="/financials/journal-new" className="max-w-3xl rounded-xl border bg-white p-6">
-      {error ? <div className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{error}</div> : null}
-      <div className="mb-4 grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-xs font-bold">{t('journal_form.date')}</label>
-          <input name="journal_date" type="date" className="hms-input w-full" defaultValue={body.journal_date || ''} required />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-bold">{t('journal_form.reference')}</label>
-          <input name="reference" className="hms-input w-full" defaultValue={body.reference || ''} />
-        </div>
-      </div>
-      <div className="mb-4">
-        <label className="mb-1 block text-xs font-bold">{t('journal_form.description')}</label>
-        <input name="description" className="hms-input w-full" defaultValue={body.description || ''} required />
-      </div>
-      <div className="mb-2 text-xs font-bold uppercase text-slate-500">{t('journal_form.lines')}</div>
-      {Array.from({ length: lineCount }).map((_, i) => (
-        <div key={i} className="mb-2 grid gap-2 sm:grid-cols-4">
-          <select name={`acc_${i}`} className="hms-input sm:col-span-2" defaultValue={body[`acc_${i}`] || ''}>
-            <option value="">{t('journal_form.account')}</option>
-            {accounts.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.account_code || a.code} — {a.account_label || a.label || a.label_en}
-              </option>
-            ))}
-          </select>
-          <input name={`dr_${i}`} placeholder={t('journal_form.debit_ph')} className="hms-input" defaultValue={body[`dr_${i}`] || ''} />
-          <input name={`cr_${i}`} placeholder={t('journal_form.credit_ph')} className="hms-input" defaultValue={body[`cr_${i}`] || ''} />
-        </div>
-      ))}
-      <button type="submit" className="hms-btn hms-btn-primary">
-        {t('journal_form.post')}
       </button>
     </form>
   );
@@ -464,6 +702,45 @@ function StubView({ stubTitle, phpPage, panels = [] }) {
   );
 }
 
+function YearEndView({ fiscalYear, fiscalYearStatus = 'open', rows = [], columns = [], finCanWrite = false }) {
+  const { t } = useTranslation('financials');
+  const closed = String(fiscalYearStatus) === 'closed';
+  return (
+    <>
+      <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
+        <div className="text-xs font-bold uppercase text-slate-500">
+          {t('year_end.fiscal_year', { defaultValue: 'Fiscal year' })} {fiscalYear}
+        </div>
+        <div className="mt-1 flex flex-wrap items-center gap-3">
+          <span
+            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold ${
+              closed ? 'bg-slate-200 text-slate-700' : 'bg-emerald-100 text-emerald-800'
+            }`}
+          >
+            {closed
+              ? t('year_end.status_closed', { defaultValue: 'Closed' })
+              : t('year_end.status_open', { defaultValue: 'Open' })}
+          </span>
+          {finCanWrite && !closed ? (
+            <form method="POST" action="/financials/fiscal-close" className="inline-flex items-center gap-2">
+              <input type="hidden" name="fiscal_year" value={fiscalYear} />
+              <button type="submit" className="hms-btn-primary text-xs">
+                {t('year_end.close_fiscal_year', { defaultValue: 'Close fiscal year' })}
+              </button>
+            </form>
+          ) : null}
+          {closed ? (
+            <span className="text-xs text-slate-500">
+              {t('year_end.closed_hint', { defaultValue: 'All months are locked. Posting to this year is blocked.' })}
+            </span>
+          ) : null}
+        </div>
+      </div>
+      <DataTable columns={columns} rows={rows} />
+    </>
+  );
+}
+
 function PageBody(props) {
   const { t } = useTranslation('financials');
   const { pageKey, formType } = props;
@@ -472,7 +749,17 @@ function PageBody(props) {
     return <DashboardView metrics={props.metrics} recentJournals={props.recentJournals} topAccounts={props.topAccounts} />;
   }
   if (pageKey === 'journal-view') {
-    return <JournalDetailView journal={props.journal} lines={props.rows} columns={props.columns} />;
+    return <JournalDetailView journal={props.journal} lines={props.rows} columns={props.columns} finCanWrite={props.finCanWrite} />;
+  }
+  if (pageKey === 'livre-journal') {
+    return (
+      <LivreJournalView
+        rows={props.rows}
+        filterFrom={props.filterFrom}
+        filterTo={props.filterTo}
+        filterJournal={props.filterJournal}
+      />
+    );
   }
   if (formType === 'expense-new') {
     return <ExpenseNewForm categories={props.categories} body={props.body} error={props.error} />;
@@ -504,12 +791,28 @@ function PageBody(props) {
   if (pageKey === 'chart-of-accounts' || pageKey === 'balance-sheet') {
     return (
       <>
+        {pageKey === 'balance-sheet' && props.glOk === false && props.glMessage ? (
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            {props.glMessage}
+          </div>
+        ) : null}
         {props.rows?.length ? (
           <DataTable columns={props.columns} rows={props.rows} />
         ) : (
           <GroupedClassView byClass={props.byClass} classKeys={props.classKeys} />
         )}
       </>
+    );
+  }
+  if (pageKey === 'year-end') {
+    return (
+      <YearEndView
+        fiscalYear={props.fiscalYear}
+        fiscalYearStatus={props.fiscalYearStatus}
+        rows={props.rows}
+        columns={props.columns}
+        finCanWrite={props.finCanWrite}
+      />
     );
   }
   if (pageKey === 'general-ledger') {

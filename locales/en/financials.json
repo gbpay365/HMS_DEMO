@@ -6,6 +6,7 @@
     "dashboard": "Loading accounting…",
     "settings": "Loading settings…",
     "journal": "Loading journal…",
+    "livre_journal": "Loading livre-journal…",
     "journal_new": "Loading new journal entry…",
     "coa": "Loading chart of accounts…",
     "gl": "Loading general ledger…",
@@ -38,6 +39,13 @@
     "tax_hub": "Tax hub",
     "tax_hub_hint": "TVA, NIU, CNPS & statutory exports"
   },
+  "year_end": {
+    "fiscal_year": "Fiscal year",
+    "status_open": "Open",
+    "status_closed": "Closed",
+    "close_fiscal_year": "Close fiscal year",
+    "closed_hint": "All months are locked. Posting to this year is blocked."
+  },
   "nav": {
     "aria_shortcuts": "Accounting shortcuts",
     "aria_label": "Accounting",
@@ -48,6 +56,7 @@
     "new_journal_title": "Manual GL journal entry",
     "dashboard": "Overview",
     "journal": "Journals",
+    "livre_journal": "Livre-journal",
     "ledger": "Ledger",
     "accounts": "Chart",
     "ar": "Receivables",
@@ -108,7 +117,18 @@
     "account": "Account",
     "debit_ph": "Debit",
     "credit_ph": "Credit",
-    "post": "Post journal"
+    "post": "Post journal",
+    "double_entry_hint": "Double entry: total debits must equal total credits. Enter one side per line — the counterpart can be balanced automatically.",
+    "balance_entry": "Balance entry",
+    "total_debit": "Total debit",
+    "total_credit": "Total credit",
+    "difference": "Difference",
+    "balanced_ok": "Entry is balanced — ready to post.",
+    "balanced_pending": "Out of balance — complete the counterpart line or click Balance entry.",
+    "memo_ph": "Memo",
+    "add_line": "Add line",
+    "save_draft": "Save draft",
+    "journal_code": "Journal code"
   },
   "settings": {
     "legal_name": "Legal name",

@@ -561,8 +561,15 @@ let pool = null;
 try {
  pool = createDbPool();
  bootStep('db-pool', 'ok', `${pool.driver} → ${pool.config?.host}:${pool.config?.port} ssl=${pool.config?.ssl === false ? 'off' : 'on'} (${pool.config?.source || '?'})`);
- pool.query('SELECT 1 AS ok').then(() => {
+ pool.query('SELECT 1 AS ok').then(async () => {
   bootStep('db-pool-probe', 'ok');
+  try {
+   const ensureFinAccountingSchema = require('./lib/ensureFinAccountingSchema');
+   await ensureFinAccountingSchema(pool);
+   bootStep('fin-accounting-schema', 'ok');
+  } catch (schemaErr) {
+   bootStep('fin-accounting-schema', 'warn', schemaErr);
+  }
  }).catch((e) => {
   bootStep('db-pool-probe', 'fail', e);
  });
@@ -1463,6 +1470,13 @@ safeMount('financialsJournalDiagnostics', () =>
  require('./routes/financialsJournalDiagnostics')(app, pool, requireAuth, requirePerm)
 );
 safeMount('financialsJournal', () => require('./routes/financialsJournal')(app, pool, requireAuth));
+safeMount('financialsLivreJournal', () => require('./routes/financialsLivreJournal')(app, pool, requireAuth));
+safeMount('financialsBalanceSheet', () =>
+ require('./routes/financialsBalanceSheet')(app, pool, requireAuth, requirePerm)
+);
+safeMount('financialsAccountingAdmin', () =>
+ require('./routes/financialsAccountingAdmin')(app, pool, requireAuth, requirePerm)
+);
 safeMount('financialsExpenses', () => require('./routes/financialsExpenses')(app, pool, requireAuth));
 safeMount('financialsPlatformOverview', () =>
  require('./routes/financialsPlatformOverview')(app, pool, requireAuth)
@@ -6737,40 +6751,7 @@ app.get('/payroll', requireAuth, requirePayrollAccess, async (req, res) => {
  }
 });
 
-app.get('/financials/balance-sheet', requireAuth, requirePerm('accounting.read','accounting.write','financials.read','financials.write'), async (req, res) => {
- const asof = String(req.query.asof || '').trim() || new Date().toISOString().split('T')[0];
- let net = 0;
- try {
-  const [[s]] = await pool.query(
-   `SELECT COALESCE(SUM(CAST(amount AS DECIMAL(14,2))),0) AS b FROM tbl_transaction WHERE status='completed' AND transaction_date <= ?`,
-   [asof]
-  );
-  net = Number(s?.b || 0);
- } catch (e) {
-  net = 0;
- }
- const byClass = {
-  5: [
-   {
-    account_code: '57X',
-    account_label: 'Cash & receipts (proxy from billing transactions)',
-    balance: net
-   }
-  ]
- };
- const { balanceSheetPayload } = require('./lib/finReactPayloads');
- res.render('financials-balance-sheet', {
-  title: pageTitle(res, 'document_titles.balance_sheet', 'Balance Sheet — ZAIZENS'),
-  ...balanceSheetPayload({
-   asof,
-   byClass,
-   flash: req.query.msg || null,
-   error: req.query.err || null,
-  }),
- });
-});
-
-// /financials/tax → /financials/settings (see routes/financialsSettings.js)
+// Balance sheet → routes/financialsBalanceSheet.js (GL-based, Phase 5)
 
 // INVENTORY MANAGEMENT
 app.get('/inventory', requireAuth, requirePerm('inventory.read','inventory.write','pharmacy.read','pharmacy.write'), async (req, res) => {

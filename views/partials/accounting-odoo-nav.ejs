@@ -50,9 +50,6 @@ var _onCashier = _path === '/cashier' || _path.indexOf('/cashier/') === 0;
   <a href="<%= _shellBrand.url || '/financials' %>" class="o_nav_module"><%= _onCashier ? _t('nav.cashier', { ns: 'financials', defaultValue: 'Cashier' }) : _navLabel(_shellBrand.code, _shellBrand.label) %></a>
   <% } %>
   <nav class="o_nav_menu" aria-label="<%= _t('nav.aria_label', { ns: 'financials', defaultValue: 'Accounting' }) %>">
-    <% if (locals.finCanWrite) { %>
-    <a href="/financials/journal-new" class="o_cp_new acc-nav-new-journal" title="<%= _t('nav.new_journal_title', { ns: 'financials', defaultValue: 'Manual GL journal entry' }) %>"><i class="fa fa-plus"></i> <%= _t('nav.new_journal_entry', { ns: 'financials', defaultValue: 'New journal entry' }) %></a>
-    <% } %>
     <% (_nav.primaryLinks || []).forEach(function(it){ %>
     <a href="<%= it.url %>" class="o_nav_link<%= _linkActive(it) %>"><%= _navLabel(it.code, it.label) %></a>
     <% }); %>
