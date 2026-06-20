@@ -74,11 +74,17 @@ body.hms-body--odoo-hr .hms-module-odoo-app {
 
 .fin-module--odoo .fin-main--odoo,
 .pay-module--odoo .pay-main--odoo {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 16px 20px 28px;
+  max-width: none;
+  margin: 0;
+  padding: 16px 24px 28px;
   width: 100%;
   box-sizing: border-box;
+}
+
+.fin-module--odoo .fin-main--odoo .hms-react-page,
+.fin-module--odoo .fin-main--odoo .hms-react-page .hms-surface-module {
+  width: 100%;
+  max-width: none;
 }
 
 .fin-module--odoo .fin-hero,

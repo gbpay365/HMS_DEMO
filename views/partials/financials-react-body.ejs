@@ -2,6 +2,7 @@
 <%- include('financials-layout-start', { finNavActive: locals.finNavActive || 'dashboard' }) %>
 <%- include('react-accounting-page-mount', {
   reactPage: locals.reactPage || 'financials',
-  reactLoadingLabel: locals.reactLoadingLabel || _t('loading.dashboard', { ns: 'financials', defaultValue: 'Loading accounting…' })
+  reactLoadingLabel: locals.reactLoadingLabel || _t('loading.dashboard', { ns: 'financials', defaultValue: 'Loading accounting…' }),
+  odooEmbedded: true
 }) %>
 <%- include('financials-layout-end') %>

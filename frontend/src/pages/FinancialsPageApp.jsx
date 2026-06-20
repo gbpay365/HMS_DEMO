@@ -589,7 +589,7 @@ export function FinancialsPageApp({
 }) {
   const { t } = useTranslation('financials');
   return (
-    <div className="hms-surface-module px-2 pb-8">
+    <div className="hms-surface-module w-full pb-8">
       {(flash || error) && (
         <div className={`mb-3 rounded-lg px-4 py-2 text-sm ${error ? 'bg-red-50 text-red-800' : 'bg-emerald-50 text-emerald-800'}`}>
           {error || flash}
