@@ -1721,7 +1721,15 @@
       "err_patient": "Sélectionnez un patient avant d'émettre le ticket.",
       "err_service": "Sélectionnez un service dans le catalogue.",
       "err_doctor": "Sélectionnez un médecin assigné pour cette consultation.",
-      "err_specialisation": "Sélectionnez une spécialisation pour la consultation spécialiste."
+      "err_specialisation": "Sélectionnez une spécialisation pour la consultation spécialiste.",
+      "err_no_lines": "Ajoutez au moins un service au bordereau.",
+      "add_service": "Ajouter le service",
+      "cart": "Services sélectionnés",
+      "cart_empty_hint": "Choisissez une catégorie et un service, puis cliquez sur Ajouter le service pour chaque ligne — ou sélectionnez un service et cliquez directement sur Émettre le bordereau. Vous pouvez combiner consultation, labo, radiologie et autres services sur un même bordereau.",
+      "subtotal": "Sous-total",
+      "grand_total": "Total général",
+      "remove": "Retirer",
+      "insurance_applied": "Couverture assurance {{pct}} % appliquée à toutes les lignes."
     },
     "opdOrdersBill": {
       "title": "Commandes consultations externes — Facturer",

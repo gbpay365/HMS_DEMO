@@ -42,6 +42,22 @@ function consultNeedsDoctor(name) {
     || /\bspecialist\s+consultation\b/.test(n);
 }
 
+function computePatientDue(listPrice, coveragePct) {
+  const price = Number(listPrice) || 0;
+  const pct = Math.min(100, Math.max(0, Number(coveragePct) || 0));
+  const insurer = Math.round(price * pct / 100);
+  return price - insurer;
+}
+
+function getEffectiveCoveragePct(manualIns, manualPct, patientCoveragePct) {
+  if (manualIns) return Math.min(100, Math.max(0, parseInt(manualPct, 10) || 0));
+  return Math.min(100, Math.max(0, parseInt(patientCoveragePct, 10) || 0));
+}
+
+function makeCartLineKey(serviceType, catalogId) {
+  return `${serviceType}-${catalogId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
 function renderQrToCanvas(host, url) {
   if (!host || !url) return;
   host.innerHTML = '';
@@ -84,6 +100,8 @@ export function CashierPrepayModal({
   const [payMethod, setPayMethod] = useState('Cash');
   const [manualIns, setManualIns] = useState(false);
   const [manualPct, setManualPct] = useState('0');
+  const [patientCoveragePct, setPatientCoveragePct] = useState(0);
+  const [cartLines, setCartLines] = useState([]);
   const [formError, setFormError] = useState('');
   const [busy, setBusy] = useState(false);
   const [betterPay, setBetterPay] = useState(null);
@@ -99,6 +117,33 @@ export function CashierPrepayModal({
       label: t(`modals.cashierPrepay.service_${id === 'hospitalisation' ? 'other' : id}`)})),
     [t]
   );
+
+  const allCatalogs = useMemo(
+    () => ({
+      consultation: consultCatalog,
+      laboratory: labCatalog,
+      radiology: imagingCatalog,
+      maternity: maternityCatalog,
+      surgery: surgeryCatalog,
+      hospitalisation: svcCatalog,
+    }),
+    [consultCatalog, labCatalog, imagingCatalog, maternityCatalog, surgeryCatalog, svcCatalog]
+  );
+
+  const findCatalogItem = useCallback((type, id) => {
+    const list = allCatalogs[type] || [];
+    return list.find((c) => String(c.id) === String(id)) || null;
+  }, [allCatalogs]);
+
+  const coveragePct = useMemo(
+    () => getEffectiveCoveragePct(manualIns, manualPct, patientCoveragePct),
+    [manualIns, manualPct, patientCoveragePct]
+  );
+
+  const serviceTypeLabel = useCallback((typeId) => {
+    const st = serviceTypes.find((s) => s.id === typeId);
+    return st?.label || typeId;
+  }, [serviceTypes]);
 
   const resetPaymentUi = useCallback(() => {
     setBetterPay(null);
@@ -144,6 +189,44 @@ export function CashierPrepayModal({
           setManualIns(true);
           setManualPct(String(prepay.manual_insurance_pct || '0'));
         }
+        const retryCoverage = getEffectiveCoveragePct(
+          prepay.manual_insurance_check,
+          prepay.manual_insurance_pct,
+          0
+        );
+        if (Array.isArray(prepay.prepay_lines) && prepay.prepay_lines.length) {
+          setCartLines(prepay.prepay_lines.map((row) => {
+            const type = row.prepay_service_type || row.service_type || 'hospitalisation';
+            const catId = row.prepay_catalog_id || row.catalog_id;
+            const cat = findCatalogItem(type, catId);
+            const listPrice = cat ? Number(cat.price || 0) : 0;
+            return {
+              key: makeCartLineKey(type, catId),
+              prepay_service_type: type,
+              prepay_catalog_id: String(catId),
+              prepay_assigned_doctor_id: row.prepay_assigned_doctor_id || row.assigned_doctor_id || undefined,
+              prepay_specialist_spec: row.prepay_specialist_spec || row.specialist_spec || undefined,
+              name: cat?.name || t('modals.cashierPrepay.service'),
+              listPrice,
+              patientDue: computePatientDue(listPrice, retryCoverage),
+            };
+          }));
+        } else if (prepay.prepay_catalog_id && prepay.prepay_service_type) {
+          const cat = findCatalogItem(prepay.prepay_service_type, prepay.prepay_catalog_id);
+          if (cat) {
+            const listPrice = Number(cat.price || 0);
+            setCartLines([{
+              key: makeCartLineKey(prepay.prepay_service_type, prepay.prepay_catalog_id),
+              prepay_service_type: prepay.prepay_service_type,
+              prepay_catalog_id: String(prepay.prepay_catalog_id),
+              prepay_assigned_doctor_id: prepay.prepay_assigned_doctor_id || undefined,
+              prepay_specialist_spec: prepay.prepay_specialist_spec || undefined,
+              name: cat.name,
+              listPrice,
+              patientDue: computePatientDue(listPrice, retryCoverage),
+            }]);
+          }
+        }
         applyBetterPaySession({
           ref: data.ref,
           paymentUrl: data.paymentUrl,
@@ -155,7 +238,7 @@ export function CashierPrepayModal({
       }
     })();
     return () => { cancelled = true; };
-  }, [open, betterPayRetryRef, applyBetterPaySession]);
+  }, [open, betterPayRetryRef, applyBetterPaySession, findCatalogItem, t]);
 
   useEffect(() => {
     if (!open) return;
@@ -163,6 +246,8 @@ export function CashierPrepayModal({
     setPatientResults([]);
     setPatientId('');
     setPatientLabel('');
+    setPatientCoveragePct(0);
+    setCartLines([]);
     setServiceType('consultation');
     setCatalogId('');
     setSpecialistSpec('');
@@ -181,6 +266,7 @@ export function CashierPrepayModal({
             const p = (Array.isArray(rows) ? rows : []).find((x) => String(x.id) === String(prepayDefaults.patientId));
             if (p) {
               setPatientLabel(`${p.first_name} ${p.last_name}${p.phone ? ` · ${p.phone}` : ''}`);
+              setPatientCoveragePct(parseInt(p.coverage, 10) || 0);
             }
           })
           .catch(() => {});
@@ -189,6 +275,13 @@ export function CashierPrepayModal({
       if (prepayDefaults.catalogId) setCatalogId(String(prepayDefaults.catalogId));
     }
   }, [open, resetPaymentUi, prepayDefaults]);
+
+  useEffect(() => {
+    setCartLines((lines) => lines.map((line) => ({
+      ...line,
+      patientDue: computePatientDue(line.listPrice, coveragePct),
+    })));
+  }, [coveragePct]);
 
   useEffect(() => {
     resetPaymentUi();
@@ -256,21 +349,135 @@ export function CashierPrepayModal({
   const selectPatient = (p) => {
     setPatientId(String(p.id));
     setPatientLabel(`${p.first_name} ${p.last_name}${p.phone ? ` · ${p.phone}` : ''}`);
+    setPatientCoveragePct(parseInt(p.coverage, 10) || 0);
     setPatientQ('');
     setPatientResults([]);
   };
 
-  const buildPrepayPayload = useCallback(() => {
+  const toPrepayLineRow = useCallback((line) => {
+    const row = {
+      prepay_service_type: line.prepay_service_type,
+      prepay_catalog_id: String(line.prepay_catalog_id ?? '').trim(),
+    };
+    if (line.prepay_assigned_doctor_id) {
+      row.prepay_assigned_doctor_id = String(line.prepay_assigned_doctor_id);
+    }
+    if (line.prepay_specialist_spec) {
+      row.prepay_specialist_spec = line.prepay_specialist_spec;
+    }
+    return row;
+  }, []);
+
+  const prepayLinesPayload = useMemo(
+    () => cartLines.map(toPrepayLineRow).filter((row) => row.prepay_catalog_id),
+    [cartLines, toPrepayLineRow]
+  );
+
+  const validateLineDraft = useCallback(() => {
+    if (!catalogId) return t('modals.cashierPrepay.err_service');
+    if (showSpecialistSpecPicker && !specialistSpec) return t('modals.cashierPrepay.err_specialisation');
+    if (showDoctorPicker && !doctorId) return t('modals.cashierPrepay.err_doctor');
+    return '';
+  }, [catalogId, showSpecialistSpecPicker, specialistSpec, showDoctorPicker, doctorId, t]);
+
+  const buildDraftLineRow = useCallback(() => {
+    if (!catalogId || !selectedCatalog) return null;
+    const draftErr = validateLineDraft();
+    if (draftErr) return { error: draftErr };
+    return toPrepayLineRow({
+      prepay_service_type: serviceType,
+      prepay_catalog_id: String(catalogId),
+      prepay_assigned_doctor_id: showDoctorPicker && doctorId ? doctorId : undefined,
+      prepay_specialist_spec: showSpecialistSpecPicker && specialistSpec ? specialistSpec : undefined,
+    });
+  }, [
+    catalogId, selectedCatalog, validateLineDraft, toPrepayLineRow, serviceType,
+    showDoctorPicker, doctorId, showSpecialistSpecPicker, specialistSpec,
+  ]);
+
+  const buildIssueLines = useCallback((includeDraft = true) => {
+    const rows = [...prepayLinesPayload];
+    if (!includeDraft || !catalogId || !selectedCatalog) return rows;
+    const alreadyInCart = rows.some(
+      (row) => String(row.prepay_catalog_id) === String(catalogId)
+        && row.prepay_service_type === serviceType
+    );
+    if (alreadyInCart) return rows;
+    const draft = buildDraftLineRow();
+    if (!draft || draft.error) return rows;
+    return [...rows, draft];
+  }, [prepayLinesPayload, catalogId, selectedCatalog, serviceType, buildDraftLineRow]);
+
+  const cartGrouped = useMemo(() => {
+    const groups = {};
+    for (const line of cartLines) {
+      const typeId = line.prepay_service_type;
+      if (!groups[typeId]) {
+        groups[typeId] = { typeId, label: serviceTypeLabel(typeId), lines: [], subtotal: 0 };
+      }
+      groups[typeId].lines.push(line);
+      groups[typeId].subtotal += line.patientDue;
+    }
+    return Object.values(groups);
+  }, [cartLines, serviceTypeLabel]);
+
+  const grandTotal = useMemo(
+    () => cartLines.reduce((sum, line) => sum + (Number(line.patientDue) || 0), 0),
+    [cartLines]
+  );
+
+  const addServiceToCart = useCallback(() => {
+    setFormError('');
+    const validationErr = validateLineDraft();
+    if (validationErr) {
+      setFormError(validationErr);
+      return;
+    }
+    if (!selectedCatalog) return;
+    const listPrice = Number(selectedCatalog.price || 0);
+    setCartLines((prev) => [
+      ...prev,
+      {
+        key: makeCartLineKey(serviceType, catalogId),
+        prepay_service_type: serviceType,
+        prepay_catalog_id: String(catalogId),
+        prepay_assigned_doctor_id: showDoctorPicker && doctorId ? doctorId : undefined,
+        prepay_specialist_spec: showSpecialistSpecPicker && specialistSpec ? specialistSpec : undefined,
+        name: selectedCatalog.name,
+        listPrice,
+        patientDue: computePatientDue(listPrice, coveragePct),
+      },
+    ]);
+    setCatalogId('');
+    setSpecialistSpec('');
+    setDoctorId('');
+    resetPaymentUi();
+  }, [
+    validateLineDraft, selectedCatalog, serviceType, catalogId, showDoctorPicker, doctorId,
+    showSpecialistSpecPicker, specialistSpec, coveragePct, resetPaymentUi,
+  ]);
+
+  const removeCartLine = useCallback((key) => {
+    setCartLines((prev) => prev.filter((line) => line.key !== key));
+    resetPaymentUi();
+  }, [resetPaymentUi]);
+
+  const buildPrepayPayload = useCallback((linesOverride) => {
+    const lines = linesOverride ?? prepayLinesPayload;
     const payload = {
       prepay_patient_id: patientId,
-      prepay_service_type: serviceType,
-      prepay_catalog_id: catalogId,
-      prepay_payment_method: payMethod};
-    if (showSpecialistSpecPicker && specialistSpec) {
-      payload.prepay_specialist_spec = specialistSpec;
-    }
-    if (showDoctorPicker && doctorId) {
-      payload.prepay_assigned_doctor_id = doctorId;
+      prepay_payment_method: payMethod,
+      prepay_lines: lines,
+    };
+    if (lines.length === 1) {
+      payload.prepay_service_type = lines[0].prepay_service_type;
+      payload.prepay_catalog_id = lines[0].prepay_catalog_id;
+      if (lines[0].prepay_assigned_doctor_id) {
+        payload.prepay_assigned_doctor_id = lines[0].prepay_assigned_doctor_id;
+      }
+      if (lines[0].prepay_specialist_spec) {
+        payload.prepay_specialist_spec = lines[0].prepay_specialist_spec;
+      }
     }
     if (manualIns) {
       payload.manual_insurance_check = 'on';
@@ -287,28 +494,29 @@ export function CashierPrepayModal({
     }
     return payload;
   }, [
-    patientId, serviceType, catalogId, payMethod, showSpecialistSpecPicker, specialistSpec,
-    showDoctorPicker, doctorId, manualIns, manualPct, betterPay, prepayDefaults,
+    patientId, payMethod, prepayLinesPayload, manualIns, manualPct, betterPay, prepayDefaults,
   ]);
 
-  const postPrepayJson = useCallback(async (url) => {
+  const postPrepayJson = useCallback(async (url, linesOverride) => {
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(buildPrepayPayload())});
+      body: JSON.stringify(buildPrepayPayload(linesOverride))});
     return res.json().catch(() => ({}));
   }, [buildPrepayPayload]);
 
-  const issueTicket = useCallback(async () => {
-    const data = await postPrepayJson('/api/cashier/prepay/issue');
+  const issueTicket = useCallback(async (linesOverride) => {
+    const lines = linesOverride ?? buildIssueLines(true);
+    const data = await postPrepayJson('/api/cashier/prepay/issue', lines);
     if (!data.ok) {
       throw new Error(data.error || t('modals.cashierPrepay.payment_not_received'));
     }
     return data.ticketCode;
-  }, [postPrepayJson, t]);
+  }, [postPrepayJson, buildIssueLines, t]);
 
-  const startBetterPay = useCallback(async () => {
-    const data = await postPrepayJson('/api/cashier/prepay/betterpay/start');
+  const startBetterPay = useCallback(async (linesOverride) => {
+    const lines = linesOverride ?? buildIssueLines(true);
+    const data = await postPrepayJson('/api/cashier/prepay/betterpay/start', lines);
     if (!data.ok) {
       throw new Error(data.error || t('modals.cashierPrepay.betterpay_failed'));
     }
@@ -406,20 +614,28 @@ export function CashierPrepayModal({
     };
   }, [waitingPay, betterPay, bpUiStatus, issueTicket, t, handleBetterPayTimeout]);
 
+  const formIssueLines = useMemo(() => buildIssueLines(true), [buildIssueLines]);
+
   const issueDisabled = busy || waitingPay;
 
-  const validatePrepay = useCallback(() => {
+  const validatePrepay = useCallback((linesOverride) => {
     if (!patientId) return t('modals.cashierPrepay.err_patient');
-    if (!catalogId) return t('modals.cashierPrepay.err_service');
-    if (showSpecialistSpecPicker && !specialistSpec) return t('modals.cashierPrepay.err_specialisation');
-    if (showDoctorPicker && !doctorId) return t('modals.cashierPrepay.err_doctor');
+    const lines = linesOverride ?? buildIssueLines(true);
+    if (!lines.length) {
+      if (catalogId && selectedCatalog) {
+        const draftErr = validateLineDraft();
+        if (draftErr) return draftErr;
+      }
+      return t('modals.cashierPrepay.err_no_lines');
+    }
     return '';
-  }, [patientId, catalogId, showSpecialistSpecPicker, specialistSpec, showDoctorPicker, doctorId, t]);
+  }, [patientId, buildIssueLines, catalogId, selectedCatalog, validateLineDraft, t]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
-    const validationErr = validatePrepay();
+    const issueLines = buildIssueLines(true);
+    const validationErr = validatePrepay(issueLines);
     if (validationErr) {
       setFormError(validationErr);
       return;
@@ -427,7 +643,17 @@ export function CashierPrepayModal({
     if (busy || waitingPay) return;
 
     if (!PAYMENT_GATE_METHODS.has(payMethod)) {
-      e.currentTarget.submit();
+      setBusy(true);
+      try {
+        const code = await issueTicket(issueLines);
+        window.location.href = `/cashier/print-slip/${encodeURIComponent(code)}`;
+      } catch (err) {
+        const msg = err.message || t('modals.cashierPrepay.payment_not_received');
+        notifyError(msg);
+        setFormError(msg);
+      } finally {
+        setBusy(false);
+      }
       return;
     }
 
@@ -435,7 +661,7 @@ export function CashierPrepayModal({
     try {
       if (payMethod === 'BetterPay') {
         if (!betterPay) {
-          const bp = await startBetterPay();
+          const bp = await startBetterPay(issueLines);
           applyBetterPaySession(bp);
           return;
         }
@@ -443,7 +669,7 @@ export function CashierPrepayModal({
       }
 
       if (payMethod === 'Wallet') {
-        const code = await issueTicket();
+        const code = await issueTicket(issueLines);
         window.location.href = `/cashier/print-slip/${encodeURIComponent(code)}`;
       }
     } catch (err) {
@@ -479,8 +705,25 @@ export function CashierPrepayModal({
       <form id="hms-cashier-prepay-form" method="post" action="/cashier/issue-prepay" className="space-y-4" onSubmit={handleSubmit}>
         <FormErrorBanner message={formError} />
         <input type="hidden" name="prepay_patient_id" value={patientId} />
-        <input type="hidden" name="prepay_service_type" value={serviceType} />
-        <input type="hidden" name="prepay_catalog_id" value={catalogId} />
+        <input type="hidden" name="prepay_lines" value={JSON.stringify(formIssueLines)} readOnly />
+        {formIssueLines.map((line, idx) => (
+          <span key={`prepay-line-${idx}-${line.prepay_catalog_id}`} aria-hidden="true">
+            <input type="hidden" name={`prepay_lines[${idx}][prepay_service_type]`} value={line.prepay_service_type} readOnly />
+            <input type="hidden" name={`prepay_lines[${idx}][prepay_catalog_id]`} value={line.prepay_catalog_id} readOnly />
+            {line.prepay_assigned_doctor_id ? (
+              <input type="hidden" name={`prepay_lines[${idx}][prepay_assigned_doctor_id]`} value={line.prepay_assigned_doctor_id} readOnly />
+            ) : null}
+            {line.prepay_specialist_spec ? (
+              <input type="hidden" name={`prepay_lines[${idx}][prepay_specialist_spec]`} value={line.prepay_specialist_spec} readOnly />
+            ) : null}
+          </span>
+        ))}
+        {formIssueLines.length === 1 ? (
+          <>
+            <input type="hidden" name="prepay_service_type" value={formIssueLines[0].prepay_service_type} readOnly />
+            <input type="hidden" name="prepay_catalog_id" value={formIssueLines[0].prepay_catalog_id} readOnly />
+          </>
+        ) : null}
         {prepayDefaults?.maternityPatientId ? (
           <input type="hidden" name="prepay_maternity_patient_id" value={prepayDefaults.maternityPatientId} />
         ) : null}
@@ -488,9 +731,6 @@ export function CashierPrepayModal({
           <input type="hidden" name="prepay_maternity_event" value={prepayDefaults.maternityEvent} />
         ) : null}
         {betterPay?.ref ? <input type="hidden" name="prepay_betterpay_ref" value={betterPay.ref} /> : null}
-        {showSpecialistSpecPicker ? (
-          <input type="hidden" name="prepay_specialist_spec" value={specialistSpec} />
-        ) : null}
 
         <FormField label={t('shared.patient')} htmlFor="cpp-patient-q" required className="relative">
           {patientId ? (
@@ -577,7 +817,7 @@ export function CashierPrepayModal({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <FormField label={t('modals.cashierPrepay.service')} htmlFor="cpp-service" required>
+          <FormField label={t('modals.cashierPrepay.service')} htmlFor="cpp-service">
             <select
               id="cpp-service"
               value={catalogId}
@@ -589,7 +829,6 @@ export function CashierPrepayModal({
                 setFormError('');
               }}
               className="hms-input"
-              required
             >
               <option value="">{t('modals.cashierPrepay.select_service')}</option>
               {catalogForType.map((c) => (
@@ -602,13 +841,12 @@ export function CashierPrepayModal({
             </select>
           </FormField>
           {showSpecialistSpecPicker ? (
-            <FormField label={t('modals.cashierPrepay.specialisation')} htmlFor="cpp-spec" required>
+            <FormField label={t('modals.cashierPrepay.specialisation')} htmlFor="cpp-spec">
               <select
                 id="cpp-spec"
                 value={specialistSpec}
                 onChange={(e) => { setSpecialistSpec(e.target.value); setFormError(''); }}
                 className="hms-input"
-                required
               >
                 <option value="">{t('modals.cashierPrepay.select_specialisation')}</option>
                 {specialistSpecialisations.map((s) => (
@@ -623,7 +861,6 @@ export function CashierPrepayModal({
             <FormField
               label={t('modals.cashierPrepay.assigned_doctor')}
               htmlFor="cpp-doctor"
-              required
               hint={
                 !filteredDoctors.length
                   ? t('modals.cashierPrepay.no_doctors_hint', {
@@ -633,11 +870,9 @@ export function CashierPrepayModal({
             >
               <select
                 id="cpp-doctor"
-                name="prepay_assigned_doctor_id"
                 value={doctorId}
                 onChange={(e) => { setDoctorId(e.target.value); setFormError(''); }}
                 className="hms-input"
-                required
                 disabled={!filteredDoctors.length || (showSpecialistSpecPicker && !specialistSpec)}
               >
                 {!filteredDoctors.length ? (
@@ -652,6 +887,15 @@ export function CashierPrepayModal({
               </select>
             </FormField>
           ) : null}
+          <div className="flex items-end sm:col-span-2">
+            <button
+              type="button"
+              className="rounded-lg border border-brand bg-white px-4 py-2 text-sm font-bold text-brand hover:bg-emerald-50"
+              onClick={addServiceToCart}
+            >
+              {t('modals.cashierPrepay.add_service')}
+            </button>
+          </div>
           <FormField label={t('modals.cashierPrepay.payment_method')} htmlFor="cpp-pay-method">
             <select
               id="cpp-pay-method"
@@ -669,6 +913,55 @@ export function CashierPrepayModal({
             </select>
           </FormField>
         </div>
+
+        {cartLines.length > 0 ? (
+          <div className="rounded-xl border border-slate-200 bg-white p-3">
+            <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">
+              {t('modals.cashierPrepay.cart')}
+            </div>
+            <div className="space-y-3">
+              {cartGrouped.map((group) => (
+                <div key={group.typeId} className="rounded-lg border border-slate-100 bg-slate-50 p-2.5">
+                  <div className="mb-1.5 text-xs font-bold text-slate-700">{group.label}</div>
+                  <ul className="space-y-1">
+                    {group.lines.map((line) => (
+                      <li key={line.key} className="flex items-center justify-between gap-2 text-sm">
+                        <span className="min-w-0 flex-1 truncate text-slate-800">{line.name}</span>
+                        <span className="shrink-0 font-semibold tabular-nums text-slate-700">
+                          {Number(line.patientDue || 0).toLocaleString('fr-FR')} FCFA
+                        </span>
+                        <button
+                          type="button"
+                          className="shrink-0 text-xs font-bold text-red-600 hover:text-red-800"
+                          onClick={() => removeCartLine(line.key)}
+                        >
+                          {t('modals.cashierPrepay.remove')}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 text-xs font-bold text-slate-600">
+                    <span>{t('modals.cashierPrepay.subtotal')}</span>
+                    <span className="tabular-nums">{Number(group.subtotal || 0).toLocaleString('fr-FR')} FCFA</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 flex items-center justify-between rounded-lg bg-emerald-50 px-3 py-2.5">
+              <span className="text-sm font-bold text-emerald-900">{t('modals.cashierPrepay.grand_total')}</span>
+              <span className="text-lg font-bold tabular-nums text-emerald-900">
+                {Number(grandTotal || 0).toLocaleString('fr-FR')} FCFA
+              </span>
+            </div>
+            {coveragePct > 0 ? (
+              <p className="mt-2 text-xs text-slate-500">
+                {t('modals.cashierPrepay.insurance_applied', { pct: coveragePct })}
+              </p>
+            ) : null}
+          </div>
+        ) : (
+          <p className="text-xs text-slate-500">{t('modals.cashierPrepay.cart_empty_hint')}</p>
+        )}
 
         {payMethod === 'BetterPay' && betterPay ? (
           <div className="rounded-xl border border-cyan-200 bg-cyan-50 p-4">

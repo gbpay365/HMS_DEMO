@@ -9875,19 +9875,30 @@ app.get('/api/patients/search', requireAuth, async (req, res) => {
  if (!q) return res.json([]);
  const like = `%${q.toLowerCase()}%`;
  const idLike = `%${q}%`;
+ const today = new Date().toISOString().split('T')[0];
  const [rows] = await pool.query(
-  `SELECT id, first_name, last_name, phone, patient_code
-     FROM tbl_patient
-    WHERE status = 1
+  `SELECT p.id, p.first_name, p.last_name, p.phone, p.patient_code,
+   COALESCE((
+    SELECT COALESCE(pi.insurer_covered_percent, 0)
+    FROM tbl_patient_insurance pi
+    WHERE pi.patient_id = p.id
+     AND COALESCE(pi.insurer_covered_percent, 0) > 0
+     AND (pi.effective_from IS NULL OR pi.effective_from <= ?)
+     AND (pi.effective_to IS NULL OR pi.effective_to >= ?)
+    ORDER BY pi.is_primary DESC, pi.insurer_covered_percent DESC, pi.id DESC
+    LIMIT 1
+   ), 0) AS coverage
+     FROM tbl_patient p
+    WHERE p.status = 1
       AND (
-        LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ? OR phone LIKE ?
-        OR LOWER(COALESCE(patient_code, '')) LIKE ? OR CAST(id AS CHAR) LIKE ?
-        OR LOWER(CONCAT(COALESCE(first_name,''), ' ', COALESCE(last_name,''))) LIKE ?
-        OR LOWER(CONCAT(COALESCE(last_name,''), ' ', COALESCE(first_name,''))) LIKE ?
+        LOWER(p.first_name) LIKE ? OR LOWER(p.last_name) LIKE ? OR p.phone LIKE ?
+        OR LOWER(COALESCE(p.patient_code, '')) LIKE ? OR CAST(p.id AS CHAR) LIKE ?
+        OR LOWER(CONCAT(COALESCE(p.first_name,''), ' ', COALESCE(p.last_name,''))) LIKE ?
+        OR LOWER(CONCAT(COALESCE(p.last_name,''), ' ', COALESCE(p.first_name,''))) LIKE ?
       )
-    ORDER BY last_name, first_name
+    ORDER BY p.last_name, p.first_name
     LIMIT 25`,
-  [like, like, idLike, like, idLike, like, like]
+  [today, today, like, like, idLike, like, idLike, like, like]
  );
  res.json(rows);
  } catch (err) {
