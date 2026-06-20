@@ -9,7 +9,7 @@ import { ModalCancelButton, ModalSubmitButton } from '../components/ModalActions
 import { formatMoney } from '../lib/listUi';
 import { notifySuccess } from '../lib/notifyBridge';
 
-const SERVICE_TYPE_IDS = ['consultation', 'laboratory', 'radiology', 'maternity', 'surgery', 'hospitalisation'];
+const SERVICE_TYPE_IDS = ['consultation', 'laboratory', 'radiology', 'maternity', 'surgery', 'pharmacy', 'hospitalisation'];
 
 function emptyLine(serviceCategory = 'consultation') {
   return { catalog_id: '', description: '', unit_price: '', quantity: '1', service_category: serviceCategory };
@@ -30,8 +30,8 @@ function catalogForCategory(cat, catalogs) {
   if (cat === 'radiology' && imagingCatalog.length) return imagingCatalog;
   if (cat === 'maternity' && maternityCatalog.length) return maternityCatalog;
   if (cat === 'surgery' && surgeryCatalog.length) return surgeryCatalog;
+  if (cat === 'pharmacy' && pharmacyCatalog.length) return pharmacyCatalog;
   if (cat === 'hospitalisation' && svcCatalog.length) return svcCatalog;
-  if (cat === 'hospitalisation' && pharmacyCatalog.length) return [...svcCatalog, ...pharmacyCatalog];
   return serviceCatalog;
 }
 
