@@ -8,7 +8,7 @@ import { filterDoctorsForCashierService } from '../lib/doctorClinicalFilter';
 import { resolveCashierPaymentMethods } from '../lib/cashierPaymentMethods';
 import { notifyError } from '../lib/notifyBridge';
 
-const SERVICE_TYPE_IDS = ['consultation', 'laboratory', 'radiology', 'maternity', 'surgery', 'hospitalisation'];
+const SERVICE_TYPE_IDS = ['consultation', 'laboratory', 'radiology', 'maternity', 'surgery', 'pharmacy', 'hospitalisation'];
 
 const PAY_METHOD_KEYS = {
   Cash: 'cash',
@@ -84,6 +84,7 @@ export function CashierPrepayModal({
   imagingCatalog = [],
   maternityCatalog = [],
   surgeryCatalog = [],
+  pharmacyCatalog = [],
   svcCatalog = [],
   doctors = [],
   specialistSpecialisations = [],
@@ -125,9 +126,10 @@ export function CashierPrepayModal({
       radiology: imagingCatalog,
       maternity: maternityCatalog,
       surgery: surgeryCatalog,
+      pharmacy: pharmacyCatalog,
       hospitalisation: svcCatalog,
     }),
-    [consultCatalog, labCatalog, imagingCatalog, maternityCatalog, surgeryCatalog, svcCatalog]
+    [consultCatalog, labCatalog, imagingCatalog, maternityCatalog, surgeryCatalog, pharmacyCatalog, svcCatalog]
   );
 
   const findCatalogItem = useCallback((type, id) => {
@@ -310,8 +312,9 @@ export function CashierPrepayModal({
     if (serviceType === 'radiology') return imagingCatalog;
     if (serviceType === 'maternity') return maternityCatalog;
     if (serviceType === 'surgery') return surgeryCatalog;
+    if (serviceType === 'pharmacy') return pharmacyCatalog;
     return svcCatalog;
-  }, [serviceType, consultCatalog, labCatalog, imagingCatalog, maternityCatalog, surgeryCatalog, svcCatalog]);
+  }, [serviceType, consultCatalog, labCatalog, imagingCatalog, maternityCatalog, surgeryCatalog, pharmacyCatalog, svcCatalog]);
 
   const selectedCatalog = useMemo(
     () => catalogForType.find((c) => String(c.id) === String(catalogId)) || null,

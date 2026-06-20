@@ -152,8 +152,12 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
   if (!(await finTablesOk(pool))) {
    return res.redirect('/financials/journal?err=' + encodeURIComponent('Journal tables missing.'));
   }
-  const accounts = await loadPostingAccounts(pool);
-  const { journalNewPayload } = require('../lib/finReactPayloads');
+  let accounts = await loadPostingAccounts(pool);
+  if (!accounts.length) {
+   const { seedFinAccounts } = require('../lib/finAccountSeedData');
+   await seedFinAccounts(pool).catch(() => {});
+   accounts = await loadPostingAccounts(pool);
+  }
   res.render('financials-journal-new', {
    title: 'New journal entry — ZAIZENS',
    ...journalNewPayload({
@@ -171,7 +175,12 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
   }
   const fid = parseInt(String(req.session.facilityId || 1), 10) || 1;
   const uid = parseInt(String(req.session.userId || req.session.user?.id || 0), 10) || 0;
-  const accounts = await loadPostingAccounts(pool);
+  let accounts = await loadPostingAccounts(pool);
+  if (!accounts.length) {
+   const { seedFinAccounts } = require('../lib/finAccountSeedData');
+   await seedFinAccounts(pool).catch(() => {});
+   accounts = await loadPostingAccounts(pool);
+  }
   const validIds = new Set(accounts.map((a) => parseInt(a.id, 10) || 0));
 
   const jdate = ymBounds(req.body.journal_date);

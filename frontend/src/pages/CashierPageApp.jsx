@@ -1025,6 +1025,7 @@ export function CashierPageApp({
         imagingCatalog={imagingCatalog}
         maternityCatalog={maternityCatalog}
         surgeryCatalog={surgeryCatalog}
+        pharmacyCatalog={pharmacyCatalogForInvoice}
         svcCatalog={svcCatalog}
         doctors={doctors}
         specialistSpecialisations={specialistSpecialisations}

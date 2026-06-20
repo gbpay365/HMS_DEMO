@@ -9764,6 +9764,8 @@ app.get('/cashier/eod-reconciliation', requireAuth, requirePerm('cashier.read', 
   if (!access.ok) {
    return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.access_denied', { defaultValue: 'Access denied' })));
   }
+  const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
+  await ensureCashierEodSchema(pool);
   const { buildCashierEodReport } = require('./lib/cashierEodReconciliation');
   const report = await buildCashierEodReport(pool, cashierEodOpts(req, access));
   res.render('cashier-eod-reconciliation', {
@@ -9785,6 +9787,8 @@ app.post('/cashier/eod-reconciliation', requireAuth, requirePerm('cashier.write'
   if (!access.ok) {
    return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.access_denied', { defaultValue: 'Access denied' })));
   }
+  const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
+  await ensureCashierEodSchema(pool);
   const { saveCashierEodReconciliation } = require('./lib/cashierEodReconciliation');
   await saveCashierEodReconciliation(pool, {
    ...cashierEodOpts(req, access),
@@ -9806,6 +9810,8 @@ app.get('/cashier/eod-reconciliation/print', requireAuth, requirePerm('cashier.r
   if (!access.ok) {
    return res.status(403).send('Access denied');
   }
+  const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
+  await ensureCashierEodSchema(pool);
   const { buildCashierEodReport } = require('./lib/cashierEodReconciliation');
   const report = await buildCashierEodReport(pool, cashierEodOpts(req, access));
   res.render('cashier-eod-reconciliation-print', {
@@ -9825,6 +9831,8 @@ app.get('/api/cashier/eod-reconciliation', requireAuth, requirePerm('cashier.rea
   if (!access.ok) {
    return res.status(403).json({ ok: false, error: 'Access denied' });
   }
+  const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
+  await ensureCashierEodSchema(pool);
   const { buildCashierEodReport } = require('./lib/cashierEodReconciliation');
   const report = await buildCashierEodReport(pool, cashierEodOpts(req, access));
   return res.json({ ok: true, report });
@@ -16889,6 +16897,13 @@ if (require.main === module && !underPassenger()) {
    bootStep('aclLayout:init', 'ok', 'runtime ACL cache loaded (postgres/skip-migrations path)');
   } catch (e) {
    bootStep('aclLayout:init', 'fail', e);
+  }
+  try {
+   const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
+   await ensureCashierEodSchema(pool);
+   bootStep('ensureCashierEodSchema', 'ok', 'tbl_cashier_eod_reconciliation');
+  } catch (e) {
+   bootStep('ensureCashierEodSchema', 'fail', e);
   }
   return;
  }

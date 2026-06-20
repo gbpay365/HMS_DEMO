@@ -125,9 +125,9 @@ function GroupedClassView({ byClass = {}, classKeys = [] }) {
             <table className="w-full text-sm">
               <tbody className="divide-y divide-slate-100">
                 {rows.map((a) => (
-                  <tr key={a.account_code || a.id}>
-                    <td className="px-4 py-2 font-mono font-bold">{a.account_code}</td>
-                    <td className="px-4 py-2">{a.account_label}</td>
+                  <tr key={a.account_code || a.code || a.id}>
+                    <td className="px-4 py-2 font-mono font-bold">{a.account_code || a.code}</td>
+                    <td className="px-4 py-2">{a.account_label || a.label}</td>
                     <td className="px-4 py-2 text-right font-mono">{fmt(a.balance)}</td>
                   </tr>
                 ))}
@@ -256,7 +256,7 @@ function JournalNewForm({ accounts = [], body = {}, error = null }) {
             <option value="">{t('journal_form.account')}</option>
             {accounts.map((a) => (
               <option key={a.id} value={a.id}>
-                {a.account_code} — {a.account_label}
+                {a.account_code || a.code} — {a.account_label || a.label || a.label_en}
               </option>
             ))}
           </select>
