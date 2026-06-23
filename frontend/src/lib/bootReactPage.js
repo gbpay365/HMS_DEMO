@@ -46,6 +46,7 @@ import { ConsultationNewPageApp, ConsultationSessionPageApp } from '../pages/Con
 import { ConsultationStartPageApp } from '../pages/ConsultationStartPageApp';
 import { IpdPageApp } from '../pages/IpdPageApp';
 import { NursingSupplyRequestsPageApp } from '../pages/NursingSupplyRequestsPageApp';
+import { ClinicalDeptSupplyRequestsPageApp } from '../pages/ClinicalDeptSupplyRequestsPageApp';
 import { LabWorkflowPageApp } from '../pages/LabWorkflowPageApp';
 import { DoctorErInboxPageApp } from '../pages/DoctorErInboxPageApp';
 import { HmsCommissionPageApp } from '../pages/HmsCommissionPageApp';
@@ -114,6 +115,7 @@ const APPS = {
   'consultation-start': ConsultationStartPageApp,
   ipd: IpdPageApp,
   'nursing-supply-requests': NursingSupplyRequestsPageApp,
+  'clinical-dept-supply-requests': ClinicalDeptSupplyRequestsPageApp,
   'lab-workflow': LabWorkflowPageApp,
   'doctor-er-inbox': DoctorErInboxPageApp,
   'hms-commission': HmsCommissionPageApp,

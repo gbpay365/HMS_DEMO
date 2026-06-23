@@ -2,7 +2,7 @@
  * Chart of accounts — parity with htdocs_php/htdocs/financials-accounts.php.
  */
 const { finCoaGroupedByClass, coaClassTitle } = require('../lib/hmsFinChartOfAccounts');
-const { seedFinAccounts } = require('../lib/finAccountSeedData');
+const { seedFinAccounts, loadSeedAccounts } = require('../lib/finAccountSeedData');
 
 module.exports = function registerFinancialsChartOfAccounts(app, pool, requireAuth, requirePerm) {
  const finRead = requirePerm('accounting.read', 'accounting.write', 'financials.read', 'financials.write');
@@ -10,8 +10,8 @@ module.exports = function registerFinancialsChartOfAccounts(app, pool, requireAu
 
  app.post('/financials/accounts/seed', requireAuth, finWrite, async (req, res) => {
   try {
-   const r = await seedFinAccounts(pool, { forceUpdate: true });
-   const msg = `Chart of accounts seeded: ${r.inserted} added, ${r.updated} updated (${r.total} SYSCOHADA accounts).`;
+   const r = await seedFinAccounts(pool, { forceUpdate: true, forceReset: true });
+   const msg = `Chart of accounts seeded: ${r.inserted} added, ${r.updated} updated, ${r.deactivated || 0} legacy deactivated (${r.total} active / ${r.expected || r.total} OHADA 6-digit accounts).`;
    return res.redirect('/financials/accounts?msg=' + encodeURIComponent(msg));
   } catch (err) {
    console.error('FINANCIALS COA SEED:', err.message);
@@ -22,11 +22,20 @@ module.exports = function registerFinancialsChartOfAccounts(app, pool, requireAu
  app.get('/financials/accounts', requireAuth, finRead, async (req, res) => {
   try {
    let pack = await finCoaGroupedByClass(pool);
+   const expectedCoa = loadSeedAccounts().length;
+   let activeCount = 0;
+   try {
+    const [[c]] = await pool.query('SELECT COUNT(*) AS c FROM tbl_fin_account WHERE active = 1');
+    activeCount = Number(c?.c || 0);
+   } catch (_) {
+    /* tbl_fin_account may not exist yet */
+   }
    const hasRows =
     pack.byClass &&
     Object.keys(pack.byClass).some((k) => (pack.byClass[k] || []).length > 0);
-   if (pack.ok && !hasRows) {
-    await seedFinAccounts(pool);
+   const needsFullCoa = !hasRows || activeCount < expectedCoa - 10;
+   if (pack.ok && needsFullCoa) {
+    await seedFinAccounts(pool, { forceUpdate: activeCount > 0, forceReset: activeCount > 0 && activeCount < expectedCoa - 10 });
     pack = await finCoaGroupedByClass(pool);
    }
    const classKeys = Object.keys(pack.byClass)

@@ -47,7 +47,11 @@ var _f = report.filters || {};
 <div class="meta"><strong><%= _tc('filter_title', 'Filters') %>:</strong>
   <% var _parts = []; %>
   <% if (_f.category && _f.category !== 'all') _parts.push(_tc('filter_category', 'Category') + ': ' + _catLabel(_f.category)); %>
-  <% if (_f.method && _f.method !== 'all') _parts.push(_tc('filter_method', 'Method') + ': ' + _f.method); %>
+  <% if (_f.method && _f.method !== 'all') {
+    var _mLabel = _f.method;
+    (report.filterOptions.methods || []).forEach(function(m){ if (m.key === _f.method) _mLabel = m.label; });
+    _parts.push(_tc('filter_method', 'Method') + ': ' + _mLabel);
+  } %>
   <% if (_f.patient) _parts.push(_tc('filter_patient', 'Patient') + ': ' + _f.patient); %>
   <% if (_f.min_amount != null) _parts.push(_tc('filter_min_amount', 'Min') + ': ' + _f.min_amount); %>
   <% if (_f.max_amount != null) _parts.push(_tc('filter_max_amount', 'Max') + ': ' + _f.max_amount); %>

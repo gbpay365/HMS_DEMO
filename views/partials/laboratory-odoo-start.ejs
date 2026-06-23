@@ -37,6 +37,7 @@ var _labCanCatalog = _labHasP('service_catalog.laboratory.read', 'service_catalo
         <div class="o_nav_drop_panel">
           <a href="/laboratory/validate"><i class="fa fa-check-circle hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.validate_code', 'Validate code') %></a>
           <% if (_labHasP('lab.write')) { %><a href="/laboratory/order-alerts"><i class="fa fa-bell hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.order_alerts', 'Order alerts') %></a><% } %>
+          <% if (_labHasP('lab.read', 'lab.write')) { %><a href="/laboratory/supply-requests"><i class="fa fa-shopping-cart hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.supply_requests', 'Procurement requests') %></a><% } %>
           <a href="/lims/requests"><i class="fa fa-inbox hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.lab_requests', 'Lab requests') %></a>
           <a href="/lims/samples"><i class="fa fa-flask hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.lab_samples', 'Lab samples') %></a>
           <% if (_labHasP('lab.write')) { %><a href="/lims/config"><i class="fa fa-sliders hms-dept-nav-ico" aria-hidden="true"></i><%= _top('laboratory_odoo.lims_config', 'LIMS configuration') %></a><% } %>

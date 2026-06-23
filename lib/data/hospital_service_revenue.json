@@ -1,0 +1,653 @@
+{
+  "source": "C:\\HMS_JS",
+  "generated_at": "2026-06-21T01:22:33.766Z",
+  "accounts": [
+    {
+      "code": "701600",
+      "label": "Revenue — Consultation",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "701000",
+      "is_posting": 0,
+      "hms_category": "consultation",
+      "hms_service": "Consultation"
+    },
+    {
+      "code": "701601",
+      "label": "Revenue — Consultation — General Consultation",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "701600",
+      "is_posting": 1,
+      "hms_category": "consultation",
+      "hms_subcategory": "General Consultation"
+    },
+    {
+      "code": "701602",
+      "label": "Revenue — Consultation — Specialist Consultation",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "701600",
+      "is_posting": 1,
+      "hms_category": "consultation",
+      "hms_subcategory": "Specialist Consultation"
+    },
+    {
+      "code": "702600",
+      "label": "Revenue — Laboratory",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "702000",
+      "is_posting": 0,
+      "hms_category": "laboratory",
+      "hms_service": "Laboratory"
+    },
+    {
+      "code": "702601",
+      "label": "Revenue — Laboratory — Haematology",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "702600",
+      "is_posting": 1,
+      "hms_category": "laboratory",
+      "hms_subcategory": "Haematology"
+    },
+    {
+      "code": "702602",
+      "label": "Revenue — Laboratory — Clinical Chemistry",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "702600",
+      "is_posting": 1,
+      "hms_category": "laboratory",
+      "hms_subcategory": "Clinical Chemistry"
+    },
+    {
+      "code": "702603",
+      "label": "Revenue — Laboratory — Microbiology & Serology",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "702600",
+      "is_posting": 1,
+      "hms_category": "laboratory",
+      "hms_subcategory": "Microbiology & Serology"
+    },
+    {
+      "code": "702604",
+      "label": "Revenue — Laboratory — Urinalysis",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "702600",
+      "is_posting": 1,
+      "hms_category": "laboratory",
+      "hms_subcategory": "Urinalysis"
+    },
+    {
+      "code": "702605",
+      "label": "Revenue — Laboratory — Parasitology / Stool",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "702600",
+      "is_posting": 1,
+      "hms_category": "laboratory",
+      "hms_subcategory": "Parasitology / Stool"
+    },
+    {
+      "code": "702606",
+      "label": "Revenue — Laboratory — Others",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "702600",
+      "is_posting": 1,
+      "hms_category": "laboratory",
+      "hms_subcategory": "Others"
+    },
+    {
+      "code": "703600",
+      "label": "Revenue — Scans & Imaging",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "703000",
+      "is_posting": 0,
+      "hms_category": "scans_&_imaging",
+      "hms_service": "Scans & Imaging"
+    },
+    {
+      "code": "703601",
+      "label": "Revenue — Scans & Imaging — Ultrasound Scans",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "703600",
+      "is_posting": 1,
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "Ultrasound Scans"
+    },
+    {
+      "code": "703602",
+      "label": "Revenue — Scans & Imaging — Electrocardiography",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "703600",
+      "is_posting": 1,
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "Electrocardiography"
+    },
+    {
+      "code": "703603",
+      "label": "Revenue — Scans & Imaging — Special Radiological Procedures",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "703600",
+      "is_posting": 1,
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "Special Radiological Procedures"
+    },
+    {
+      "code": "703604",
+      "label": "Revenue — Scans & Imaging — X-Ray Examinations",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "703600",
+      "is_posting": 1,
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "X-Ray Examinations"
+    },
+    {
+      "code": "703605",
+      "label": "Revenue — Scans & Imaging — CT Scan (Computed Tomography)",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "703600",
+      "is_posting": 1,
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "CT Scan (Computed Tomography)"
+    },
+    {
+      "code": "703606",
+      "label": "Revenue — Scans & Imaging — MRI (Magnetic Resonance Imaging)",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "703600",
+      "is_posting": 1,
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "MRI (Magnetic Resonance Imaging)"
+    },
+    {
+      "code": "703607",
+      "label": "Revenue — Scans & Imaging — Nuclear Medicine / Scintigraphy",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "703600",
+      "is_posting": 1,
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "Nuclear Medicine / Scintigraphy"
+    },
+    {
+      "code": "703608",
+      "label": "Revenue — Scans & Imaging — Fluoroscopy & Special Studies",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "703600",
+      "is_posting": 1,
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "Fluoroscopy & Special Studies"
+    },
+    {
+      "code": "704600",
+      "label": "Revenue — Pharmacy",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "704000",
+      "is_posting": 0,
+      "hms_category": "pharmacy",
+      "hms_service": "Pharmacy"
+    },
+    {
+      "code": "704601",
+      "label": "Revenue — Pharmacy — Analgesics & Anti-inflammatory",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "704600",
+      "is_posting": 1,
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Analgesics & Anti-inflammatory"
+    },
+    {
+      "code": "704602",
+      "label": "Revenue — Pharmacy — Antibiotics & Antiparasitics",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "704600",
+      "is_posting": 1,
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Antibiotics & Antiparasitics"
+    },
+    {
+      "code": "704603",
+      "label": "Revenue — Pharmacy — Antifungals",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "704600",
+      "is_posting": 1,
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Antifungals"
+    },
+    {
+      "code": "704604",
+      "label": "Revenue — Pharmacy — Cardiovascular",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "704600",
+      "is_posting": 1,
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Cardiovascular"
+    },
+    {
+      "code": "704605",
+      "label": "Revenue — Pharmacy — Gastrointestinal",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "704600",
+      "is_posting": 1,
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Gastrointestinal"
+    },
+    {
+      "code": "704606",
+      "label": "Revenue — Pharmacy — Respiratory",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "704600",
+      "is_posting": 1,
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Respiratory"
+    },
+    {
+      "code": "704607",
+      "label": "Revenue — Pharmacy — Endocrine & Metabolic",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "704600",
+      "is_posting": 1,
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Endocrine & Metabolic"
+    },
+    {
+      "code": "704608",
+      "label": "Revenue — Pharmacy — Neurology",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "704600",
+      "is_posting": 1,
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Neurology"
+    },
+    {
+      "code": "704609",
+      "label": "Revenue — Pharmacy — Obstetrics",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "704600",
+      "is_posting": 1,
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Obstetrics"
+    },
+    {
+      "code": "704610",
+      "label": "Revenue — Pharmacy — Anaesthetics & Emergency",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "704600",
+      "is_posting": 1,
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Anaesthetics & Emergency"
+    },
+    {
+      "code": "704611",
+      "label": "Revenue — Pharmacy — Intravenous Fluids",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "704600",
+      "is_posting": 1,
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Intravenous Fluids"
+    },
+    {
+      "code": "704612",
+      "label": "Revenue — Pharmacy — Consumables & Surgical Materials",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "704600",
+      "is_posting": 1,
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Consumables & Surgical Materials"
+    },
+    {
+      "code": "706610",
+      "label": "Revenue — Maternity",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706000",
+      "is_posting": 0,
+      "hms_category": "maternity",
+      "hms_service": "Maternity"
+    },
+    {
+      "code": "706611",
+      "label": "Revenue — Maternity — Antenatal Care (ANC)",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706610",
+      "is_posting": 1,
+      "hms_category": "maternity",
+      "hms_subcategory": "Antenatal Care (ANC)"
+    },
+    {
+      "code": "706612",
+      "label": "Revenue — Maternity — Labour & Delivery",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706610",
+      "is_posting": 1,
+      "hms_category": "maternity",
+      "hms_subcategory": "Labour & Delivery"
+    },
+    {
+      "code": "706613",
+      "label": "Revenue — Maternity — Postnatal Care (PNC)",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706610",
+      "is_posting": 1,
+      "hms_category": "maternity",
+      "hms_subcategory": "Postnatal Care (PNC)"
+    },
+    {
+      "code": "706614",
+      "label": "Revenue — Maternity — Neonatal / Newborn Care",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706610",
+      "is_posting": 1,
+      "hms_category": "maternity",
+      "hms_subcategory": "Neonatal / Newborn Care"
+    },
+    {
+      "code": "706615",
+      "label": "Revenue — Maternity — Obstetric Complications & Emergency",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706610",
+      "is_posting": 1,
+      "hms_category": "maternity",
+      "hms_subcategory": "Obstetric Complications & Emergency"
+    },
+    {
+      "code": "706620",
+      "label": "Revenue — Surgery",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706000",
+      "is_posting": 0,
+      "hms_category": "surgery",
+      "hms_service": "Surgery"
+    },
+    {
+      "code": "706621",
+      "label": "Revenue — Surgery — General Surgery",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706620",
+      "is_posting": 1,
+      "hms_category": "surgery",
+      "hms_subcategory": "General Surgery"
+    },
+    {
+      "code": "706622",
+      "label": "Revenue — Surgery — Obstetrics & Gynecology",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706620",
+      "is_posting": 1,
+      "hms_category": "surgery",
+      "hms_subcategory": "Obstetrics & Gynecology"
+    },
+    {
+      "code": "706623",
+      "label": "Revenue — Surgery — Orthopedics & Trauma",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706620",
+      "is_posting": 1,
+      "hms_category": "surgery",
+      "hms_subcategory": "Orthopedics & Trauma"
+    },
+    {
+      "code": "706624",
+      "label": "Revenue — Surgery — Urology",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706620",
+      "is_posting": 1,
+      "hms_category": "surgery",
+      "hms_subcategory": "Urology"
+    },
+    {
+      "code": "706625",
+      "label": "Revenue — Surgery — ENT",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706620",
+      "is_posting": 1,
+      "hms_category": "surgery",
+      "hms_subcategory": "ENT"
+    },
+    {
+      "code": "706626",
+      "label": "Revenue — Surgery — Ophthalmology",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706620",
+      "is_posting": 1,
+      "hms_category": "surgery",
+      "hms_subcategory": "Ophthalmology"
+    },
+    {
+      "code": "706630",
+      "label": "Revenue — Nursing & Ward",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706000",
+      "is_posting": 0,
+      "hms_category": "nursing_&_ward",
+      "hms_service": "Nursing & Ward"
+    },
+    {
+      "code": "706631",
+      "label": "Revenue — Nursing & Ward — Nursing & Ward Services",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706630",
+      "is_posting": 1,
+      "hms_category": "nursing_&_ward",
+      "hms_subcategory": "Nursing & Ward Services"
+    },
+    {
+      "code": "706640",
+      "label": "Revenue — Vaccination",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706000",
+      "is_posting": 0,
+      "hms_category": "vaccination",
+      "hms_service": "Vaccination"
+    },
+    {
+      "code": "706641",
+      "label": "Revenue — Vaccination — Vaccination — Routine EPI dose",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706640",
+      "is_posting": 1,
+      "hms_category": "vaccination",
+      "hms_subcategory": "Vaccination — Routine EPI dose"
+    },
+    {
+      "code": "706642",
+      "label": "Revenue — Vaccination — Vaccination — Travel vaccine",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706640",
+      "is_posting": 1,
+      "hms_category": "vaccination",
+      "hms_subcategory": "Vaccination — Travel vaccine"
+    },
+    {
+      "code": "706643",
+      "label": "Revenue — Vaccination — Vaccination — Occupational / Hep B series",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706640",
+      "is_posting": 1,
+      "hms_category": "vaccination",
+      "hms_subcategory": "Vaccination — Occupational / Hep B series"
+    },
+    {
+      "code": "706644",
+      "label": "Revenue — Vaccination — Vaccination — Influenza",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706640",
+      "is_posting": 1,
+      "hms_category": "vaccination",
+      "hms_subcategory": "Vaccination — Influenza"
+    },
+    {
+      "code": "706645",
+      "label": "Revenue — Vaccination — Vaccination — COVID-19",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706640",
+      "is_posting": 1,
+      "hms_category": "vaccination",
+      "hms_subcategory": "Vaccination — COVID-19"
+    },
+    {
+      "code": "706646",
+      "label": "Revenue — Vaccination — Immunization card / certificate",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706640",
+      "is_posting": 1,
+      "hms_category": "vaccination",
+      "hms_subcategory": "Immunization card / certificate"
+    },
+    {
+      "code": "706647",
+      "label": "Revenue — Vaccination — Vaccination counselling session",
+      "ohada_class": 7,
+      "account_type": "income",
+      "parent_code": "706640",
+      "is_posting": 1,
+      "hms_category": "vaccination",
+      "hms_subcategory": "Vaccination counselling session"
+    }
+  ],
+  "mapping": [
+    {
+      "parent_gl": "701000",
+      "category": "Consultation",
+      "subcategories": [
+        "General Consultation",
+        "Specialist Consultation"
+      ]
+    },
+    {
+      "parent_gl": "702000",
+      "category": "Laboratory",
+      "subcategories": [
+        "Haematology",
+        "Clinical Chemistry",
+        "Microbiology & Serology",
+        "Urinalysis",
+        "Parasitology / Stool",
+        "Others"
+      ]
+    },
+    {
+      "parent_gl": "703000",
+      "category": "Scans & Imaging",
+      "subcategories": [
+        "Ultrasound Scans",
+        "Electrocardiography",
+        "Special Radiological Procedures",
+        "X-Ray Examinations",
+        "CT Scan (Computed Tomography)",
+        "MRI (Magnetic Resonance Imaging)",
+        "Nuclear Medicine / Scintigraphy",
+        "Fluoroscopy & Special Studies"
+      ]
+    },
+    {
+      "parent_gl": "704000",
+      "category": "Pharmacy",
+      "subcategories": [
+        "Analgesics & Anti-inflammatory",
+        "Antibiotics & Antiparasitics",
+        "Antifungals",
+        "Cardiovascular",
+        "Gastrointestinal",
+        "Respiratory",
+        "Endocrine & Metabolic",
+        "Neurology",
+        "Obstetrics",
+        "Anaesthetics & Emergency",
+        "Intravenous Fluids",
+        "Consumables & Surgical Materials"
+      ]
+    },
+    {
+      "parent_gl": "706000",
+      "category": "Maternity",
+      "subcategories": [
+        "Antenatal Care (ANC)",
+        "Labour & Delivery",
+        "Postnatal Care (PNC)",
+        "Neonatal / Newborn Care",
+        "Obstetric Complications & Emergency"
+      ]
+    },
+    {
+      "parent_gl": "706000",
+      "category": "Surgery",
+      "subcategories": [
+        "General Surgery",
+        "Obstetrics & Gynecology",
+        "Orthopedics & Trauma",
+        "Urology",
+        "ENT",
+        "Ophthalmology"
+      ]
+    },
+    {
+      "parent_gl": "706000",
+      "category": "Nursing & Ward",
+      "subcategories": [
+        "Nursing & Ward Services"
+      ]
+    },
+    {
+      "parent_gl": "706000",
+      "category": "Vaccination",
+      "subcategories": [
+        "Vaccination — Routine EPI dose",
+        "Vaccination — Travel vaccine",
+        "Vaccination — Occupational / Hep B series",
+        "Vaccination — Influenza",
+        "Vaccination — COVID-19",
+        "Immunization card / certificate",
+        "Vaccination counselling session"
+      ]
+    }
+  ]
+}

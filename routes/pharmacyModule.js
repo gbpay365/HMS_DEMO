@@ -12,6 +12,7 @@ const { ensureProcurementExtendedSchema } = require('../lib/ensureProcurementExt
 const { parseQtyWithUom, PROCUREMENT_UNITS } = require('../lib/procurementQty');
 const { tableExists } = require('../lib/hmsFinGeneralLedger');
 const recordInventoryMovement = require('../lib/recordInventoryMovement');
+const { postPurchaseOrderToGl, purchaseOrderJournalSuffix } = require('../lib/finPurchaseOrderJournal');
 
 module.exports = function registerPharmacyModule(app, pool, requireAuth, requirePerm) {
   const phaRead = requirePerm('pharmacy.read', 'pharmacy.write');
@@ -400,8 +401,22 @@ module.exports = function registerPharmacyModule(app, pool, requireAuth, require
         `UPDATE tbl_purchase_order SET status = 'received', issued_at = COALESCE(issued_at, NOW()), issued_by = COALESCE(issued_by, ?) WHERE id = ?`,
         [user, poId]
       );
+      let glSuffix = '';
+      try {
+        const glCode = await postPurchaseOrderToGl(pool, {
+          facilityId: fid,
+          poId,
+          po: detail.po,
+          lines: detail.lines,
+          stockKind: 'pharmacy',
+          createdBy: user,
+        });
+        glSuffix = purchaseOrderJournalSuffix(glCode);
+      } catch (_) {
+        /* non-blocking */
+      }
       return res.redirect(
-        '/pharmacy/purchase-orders/' + poId + '?msg=' + encodeURIComponent('Goods received — stock updated.')
+        '/pharmacy/purchase-orders/' + poId + '?msg=' + encodeURIComponent('Goods received — stock updated.' + glSuffix)
       );
     } catch (e) {
       return res.redirect('/pharmacy/purchase-orders/' + poId + '?err=' + encodeURIComponent(e.message));

@@ -11,6 +11,7 @@ const { insertPoAudit, loadPoAudit } = require('../lib/procurementPoAudit');
 const { PROCUREMENT_UNITS, normalizeProcurementUom } = require('../lib/procurementUnits');
 const { parseQtyWithUom } = require('../lib/procurementQty');
 const { suggestInventoryId, loadInventoryPickList } = require('../lib/procurementInventoryMatch');
+const { postPurchaseOrderToGl, purchaseOrderJournalSuffix } = require('../lib/finPurchaseOrderJournal');
 
 const VENDOR_CLASSES = ['pharmaceutical', 'consumables', 'equipment', 'services', 'general'];
 
@@ -415,7 +416,21 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
     `UPDATE tbl_purchase_order SET status = 'received' WHERE id = ? AND facility_id = ?`,
     [id, fid]
    );
-   return res.redirect('/procurement/purchase-orders/' + id + '?msg=' + encodeURIComponent('Goods received — inventory updated.'));
+   let glSuffix = '';
+   try {
+    const glCode = await postPurchaseOrderToGl(pool, {
+     facilityId: fid,
+     poId: id,
+     po: detail.po,
+     lines: detail.lines,
+     stockKind: 'procurement',
+     createdBy: uid,
+    });
+    glSuffix = purchaseOrderJournalSuffix(glCode);
+   } catch (_) {
+    /* non-blocking */
+   }
+   return res.redirect('/procurement/purchase-orders/' + id + '?msg=' + encodeURIComponent('Goods received — inventory updated.' + glSuffix));
   } catch (e) {
    return res.redirect('/procurement/purchase-orders/' + id + '?err=' + encodeURIComponent(e.message || 'Receive failed.'));
   }

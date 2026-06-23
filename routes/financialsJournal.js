@@ -111,45 +111,30 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
   const fid = parseInt(String(req.session.facilityId || 1), 10) || 1;
   const id = parseInt(String(req.query.id || '0'), 10) || 0;
   if (id < 1) return res.redirect('/financials/journal');
-  let header = null;
-  let lines = [];
   try {
-   const [[h]] = await pool.query(
-    'SELECT * FROM tbl_fin_journal_header WHERE id = ? AND facility_id = ? LIMIT 1',
-    [id, fid]
-   );
-   header = h || null;
-   if (header) {
-    const [lr] = await pool.query(
-     `SELECT jl.id, jl.account_code AS acode, jl.account_label AS alabel,
-             jl.debit, jl.credit, jl.line_memo
-      FROM tbl_fin_journal_line jl
-      WHERE jl.journal_id = ?
-      ORDER BY jl.id ASC`,
-     [id]
-    );
-    lines = (Array.isArray(lr) ? lr : []).map((row) => ({
-     ...row,
-     line_memo: row.line_memo || '',
-    }));
-   }
+   const { loadJournalDetailContext } = require('../lib/finJournalDetail');
+   const ctx = await loadJournalDetailContext(pool, id, fid);
+   if (!ctx?.header) return res.redirect('/financials/journal');
+   const { journalViewPayload } = require('../lib/finReactPayloads');
+   res.render('financials-journal-view', {
+    title: `Journal #${id} — ZAIZENS`,
+    ...journalViewPayload({
+     j: ctx.header,
+     lines: ctx.lines,
+     detail: {
+      cashierTxn: ctx.cashierTxn,
+      billing: ctx.billing,
+      patient: ctx.patient,
+      ticket: ctx.ticket,
+      ticketLines: ctx.ticketLines,
+     },
+     flash: req.query.msg || null,
+     error: req.query.err || null,
+    }),
+   });
   } catch (e) {
    return res.status(500).render('error', { title: 'Error', message: e.message || 'Load failed', status: 500 });
   }
-  if (!header) return res.redirect('/financials/journal');
-  if (header) {
-   header = { ...header, entry_date: formatDisplayDate(header.entry_date), created_at_display: formatDisplayDate(header.created_at) };
-  }
-  const { journalViewPayload } = require('../lib/finReactPayloads');
-  res.render('financials-journal-view', {
-   title: `Journal #${id} — ZAIZENS`,
-   ...journalViewPayload({
-    j: header,
-    lines,
-    flash: req.query.msg || null,
-    error: req.query.err || null,
-   }),
-  });
  });
 
  app.get('/financials/journal-new', requireAuth, finWrite, ensureTables, async (req, res) => {

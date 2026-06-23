@@ -1,0 +1,5 @@
+{"sessionId":"968473","location":"app.js:login","message":"cashier identity attached","data":{"userId":1250,"cashierCode":null,"cashierIdentity":null},"timestamp":1782035014680,"hypothesisId":"H1","runId":"post-fix"}
+{"sessionId":"968473","location":"app.js:cashier-get","message":"cashier page identity","data":{"cashierCode":null,"cashierIdentity":null},"timestamp":1782035385419,"hypothesisId":"H2","runId":"post-fix"}
+{"sessionId":"968473","location":"app.js:login-post","message":"staff login redirect","data":{"role":"107","dest":null,"portalCount":0,"cacheReady":false},"timestamp":1782038867998,"hypothesisId":"A","runId":"post-fix"}
+{"sessionId":"968473","location":"app.js:login-post","message":"staff login redirect","data":{"role":"107","dest":null,"portalCount":0,"cacheReady":false},"timestamp":1782039002551,"hypothesisId":"A","runId":"post-fix"}
+{"sessionId":"968473","location":"app.js:login-post","message":"staff login redirect","data":{"role":"107","dest":null,"portalCount":0,"cacheReady":false},"timestamp":1782039121990,"hypothesisId":"A","runId":"post-fix"}

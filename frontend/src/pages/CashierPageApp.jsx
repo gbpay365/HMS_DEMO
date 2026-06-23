@@ -19,6 +19,7 @@ import { ErSettleModal } from '../modals/ErSettleModal';
 import { OpdOrdersBillModal } from '../modals/OpdOrdersBillModal';
 import { OpdRefundModal } from '../modals/OpdRefundModal';
 import { CashierBillingModal } from '../modals/CashierBillingModal';
+import { CashierDisbursementModal } from '../modals/CashierDisbursementModal';
 import { FaIcon } from '../components/FaIcon';
 
 const RX_CODE_KEYS = {
@@ -125,7 +126,8 @@ export function CashierPageApp({
   specialistSpecialisations = [],
   paymentMethods = [],
   flash = null,
-  error = null}) {
+  error = null,
+  cashierIdentity = null}) {
   const { t } = useTranslation('clinical');
   const { t: tIpd } = useTranslation('ipd');
   const [tab, setTab] = useState('pending');
@@ -145,6 +147,7 @@ export function CashierPageApp({
   const [retryBusy, setRetryBusy] = useState(false);
   const [prepayDefaults, setPrepayDefaults] = useState(null);
   const [billingOpen, setBillingOpen] = useState(false);
+  const [disbursementOpen, setDisbursementOpen] = useState(false);
   const [batchDate, setBatchDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [batchFormat, setBatchFormat] = useState('receipt');
   const [selectedReceiptCodes, setSelectedReceiptCodes] = useState(() => new Set());
@@ -321,6 +324,15 @@ export function CashierPageApp({
         <FlashMessages flash={flash} error={error} />
 
         <SurfaceHero icon="money-bill-wave" title={t('cashier.title')} subtitle={t('cashier.subtitle')}>
+          {cashierIdentity?.code ? (
+            <div className="mt-3 inline-flex flex-wrap items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-4 py-2 text-sm text-ink">
+              <FaIcon name="id-badge" className="text-brand" />
+              <span className="font-semibold text-slate-600">{t('cashier.identity_label')}</span>
+              <span className="font-mono font-bold text-brand">{cashierIdentity.code}</span>
+              <span className="text-slate-400">·</span>
+              <span className="font-semibold">{cashierIdentity.identity}</span>
+            </div>
+          ) : null}
           <div className="hms-surface-hero-actions mt-4 flex flex-wrap gap-3">
             <button type="button" className="hms-btn-primary px-6 py-3 text-base" onClick={() => setPrepayOpen(true)}>
               <FaIcon name="ticket" /> {t('cashier.issue_payment')}
@@ -339,6 +351,12 @@ export function CashierPageApp({
             <a href="/cashier/eod-reconciliation" className="hms-btn-secondary inline-flex items-center gap-2 px-6 py-3 text-base no-underline">
               <FaIcon name="balance-scale" /> {t('cashier.eod_reconciliation_link')}
             </a>
+            <a href="/cashier/ledger" className="hms-btn-secondary inline-flex items-center gap-2 px-6 py-3 text-base no-underline">
+              <FaIcon name="book" /> {t('cashier.ledger_link')}
+            </a>
+            <button type="button" className="hms-btn-secondary px-6 py-3 text-base" onClick={() => setDisbursementOpen(true)}>
+              <FaIcon name="money" /> {t('cashier.disbursement_link')}
+            </button>
           </div>
         </SurfaceHero>
 
@@ -1010,6 +1028,7 @@ export function CashierPageApp({
         surgeryCatalog={surgeryCatalog}
         svcCatalog={svcCatalog}
       />
+      <CashierDisbursementModal open={disbursementOpen} onClose={() => setDisbursementOpen(false)} paymentMethods={paymentMethods} />
       <CashierPrepayModal
         open={prepayOpen}
         onClose={() => {

@@ -368,6 +368,10 @@ module.exports = function registerHrPayrollRoutes(app, pool, requireAuth, deps) 
  });
 
  app.post('/payroll/process-month', requireAuth, requirePayrollAccess, requireAdminOrSuper, async (req, res) => {
+  const { isAccountCoreMode } = require('../lib/integrationConfig');
+  if (isAccountCoreMode()) {
+   return res.redirect('/payroll/monthly?err=' + encodeURIComponent('Monthly payroll is processed in Account_Core.'));
+  }
   const fid = facilityId(req);
   const month = Math.max(1, Math.min(12, parseInt(req.body.month, 10) || 1));
   const year = Math.max(2000, Math.min(2100, parseInt(req.body.year, 10) || new Date().getFullYear()));
@@ -892,6 +896,10 @@ module.exports = function registerHrPayrollRoutes(app, pool, requireAuth, deps) 
  });
 
  app.post('/payroll/profiles/save', requireAuth, requirePayrollAccess, requireAdminOrSuper, async (req, res) => {
+  const { isAccountCoreMode } = require('../lib/integrationConfig');
+  if (isAccountCoreMode()) {
+   return res.redirect('/payroll/profiles?err=' + encodeURIComponent('Salary profiles are managed in Account_Core.'));
+  }
   const fid = facilityId(req);
   try {
    await ensureHrPayrollSchema(pool);
@@ -1550,8 +1558,10 @@ module.exports = function registerHrPayrollRoutes(app, pool, requireAuth, deps) 
   }
  });
 
- /** Self: payslips from payroll records */
+ /** Self: payslips from payroll records — blocked when Account_Core integration is active */
  app.get('/hr/my-payslips', requireAuth, requireHrSelfService, async (req, res) => {
+  const { blockPayrollSelfService } = require('../lib/payrollSelfServiceGuard');
+  if (blockPayrollSelfService(req, res)) return;
   try {
    await ensureHrPayrollSchema(pool);
    const fid = facilityId(req);

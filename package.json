@@ -28,14 +28,16 @@
     "check:bootstrap-modals:strict": "node scripts/check-bootstrap-modals.mjs --strict",
     "check:mirror-drift": "node scripts/check-mirror-drift.mjs",
     "migrate:ui-legacy": "node scripts/migrate-ejs-legacy-ui.mjs",
-    "migrate:postgres": "node scripts/migrate-mysql-to-postgres.js"
+    "migrate:postgres": "node scripts/migrate-mysql-to-postgres.js",
+    "sync:journals-to-core": "node scripts/sync-journals-to-account-core.js",
+    "sync:products-to-core": "node scripts/sync-products-to-account-core.js",
+    "sync:cashier-to-core": "node scripts/retry-core-account-sync.js"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "connect-pg-simple": "^10.0.0",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.3.1",
     "ejs": "^3.1.9",

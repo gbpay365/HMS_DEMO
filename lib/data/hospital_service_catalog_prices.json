@@ -1,0 +1,3605 @@
+{
+  "source": "C:\\HMS_JS",
+  "generated_at": "2026-06-21T01:22:33.824Z",
+  "currency": "XAF",
+  "by_account_code": {
+    "701601": {
+      "account_code": "701601",
+      "label": "Revenue — Consultation — General Consultation",
+      "hms_category": "consultation",
+      "hms_subcategory": "General Consultation",
+      "services": [
+        {
+          "key": "C001",
+          "name": "General Consultation",
+          "price": 2000
+        }
+      ],
+      "default_price": 2000
+    },
+    "701602": {
+      "account_code": "701602",
+      "label": "Revenue — Consultation — Specialist Consultation",
+      "hms_category": "consultation",
+      "hms_subcategory": "Specialist Consultation",
+      "services": [
+        {
+          "key": "C010",
+          "name": "Specialist Consultation",
+          "price": 5000
+        }
+      ],
+      "default_price": 5000
+    },
+    "702601": {
+      "account_code": "702601",
+      "label": "Revenue — Laboratory — Haematology",
+      "hms_category": "laboratory",
+      "hms_subcategory": "Haematology",
+      "services": [
+        {
+          "key": "APTT",
+          "name": "Activated Partial Thromboplastin Time (aPTT)",
+          "price": 8000
+        },
+        {
+          "key": "BLEED_CLOTT",
+          "name": "Bleeding / clotting time",
+          "price": 2000
+        },
+        {
+          "key": "BG_RH",
+          "name": "Blood Group & Rhesus Factor",
+          "price": 2000
+        },
+        {
+          "key": "XMATCH",
+          "name": "Cross-Match",
+          "price": 5000
+        },
+        {
+          "key": "CSF",
+          "name": "CSF",
+          "price": 3500
+        },
+        {
+          "key": "ESR",
+          "name": "Erythrocyte Sedimentation Rate (ESR)",
+          "price": 1500
+        },
+        {
+          "key": "FLUID_ANAL",
+          "name": "Fluid analysis",
+          "price": 2000
+        },
+        {
+          "key": "FBC",
+          "name": "Full Blood Count (FBC / CBC)",
+          "price": 6000
+        },
+        {
+          "key": "HB",
+          "name": "Haemoglobin (Hb) Estimation",
+          "price": 1500
+        },
+        {
+          "key": "HB_ELECTRO",
+          "name": "HB ELECTROPHORESIS",
+          "price": 7000
+        },
+        {
+          "key": "PBF",
+          "name": "Peripheral Blood Film",
+          "price": 2000
+        },
+        {
+          "key": "PLT",
+          "name": "Platelet Count",
+          "price": 2000
+        },
+        {
+          "key": "PT_INR",
+          "name": "Prothrombin Time (PT/INR)",
+          "price": 8000
+        },
+        {
+          "key": "RETIC",
+          "name": "Reticulocyte Count",
+          "price": 2000
+        },
+        {
+          "key": "SPUTUM_AFB",
+          "name": "Sputum AFB",
+          "price": 1500
+        },
+        {
+          "key": "WBC_TOTAL",
+          "name": "Total WBC",
+          "price": 1000
+        },
+        {
+          "key": "WBC_DIFF",
+          "name": "WBC differential",
+          "price": 1500
+        }
+      ],
+      "default_price": 2000
+    },
+    "702602": {
+      "account_code": "702602",
+      "label": "Revenue — Laboratory — Clinical Chemistry",
+      "hms_category": "laboratory",
+      "hms_subcategory": "Clinical Chemistry",
+      "services": [
+        {
+          "key": "AFP",
+          "name": "AFP",
+          "price": 10000
+        },
+        {
+          "key": "ALB",
+          "name": "Albumin",
+          "price": 2500
+        },
+        {
+          "key": "ALP",
+          "name": "Alkaline Phosphatase (ALP)",
+          "price": 2500
+        },
+        {
+          "key": "ALT",
+          "name": "ALT (SGPT)",
+          "price": 3500
+        },
+        {
+          "key": "AMYL",
+          "name": "Amylase",
+          "price": 2500
+        },
+        {
+          "key": "AST",
+          "name": "AST (SGOT)",
+          "price": 3500
+        },
+        {
+          "key": "CRP",
+          "name": "C-Reactive Protein (CRP)",
+          "price": 2500
+        },
+        {
+          "key": "CA",
+          "name": "Calcium (Ca2+)",
+          "price": 2500
+        },
+        {
+          "key": "CL",
+          "name": "Chloride (Cl-)",
+          "price": 2500
+        },
+        {
+          "key": "CREA",
+          "name": "Creatinine",
+          "price": 2500
+        },
+        {
+          "key": "BILI_D",
+          "name": "Direct Bilirubin",
+          "price": 2500
+        },
+        {
+          "key": "LYTES",
+          "name": "Electrolytes Panel (Na/K/Cl)",
+          "price": 15000
+        },
+        {
+          "key": "FBS",
+          "name": "Fasting Blood Sugar(FBS)",
+          "price": 1000
+        },
+        {
+          "key": "FSH",
+          "name": "FSH",
+          "price": 10000
+        },
+        {
+          "key": "GGT",
+          "name": "GGT (Gamma GT)",
+          "price": 2500
+        },
+        {
+          "key": "HBA1C",
+          "name": "HbA1c (Glycated Haemoglobin)",
+          "price": 6000
+        },
+        {
+          "key": "LH",
+          "name": "LH",
+          "price": 10000
+        },
+        {
+          "key": "LIPASE",
+          "name": "Lipase",
+          "price": 2500
+        },
+        {
+          "key": "LIPID",
+          "name": "Lipid Profile — Full Panel",
+          "price": 12000
+        },
+        {
+          "key": "LFT",
+          "name": "Liver Function Tests (LFT) — Full Panel",
+          "price": 15000
+        },
+        {
+          "key": "MG",
+          "name": "Magnesium",
+          "price": 2500
+        },
+        {
+          "key": "OESTROGEN",
+          "name": "Oestrogen",
+          "price": 10000
+        },
+        {
+          "key": "PHOS",
+          "name": "Phosphate",
+          "price": 2500
+        },
+        {
+          "key": "K",
+          "name": "Potassium (K+)",
+          "price": 2500
+        },
+        {
+          "key": "PREG_TEST",
+          "name": "Pregnancy Test",
+          "price": 1500
+        },
+        {
+          "key": "PROGEST",
+          "name": "Progesterone",
+          "price": 10000
+        },
+        {
+          "key": "PROLACTIN",
+          "name": "Prolactin",
+          "price": 10000
+        },
+        {
+          "key": "PSA",
+          "name": "PSA (Prostate-Specific Antigen)",
+          "price": 12000
+        },
+        {
+          "key": "RBS",
+          "name": "Random Blood Sugar (RBS)",
+          "price": 1000
+        },
+        {
+          "key": "URIC",
+          "name": "Serum Uric Acid",
+          "price": 2500
+        },
+        {
+          "key": "NA",
+          "name": "Sodium (Na+)",
+          "price": 2500
+        },
+        {
+          "key": "FT3",
+          "name": "T3 Free",
+          "price": 10000
+        },
+        {
+          "key": "FT4",
+          "name": "T4 Free",
+          "price": 10000
+        },
+        {
+          "key": "TESTO",
+          "name": "Testosterone",
+          "price": 10000
+        },
+        {
+          "key": "THYROID",
+          "name": "Thyroid Profile (TSH + FT3 + FT4)",
+          "price": 30000
+        },
+        {
+          "key": "BILI_T",
+          "name": "Total Bilirubin",
+          "price": 2500
+        },
+        {
+          "key": "TP",
+          "name": "Total Protein",
+          "price": 2500
+        },
+        {
+          "key": "TSH",
+          "name": "TSH (Thyroid Stimulating Hormone)",
+          "price": 10000
+        },
+        {
+          "key": "UREA",
+          "name": "Urea",
+          "price": 2500
+        },
+        {
+          "key": "RENAL_FULL",
+          "name": "Urea + Creatinine + calcium, uric acid, albumin, glucose, CO2 (Renal Panel)",
+          "price": 15000
+        }
+      ],
+      "default_price": 2500
+    },
+    "702603": {
+      "account_code": "702603",
+      "label": "Revenue — Laboratory — Microbiology & Serology",
+      "hms_category": "laboratory",
+      "hms_subcategory": "Microbiology & Serology",
+      "services": [
+        {
+          "key": "AFB",
+          "name": "AFB Smear (TB/Tuberculosis)",
+          "price": 6000
+        },
+        {
+          "key": "ASLO",
+          "name": "ASLO",
+          "price": 3000
+        },
+        {
+          "key": "BC_S",
+          "name": "Blood Culture & Sensitivity",
+          "price": 10000
+        },
+        {
+          "key": "BODY_FL_C",
+          "name": "Body fluid culture",
+          "price": 7000
+        },
+        {
+          "key": "CHLAM_IGG",
+          "name": "Chlamydia IgG",
+          "price": 6000
+        },
+        {
+          "key": "CHLAM_IGM",
+          "name": "Chlamydia IgM",
+          "price": 6000
+        },
+        {
+          "key": "CRAG",
+          "name": "CrAg",
+          "price": 5000
+        },
+        {
+          "key": "FUNG_SCRUB",
+          "name": "Fungal scrubbing",
+          "price": 1500
+        },
+        {
+          "key": "FUNGI_C",
+          "name": "Fungi culture",
+          "price": 7000
+        },
+        {
+          "key": "GENEXPERT",
+          "name": "Genexpert MTB/RIF",
+          "price": 0
+        },
+        {
+          "key": "HBSAG",
+          "name": "HBsAg (Hepatitis B Surface Antigen)",
+          "price": 3000
+        },
+        {
+          "key": "HEP_B_PANEL",
+          "name": "Hepatitis B Panel",
+          "price": 10000
+        },
+        {
+          "key": "HCV",
+          "name": "Hepatitis C Antibody (Anti-HCV)",
+          "price": 3000
+        },
+        {
+          "key": "HIV_ELISA",
+          "name": "HIV 1 & 2 Screening (ELISA)",
+          "price": 0
+        },
+        {
+          "key": "HIV_RDT",
+          "name": "HIV Rapid Test",
+          "price": 1000
+        },
+        {
+          "key": "MAL_RDT",
+          "name": "Malaria RDT (Rapid Test)",
+          "price": 1500
+        },
+        {
+          "key": "MAL_FILM",
+          "name": "Malaria Thick/Thin Film",
+          "price": 1500
+        },
+        {
+          "key": "PUS_C",
+          "name": "Pus culture",
+          "price": 7000
+        },
+        {
+          "key": "RF",
+          "name": "Rheumatoid Factor",
+          "price": 3000
+        },
+        {
+          "key": "SEMEN_ANAL",
+          "name": "Semen analysis",
+          "price": 10000
+        },
+        {
+          "key": "SEMEN_C",
+          "name": "Semen culture",
+          "price": 10000
+        },
+        {
+          "key": "SPUTUM_C",
+          "name": "Sputum Culture",
+          "price": 7000
+        },
+        {
+          "key": "STOOL_C_S",
+          "name": "Stool Culture & Sensitivity",
+          "price": 8000
+        },
+        {
+          "key": "SWAB_C",
+          "name": "Swab culture",
+          "price": 7000
+        },
+        {
+          "key": "TORCH",
+          "name": "TORCH",
+          "price": 10000
+        },
+        {
+          "key": "TOXO",
+          "name": "TOXO",
+          "price": 3000
+        },
+        {
+          "key": "TPHA",
+          "name": "TPHA (Treponema Confirmation)",
+          "price": 3000
+        },
+        {
+          "key": "UC_S",
+          "name": "Urine Culture & Sensitivity",
+          "price": 8000
+        },
+        {
+          "key": "VS_US_C",
+          "name": "V/S / U/S Culture",
+          "price": 7000
+        },
+        {
+          "key": "VDRL",
+          "name": "VDRL / RPR (Syphilis Screening)",
+          "price": 2000
+        },
+        {
+          "key": "WIDAL",
+          "name": "Widal Test (Typhoid)",
+          "price": 2000
+        }
+      ],
+      "default_price": 6000
+    },
+    "702604": {
+      "account_code": "702604",
+      "label": "Revenue — Laboratory — Urinalysis",
+      "hms_category": "laboratory",
+      "hms_subcategory": "Urinalysis",
+      "services": [
+        {
+          "key": "UR_PROT24",
+          "name": "24-hour Urine Protein",
+          "price": 0
+        },
+        {
+          "key": "UR_DIP",
+          "name": "Urine Dipstick (Routine)",
+          "price": 1000
+        },
+        {
+          "key": "UR_MICRO",
+          "name": "Urine Microscopy (Full Urinalysis)",
+          "price": 1500
+        },
+        {
+          "key": "UR_HCG",
+          "name": "Urine Pregnancy Test (Qualitative)",
+          "price": 1500
+        }
+      ],
+      "default_price": 1500
+    },
+    "702605": {
+      "account_code": "702605",
+      "label": "Revenue — Laboratory — Parasitology / Stool",
+      "hms_category": "laboratory",
+      "hms_subcategory": "Parasitology / Stool",
+      "services": [
+        {
+          "key": "FILARIA",
+          "name": "Filaria",
+          "price": 2000
+        },
+        {
+          "key": "HPYLORI",
+          "name": "H. Pylori Antigen (Stool)",
+          "price": 3000
+        },
+        {
+          "key": "HS",
+          "name": "H/S",
+          "price": 3000
+        },
+        {
+          "key": "STOOL_OB",
+          "name": "Occult Blood (Stool)",
+          "price": 3000
+        },
+        {
+          "key": "STOOL_OVP",
+          "name": "Stool Microscopy (Ova & Parasites)",
+          "price": 1500
+        },
+        {
+          "key": "US",
+          "name": "U/S",
+          "price": 2000
+        },
+        {
+          "key": "VS",
+          "name": "V/S",
+          "price": 2000
+        }
+      ],
+      "default_price": 2000
+    },
+    "702606": {
+      "account_code": "702606",
+      "label": "Revenue — Laboratory — Others",
+      "hms_category": "laboratory",
+      "hms_subcategory": "Others",
+      "services": [
+        {
+          "key": "BLOOD_SCR",
+          "name": "Blood Screening",
+          "price": 15000
+        },
+        {
+          "key": "XMATCH_DONOR",
+          "name": "Cross match (blood screening with Donor)",
+          "price": 20000
+        },
+        {
+          "key": "XMATCH_ONLY",
+          "name": "Only cross match",
+          "price": 5000
+        },
+        {
+          "key": "TRANSFUSION",
+          "name": "Transfusion bill",
+          "price": 10000
+        }
+      ],
+      "default_price": 12500
+    },
+    "703601": {
+      "account_code": "703601",
+      "label": "Revenue — Scans & Imaging — Ultrasound Scans",
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "Ultrasound Scans",
+      "services": [
+        {
+          "key": "US_ABD",
+          "name": "Abdominal Ultrasound",
+          "price": 7000
+        },
+        {
+          "key": "US_ABDPEL",
+          "name": "Abdominopelvic Ultrasound",
+          "price": 15000
+        },
+        {
+          "key": "US_ART",
+          "name": "Articular Ultrasound (Wrist/Knee/Ankle/Elbow/Shoulder/Hip)",
+          "price": 25000
+        },
+        {
+          "key": "US_BREAST",
+          "name": "Breast Ultrasound",
+          "price": 13000
+        },
+        {
+          "key": "US_CERV",
+          "name": "Cervical / Neck Ultrasound",
+          "price": 10000
+        },
+        {
+          "key": "US_DOP_ART",
+          "name": "Doppler Arterial",
+          "price": 35000
+        },
+        {
+          "key": "US_DOP_TES",
+          "name": "Doppler Testicular",
+          "price": 35000
+        },
+        {
+          "key": "US_DOP_VEN",
+          "name": "Doppler Venous",
+          "price": 35000
+        },
+        {
+          "key": "US_ECHO_CTL",
+          "name": "Echo Control (Follow-up)",
+          "price": 23000
+        },
+        {
+          "key": "US_ENDOVAG",
+          "name": "Endovaginal Ultrasound",
+          "price": 15000
+        },
+        {
+          "key": "US_FOLL",
+          "name": "Follicular Ultrasound",
+          "price": 15000
+        },
+        {
+          "key": "US_ECHO",
+          "name": "Heart Echocardiography",
+          "price": 25000
+        },
+        {
+          "key": "US_HYSTERO",
+          "name": "Hysterosonography / Sonohysterography",
+          "price": 25000
+        },
+        {
+          "key": "US_OBST",
+          "name": "Obstetrical Ultrasound",
+          "price": 7000
+        },
+        {
+          "key": "US_EYE",
+          "name": "Ocular / Eye Ultrasound",
+          "price": 15000
+        },
+        {
+          "key": "US_PELV",
+          "name": "Pelvic Ultrasound",
+          "price": 7000
+        },
+        {
+          "key": "US_PLEUR",
+          "name": "Pleural / Lung Ultrasound",
+          "price": 10000
+        },
+        {
+          "key": "US_PUNCT",
+          "name": "Puncture / Biopsy Guidance (Ultrasound)",
+          "price": 15000
+        },
+        {
+          "key": "US_RENAL",
+          "name": "Renal / Kidney Ultrasound",
+          "price": 10000
+        },
+        {
+          "key": "US_RVP",
+          "name": "Reno-Vesico-Prostatic Ultrasound",
+          "price": 13000
+        },
+        {
+          "key": "US_SOFT",
+          "name": "Soft Tissue Ultrasound",
+          "price": 15000
+        },
+        {
+          "key": "US_TEST",
+          "name": "Testicular Ultrasound",
+          "price": 15000
+        },
+        {
+          "key": "US_THY",
+          "name": "Thyroid Ultrasound",
+          "price": 15000
+        }
+      ],
+      "default_price": 15000
+    },
+    "703602": {
+      "account_code": "703602",
+      "label": "Revenue — Scans & Imaging — Electrocardiography",
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "Electrocardiography",
+      "services": [
+        {
+          "key": "ECG",
+          "name": "ECG (12-lead)",
+          "price": 10000
+        },
+        {
+          "key": "ECG_CTL",
+          "name": "ECG Control (Follow-up)",
+          "price": 7000
+        }
+      ],
+      "default_price": 8500
+    },
+    "703603": {
+      "account_code": "703603",
+      "label": "Revenue — Scans & Imaging — Special Radiological Procedures",
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "Special Radiological Procedures",
+      "services": [
+        {
+          "key": "SP_HIP",
+          "name": "Bone: Hip",
+          "price": 7000
+        },
+        {
+          "key": "SP_CYSTO",
+          "name": "Cystography",
+          "price": 65000
+        },
+        {
+          "key": "SP_FISTULO",
+          "name": "Fistulography",
+          "price": 0
+        },
+        {
+          "key": "SP_HSG",
+          "name": "Hysterosalpingography",
+          "price": 100000
+        },
+        {
+          "key": "SP_PELVIM",
+          "name": "Pangonometry / Pelvimetry",
+          "price": 20000
+        },
+        {
+          "key": "SP_RETRO_URE",
+          "name": "Retrograde Urethrography",
+          "price": 55000
+        },
+        {
+          "key": "SP_THOR_FLUOR",
+          "name": "Thorax (Fluoroscopy)",
+          "price": 10000
+        },
+        {
+          "key": "SP_TOGD",
+          "name": "TOGD (Barium Swallow)",
+          "price": 50000
+        },
+        {
+          "key": "SP_UCRM",
+          "name": "UCRM (Cystourethrography)",
+          "price": 25000
+        },
+        {
+          "key": "SP_UIV",
+          "name": "UIV (Intravenous Urography)",
+          "price": 50000
+        },
+        {
+          "key": "SP_URETHRO",
+          "name": "Urethrography",
+          "price": 55000
+        }
+      ],
+      "default_price": 50000
+    },
+    "703604": {
+      "account_code": "703604",
+      "label": "Revenue — Scans & Imaging — X-Ray Examinations",
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "X-Ray Examinations",
+      "services": [
+        {
+          "key": "XR_ANKLE",
+          "name": "Ankle X-Ray",
+          "price": 10000
+        },
+        {
+          "key": "XR_ARM",
+          "name": "Arm X-Ray",
+          "price": 10000
+        },
+        {
+          "key": "XR_ASP",
+          "name": "ASP (Abdominal Plain Film)",
+          "price": 18000
+        },
+        {
+          "key": "XR_SINUS",
+          "name": "Blondeau / Waters View (Sinuses)",
+          "price": 15000
+        },
+        {
+          "key": "XR_CERV_SPINE",
+          "name": "Cervical Rachis X-Ray",
+          "price": 18000
+        },
+        {
+          "key": "XR_CERVICAL",
+          "name": "Cervical X-Ray (Cervical Spine)",
+          "price": 18000
+        },
+        {
+          "key": "XR_CDL_SPINE",
+          "name": "Cervico-Dorso-Lumbar Rachis X-Ray",
+          "price": 25000
+        },
+        {
+          "key": "XR_CLAV_AD",
+          "name": "Clavicle X-Ray (Adult)",
+          "price": 15000
+        },
+        {
+          "key": "XR_CLAV_PED",
+          "name": "Clavicle X-Ray (Paediatric)",
+          "price": 10000
+        },
+        {
+          "key": "XR_DORSAL",
+          "name": "Dorsal / Thoracic Rachis X-Ray",
+          "price": 18000
+        },
+        {
+          "key": "XR_ELBOW",
+          "name": "Elbow X-Ray",
+          "price": 10000
+        },
+        {
+          "key": "XR_FEMUR",
+          "name": "Femur / Thigh X-Ray",
+          "price": 10000
+        },
+        {
+          "key": "XR_FINGER",
+          "name": "Finger X-Ray",
+          "price": 10000
+        },
+        {
+          "key": "XR_FOOT",
+          "name": "Foot X-Ray",
+          "price": 10000
+        },
+        {
+          "key": "XR_FOREARM",
+          "name": "Forearm X-Ray",
+          "price": 10000
+        },
+        {
+          "key": "XR_HAND",
+          "name": "Hand X-Ray",
+          "price": 10000
+        },
+        {
+          "key": "XR_HEEL",
+          "name": "Heel / Calcaneum X-Ray",
+          "price": 10000
+        },
+        {
+          "key": "XR_HUMERUS",
+          "name": "Humerus X-Ray",
+          "price": 10000
+        },
+        {
+          "key": "XR_HSG",
+          "name": "Hysterosalpingography (X-Ray Contrast Study)",
+          "price": 35000
+        },
+        {
+          "key": "XR_KNEE",
+          "name": "Knee X-Ray",
+          "price": 10000
+        },
+        {
+          "key": "XR_LEG",
+          "name": "Leg X-Ray",
+          "price": 10000
+        },
+        {
+          "key": "XR_LUMBAR_FP",
+          "name": "Lumbar Rachis F/P + 3/4",
+          "price": 10000
+        },
+        {
+          "key": "XR_LUMBAR",
+          "name": "Lumbar Rachis X-Ray",
+          "price": 18000
+        },
+        {
+          "key": "XR_LS_SPINE",
+          "name": "Lumbo-Sacral Rachis X-Ray",
+          "price": 18000
+        },
+        {
+          "key": "XR_PELVIS",
+          "name": "Pelvis / Basin X-Ray",
+          "price": 10000
+        },
+        {
+          "key": "XR_RIBS",
+          "name": "Ribs / Costal Grid X-Ray",
+          "price": 13000
+        },
+        {
+          "key": "XR_SELLA",
+          "name": "Sella Turcica X-Ray",
+          "price": 15000
+        },
+        {
+          "key": "XR_SHOULDER",
+          "name": "Shoulder X-Ray",
+          "price": 15000
+        },
+        {
+          "key": "XR_SKULL",
+          "name": "Skull / Cranium X-Ray",
+          "price": 15000
+        },
+        {
+          "key": "XR_THORAX_1V",
+          "name": "Thorax (Chest X-Ray) — Single View",
+          "price": 10000
+        },
+        {
+          "key": "XR_THORAX_FP",
+          "name": "Thorax F/P (Two Views)",
+          "price": 13000
+        },
+        {
+          "key": "XR_WRIST",
+          "name": "Wrist X-Ray",
+          "price": 10000
+        }
+      ],
+      "default_price": 10000
+    },
+    "703605": {
+      "account_code": "703605",
+      "label": "Revenue — Scans & Imaging — CT Scan (Computed Tomography)",
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "CT Scan (Computed Tomography)",
+      "services": [
+        {
+          "key": "Abdomen — Plain",
+          "name": "Abdomen — Plain",
+          "price": 40000
+        },
+        {
+          "key": "Abdomen — With Contrast",
+          "name": "Abdomen — With Contrast",
+          "price": 60000
+        },
+        {
+          "key": "Abdominopelvic — Plain",
+          "name": "Abdominopelvic — Plain",
+          "price": 50000
+        },
+        {
+          "key": "Abdominopelvic — With Contrast",
+          "name": "Abdominopelvic — With Contrast",
+          "price": 75000
+        },
+        {
+          "key": "Chest — With Contrast",
+          "name": "Chest — With Contrast",
+          "price": 60000
+        },
+        {
+          "key": "Chest / Thorax — Plain",
+          "name": "Chest / Thorax — Plain",
+          "price": 40000
+        },
+        {
+          "key": "CT Angiography (CTA) — Any Region",
+          "name": "CT Angiography (CTA) — Any Region",
+          "price": 90000
+        },
+        {
+          "key": "CT Colonoscopy / Virtual",
+          "name": "CT Colonoscopy / Virtual",
+          "price": 85000
+        },
+        {
+          "key": "CT Guided Biopsy",
+          "name": "CT Guided Biopsy",
+          "price": 75000
+        },
+        {
+          "key": "CT Guided Drainage",
+          "name": "CT Guided Drainage",
+          "price": 80000
+        },
+        {
+          "key": "CT Urography (CTU)",
+          "name": "CT Urography (CTU)",
+          "price": 80000
+        },
+        {
+          "key": "Extremity (Upper or Lower Limb)",
+          "name": "Extremity (Upper or Lower Limb)",
+          "price": 35000
+        },
+        {
+          "key": "Head / Brain — Plain",
+          "name": "Head / Brain — Plain",
+          "price": 35000
+        },
+        {
+          "key": "Head / Brain — With Contrast",
+          "name": "Head / Brain — With Contrast",
+          "price": 55000
+        },
+        {
+          "key": "Head + Neck — Plain",
+          "name": "Head + Neck — Plain",
+          "price": 50000
+        },
+        {
+          "key": "Head + Neck — With Contrast",
+          "name": "Head + Neck — With Contrast",
+          "price": 75000
+        },
+        {
+          "key": "Orbits",
+          "name": "Orbits",
+          "price": 35000
+        },
+        {
+          "key": "Pelvis — Plain",
+          "name": "Pelvis — Plain",
+          "price": 35000
+        },
+        {
+          "key": "Pelvis — With Contrast",
+          "name": "Pelvis — With Contrast",
+          "price": 55000
+        },
+        {
+          "key": "Sinuses / PNS",
+          "name": "Sinuses / PNS",
+          "price": 35000
+        },
+        {
+          "key": "Spine (Cervical) — Plain",
+          "name": "Spine (Cervical) — Plain",
+          "price": 40000
+        },
+        {
+          "key": "Spine (Lumbar) — Plain",
+          "name": "Spine (Lumbar) — Plain",
+          "price": 40000
+        },
+        {
+          "key": "Spine (Thoracic) — Plain",
+          "name": "Spine (Thoracic) — Plain",
+          "price": 40000
+        },
+        {
+          "key": "Temporal Bones / IAM",
+          "name": "Temporal Bones / IAM",
+          "price": 40000
+        },
+        {
+          "key": "Whole Body CT",
+          "name": "Whole Body CT",
+          "price": 150000
+        },
+        {
+          "key": "Whole Spine",
+          "name": "Whole Spine",
+          "price": 80000
+        }
+      ],
+      "default_price": 52500
+    },
+    "703606": {
+      "account_code": "703606",
+      "label": "Revenue — Scans & Imaging — MRI (Magnetic Resonance Imaging)",
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "MRI (Magnetic Resonance Imaging)",
+      "services": [
+        {
+          "key": "Abdomen — Plain",
+          "name": "Abdomen — Plain",
+          "price": 75000
+        },
+        {
+          "key": "Abdomen — With Contrast",
+          "name": "Abdomen — With Contrast",
+          "price": 100000
+        },
+        {
+          "key": "Ankle & Foot",
+          "name": "Ankle & Foot",
+          "price": 85000
+        },
+        {
+          "key": "Brain — MR Angiography (MRA)",
+          "name": "Brain — MR Angiography (MRA)",
+          "price": 110000
+        },
+        {
+          "key": "Brain — Plain",
+          "name": "Brain — Plain",
+          "price": 65000
+        },
+        {
+          "key": "Brain — Spectroscopy",
+          "name": "Brain — Spectroscopy",
+          "price": 120000
+        },
+        {
+          "key": "Brain — With Contrast",
+          "name": "Brain — With Contrast",
+          "price": 90000
+        },
+        {
+          "key": "Breast MRI (Bilateral)",
+          "name": "Breast MRI (Bilateral)",
+          "price": 110000
+        },
+        {
+          "key": "Cardiac MRI",
+          "name": "Cardiac MRI",
+          "price": 130000
+        },
+        {
+          "key": "Elbow",
+          "name": "Elbow",
+          "price": 85000
+        },
+        {
+          "key": "Fetal MRI",
+          "name": "Fetal MRI",
+          "price": 100000
+        },
+        {
+          "key": "Hip",
+          "name": "Hip",
+          "price": 85000
+        },
+        {
+          "key": "Knee",
+          "name": "Knee",
+          "price": 85000
+        },
+        {
+          "key": "MR Angiography — Any Region",
+          "name": "MR Angiography — Any Region",
+          "price": 90000
+        },
+        {
+          "key": "MR Urography",
+          "name": "MR Urography",
+          "price": 85000
+        },
+        {
+          "key": "MRCP (Biliary / Pancreatic Ducts)",
+          "name": "MRCP (Biliary / Pancreatic Ducts)",
+          "price": 80000
+        },
+        {
+          "key": "Pelvis — Plain",
+          "name": "Pelvis — Plain",
+          "price": 70000
+        },
+        {
+          "key": "Pelvis — With Contrast",
+          "name": "Pelvis — With Contrast",
+          "price": 95000
+        },
+        {
+          "key": "Shoulder",
+          "name": "Shoulder",
+          "price": 85000
+        },
+        {
+          "key": "Spine (Cervical) — Plain",
+          "name": "Spine (Cervical) — Plain",
+          "price": 65000
+        },
+        {
+          "key": "Spine (Cervical) — With Contrast",
+          "name": "Spine (Cervical) — With Contrast",
+          "price": 90000
+        },
+        {
+          "key": "Spine (Lumbar) — Plain",
+          "name": "Spine (Lumbar) — Plain",
+          "price": 65000
+        },
+        {
+          "key": "Spine (Lumbar) — With Contrast",
+          "name": "Spine (Lumbar) — With Contrast",
+          "price": 90000
+        },
+        {
+          "key": "Spine (Thoracic) — Plain",
+          "name": "Spine (Thoracic) — Plain",
+          "price": 65000
+        },
+        {
+          "key": "Whole Body MRI",
+          "name": "Whole Body MRI",
+          "price": 200000
+        },
+        {
+          "key": "Whole Spine",
+          "name": "Whole Spine",
+          "price": 150000
+        },
+        {
+          "key": "Wrist & Hand",
+          "name": "Wrist & Hand",
+          "price": 85000
+        }
+      ],
+      "default_price": 85000
+    },
+    "703607": {
+      "account_code": "703607",
+      "label": "Revenue — Scans & Imaging — Nuclear Medicine / Scintigraphy",
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "Nuclear Medicine / Scintigraphy",
+      "services": [
+        {
+          "key": "Bone Scan (Scintigraphy)",
+          "name": "Bone Scan (Scintigraphy)",
+          "price": 80000
+        },
+        {
+          "key": "Hepatobiliary Scan (HIDA)",
+          "name": "Hepatobiliary Scan (HIDA)",
+          "price": 75000
+        },
+        {
+          "key": "Lung Ventilation-Perfusion (V/Q) Scan",
+          "name": "Lung Ventilation-Perfusion (V/Q) Scan",
+          "price": 75000
+        },
+        {
+          "key": "PET-CT Scan",
+          "name": "PET-CT Scan",
+          "price": 250000
+        },
+        {
+          "key": "Renal Scan (DMSA / DTPA)",
+          "name": "Renal Scan (DMSA / DTPA)",
+          "price": 70000
+        },
+        {
+          "key": "Sentinel Node Mapping",
+          "name": "Sentinel Node Mapping",
+          "price": 80000
+        },
+        {
+          "key": "Thyroid Scan",
+          "name": "Thyroid Scan",
+          "price": 60000
+        }
+      ],
+      "default_price": 75000
+    },
+    "703608": {
+      "account_code": "703608",
+      "label": "Revenue — Scans & Imaging — Fluoroscopy & Special Studies",
+      "hms_category": "scans_&_imaging",
+      "hms_subcategory": "Fluoroscopy & Special Studies",
+      "services": [
+        {
+          "key": "Barium Enema",
+          "name": "Barium Enema",
+          "price": 55000
+        },
+        {
+          "key": "Barium Meal",
+          "name": "Barium Meal",
+          "price": 50000
+        },
+        {
+          "key": "Barium Swallow (TOGD)",
+          "name": "Barium Swallow (TOGD)",
+          "price": 50000
+        },
+        {
+          "key": "Dacryocystography",
+          "name": "Dacryocystography",
+          "price": 45000
+        },
+        {
+          "key": "Fluoroscopic Joint Injection",
+          "name": "Fluoroscopic Joint Injection",
+          "price": 35000
+        },
+        {
+          "key": "Myelogram",
+          "name": "Myelogram",
+          "price": 60000
+        },
+        {
+          "key": "Sialography",
+          "name": "Sialography",
+          "price": 45000
+        },
+        {
+          "key": "Sinogram / Fistulogram",
+          "name": "Sinogram / Fistulogram",
+          "price": 45000
+        }
+      ],
+      "default_price": 47500
+    },
+    "704601": {
+      "account_code": "704601",
+      "label": "Revenue — Pharmacy — Analgesics & Anti-inflammatory",
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Analgesics & Anti-inflammatory",
+      "services": [
+        {
+          "key": "Analgin Injection",
+          "name": "Analgin Injection",
+          "price": 1000
+        },
+        {
+          "key": "Artifenac Forte (Diclofenac Sodium)",
+          "name": "Artifenac Forte (Diclofenac Sodium)",
+          "price": 100
+        },
+        {
+          "key": "Aspirin 300mg",
+          "name": "Aspirin 300mg",
+          "price": 20
+        },
+        {
+          "key": "Carbamazepine 200mg",
+          "name": "Carbamazepine 200mg",
+          "price": 150
+        },
+        {
+          "key": "Diclofenac 100mg",
+          "name": "Diclofenac 100mg",
+          "price": 1500
+        },
+        {
+          "key": "Diclofenac 50mg Tablets",
+          "name": "Diclofenac 50mg Tablets",
+          "price": 20
+        },
+        {
+          "key": "Diclofenac 75mg Injection",
+          "name": "Diclofenac 75mg Injection",
+          "price": 500
+        },
+        {
+          "key": "Diclofenac Gastro-resistant",
+          "name": "Diclofenac Gastro-resistant",
+          "price": 20
+        },
+        {
+          "key": "Diclofenac Potassium 50mg",
+          "name": "Diclofenac Potassium 50mg",
+          "price": 2000
+        },
+        {
+          "key": "Efferalgan Codeine 500mg",
+          "name": "Efferalgan Codeine 500mg",
+          "price": 150
+        },
+        {
+          "key": "Ibuprofen",
+          "name": "Ibuprofen",
+          "price": 20
+        },
+        {
+          "key": "Ibuprofen + Paracetamol 200/325mg",
+          "name": "Ibuprofen + Paracetamol 200/325mg",
+          "price": 100
+        },
+        {
+          "key": "Ibuprofen 400mg",
+          "name": "Ibuprofen 400mg",
+          "price": 100
+        },
+        {
+          "key": "Misoprostol",
+          "name": "Misoprostol",
+          "price": 250
+        },
+        {
+          "key": "Paracetamol 500mg",
+          "name": "Paracetamol 500mg",
+          "price": 20
+        },
+        {
+          "key": "Paracetamol 500mg + Caffeine 30mg + Codeine 8mg",
+          "name": "Paracetamol 500mg + Caffeine 30mg + Codeine 8mg",
+          "price": 100
+        },
+        {
+          "key": "Paracetamol Syrup 120mg/5ml",
+          "name": "Paracetamol Syrup 120mg/5ml",
+          "price": 1000
+        },
+        {
+          "key": "Phenobarbital 100mg Tablet (Gardenal)",
+          "name": "Phenobarbital 100mg Tablet (Gardenal)",
+          "price": 100
+        },
+        {
+          "key": "Phenobarbital 200mg/ml Injection (Gardenal)",
+          "name": "Phenobarbital 200mg/ml Injection (Gardenal)",
+          "price": 500
+        },
+        {
+          "key": "Voltarene Gel",
+          "name": "Voltarene Gel",
+          "price": 2500
+        }
+      ],
+      "default_price": 125
+    },
+    "704602": {
+      "account_code": "704602",
+      "label": "Revenue — Pharmacy — Antibiotics & Antiparasitics",
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Antibiotics & Antiparasitics",
+      "services": [
+        {
+          "key": "Acyclovir 400mg Tablets",
+          "name": "Acyclovir 400mg Tablets",
+          "price": 250
+        },
+        {
+          "key": "Acyclovir Ointment",
+          "name": "Acyclovir Ointment",
+          "price": 3500
+        },
+        {
+          "key": "Albendazole",
+          "name": "Albendazole",
+          "price": 150
+        },
+        {
+          "key": "Ampicillin Sodium 1g Injection",
+          "name": "Ampicillin Sodium 1g Injection",
+          "price": 2500
+        },
+        {
+          "key": "Artemether + Lumefantrine 20/120 mg",
+          "name": "Artemether + Lumefantrine 20/120 mg",
+          "price": 2500
+        },
+        {
+          "key": "Artemether + Lumefantrine 40/120 mg",
+          "name": "Artemether + Lumefantrine 40/120 mg",
+          "price": 2000
+        },
+        {
+          "key": "Artemether Injection 80mg",
+          "name": "Artemether Injection 80mg",
+          "price": 1000
+        },
+        {
+          "key": "Benzathine Penicillin 2.4 MIU (Bicillin)",
+          "name": "Benzathine Penicillin 2.4 MIU (Bicillin)",
+          "price": 3500
+        },
+        {
+          "key": "Cefixime Syrup",
+          "name": "Cefixime Syrup",
+          "price": 2000
+        },
+        {
+          "key": "Ceftriaxone 1g Inj + Water for Inj",
+          "name": "Ceftriaxone 1g Inj + Water for Inj",
+          "price": 1000
+        },
+        {
+          "key": "Clarithromycin 500mg",
+          "name": "Clarithromycin 500mg",
+          "price": 500
+        },
+        {
+          "key": "Co-trimoxazole 240mg/5ml Syrup",
+          "name": "Co-trimoxazole 240mg/5ml Syrup",
+          "price": 1000
+        },
+        {
+          "key": "Co-trimoxazole 480mg (Bactrim)",
+          "name": "Co-trimoxazole 480mg (Bactrim)",
+          "price": 2000
+        },
+        {
+          "key": "Coartem 20/120mg (Artemether)",
+          "name": "Coartem 20/120mg (Artemether)",
+          "price": 1500
+        },
+        {
+          "key": "Coartem Dispersible Adult",
+          "name": "Coartem Dispersible Adult",
+          "price": 1500
+        },
+        {
+          "key": "Crystalline Penicillin G 1M Units",
+          "name": "Crystalline Penicillin G 1M Units",
+          "price": 2500
+        },
+        {
+          "key": "Fansidar 500mg",
+          "name": "Fansidar 500mg",
+          "price": 500
+        },
+        {
+          "key": "Levofloxacin 500mg",
+          "name": "Levofloxacin 500mg",
+          "price": 150
+        },
+        {
+          "key": "Levofloxacin Perfusion Syrup",
+          "name": "Levofloxacin Perfusion Syrup",
+          "price": 2000
+        },
+        {
+          "key": "Metronidazole 500mg",
+          "name": "Metronidazole 500mg",
+          "price": 75
+        },
+        {
+          "key": "Penicillin V 250mg",
+          "name": "Penicillin V 250mg",
+          "price": 100
+        }
+      ],
+      "default_price": 1500
+    },
+    "704603": {
+      "account_code": "704603",
+      "label": "Revenue — Pharmacy — Antifungals",
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Antifungals",
+      "services": [
+        {
+          "key": "Fluconazole 200mg Capsule",
+          "name": "Fluconazole 200mg Capsule",
+          "price": 1000
+        },
+        {
+          "key": "Fluconazole Suspension 50mg",
+          "name": "Fluconazole Suspension 50mg",
+          "price": 1500
+        },
+        {
+          "key": "Griseofulvin 500mg",
+          "name": "Griseofulvin 500mg",
+          "price": 100
+        },
+        {
+          "key": "Miconazole Nitrate Cream 2% 15g",
+          "name": "Miconazole Nitrate Cream 2% 15g",
+          "price": 1500
+        },
+        {
+          "key": "Nystatin Capsule 500,000 IU",
+          "name": "Nystatin Capsule 500,000 IU",
+          "price": 6000
+        },
+        {
+          "key": "Nystatin Oral Suspension 100,000 Units/ml",
+          "name": "Nystatin Oral Suspension 100,000 Units/ml",
+          "price": 1000
+        },
+        {
+          "key": "Nystatin Vaginal",
+          "name": "Nystatin Vaginal",
+          "price": 200
+        }
+      ],
+      "default_price": 1000
+    },
+    "704604": {
+      "account_code": "704604",
+      "label": "Revenue — Pharmacy — Cardiovascular",
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Cardiovascular",
+      "services": [
+        {
+          "key": "Aldactone 25mg (Spironolactone)",
+          "name": "Aldactone 25mg (Spironolactone)",
+          "price": 75
+        },
+        {
+          "key": "Amlodipine 10mg",
+          "name": "Amlodipine 10mg",
+          "price": 100
+        },
+        {
+          "key": "Atorvastatin 20mg",
+          "name": "Atorvastatin 20mg",
+          "price": 175
+        },
+        {
+          "key": "Bisoprolol 5mg",
+          "name": "Bisoprolol 5mg",
+          "price": 100
+        },
+        {
+          "key": "Captopril 25mg",
+          "name": "Captopril 25mg",
+          "price": 50
+        },
+        {
+          "key": "Digoxin 0.25mg",
+          "name": "Digoxin 0.25mg",
+          "price": 50
+        },
+        {
+          "key": "Frusemide 20mg/2ml Injection",
+          "name": "Frusemide 20mg/2ml Injection",
+          "price": 500
+        },
+        {
+          "key": "HCTZ 25mg",
+          "name": "HCTZ 25mg",
+          "price": 50
+        },
+        {
+          "key": "HCTZ 50mg",
+          "name": "HCTZ 50mg",
+          "price": 50
+        },
+        {
+          "key": "Hydralazine 50mg",
+          "name": "Hydralazine 50mg",
+          "price": 100
+        },
+        {
+          "key": "Lasix 40mg (Furosemide)",
+          "name": "Lasix 40mg (Furosemide)",
+          "price": 50
+        },
+        {
+          "key": "Lisinopril 10mg",
+          "name": "Lisinopril 10mg",
+          "price": 100
+        },
+        {
+          "key": "Losartan 50mg",
+          "name": "Losartan 50mg",
+          "price": 100
+        },
+        {
+          "key": "Nifedipine 20mg",
+          "name": "Nifedipine 20mg",
+          "price": 25
+        },
+        {
+          "key": "Nifedipine Retard 20mg",
+          "name": "Nifedipine Retard 20mg",
+          "price": 75
+        },
+        {
+          "key": "Propranolol 40mg",
+          "name": "Propranolol 40mg",
+          "price": 50
+        },
+        {
+          "key": "Telmisartan 40mg",
+          "name": "Telmisartan 40mg",
+          "price": 150
+        },
+        {
+          "key": "Torsemide 20mg",
+          "name": "Torsemide 20mg",
+          "price": 200
+        }
+      ],
+      "default_price": 88
+    },
+    "704605": {
+      "account_code": "704605",
+      "label": "Revenue — Pharmacy — Gastrointestinal",
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Gastrointestinal",
+      "services": [
+        {
+          "key": "Bisacodyl 5mg",
+          "name": "Bisacodyl 5mg",
+          "price": 2000
+        },
+        {
+          "key": "Cimetidine 200mg Injection",
+          "name": "Cimetidine 200mg Injection",
+          "price": 1500
+        },
+        {
+          "key": "Gestid Tablet",
+          "name": "Gestid Tablet",
+          "price": 6000
+        },
+        {
+          "key": "Loperamide 2mg",
+          "name": "Loperamide 2mg",
+          "price": 25
+        },
+        {
+          "key": "Maalox Tablet",
+          "name": "Maalox Tablet",
+          "price": 2500
+        },
+        {
+          "key": "Omeprazole 20mg",
+          "name": "Omeprazole 20mg",
+          "price": 75
+        },
+        {
+          "key": "ORS + Zinc",
+          "name": "ORS + Zinc",
+          "price": 100
+        },
+        {
+          "key": "Pantoprazole 40mg",
+          "name": "Pantoprazole 40mg",
+          "price": 200
+        }
+      ],
+      "default_price": 850
+    },
+    "704606": {
+      "account_code": "704606",
+      "label": "Revenue — Pharmacy — Respiratory",
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Respiratory",
+      "services": [
+        {
+          "key": "Chlorpheniramine Maleate 4mg",
+          "name": "Chlorpheniramine Maleate 4mg",
+          "price": 10
+        },
+        {
+          "key": "Salbutamol Inhaler",
+          "name": "Salbutamol Inhaler",
+          "price": 2500
+        },
+        {
+          "key": "Salbutamol Nebules",
+          "name": "Salbutamol Nebules",
+          "price": 1000
+        }
+      ],
+      "default_price": 1000
+    },
+    "704607": {
+      "account_code": "704607",
+      "label": "Revenue — Pharmacy — Endocrine & Metabolic",
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Endocrine & Metabolic",
+      "services": [
+        {
+          "key": "Aptamil (Baby Milk Supplement)",
+          "name": "Aptamil (Baby Milk Supplement)",
+          "price": 5500
+        },
+        {
+          "key": "Aptamil 400g",
+          "name": "Aptamil 400g",
+          "price": 1000
+        },
+        {
+          "key": "Diabetic Test Sugar Strips",
+          "name": "Diabetic Test Sugar Strips",
+          "price": 3500
+        },
+        {
+          "key": "Folic Acid 5mg",
+          "name": "Folic Acid 5mg",
+          "price": 20
+        },
+        {
+          "key": "Glibenclamide 500mg (Daonil)",
+          "name": "Glibenclamide 500mg (Daonil)",
+          "price": 20
+        },
+        {
+          "key": "Metformin 500mg",
+          "name": "Metformin 500mg",
+          "price": 100
+        },
+        {
+          "key": "Multivitamin Baby Drops",
+          "name": "Multivitamin Baby Drops",
+          "price": 1200
+        },
+        {
+          "key": "Multivitamin Syrup 200ml",
+          "name": "Multivitamin Syrup 200ml",
+          "price": 1500
+        },
+        {
+          "key": "Revitalose or Equiv",
+          "name": "Revitalose or Equiv",
+          "price": 4500
+        },
+        {
+          "key": "Vitamin B Complex",
+          "name": "Vitamin B Complex",
+          "price": 50
+        },
+        {
+          "key": "Vitamin B12 1000mcg",
+          "name": "Vitamin B12 1000mcg",
+          "price": 100
+        }
+      ],
+      "default_price": 1000
+    },
+    "704608": {
+      "account_code": "704608",
+      "label": "Revenue — Pharmacy — Neurology",
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Neurology",
+      "services": [
+        {
+          "key": "Phenobarbital 100mg Injection",
+          "name": "Phenobarbital 100mg Injection",
+          "price": 1000
+        }
+      ],
+      "default_price": 1000
+    },
+    "704609": {
+      "account_code": "704609",
+      "label": "Revenue — Pharmacy — Obstetrics",
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Obstetrics",
+      "services": [
+        {
+          "key": "Oxytocin 10IU/ml Injection",
+          "name": "Oxytocin 10IU/ml Injection",
+          "price": 1500
+        }
+      ],
+      "default_price": 1500
+    },
+    "704610": {
+      "account_code": "704610",
+      "label": "Revenue — Pharmacy — Anaesthetics & Emergency",
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Anaesthetics & Emergency",
+      "services": [
+        {
+          "key": "Adrenaline Injection",
+          "name": "Adrenaline Injection",
+          "price": 500
+        },
+        {
+          "key": "Dexamethasone 4mg Injection",
+          "name": "Dexamethasone 4mg Injection",
+          "price": 1000
+        },
+        {
+          "key": "Hydrocortisone Injection",
+          "name": "Hydrocortisone Injection",
+          "price": 1500
+        },
+        {
+          "key": "Lidocaine + Adrenaline Injection",
+          "name": "Lidocaine + Adrenaline Injection",
+          "price": 1000
+        },
+        {
+          "key": "Lidocaine 2% 50ml Injection",
+          "name": "Lidocaine 2% 50ml Injection",
+          "price": 1500
+        },
+        {
+          "key": "Potassium Chloride Injection",
+          "name": "Potassium Chloride Injection",
+          "price": 1000
+        },
+        {
+          "key": "Sodium Bicarbonate 250g",
+          "name": "Sodium Bicarbonate 250g",
+          "price": 500
+        },
+        {
+          "key": "Sodium Bicarbonate Powder 100g",
+          "name": "Sodium Bicarbonate Powder 100g",
+          "price": 500
+        }
+      ],
+      "default_price": 1000
+    },
+    "704611": {
+      "account_code": "704611",
+      "label": "Revenue — Pharmacy — Intravenous Fluids",
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Intravenous Fluids",
+      "services": [
+        {
+          "key": "Chloride de Sodium 0.9% 500ml (Normal Saline)",
+          "name": "Chloride de Sodium 0.9% 500ml (Normal Saline)",
+          "price": 1000
+        },
+        {
+          "key": "Darro's Solution 500ml",
+          "name": "Darro's Solution 500ml",
+          "price": 4000
+        },
+        {
+          "key": "Distilled Water for Preparation 1.5ml",
+          "name": "Distilled Water for Preparation 1.5ml",
+          "price": 100
+        },
+        {
+          "key": "Glucose 10% 500ml",
+          "name": "Glucose 10% 500ml",
+          "price": 1500
+        },
+        {
+          "key": "Glucose 5% + NaCl 0.9% 500ml",
+          "name": "Glucose 5% + NaCl 0.9% 500ml",
+          "price": 1500
+        },
+        {
+          "key": "Glucose 5% 500ml",
+          "name": "Glucose 5% 500ml",
+          "price": 1000
+        },
+        {
+          "key": "Glucose 50% 100ml",
+          "name": "Glucose 50% 100ml",
+          "price": 2000
+        },
+        {
+          "key": "NS 0.9% 500ml",
+          "name": "NS 0.9% 500ml",
+          "price": 1000
+        },
+        {
+          "key": "Ringer Lactate 500ml",
+          "name": "Ringer Lactate 500ml",
+          "price": 1500
+        },
+        {
+          "key": "Water for Inj Injection 10ml",
+          "name": "Water for Inj Injection 10ml",
+          "price": 100
+        }
+      ],
+      "default_price": 1250
+    },
+    "704612": {
+      "account_code": "704612",
+      "label": "Revenue — Pharmacy — Consumables & Surgical Materials",
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Consumables & Surgical Materials",
+      "services": [
+        {
+          "key": "Alcohol 70%",
+          "name": "Alcohol 70%",
+          "price": 3000
+        },
+        {
+          "key": "Atropine Paper",
+          "name": "Atropine Paper",
+          "price": 50
+        },
+        {
+          "key": "Betadine",
+          "name": "Betadine",
+          "price": 1500
+        },
+        {
+          "key": "Cannula G18",
+          "name": "Cannula G18",
+          "price": 500
+        },
+        {
+          "key": "Cannula G20",
+          "name": "Cannula G20",
+          "price": 500
+        },
+        {
+          "key": "Cannula G22",
+          "name": "Cannula G22",
+          "price": 500
+        },
+        {
+          "key": "Cannula G24",
+          "name": "Cannula G24",
+          "price": 500
+        },
+        {
+          "key": "Drip Set",
+          "name": "Drip Set",
+          "price": 500
+        },
+        {
+          "key": "Gastric tube or NG tube",
+          "name": "Gastric tube or NG tube",
+          "price": 500
+        },
+        {
+          "key": "Haemoglobin Test Strips",
+          "name": "Haemoglobin Test Strips",
+          "price": 3500
+        },
+        {
+          "key": "Large Urine Bags",
+          "name": "Large Urine Bags",
+          "price": 100
+        },
+        {
+          "key": "Lysol 100ml",
+          "name": "Lysol 100ml",
+          "price": 1500
+        },
+        {
+          "key": "Methylated Spirit",
+          "name": "Methylated Spirit",
+          "price": 4000
+        },
+        {
+          "key": "Nasogastric Tube No. 14",
+          "name": "Nasogastric Tube No. 14",
+          "price": 1500
+        },
+        {
+          "key": "Nasogastric Tube No. 16",
+          "name": "Nasogastric Tube No. 16",
+          "price": 1500
+        },
+        {
+          "key": "Needle (Hypodermic G21)",
+          "name": "Needle (Hypodermic G21)",
+          "price": 500
+        },
+        {
+          "key": "Perforated Plaster",
+          "name": "Perforated Plaster",
+          "price": 3500
+        },
+        {
+          "key": "Sterile Gloves No. 8",
+          "name": "Sterile Gloves No. 8",
+          "price": 1500
+        },
+        {
+          "key": "Surgical Blade",
+          "name": "Surgical Blade",
+          "price": 500
+        },
+        {
+          "key": "Surgical Gloves Latex 7.5",
+          "name": "Surgical Gloves Latex 7.5",
+          "price": 1500
+        },
+        {
+          "key": "Syringe 10ml",
+          "name": "Syringe 10ml",
+          "price": 100
+        },
+        {
+          "key": "Syringe 20ml",
+          "name": "Syringe 20ml",
+          "price": 100
+        },
+        {
+          "key": "Syringe 2ml",
+          "name": "Syringe 2ml",
+          "price": 100
+        },
+        {
+          "key": "Syringe 50ml",
+          "name": "Syringe 50ml",
+          "price": 100
+        },
+        {
+          "key": "Syringe 5ml (Auto)",
+          "name": "Syringe 5ml (Auto)",
+          "price": 100
+        },
+        {
+          "key": "Tongue Depressor",
+          "name": "Tongue Depressor",
+          "price": 500
+        },
+        {
+          "key": "Tranexamic Acid 500mg",
+          "name": "Tranexamic Acid 500mg",
+          "price": 2500
+        },
+        {
+          "key": "Urinary Bag (Paediatric/Adult)",
+          "name": "Urinary Bag (Paediatric/Adult)",
+          "price": 1000
+        },
+        {
+          "key": "Urinary Catheter No. 14",
+          "name": "Urinary Catheter No. 14",
+          "price": 1500
+        },
+        {
+          "key": "Urinary Catheter No. 16",
+          "name": "Urinary Catheter No. 16",
+          "price": 1500
+        },
+        {
+          "key": "Vitamin K1 10mg Injection",
+          "name": "Vitamin K1 10mg Injection",
+          "price": 3000
+        }
+      ],
+      "default_price": 500
+    },
+    "706611": {
+      "account_code": "706611",
+      "label": "Revenue — Maternity — Antenatal Care (ANC)",
+      "hms_category": "maternity",
+      "hms_subcategory": "Antenatal Care (ANC)",
+      "services": [
+        {
+          "key": "ANC Booking / Registration",
+          "name": "ANC Booking / Registration",
+          "price": 2000
+        },
+        {
+          "key": "ANC Booking Visit (First Visit)",
+          "name": "ANC Booking Visit (First Visit)",
+          "price": 20000
+        },
+        {
+          "key": "ANC Routine Visit — General",
+          "name": "ANC Routine Visit — General",
+          "price": 2000
+        },
+        {
+          "key": "ANC Specialist Visit",
+          "name": "ANC Specialist Visit",
+          "price": 5000
+        },
+        {
+          "key": "Birth Preparedness Counselling",
+          "name": "Birth Preparedness Counselling",
+          "price": 1000
+        },
+        {
+          "key": "Blood Group & Rhesus Factor",
+          "name": "Blood Group & Rhesus Factor",
+          "price": 2000
+        },
+        {
+          "key": "Blood Pressure Monitoring (ANC)",
+          "name": "Blood Pressure Monitoring (ANC)",
+          "price": 500
+        },
+        {
+          "key": "CTG / Cardiotocography",
+          "name": "CTG / Cardiotocography",
+          "price": 5000
+        },
+        {
+          "key": "Haemoglobin Estimation (ANC)",
+          "name": "Haemoglobin Estimation (ANC)",
+          "price": 1000
+        },
+        {
+          "key": "HIV Screening (PMTCT)",
+          "name": "HIV Screening (PMTCT)",
+          "price": 2000
+        },
+        {
+          "key": "IPTp (Intermittent Preventive Treatment)",
+          "name": "IPTp (Intermittent Preventive Treatment)",
+          "price": 1500
+        },
+        {
+          "key": "Iron + Folate Supplementation",
+          "name": "Iron + Folate Supplementation",
+          "price": 500
+        },
+        {
+          "key": "Long-Lasting Insecticidal Net (LLIN)",
+          "name": "Long-Lasting Insecticidal Net (LLIN)",
+          "price": 2000
+        },
+        {
+          "key": "Malaria Rapid Test (RDT)",
+          "name": "Malaria Rapid Test (RDT)",
+          "price": 1500
+        },
+        {
+          "key": "Nutritional Counselling (ANC)",
+          "name": "Nutritional Counselling (ANC)",
+          "price": 1000
+        },
+        {
+          "key": "Obstetric Ultrasound — Anomaly Scan",
+          "name": "Obstetric Ultrasound — Anomaly Scan",
+          "price": 15000
+        },
+        {
+          "key": "Obstetric Ultrasound — Dating",
+          "name": "Obstetric Ultrasound — Dating",
+          "price": 7000
+        },
+        {
+          "key": "Obstetric Ultrasound — Doppler",
+          "name": "Obstetric Ultrasound — Doppler",
+          "price": 25000
+        },
+        {
+          "key": "Obstetric Ultrasound — Growth Scan",
+          "name": "Obstetric Ultrasound — Growth Scan",
+          "price": 7000
+        },
+        {
+          "key": "Obstetric Ultrasound — Routine",
+          "name": "Obstetric Ultrasound — Routine",
+          "price": 7000
+        },
+        {
+          "key": "Referral Letter (ANC)",
+          "name": "Referral Letter (ANC)",
+          "price": 1000
+        },
+        {
+          "key": "Risk Assessment Form",
+          "name": "Risk Assessment Form",
+          "price": 1000
+        },
+        {
+          "key": "Syphilis Screening (VDRL/RPR)",
+          "name": "Syphilis Screening (VDRL/RPR)",
+          "price": 2000
+        },
+        {
+          "key": "Tetanus Toxoid (TT) Vaccination",
+          "name": "Tetanus Toxoid (TT) Vaccination",
+          "price": 1000
+        },
+        {
+          "key": "Urine Dipstick (ANC)",
+          "name": "Urine Dipstick (ANC)",
+          "price": 500
+        },
+        {
+          "key": "Weight & Fundal Height Measurement",
+          "name": "Weight & Fundal Height Measurement",
+          "price": 500
+        }
+      ],
+      "default_price": 2000
+    },
+    "706612": {
+      "account_code": "706612",
+      "label": "Revenue — Maternity — Labour & Delivery",
+      "hms_category": "maternity",
+      "hms_subcategory": "Labour & Delivery",
+      "services": [
+        {
+          "key": "After-Hours Delivery Surcharge",
+          "name": "After-Hours Delivery Surcharge",
+          "price": 10000
+        },
+        {
+          "key": "ARM (Artificial Rupture of Membranes)",
+          "name": "ARM (Artificial Rupture of Membranes)",
+          "price": 5000
+        },
+        {
+          "key": "Bimanual Compression (PPH)",
+          "name": "Bimanual Compression (PPH)",
+          "price": 10000
+        },
+        {
+          "key": "Blood Transfusion (per unit)",
+          "name": "Blood Transfusion (per unit)",
+          "price": 15000
+        },
+        {
+          "key": "Caesarean + Tubal Ligation",
+          "name": "Caesarean + Tubal Ligation",
+          "price": 180000
+        },
+        {
+          "key": "Caesarean Section (Elective)",
+          "name": "Caesarean Section (Elective)",
+          "price": 225000
+        },
+        {
+          "key": "Caesarean Section (Emergency)",
+          "name": "Caesarean Section (Emergency)",
+          "price": 250000
+        },
+        {
+          "key": "Delivery by Doctor (SND)",
+          "name": "Delivery by Doctor (SND)",
+          "price": 50000
+        },
+        {
+          "key": "Delivery Room Fee",
+          "name": "Delivery Room Fee",
+          "price": 10000
+        },
+        {
+          "key": "Episiotomy & Repair",
+          "name": "Episiotomy & Repair",
+          "price": 20000
+        },
+        {
+          "key": "Ergometrine Injection",
+          "name": "Ergometrine Injection",
+          "price": 2000
+        },
+        {
+          "key": "Forceps Delivery",
+          "name": "Forceps Delivery",
+          "price": 50000
+        },
+        {
+          "key": "IV Access & IV Fluids Setup",
+          "name": "IV Access & IV Fluids Setup",
+          "price": 2000
+        },
+        {
+          "key": "Labour Monitoring — Active Phase",
+          "name": "Labour Monitoring — Active Phase",
+          "price": 5000
+        },
+        {
+          "key": "Labour Ward Admission",
+          "name": "Labour Ward Admission",
+          "price": 3000
+        },
+        {
+          "key": "Manual Exploration",
+          "name": "Manual Exploration",
+          "price": 20000
+        },
+        {
+          "key": "Manual Removal of Placenta",
+          "name": "Manual Removal of Placenta",
+          "price": 40000
+        },
+        {
+          "key": "Oxytocin Infusion for Induction",
+          "name": "Oxytocin Infusion for Induction",
+          "price": 5000
+        },
+        {
+          "key": "Oxytocin Injection (Active 3rd Stage)",
+          "name": "Oxytocin Injection (Active 3rd Stage)",
+          "price": 1500
+        },
+        {
+          "key": "Partograph",
+          "name": "Partograph",
+          "price": 1000
+        },
+        {
+          "key": "Perineal Tear Repair (1st/2nd Degree)",
+          "name": "Perineal Tear Repair (1st/2nd Degree)",
+          "price": 15000
+        },
+        {
+          "key": "Perineal Tear Repair (3rd/4th Degree)",
+          "name": "Perineal Tear Repair (3rd/4th Degree)",
+          "price": 45000
+        },
+        {
+          "key": "Supervised Normal Delivery (SND)",
+          "name": "Supervised Normal Delivery (SND)",
+          "price": 25000
+        },
+        {
+          "key": "Vacuum Extraction",
+          "name": "Vacuum Extraction",
+          "price": 50000
+        }
+      ],
+      "default_price": 15000
+    },
+    "706613": {
+      "account_code": "706613",
+      "label": "Revenue — Maternity — Postnatal Care (PNC)",
+      "hms_category": "maternity",
+      "hms_subcategory": "Postnatal Care (PNC)",
+      "services": [
+        {
+          "key": "Breastfeeding Counselling",
+          "name": "Breastfeeding Counselling",
+          "price": 1000
+        },
+        {
+          "key": "Discharge Summary (Mother)",
+          "name": "Discharge Summary (Mother)",
+          "price": 1000
+        },
+        {
+          "key": "Edinburgh Depression Screening (EPDS)",
+          "name": "Edinburgh Depression Screening (EPDS)",
+          "price": 1000
+        },
+        {
+          "key": "Family Planning Counselling",
+          "name": "Family Planning Counselling",
+          "price": 1000
+        },
+        {
+          "key": "Injectables (DMPA/Depo)",
+          "name": "Injectables (DMPA/Depo)",
+          "price": 3000
+        },
+        {
+          "key": "IUCD / Copper T Insertion",
+          "name": "IUCD / Copper T Insertion",
+          "price": 5000
+        },
+        {
+          "key": "Norplant / Implant Insertion",
+          "name": "Norplant / Implant Insertion",
+          "price": 10000
+        },
+        {
+          "key": "Postnatal Haemoglobin Check",
+          "name": "Postnatal Haemoglobin Check",
+          "price": 1000
+        },
+        {
+          "key": "Postnatal Visit — Routine",
+          "name": "Postnatal Visit — Routine",
+          "price": 2000
+        },
+        {
+          "key": "Postnatal Visit — Specialist",
+          "name": "Postnatal Visit — Specialist",
+          "price": 5000
+        },
+        {
+          "key": "Postnatal Vitamin A Supplementation",
+          "name": "Postnatal Vitamin A Supplementation",
+          "price": 500
+        },
+        {
+          "key": "Postnatal Ward — First Night",
+          "name": "Postnatal Ward — First Night",
+          "price": 5000
+        },
+        {
+          "key": "Postnatal Ward — Per Day (General)",
+          "name": "Postnatal Ward — Per Day (General)",
+          "price": 2000
+        },
+        {
+          "key": "Postnatal Ward — Per Day (Private)",
+          "name": "Postnatal Ward — Per Day (Private)",
+          "price": 20000
+        },
+        {
+          "key": "Suture Removal (CS / Episiotomy)",
+          "name": "Suture Removal (CS / Episiotomy)",
+          "price": 1000
+        },
+        {
+          "key": "Wound Dressing (CS Wound)",
+          "name": "Wound Dressing (CS Wound)",
+          "price": 1500
+        }
+      ],
+      "default_price": 1750
+    },
+    "706614": {
+      "account_code": "706614",
+      "label": "Revenue — Maternity — Neonatal / Newborn Care",
+      "hms_category": "maternity",
+      "hms_subcategory": "Neonatal / Newborn Care",
+      "services": [
+        {
+          "key": "BCG Vaccination",
+          "name": "BCG Vaccination",
+          "price": 1000
+        },
+        {
+          "key": "Birth Registration",
+          "name": "Birth Registration",
+          "price": 500
+        },
+        {
+          "key": "Discharge Summary (Newborn)",
+          "name": "Discharge Summary (Newborn)",
+          "price": 1000
+        },
+        {
+          "key": "Eye Prophylaxis (Tetracycline Drops)",
+          "name": "Eye Prophylaxis (Tetracycline Drops)",
+          "price": 500
+        },
+        {
+          "key": "Hepatitis B Birth Dose",
+          "name": "Hepatitis B Birth Dose",
+          "price": 1500
+        },
+        {
+          "key": "Incubator Care — Per Day",
+          "name": "Incubator Care — Per Day",
+          "price": 10000
+        },
+        {
+          "key": "Kangaroo Mother Care (KMC) — Per Day",
+          "name": "Kangaroo Mother Care (KMC) — Per Day",
+          "price": 2000
+        },
+        {
+          "key": "Nasogastric Feeding Setup",
+          "name": "Nasogastric Feeding Setup",
+          "price": 3000
+        },
+        {
+          "key": "Neonatal Blood Glucose Monitoring",
+          "name": "Neonatal Blood Glucose Monitoring",
+          "price": 500
+        },
+        {
+          "key": "Neonatal IV Access",
+          "name": "Neonatal IV Access",
+          "price": 3000
+        },
+        {
+          "key": "Neonatal Resuscitation",
+          "name": "Neonatal Resuscitation",
+          "price": 10000
+        },
+        {
+          "key": "Newborn Hearing Screening",
+          "name": "Newborn Hearing Screening",
+          "price": 3000
+        },
+        {
+          "key": "Newborn HIV DNA PCR Test",
+          "name": "Newborn HIV DNA PCR Test",
+          "price": 10000
+        },
+        {
+          "key": "Newborn Screening (Metabolic)",
+          "name": "Newborn Screening (Metabolic)",
+          "price": 5000
+        },
+        {
+          "key": "NICU Admission — Per Day",
+          "name": "NICU Admission — Per Day",
+          "price": 15000
+        },
+        {
+          "key": "OPV 0 (Birth Dose)",
+          "name": "OPV 0 (Birth Dose)",
+          "price": 1000
+        },
+        {
+          "key": "Phototherapy — Per Day",
+          "name": "Phototherapy — Per Day",
+          "price": 5000
+        },
+        {
+          "key": "Routine Newborn Assessment",
+          "name": "Routine Newborn Assessment",
+          "price": 2000
+        },
+        {
+          "key": "Umbilical Cord Care Kit",
+          "name": "Umbilical Cord Care Kit",
+          "price": 1000
+        },
+        {
+          "key": "Vitamin K Injection (Newborn)",
+          "name": "Vitamin K Injection (Newborn)",
+          "price": 1500
+        }
+      ],
+      "default_price": 2000
+    },
+    "706615": {
+      "account_code": "706615",
+      "label": "Revenue — Maternity — Obstetric Complications & Emergency",
+      "hms_category": "maternity",
+      "hms_subcategory": "Obstetric Complications & Emergency",
+      "services": [
+        {
+          "key": "B-Lynch Suture",
+          "name": "B-Lynch Suture",
+          "price": 30000
+        },
+        {
+          "key": "Emergency Uterine Tamponade",
+          "name": "Emergency Uterine Tamponade",
+          "price": 15000
+        },
+        {
+          "key": "Internal Iliac Artery Ligation",
+          "name": "Internal Iliac Artery Ligation",
+          "price": 80000
+        },
+        {
+          "key": "Management of Cord Prolapse",
+          "name": "Management of Cord Prolapse",
+          "price": 10000
+        },
+        {
+          "key": "Management of Eclampsia / Pre-Eclampsia",
+          "name": "Management of Eclampsia / Pre-Eclampsia",
+          "price": 20000
+        },
+        {
+          "key": "Management of Postpartum Haemorrhage (PPH)",
+          "name": "Management of Postpartum Haemorrhage (PPH)",
+          "price": 25000
+        },
+        {
+          "key": "Management of Sepsis (Maternal)",
+          "name": "Management of Sepsis (Maternal)",
+          "price": 20000
+        },
+        {
+          "key": "Management of Shoulder Dystocia",
+          "name": "Management of Shoulder Dystocia",
+          "price": 10000
+        },
+        {
+          "key": "Maternal Resuscitation (CPR/ACLS)",
+          "name": "Maternal Resuscitation (CPR/ACLS)",
+          "price": 20000
+        },
+        {
+          "key": "Obstetric ICU Care — Per Day",
+          "name": "Obstetric ICU Care — Per Day",
+          "price": 30000
+        },
+        {
+          "key": "Repair of Ruptured Uterus",
+          "name": "Repair of Ruptured Uterus",
+          "price": 200000
+        },
+        {
+          "key": "Repair of Vesico-Vaginal Fistula (VVF)",
+          "name": "Repair of Vesico-Vaginal Fistula (VVF)",
+          "price": 200000
+        }
+      ],
+      "default_price": 22500
+    },
+    "706621": {
+      "account_code": "706621",
+      "label": "Revenue — Surgery — General Surgery",
+      "hms_category": "surgery",
+      "hms_subcategory": "General Surgery",
+      "services": [
+        {
+          "key": "SURG002",
+          "name": "Appendectomy (Laparoscopic)",
+          "price": 200000
+        },
+        {
+          "key": "SURG001",
+          "name": "Appendectomy (Open)",
+          "price": 150000
+        },
+        {
+          "key": "SURG011",
+          "name": "Bowel Resection & Anastomosis",
+          "price": 300000
+        },
+        {
+          "key": "SURG023",
+          "name": "Breast Lumpectomy",
+          "price": 130000
+        },
+        {
+          "key": "SURG009",
+          "name": "Cholecystectomy (Laparoscopic)",
+          "price": 230000
+        },
+        {
+          "key": "SURG008",
+          "name": "Cholecystectomy (Open)",
+          "price": 200000
+        },
+        {
+          "key": "SURG012",
+          "name": "Colostomy Formation",
+          "price": 200000
+        },
+        {
+          "key": "SURG013",
+          "name": "Colostomy Reversal",
+          "price": 230000
+        },
+        {
+          "key": "SURG016",
+          "name": "Excision of Mass (Simple/External)",
+          "price": 65000
+        },
+        {
+          "key": "SURG010",
+          "name": "Exploratory Laparotomy",
+          "price": 240000
+        },
+        {
+          "key": "SURG015",
+          "name": "Fistulectomy - Anal",
+          "price": 140000
+        },
+        {
+          "key": "SURG026",
+          "name": "Gastrectomy (Partial)",
+          "price": 300000
+        },
+        {
+          "key": "SURG027",
+          "name": "Gastrectomy (Total)",
+          "price": 450000
+        },
+        {
+          "key": "SURG014",
+          "name": "Hemorrhoidectomy",
+          "price": 140000
+        },
+        {
+          "key": "SURG007",
+          "name": "Hernia Repair - Incisional",
+          "price": 150000
+        },
+        {
+          "key": "SURG004",
+          "name": "Hernia Repair - Inguinal (Laparoscopic)",
+          "price": 200000
+        },
+        {
+          "key": "SURG003",
+          "name": "Hernia Repair - Inguinal (Open)",
+          "price": 150000
+        },
+        {
+          "key": "SURG006",
+          "name": "Hernia Repair - Pediatric",
+          "price": 110000
+        },
+        {
+          "key": "SURG005",
+          "name": "Hernia Repair - Umbilical/Ventral",
+          "price": 150000
+        },
+        {
+          "key": "SURG017",
+          "name": "Incision & Drainage (Large)",
+          "price": 50000
+        },
+        {
+          "key": "SURG030",
+          "name": "Lipoma Excision (In-theater)",
+          "price": 65000
+        },
+        {
+          "key": "SURG025",
+          "name": "Liver Resection",
+          "price": 360000
+        },
+        {
+          "key": "SURG022",
+          "name": "Mastectomy (Modified Radical)",
+          "price": 300000
+        },
+        {
+          "key": "SURG021",
+          "name": "Mastectomy (Simple)",
+          "price": 200000
+        },
+        {
+          "key": "SURG033",
+          "name": "Minor Surgical Procedure (OPD)",
+          "price": 15000
+        },
+        {
+          "key": "SURG020",
+          "name": "Parathyroidectomy",
+          "price": 230000
+        },
+        {
+          "key": "SURG032",
+          "name": "Pilonidal Sinus Excision",
+          "price": 150000
+        },
+        {
+          "key": "SURG031",
+          "name": "Sebaceous Cyst Excision (In-theater)",
+          "price": 50000
+        },
+        {
+          "key": "SURG028",
+          "name": "Skin Graft (Split thickness)",
+          "price": 150000
+        },
+        {
+          "key": "SURG024",
+          "name": "Splenectomy",
+          "price": 230000
+        },
+        {
+          "key": "SURG019",
+          "name": "Thyroidectomy (Subtotal/Partial)",
+          "price": 230000
+        },
+        {
+          "key": "SURG018",
+          "name": "Thyroidectomy (Total)",
+          "price": 300000
+        },
+        {
+          "key": "SURG029",
+          "name": "Wound Debridement (Major)",
+          "price": 100000
+        }
+      ],
+      "default_price": 200000
+    },
+    "706622": {
+      "account_code": "706622",
+      "label": "Revenue — Surgery — Obstetrics & Gynecology",
+      "hms_category": "surgery",
+      "hms_subcategory": "Obstetrics & Gynecology",
+      "services": [
+        {
+          "key": "SURG064",
+          "name": "Bartholin Cyst/Abscess Excision",
+          "price": 85000
+        },
+        {
+          "key": "SURG036",
+          "name": "Caesarean - Tubal Ligation",
+          "price": 300000
+        },
+        {
+          "key": "SURG037",
+          "name": "Caesarean Hysterectomy",
+          "price": 380000
+        },
+        {
+          "key": "SURG034",
+          "name": "Caesarean Section (Elective)",
+          "price": 230000
+        },
+        {
+          "key": "SURG035",
+          "name": "Caesarean Section (Emergency)",
+          "price": 300000
+        },
+        {
+          "key": "SURG060",
+          "name": "Cervical Cerclage",
+          "price": 120000
+        },
+        {
+          "key": "SURG059",
+          "name": "Diagnostic Laparoscopy (Gynae)",
+          "price": 200000
+        },
+        {
+          "key": "SURG045",
+          "name": "Dilation & Curettage (D&C)",
+          "price": 100000
+        },
+        {
+          "key": "SURG058",
+          "name": "Ectopic Pregnancy Surgery",
+          "price": 200000
+        },
+        {
+          "key": "SURG044",
+          "name": "Episiotomy & Repair",
+          "price": 30000
+        },
+        {
+          "key": "SURG051",
+          "name": "Hysterectomy (Laparoscopic Assisted)",
+          "price": 350000
+        },
+        {
+          "key": "SURG049",
+          "name": "Hysterectomy (Total Abdominal)",
+          "price": 300000
+        },
+        {
+          "key": "SURG050",
+          "name": "Hysterectomy (Vaginal)",
+          "price": 250000
+        },
+        {
+          "key": "SURG040",
+          "name": "Instrumental Delivery - Forceps",
+          "price": 70000
+        },
+        {
+          "key": "SURG039",
+          "name": "Instrumental Delivery - Vacuum",
+          "price": 70000
+        },
+        {
+          "key": "SURG061",
+          "name": "LEEP / Cone Biopsy",
+          "price": 100000
+        },
+        {
+          "key": "SURG041",
+          "name": "Manual Removal of Placenta",
+          "price": 80000
+        },
+        {
+          "key": "SURG046",
+          "name": "Manual Vacuum Aspiration (MVA)",
+          "price": 90000
+        },
+        {
+          "key": "SURG048",
+          "name": "Myomectomy (Laparoscopic)",
+          "price": 300000
+        },
+        {
+          "key": "SURG047",
+          "name": "Myomectomy (Open)",
+          "price": 240000
+        },
+        {
+          "key": "SURG038",
+          "name": "Normal Delivery (Supervised SVD)",
+          "price": 40000
+        },
+        {
+          "key": "SURG054",
+          "name": "Oophorectomy",
+          "price": 170000
+        },
+        {
+          "key": "SURG053",
+          "name": "Ovarian Cystectomy (Laparoscopic)",
+          "price": 300000
+        },
+        {
+          "key": "SURG052",
+          "name": "Ovarian Cystectomy (Open)",
+          "price": 230000
+        },
+        {
+          "key": "SURG042",
+          "name": "Repair - Perineal Tear (2nd Degree)",
+          "price": 30000
+        },
+        {
+          "key": "SURG043",
+          "name": "Repair - Perineal Tear (3rd/4th Degree)",
+          "price": 120000
+        },
+        {
+          "key": "SURG063",
+          "name": "Repair of Recto-Vaginal Fistula (RVF)",
+          "price": 315000
+        },
+        {
+          "key": "SURG062",
+          "name": "Repair of Vesico-Vaginal Fistula (VVF)",
+          "price": 350000
+        },
+        {
+          "key": "SURG055",
+          "name": "Salpingectomy",
+          "price": 170000
+        },
+        {
+          "key": "SURG056",
+          "name": "Salpingo-Oophorectomy (Bilateral)",
+          "price": 215000
+        },
+        {
+          "key": "SURG057",
+          "name": "Tubal Ligation",
+          "price": 120000
+        },
+        {
+          "key": "SURG065",
+          "name": "Vulvar Biopsy / Perineoplasty",
+          "price": 120000
+        }
+      ],
+      "default_price": 185000
+    },
+    "706623": {
+      "account_code": "706623",
+      "label": "Revenue — Surgery — Orthopedics & Trauma",
+      "hms_category": "surgery",
+      "hms_subcategory": "Orthopedics & Trauma",
+      "services": [
+        {
+          "key": "SURG076",
+          "name": "ACL Reconstruction",
+          "price": 340000
+        },
+        {
+          "key": "SURG078",
+          "name": "Amputation - Lower Limb (Above Knee)",
+          "price": 280000
+        },
+        {
+          "key": "SURG077",
+          "name": "Amputation - Lower Limb (Below Knee)",
+          "price": 230000
+        },
+        {
+          "key": "SURG079",
+          "name": "Amputation - Upper Limb",
+          "price": 215000
+        },
+        {
+          "key": "SURG080",
+          "name": "Bone Grafting",
+          "price": 230000
+        },
+        {
+          "key": "SURG083",
+          "name": "Carpal Tunnel Release",
+          "price": 115000
+        },
+        {
+          "key": "SURG086",
+          "name": "Discectomy",
+          "price": 340000
+        },
+        {
+          "key": "SURG068",
+          "name": "External Fixation",
+          "price": 230000
+        },
+        {
+          "key": "SURG084",
+          "name": "Fasciotomy",
+          "price": 145000
+        },
+        {
+          "key": "SURG066",
+          "name": "Fracture Manipulation & Casting",
+          "price": 100000
+        },
+        {
+          "key": "SURG071",
+          "name": "Hip Replacement (Partial - Hemi)",
+          "price": 390000
+        },
+        {
+          "key": "SURG070",
+          "name": "Hip Replacement (Total - THR)",
+          "price": 530000
+        },
+        {
+          "key": "SURG081",
+          "name": "Implant Removal",
+          "price": 120000
+        },
+        {
+          "key": "SURG069",
+          "name": "Intramedullary Nailing",
+          "price": 320000
+        },
+        {
+          "key": "SURG074",
+          "name": "Knee Arthroscopy (Diagnostic)",
+          "price": 190000
+        },
+        {
+          "key": "SURG075",
+          "name": "Knee Arthroscopy (Therapeutic)",
+          "price": 250000
+        },
+        {
+          "key": "SURG072",
+          "name": "Knee Replacement (Total - TKR)",
+          "price": 530000
+        },
+        {
+          "key": "SURG087",
+          "name": "Laminectomy",
+          "price": 230000
+        },
+        {
+          "key": "SURG067",
+          "name": "Open Reduction & Internal Fixation",
+          "price": 280000
+        },
+        {
+          "key": "SURG073",
+          "name": "Shoulder Replacement",
+          "price": 440000
+        },
+        {
+          "key": "SURG085",
+          "name": "Spinal Fusion (Posterior)",
+          "price": 530000
+        },
+        {
+          "key": "SURG082",
+          "name": "Tendon Repair",
+          "price": 150000
+        }
+      ],
+      "default_price": 240000
+    },
+    "706624": {
+      "account_code": "706624",
+      "label": "Revenue — Surgery — Urology",
+      "hms_category": "surgery",
+      "hms_subcategory": "Urology",
+      "services": [
+        {
+          "key": "SURG088",
+          "name": "Circumcision (Adult)",
+          "price": 85000
+        },
+        {
+          "key": "SURG089",
+          "name": "Circumcision (Pediatric)",
+          "price": 80000
+        },
+        {
+          "key": "SURG100",
+          "name": "Cystolithotomy",
+          "price": 210000
+        },
+        {
+          "key": "SURG103",
+          "name": "Cystoscopy (Diagnostic)",
+          "price": 110000
+        },
+        {
+          "key": "SURG104",
+          "name": "ESWL (Shock Wave Lithotripsy)",
+          "price": 150000
+        },
+        {
+          "key": "SURG090",
+          "name": "Hydrocelectomy",
+          "price": 120000
+        },
+        {
+          "key": "SURG097",
+          "name": "Nephrectomy (Laparoscopic)",
+          "price": 445000
+        },
+        {
+          "key": "SURG096",
+          "name": "Nephrectomy (Open)",
+          "price": 360000
+        },
+        {
+          "key": "SURG098",
+          "name": "Nephrolithotomy (PCNL)",
+          "price": 340000
+        },
+        {
+          "key": "SURG092",
+          "name": "Orchidopexy",
+          "price": 160000
+        },
+        {
+          "key": "SURG093",
+          "name": "Orchiectomy (Open)",
+          "price": 160000
+        },
+        {
+          "key": "SURG105",
+          "name": "Penile Repair (Peyronie)",
+          "price": 180000
+        },
+        {
+          "key": "SURG094",
+          "name": "Prostatectomy (Open)",
+          "price": 300000
+        },
+        {
+          "key": "SURG095",
+          "name": "TURP (Trans-Urethral Resection)",
+          "price": 350000
+        },
+        {
+          "key": "SURG099",
+          "name": "Ureterolithotomy",
+          "price": 230000
+        },
+        {
+          "key": "SURG101",
+          "name": "Urethral Stricture Repair",
+          "price": 300000
+        },
+        {
+          "key": "SURG102",
+          "name": "Urethrotomy (Internal)",
+          "price": 160000
+        },
+        {
+          "key": "SURG091",
+          "name": "Varicocelectomy",
+          "price": 145000
+        }
+      ],
+      "default_price": 170000
+    },
+    "706625": {
+      "account_code": "706625",
+      "label": "Revenue — Surgery — ENT",
+      "hms_category": "surgery",
+      "hms_subcategory": "ENT",
+      "services": [
+        {
+          "key": "SURG117",
+          "name": "Direct Laryngoscopy",
+          "price": 160000
+        },
+        {
+          "key": "SURG112",
+          "name": "Excision Head/Neck Lymph Node",
+          "price": 110000
+        },
+        {
+          "key": "SURG110",
+          "name": "FESS (Sinus Surgery)",
+          "price": 250000
+        },
+        {
+          "key": "SURG114",
+          "name": "Foreign Body Removal",
+          "price": 110000
+        },
+        {
+          "key": "SURG113",
+          "name": "Mastoidectomy (Radical)",
+          "price": 300000
+        },
+        {
+          "key": "SURG111",
+          "name": "Nasal Polypectomy",
+          "price": 145000
+        },
+        {
+          "key": "SURG115",
+          "name": "Parotidectomy (Superficial)",
+          "price": 250000
+        },
+        {
+          "key": "SURG108",
+          "name": "Rhinoplasty / Septorhinoplasty",
+          "price": 220000
+        },
+        {
+          "key": "SURG109",
+          "name": "Septoplasty",
+          "price": 165000
+        },
+        {
+          "key": "SURG116",
+          "name": "Submandibular Gland Excision",
+          "price": 220000
+        },
+        {
+          "key": "SURG106",
+          "name": "Tonsillectomy",
+          "price": 150000
+        },
+        {
+          "key": "SURG107",
+          "name": "Tonsillectomy + Adenoidectomy",
+          "price": 170000
+        }
+      ],
+      "default_price": 167500
+    },
+    "706626": {
+      "account_code": "706626",
+      "label": "Revenue — Surgery — Ophthalmology",
+      "hms_category": "surgery",
+      "hms_subcategory": "Ophthalmology",
+      "services": [
+        {
+          "key": "SURG118",
+          "name": "Cataract Surgery (Phaco)",
+          "price": 220000
+        },
+        {
+          "key": "SURG119",
+          "name": "Cataract Surgery (SICS)",
+          "price": 170000
+        },
+        {
+          "key": "SURG123",
+          "name": "Chalazion Excision",
+          "price": 65000
+        },
+        {
+          "key": "SURG127",
+          "name": "Corneal Foreign Body Removal",
+          "price": 20000
+        },
+        {
+          "key": "SURG124",
+          "name": "Entropion / Ectropion Repair",
+          "price": 120000
+        },
+        {
+          "key": "SURG126",
+          "name": "Lid Laceration Repair",
+          "price": 110000
+        },
+        {
+          "key": "SURG122",
+          "name": "Pterygium Excision",
+          "price": 115000
+        },
+        {
+          "key": "SURG125",
+          "name": "Retinal Detachment Repair",
+          "price": 360000
+        },
+        {
+          "key": "SURG121",
+          "name": "Strabismus Correction",
+          "price": 180000
+        },
+        {
+          "key": "SURG120",
+          "name": "Trabeculectomy (Glaucoma)",
+          "price": 215000
+        }
+      ],
+      "default_price": 145000
+    },
+    "706631": {
+      "account_code": "706631",
+      "label": "Revenue — Nursing & Ward — Nursing & Ward Services",
+      "hms_category": "nursing_&_ward",
+      "hms_subcategory": "Nursing & Ward Services",
+      "services": [
+        {
+          "key": "NW_ALC_MAJ",
+          "name": "Alcohol Dressing (Major)",
+          "price": 2000
+        },
+        {
+          "key": "NW_ALC_MIN",
+          "name": "Alcohol Dressing (Minor)",
+          "price": 500
+        },
+        {
+          "key": "NW_BED_BATH",
+          "name": "Bed Bath",
+          "price": 2500
+        },
+        {
+          "key": "NW_BED_MAKE",
+          "name": "Bed Making",
+          "price": 500
+        },
+        {
+          "key": "NW_BOOKLET",
+          "name": "Booklets / Patient File",
+          "price": 500
+        },
+        {
+          "key": "NW_CANNULA",
+          "name": "Cannula Insertion / Removal",
+          "price": 500
+        },
+        {
+          "key": "NW_LINEN",
+          "name": "Change of Soiled Linen",
+          "price": 500
+        },
+        {
+          "key": "NW_LAB_SPEC",
+          "name": "Collection of Lab Specimen",
+          "price": 500
+        },
+        {
+          "key": "NW_GW_DAY1",
+          "name": "General Ward — First Day",
+          "price": 5000
+        },
+        {
+          "key": "NW_GW_DAYN",
+          "name": "General Ward — Subsequent Days",
+          "price": 2000
+        },
+        {
+          "key": "NW_FOLEY_INS",
+          "name": "Insertion of Foley Catheter",
+          "price": 2000
+        },
+        {
+          "key": "NW_NGT",
+          "name": "Insertion of Nasogastric Tube (NGT)",
+          "price": 3000
+        },
+        {
+          "key": "NW_LAST_OFF",
+          "name": "Last Offices",
+          "price": 3000
+        },
+        {
+          "key": "NW_WND_MAJ",
+          "name": "Major Wound Dressing",
+          "price": 1500
+        },
+        {
+          "key": "NW_WND_MIN",
+          "name": "Minor Wound Dressing",
+          "price": 500
+        },
+        {
+          "key": "NW_CARE_LT5",
+          "name": "Nursing Care — Below 5 Days",
+          "price": 2000
+        },
+        {
+          "key": "NW_FREEDOM_CAT",
+          "name": "Placement of Freedom Catheter",
+          "price": 1500
+        },
+        {
+          "key": "NW_PRIVATE",
+          "name": "Private Ward",
+          "price": 20000
+        },
+        {
+          "key": "NW_CATH_REM",
+          "name": "Removal of Catheter",
+          "price": 1000
+        },
+        {
+          "key": "NW_SHOWER",
+          "name": "Shower Bath",
+          "price": 2000
+        },
+        {
+          "key": "NW_SUCTION",
+          "name": "Suctioning",
+          "price": 5000
+        },
+        {
+          "key": "NW_TURN_PAT",
+          "name": "Turning of Patient in Bed",
+          "price": 500
+        },
+        {
+          "key": "NW_UTIL",
+          "name": "Utilities",
+          "price": 2500
+        }
+      ],
+      "default_price": 2000
+    },
+    "706641": {
+      "account_code": "706641",
+      "label": "Revenue — Vaccination — Vaccination — Routine EPI dose",
+      "hms_category": "vaccination",
+      "hms_subcategory": "Vaccination — Routine EPI dose",
+      "services": [
+        {
+          "key": "Vaccination — Routine EPI dose",
+          "name": "Vaccination — Routine EPI dose",
+          "price": 1000
+        }
+      ],
+      "default_price": 1000
+    },
+    "706642": {
+      "account_code": "706642",
+      "label": "Revenue — Vaccination — Vaccination — Travel vaccine",
+      "hms_category": "vaccination",
+      "hms_subcategory": "Vaccination — Travel vaccine",
+      "services": [
+        {
+          "key": "Vaccination — Travel vaccine",
+          "name": "Vaccination — Travel vaccine",
+          "price": 15000
+        }
+      ],
+      "default_price": 15000
+    },
+    "706643": {
+      "account_code": "706643",
+      "label": "Revenue — Vaccination — Vaccination — Occupational / Hep B series",
+      "hms_category": "vaccination",
+      "hms_subcategory": "Vaccination — Occupational / Hep B series",
+      "services": [
+        {
+          "key": "Vaccination — Occupational / Hep B series",
+          "name": "Vaccination — Occupational / Hep B series",
+          "price": 5000
+        }
+      ],
+      "default_price": 5000
+    },
+    "706644": {
+      "account_code": "706644",
+      "label": "Revenue — Vaccination — Vaccination — Influenza",
+      "hms_category": "vaccination",
+      "hms_subcategory": "Vaccination — Influenza",
+      "services": [
+        {
+          "key": "Vaccination — Influenza",
+          "name": "Vaccination — Influenza",
+          "price": 8000
+        }
+      ],
+      "default_price": 8000
+    },
+    "706645": {
+      "account_code": "706645",
+      "label": "Revenue — Vaccination — Vaccination — COVID-19",
+      "hms_category": "vaccination",
+      "hms_subcategory": "Vaccination — COVID-19",
+      "services": [
+        {
+          "key": "Vaccination — COVID-19",
+          "name": "Vaccination — COVID-19",
+          "price": 0
+        }
+      ],
+      "default_price": 0
+    },
+    "706646": {
+      "account_code": "706646",
+      "label": "Revenue — Vaccination — Immunization card / certificate",
+      "hms_category": "vaccination",
+      "hms_subcategory": "Immunization card / certificate",
+      "services": [
+        {
+          "key": "Immunization card / certificate",
+          "name": "Immunization card / certificate",
+          "price": 500
+        }
+      ],
+      "default_price": 500
+    },
+    "706647": {
+      "account_code": "706647",
+      "label": "Revenue — Vaccination — Vaccination counselling session",
+      "hms_category": "vaccination",
+      "hms_subcategory": "Vaccination counselling session",
+      "services": [
+        {
+          "key": "Vaccination counselling session",
+          "name": "Vaccination counselling session",
+          "price": 1000
+        }
+      ],
+      "default_price": 1000
+    }
+  }
+}

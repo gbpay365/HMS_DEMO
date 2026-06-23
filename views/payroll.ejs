@@ -62,10 +62,12 @@ var _thisMonth = _t('common.this_month', { ns: 'payroll', defaultValue: 'This mo
     <h3><%= _t('dashboard.tax_settings', { ns: 'payroll', defaultValue: 'Tax settings' }) %></h3>
 </a>
   <% } %>
+  <% if (locals.paySelfServiceEnabled) { %>
   <a href="/hr/my-payslips" class="pay-tile">
     <div class="pay-tile-icon" style="background:#eff6ff;color:#2563eb;"><i class="fa fa-file-text-o"></i></div>
     <h3><%= _t('dashboard.my_payslips', { ns: 'payroll', defaultValue: 'My payslips' }) %></h3>
 </a>
+  <% } %>
   <a href="/hr/request-leave" class="pay-tile">
     <div class="pay-tile-icon" style="background:#faf5ff;color:#7c3aed;"><i class="fa fa-paper-plane"></i></div>
     <h3><%= _t('dashboard.request_leave', { ns: 'payroll', defaultValue: 'Request leave' }) %></h3>

@@ -5,7 +5,17 @@
 const bcrypt = require('bcryptjs');
 const ensureHrPayrollSchema = require('../lib/ensureHrPayrollSchema');
 const ensureEmployeeHrSchema = require('../lib/ensureEmployeeHrSchema');
-const { parseEmployeeHrFields } = require('../lib/hmsEmployeeHr');
+
+async function replicateEmployeeOut(pool, employeeId, event = 'upsert') {
+    try {
+        const { syncEmployeeToCoreAccount } = require('../lib/coreAccountEmployeeSync');
+        await syncEmployeeToCoreAccount(pool, employeeId, event);
+    } catch (_) { /* non-blocking */ }
+    try {
+        const { syncEmployeeToZaizensPayroll } = require('../lib/zaizensEmployeeSync');
+        await syncEmployeeToZaizensPayroll(pool, employeeId, event);
+    } catch (_) { /* non-blocking */ }
+}
 const pagination = require('../lib/pagination');
 const { loadAccessControlContext } = require('../lib/loadAccessControlContext');
 const hmsStaffAccountGuard = require('../lib/hmsStaffAccountGuard');
@@ -486,7 +496,7 @@ module.exports = function(app, pool, requireAuth) {
         if (!hmsStaffAccountGuard.canManageEmployeePassword(actorRole, role, userPerms)) {
             return res.redirect('/employees/add?err=' + encodeURIComponent('You do not have permission to set employee passwords.'));
         }
-        const hr = parseEmployeeHrFields(req.body);
+        const hr = { job_title: '', cnps_number: '', tax_niu: '', nic_number: '', bank_name: '', bank_account_no: '' };
         try {
             const doctorRoleIds = await resolveDoctorRoleIds(pool);
             const isDoc = isDoctorRoleId(role, doctorRoleIds);
@@ -530,6 +540,16 @@ module.exports = function(app, pool, requireAuth) {
             if (staffSpecialisations.length) {
                 await syncEmployeeSpecialisations(pool, newId, staffSpecialisations);
             }
+            try {
+                const { ensureCashierOnEmployeeSave } = require('../lib/cashierIdentity');
+                await ensureCashierOnEmployeeSave(pool, newId, role, {
+                    status: parseInt(status ?? 1, 10),
+                    facilityId: parseInt(req.session.facilityId, 10) || 1,
+                });
+            } catch (_) { /* non-blocking */ }
+            try {
+                await replicateEmployeeOut(pool, newId, 'upsert');
+            } catch (_) { /* non-blocking */ }
             res.redirect('/employees?msg=Employee+created+successfully');
         } catch (e) {
             const roles = await sq('SELECT role, title FROM tbl_role ORDER BY CAST(role AS UNSIGNED)');
@@ -605,7 +625,7 @@ module.exports = function(app, pool, requireAuth) {
         if (hmsStaffAccountGuard.isSystemUserRole(role)) {
             return res.redirect(`/employees/${id}/edit?err=${encodeURIComponent('Admin and Super Admin roles must be managed under System Users.')}`);
         }
-        const hr = parseEmployeeHrFields(req.body);
+        const hr = { job_title: '', cnps_number: '', tax_niu: '', nic_number: '', bank_name: '', bank_account_no: '' };
         try {
             const doctorRoleIds = await resolveDoctorRoleIds(pool);
             const isDoc = isDoctorRoleId(role, doctorRoleIds);
@@ -676,6 +696,19 @@ module.exports = function(app, pool, requireAuth) {
                 req.session.user.gender = gender || null;
                 req.session.user.name = `${first_name} ${last_name}`.trim();
             }
+            try {
+                const { ensureCashierOnEmployeeSave, attachCashierToSession } = require('../lib/cashierIdentity');
+                await ensureCashierOnEmployeeSave(pool, id, role, {
+                    status: parseInt(status ?? 1, 10),
+                    facilityId: parseInt(req.session.facilityId, 10) || 1,
+                });
+                if (String(req.session.userId || req.session.user?.id || '') === String(id)) {
+                    await attachCashierToSession(pool, req, { forceAssign: true });
+                }
+            } catch (_) { /* non-blocking */ }
+            try {
+                await replicateEmployeeOut(pool, id, 'upsert');
+            } catch (_) { /* non-blocking */ }
             res.redirect(`/employees?msg=Employee+updated+successfully`);
         } catch (e) {
             res.redirect(`/employees/${id}/edit?err=${encodeURIComponent(e.message)}`);
@@ -747,7 +780,7 @@ module.exports = function(app, pool, requireAuth) {
             const hash = await bcrypt.hash(pwd || 'changeme', 10);
             const profileEmoji = resolveProfileEmoji(req.body.profile_emoji, gender);
             const photoPath = uploadedStaffPhotoPath(req.file) || null;
-            await pool.query(
+            const [insertResult] = await pool.query(
                 `INSERT INTO tbl_employee (
                   first_name,last_name,username,emailid,password,dob,employee_id,joining_date,gender,address,phone,bio,
                   profile_emoji,photo_path,role,status)
@@ -771,6 +804,9 @@ module.exports = function(app, pool, requireAuth) {
                     parseInt(status ?? 1, 10),
                 ]
             );
+            try {
+                await replicateEmployeeOut(pool, insertResult.insertId, 'upsert');
+            } catch (_) { /* non-blocking */ }
             res.redirect('/users?msg=System+user+created+successfully');
         } catch (e) {
             res.redirect('/users/add?err=' + encodeURIComponent(e.message));
@@ -881,6 +917,9 @@ module.exports = function(app, pool, requireAuth) {
                 req.session.user.gender = gender || null;
                 req.session.user.name = `${first_name} ${last_name}`.trim();
             }
+            try {
+                await replicateEmployeeOut(pool, id, 'upsert');
+            } catch (_) { /* non-blocking */ }
             res.redirect('/users?msg=System+user+updated+successfully');
         } catch (e) {
             res.redirect(`/users/${id}/edit?err=${encodeURIComponent(e.message)}`);
@@ -904,6 +943,9 @@ module.exports = function(app, pool, requireAuth) {
             return res.redirect('/users?err=' + encodeURIComponent(hmsStaffAccountGuard.manageDeniedMessage(userRole, targetRole)));
         }
         await run('DELETE FROM tbl_employee WHERE id=?', [id]);
+        try {
+            await replicateEmployeeOut(pool, id, 'deleted');
+        } catch (_) { /* non-blocking */ }
         res.redirect('/users?msg=System+user+deleted');
     });
 
@@ -1041,6 +1083,9 @@ module.exports = function(app, pool, requireAuth) {
             return res.redirect('/employees?err=' + encodeURIComponent(hmsStaffAccountGuard.manageDeniedMessage(userRole, targetRole)));
         }
         await run('DELETE FROM tbl_employee WHERE id=?', [id]);
+        try {
+            await replicateEmployeeOut(pool, id, 'deleted');
+        } catch (_) { /* non-blocking */ }
         res.redirect('/employees?msg=Employee+deleted');
     });
 

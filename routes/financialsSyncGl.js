@@ -7,7 +7,8 @@ const {
  backfillReceiptJournals,
  backfillReceiptJournalsForDateRange,
  backfillExpenseJournals,
- backfillExpenseJournalsForDateRange
+ backfillExpenseJournalsForDateRange,
+ backfillPurchaseOrderJournals,
 } = require('../lib/hmsFinSyncGl');
 
 module.exports = function registerFinancialsSyncGl(app, pool, requireAuth, requirePerm) {
@@ -101,16 +102,20 @@ module.exports = function registerFinancialsSyncGl(app, pool, requireAuth, requi
    const e = useExRange
     ? await backfillExpenseJournalsForDateRange(pool, fid, exD1, exD2, expenseBatch)
     : await backfillExpenseJournals(pool, fid, expenseBatch);
+   const p = await backfillPurchaseOrderJournals(pool, fid, expenseBatch);
 
    msg =
     `Receipts: ${r.processed} row(s) scanned — ${r.inserted} new journal(s), ${r.duplicate} already linked, ${r.failed} failed. Expenses: ` +
-    `${e.processed} scanned — ${e.inserted} new, ${e.duplicate} duplicate, ${e.failed} failed. Re-run if the batch limit cut off rows.`;
+    `${e.processed} scanned — ${e.inserted} new, ${e.duplicate} duplicate, ${e.failed} failed. Purchase orders: ` +
+    `${p.processed} scanned — ${p.inserted} new, ${p.duplicate} duplicate, ${p.failed} failed. Re-run if the batch limit cut off rows.`;
 
    const rIns = r.inserted || 0;
    const eIns = e.inserted || 0;
+   const pIns = p.inserted || 0;
    const rProc = r.processed || 0;
    const eProc = e.processed || 0;
-   if (rIns === 0 && eIns === 0 && (rProc > 0 || eProc > 0)) {
+   const pProc = p.processed || 0;
+   if (rIns === 0 && eIns === 0 && pIns === 0 && (rProc > 0 || eProc > 0 || pProc > 0)) {
     msg +=
      ' Those operational rows already have matching GL journals (nothing new to insert). ' +
      'If Trial balance / General ledger still look empty, widen From/To so the period includes each journal header entry_date, or open Journal diagnostics for this site and range.';

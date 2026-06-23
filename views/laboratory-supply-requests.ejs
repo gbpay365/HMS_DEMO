@@ -1,0 +1,10 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--lab-supply'; %>
+<%- include('partials/header') %>
+<%- include('partials/laboratory-odoo-start') %>
+<%- include('partials/react-page-mount', {
+  reactPage: 'clinical-dept-supply-requests',
+  reactLoadingLabel: typeof t === 'function' ? t('loading.default', { ns: 'common', defaultValue: 'Loading…' }) : 'Loading…',
+  pageData: locals.pageData || {}
+}) %>
+<%- include('partials/laboratory-odoo-end') %>
+<%- include('partials/footer') %>

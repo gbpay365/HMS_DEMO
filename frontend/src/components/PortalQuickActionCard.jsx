@@ -1,6 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { tileLabel } from '../lib/tileI18n';
 
+function resolveTileHref(tile) {
+  const raw = String(tile?.url || tile?.href || '').trim();
+  if (!raw || raw === '#' || raw === '__home__') return '';
+  return raw;
+}
+
 function FaTileIcon({ icon, color, compact }) {
   const cls = icon?.startsWith('fa-') ? icon : icon ? `fa-${icon}` : 'fa-th-large';
   return (
@@ -16,7 +22,7 @@ function FaTileIcon({ icon, color, compact }) {
 }
 
 function resolveTileHint(tile, t) {
-  const url = String(tile.url || '').split('?')[0].trim();
+  const url = resolveTileHref(tile).split('?')[0].trim();
   const hintKey = `portalQuick.hints.${url}`;
   const direct = t(hintKey);
   if (direct) return direct;
@@ -29,14 +35,28 @@ function resolveTileHint(tile, t) {
 export function PortalQuickActionCard({ tile, accentColor = '#714b67', compact = false }) {
   const { t } = useTranslation(['clinical', 'nav']);
   const color = tile.color || accentColor;
+  const href = resolveTileHref(tile);
   const hint = resolveTileHint(tile, t);
   const label = tileLabel(tile.code, tile.label, t);
+
+  const handleClick = (e) => {
+    if (!href) {
+      e.preventDefault();
+      return;
+    }
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    document.documentElement.classList.add('hms-nav-pending');
+    if (e.defaultPrevented) {
+      window.location.assign(href);
+    }
+  };
 
   if (compact) {
     return (
       <a
-        href={tile.url || '#'}
-        className="group flex flex-col items-center rounded-2xl border border-slate-100 bg-white p-4 text-center shadow-card transition hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-lg"
+        href={href || '#'}
+        onClick={handleClick}
+        className="group flex cursor-pointer flex-col items-center rounded-2xl border border-slate-100 bg-white p-4 text-center shadow-card transition hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-lg"
       >
         <FaTileIcon icon={tile.icon} color={color} compact />
         <span className="mt-3 text-xs font-bold leading-snug text-ink">{label}</span>
@@ -46,8 +66,9 @@ export function PortalQuickActionCard({ tile, accentColor = '#714b67', compact =
 
   return (
     <a
-      href={tile.url || '#'}
-      className="group relative flex min-h-[132px] flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card transition hover:-translate-y-1 hover:border-slate-200 hover:shadow-xl"
+      href={href || '#'}
+      onClick={handleClick}
+      className="group relative flex min-h-[132px] cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card transition hover:-translate-y-1 hover:border-slate-200 hover:shadow-xl"
     >
       <div className="h-1.5 w-full" style={{ background: `linear-gradient(90deg, ${color}, ${color}55)` }} />
       <div className="flex flex-1 flex-col gap-4 p-5 sm:flex-row sm:items-center">

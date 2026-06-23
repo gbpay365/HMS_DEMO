@@ -1,0 +1,131 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--cashier'; %>
+<%- include('partials/header') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _tl = function (key, fallback, opts) {
+  var o = { ns: 'clinical', defaultValue: fallback };
+  if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+  return _t('cashier.ledger.' + key, o);
+};
+var _dateVal = (filters && filters.date) || report.date || '';
+%>
+<link rel="stylesheet" href="/css/hms-app-surface.css?v=2">
+<div class="page-wrapper hms-surface-module"><div class="content px-3 pb-5">
+
+<div class="hms-surface-hero mb-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+    <div>
+      <p class="mb-2"><a href="/cashier" class="small text-white-50"><i class="fa fa-arrow-left"></i> <%= _tl('back_cashier', 'Back to cashier') %></a></p>
+      <h1 class="hms-surface-hero-title mb-1"><i class="fa fa-book mr-2"></i><%= _tl('title', 'Cashier till ledger') %></h1>
+      <p class="mb-0"><%= _tl('subtitle', 'Opening balance · Debit · Credit · Closing balance per transaction') %> · <strong><%= report.date_fmt || _dateVal %></strong></p>
+    </div>
+    <div class="no-print d-flex flex-wrap gap-2">
+      <a href="/cashier/eod-reconciliation?date=<%= encodeURIComponent(_dateVal) %>" class="btn btn-light btn-sm font-weight-bold rounded-pill">
+        <i class="fa fa-balance-scale mr-1"></i><%= _t('cashier.eod_reconciliation_link', { ns: 'clinical', defaultValue: 'End of day reconciliation' }) %>
+      </a>
+    </div>
+  </div>
+</div>
+
+<% if (flash) { %>
+<div class="alert alert-success border-0 shadow-sm small mb-3" style="border-radius:12px;"><%= flash %></div>
+<% } %>
+
+<form method="GET" action="/cashier/ledger" class="card border-0 shadow-sm mb-4 no-print" style="border-radius:14px;">
+  <div class="card-body p-3">
+    <div class="form-row align-items-end">
+      <div class="form-group col-6 col-md-2 mb-0">
+        <label class="small font-weight-bold"><%= _tl('date', 'Date') %></label>
+        <input type="hidden" name="date" value="<%= _dateVal %>" data-hms-dmy-hidden>
+        <input type="text" class="form-control form-control-sm" value="<%= _dateVal && fmtDate(_dateVal) !== '—' ? fmtDate(_dateVal) : '' %>" placeholder="DD/MM/YYYY" data-hms-dmy-display>
+      </div>
+      <div class="form-group col-6 col-md-2 mb-0">
+        <label class="small font-weight-bold"><%= _tl('cashier_code', 'Cashier code') %></label>
+        <input type="text" name="cashier_code" class="form-control form-control-sm" value="<%= (filters && filters.cashier_code) || '' %>" placeholder="CA01">
+      </div>
+      <div class="form-group col-6 col-md-2 mb-0">
+        <label class="small font-weight-bold"><%= _tl('payment_method', 'Method') %></label>
+        <input type="text" name="payment_method" class="form-control form-control-sm" value="<%= (filters && filters.payment_method) || '' %>" placeholder="Cash">
+      </div>
+      <div class="form-group col-6 col-md-2 mb-0">
+        <button type="submit" class="btn btn-primary btn-sm font-weight-bold rounded-pill px-4"><i class="fa fa-filter mr-1"></i><%= _tl('apply', 'Apply') %></button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<% if ((report.closingBalances || []).length) { %>
+<div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+  <div class="card-header bg-white border-0 font-weight-bold"><%= _tl('closing_balances', 'Closing balances (end of day)') %></div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm table-hover mb-0">
+        <thead class="thead-light"><tr>
+          <th><%= _tl('cashier_code', 'Code') %></th>
+          <th><%= _tl('cashier_identity', 'Identity') %></th>
+          <th><%= _tl('employee_name', 'Employee name') %></th>
+          <th><%= _tl('payment_method', 'Method') %></th>
+          <th class="text-right"><%= _tl('closing_balance', 'Closing') %></th>
+        </tr></thead>
+        <tbody>
+          <% (report.closingBalances || []).forEach(function(r) { %>
+          <tr>
+            <td class="font-weight-bold font-monospace"><%= r.cashier_code %></td>
+            <td><%= r.cashier_identity %></td>
+            <td><%= r.employee_name || '—' %></td>
+            <td><%= r.payment_method %></td>
+            <td class="text-right font-weight-bold"><%= r.closing_balance_fmt %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<div class="card border-0 shadow-sm" style="border-radius:14px;">
+  <div class="card-header bg-white border-0 font-weight-bold d-flex justify-content-between">
+    <span><%= _tl('transactions', 'Transactions') %> (<%= report.total_count || 0 %>)</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm table-hover mb-0">
+        <thead class="thead-light"><tr>
+          <th><%= _tl('time', 'Time') %></th>
+          <th><%= _tl('cashier_code', 'Code') %></th>
+          <th><%= _tl('employee_name', 'Employee') %></th>
+          <th><%= _tl('type', 'Type') %></th>
+          <th><%= _tl('reference', 'Ref') %></th>
+          <th class="text-right"><%= _tl('opening_balance', 'Opening') %></th>
+          <th class="text-right"><%= _tl('debit', 'Debit') %></th>
+          <th class="text-right"><%= _tl('credit', 'Credit') %></th>
+          <th class="text-right"><%= _tl('closing_balance', 'Closing') %></th>
+        </tr></thead>
+        <tbody>
+          <% if (!(report.rows || []).length) { %>
+          <tr><td colspan="9" class="text-muted text-center py-4"><%= _tl('empty', 'No ledger entries for this date.') %></td></tr>
+          <% } %>
+          <% (report.rows || []).forEach(function(r) { %>
+          <tr>
+            <td class="small"><%= r.created_at_fmt %></td>
+            <td><span class="font-monospace font-weight-bold"><%= r.cashier_code %></span><br><span class="small text-muted"><%= r.cashier_identity %></span></td>
+            <td class="small"><%= r.employee_name || '—' %></td>
+            <td><span class="badge badge-<%= r.txn_type === 'receipt' ? 'success' : 'warning' %>"><%= r.txn_type %></span><br><span class="small"><%= r.payment_method %></span></td>
+            <td class="small"><%= r.reference || '—' %><br><span class="text-muted"><%= (r.narration || '').slice(0, 40) %></span></td>
+            <td class="text-right"><%= r.opening_balance_fmt %></td>
+            <td class="text-right text-danger"><%= r.debit_amount > 0 ? r.debit_amount_fmt : '—' %></td>
+            <td class="text-right text-success"><%= r.credit_amount > 0 ? r.credit_amount_fmt : '—' %></td>
+            <td class="text-right font-weight-bold"><%= r.closing_balance_fmt %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div></div>
+<%- include('partials/footer') %>

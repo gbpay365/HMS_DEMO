@@ -458,11 +458,15 @@ module.exports = function registerProcurementExtended(app, pool, requireAuth, pr
     const fid = facilityId(req);
     const allPr = await loadPrList(pool, fid, 200);
     const status = String(req.query.status || '').trim().toLowerCase();
+    const dept = String(req.query.dept || '').trim().toLowerCase();
     const search = String(req.query.q || '').trim();
     const qLower = search.toLowerCase();
     let prList = allPr;
     if (status) {
       prList = prList.filter((row) => String(row.status || '').toLowerCase() === status);
+    }
+    if (dept) {
+      prList = prList.filter((row) => String(row.source_department || '').toLowerCase() === dept);
     }
     if (qLower) {
       prList = prList.filter((row) => {
@@ -486,6 +490,7 @@ module.exports = function registerProcurementExtended(app, pool, requireAuth, pr
       prList,
       prStats,
       prFilter: status,
+      prDeptFilter: dept,
       prSearch: search,
       pr: null,
       lines: [],

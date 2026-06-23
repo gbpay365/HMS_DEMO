@@ -25,6 +25,10 @@
     <div>
      <h5 class="font-weight-bold mb-1"><%= pr.pr_number %> — <%= pr.title %></h5>
      <span class="badge badge-<%= pr.status==='draft'?'warning':(pr.status==='issued'?'info':'success') %>-light text-uppercase"><%= pr.status %></span>
+     <% if (pr.source_department) { %>
+     <span class="badge badge-primary-light text-uppercase ml-1"><%= pr.source_department === 'laboratory' ? 'Laboratory' : (pr.source_department === 'radiology' ? 'Radiology' : pr.source_department) %></span>
+     <% if (pr.source_requisition_id) { %><span class="badge badge-secondary-light ml-1">Req #<%= pr.source_requisition_id %></span><% } %>
+     <% } %>
      <% if (pr.vendor_name) { %> · Vendor: <strong><%= pr.vendor_name %></strong><% } %>
      <% if (pr.estimated_total) { %> · Est. <%= Number(pr.estimated_total).toLocaleString() %> XAF<% } %>
     </div>
@@ -112,7 +116,7 @@
 
  <% } else { %>
  <!-- PR List -->
- <% var _pst = locals.prFilter || ''; var _prs = locals.prStats || { total: 0, draft: 0, issued: 0, reviewed: 0 }; var _search = locals.prSearch || ''; %>
+ <% var _pst = locals.prFilter || ''; var _dept = locals.prDeptFilter || ''; var _prs = locals.prStats || { total: 0, draft: 0, issued: 0, reviewed: 0 }; var _search = locals.prSearch || ''; %>
 
  <div class="hms-stat-grid">
   <div class="hms-stat-card hms-stat-card--brand"><div class="hms-stat-card__value"><%= _prs.total %></div><div class="hms-stat-card__label">Total PRs</div></div>
@@ -129,23 +133,26 @@
  </form>
 
  <div class="hms-chip-row">
-  <a href="/procurement/purchase-requests<%= _search ? ('?q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= !_pst ? ' active' : '' %>">All</a>
-  <a href="/procurement/purchase-requests?status=draft<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _pst === 'draft' ? ' active' : '' %>">Draft</a>
-  <a href="/procurement/purchase-requests?status=issued<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _pst === 'issued' ? ' active' : '' %>">Issued</a>
-  <a href="/procurement/purchase-requests?status=reviewed<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _pst === 'reviewed' ? ' active' : '' %>">Reviewed</a>
+  <a href="/procurement/purchase-requests<%= _search ? ('?q=' + encodeURIComponent(_search)) : '' %><%= _dept ? ((_search ? '&' : '?') + 'dept=' + encodeURIComponent(_dept)) : '' %>" class="hms-chip<%= !_pst && !_dept ? ' active' : '' %>">All</a>
+  <a href="/procurement/purchase-requests?dept=laboratory<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _dept === 'laboratory' ? ' active' : '' %>">Laboratory</a>
+  <a href="/procurement/purchase-requests?dept=radiology<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _dept === 'radiology' ? ' active' : '' %>">Radiology</a>
+  <a href="/procurement/purchase-requests?status=draft<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %><%= _dept ? ('&dept=' + encodeURIComponent(_dept)) : '' %>" class="hms-chip<%= _pst === 'draft' ? ' active' : '' %>">Draft</a>
+  <a href="/procurement/purchase-requests?status=issued<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %><%= _dept ? ('&dept=' + encodeURIComponent(_dept)) : '' %>" class="hms-chip<%= _pst === 'issued' ? ' active' : '' %>">Issued</a>
+  <a href="/procurement/purchase-requests?status=reviewed<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %><%= _dept ? ('&dept=' + encodeURIComponent(_dept)) : '' %>" class="hms-chip<%= _pst === 'reviewed' ? ' active' : '' %>">Reviewed</a>
  </div>
 
  <div class="hms-surface-card">
   <div class="table-responsive">
    <table class="table table-hover mb-0 hms-table-v3">
     <thead class="bg-light">
-     <tr><th>PR #</th><th>Title</th><th>Vendor</th><th>Status</th><th>Needed by</th><th class="text-right">Action</th></tr>
+     <tr><th>PR #</th><th>Title</th><th>Source</th><th>Vendor</th><th>Status</th><th>Needed by</th><th class="text-right">Action</th></tr>
     </thead>
     <tbody>
      <% (prList||[]).forEach(function(row){ %>
      <tr>
       <td class="font-weight-bold"><%= row.pr_number %></td>
       <td><%= row.title %></td>
+      <td><% if (row.source_department) { %><span class="badge badge-light text-uppercase extra-small"><%= row.source_department === 'laboratory' ? 'Lab' : (row.source_department === 'radiology' ? 'Rad' : row.source_department) %></span><% } else { %>—<% } %></td>
       <td><%= row.vendor_name || '—' %></td>
       <td><span class="badge badge-light text-uppercase extra-small"><%= row.status %></span></td>
       <td><%= row.needed_by || '—' %></td>
@@ -155,7 +162,7 @@
       </td>
      </tr>
      <% }) %>
-     <% if (!(prList||[]).length) { %><tr><td colspan="6" class="text-center py-5 text-muted">No purchase requests yet.</td></tr><% } %>
+     <% if (!(prList||[]).length) { %><tr><td colspan="7" class="text-center py-5 text-muted">No purchase requests yet.</td></tr><% } %>
     </tbody>
    </table>
   </div>

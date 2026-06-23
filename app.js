@@ -2,11 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const { loadEnv } = require('./lib/loadEnv');
 const _envLoad = loadEnv();
-if (_envLoad.onRailway) {
- try {
-  console.log('[HMS] Railway runtime — DB config from service variables (not .env.production).');
- } catch (_) {}
-} else if (_envLoad.loadedFrom === '.env.production') {
+if (_envLoad.loadedFrom === '.env.production') {
  try {
   console.warn('[HMS] No .env found — loaded .env.production. Upload .env (copy from .env.production) for production.');
  } catch (_) {}
@@ -52,8 +48,7 @@ const { flashT } = require('./lib/flashI18n');
 const { pageTitle } = require('./lib/pageTitle');
 const hmsI18n = require('./lib/hmsI18n');
 const session = require('express-session');
-const { createDbPool, resolveDbConfig: resolveDbEnv } = require('./lib/dbPool');
-const DB_BOOT_CONFIG = resolveDbEnv();
+const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const cookieParser = require('cookie-parser');
@@ -101,25 +96,15 @@ try {
   _writeCrash('WARN-self-heal', _rmErr);
 }
 
-// Self-heal step 2: load session store backends
+// Self-heal step 2: load express-mysql-session; fall back to MemoryStore if
+// it still fails for any other reason.
 const MySQLStore = (() => {
- if (DB_BOOT_CONFIG.driver === 'postgres') return null;
  try {
   return require('express-mysql-session')(session);
  } catch (e) {
   _writeCrash('WARN-MySQLStore-load', e);
   console.warn('[WARN] express-mysql-session failed to load:', e.message);
   console.warn('[WARN] Falling back to MemoryStore. Run npm install on server to fix.');
-  return null;
- }
-})();
-const PgSessionStore = (() => {
- if (DB_BOOT_CONFIG.driver !== 'postgres') return null;
- try {
-  return require('connect-pg-simple')(session);
- } catch (e) {
-  _writeCrash('WARN-PgSessionStore-load', e);
-  console.warn('[WARN] connect-pg-simple not installed — sessions will use MemoryStore.');
   return null;
  }
 })();
@@ -194,9 +179,8 @@ function buildAclUiVis(res, codes) {
  }
  return out;
 }
-const { nextReceiptNumber, ensureReceiptSeqTable, ensurePostgresReceiptInvoiceSeq } = require('./lib/receiptNumber');
-const { nextInvoiceNumber, ensureInvoiceSeqTable } = require('./lib/invoiceNumber');
-const { insertReceiptForPaymentTicket } = require('./lib/cashierInsertBillingDocument');
+const { nextReceiptNumber } = require('./lib/receiptNumber');
+const { nextInvoiceNumber } = require('./lib/invoiceNumber');
 const { amountPaidWords } = require('./lib/amountInWords');
 const ensureFacilityRow = require('./lib/ensureFacilityRow');
 const wardBoard = require('./lib/wardBoard');
@@ -413,48 +397,35 @@ bootStep('middleware-base', 'ok');
 // creation may itself fail at boot, in which case we still want this
 // endpoint to respond.
 app.get('/__health', async (req, res) => {
- const { HMS_BUILD } = require('./lib/resolveDbConfig');
  const out = {
   ok: true,
-  build: HMS_BUILD,
   node: process.version,
   pid: process.pid,
   uptime_s: Math.round(process.uptime()),
   env: {
-   DB_DRIVER: pool && pool.driver ? pool.driver : DB_BOOT_CONFIG.driver,
-   DB_SOURCE: DB_BOOT_CONFIG.source || '(unknown)',
-   DB_HOST: DB_BOOT_CONFIG.host || '(missing)',
-   DB_PORT: String(DB_BOOT_CONFIG.port || ''),
-   DB_USER: DB_BOOT_CONFIG.user ? '(set)' : '(missing)',
-   DB_PASSWORD: DB_BOOT_CONFIG.password ? '(set)' : '(missing)',
-   DB_NAME: DB_BOOT_CONFIG.database || '(missing)',
-   DATABASE_URL_SET: process.env.DATABASE_URL ? '(set)' : '(missing)',
-   PGHOST_SET: process.env.PGHOST ? '(set)' : '(missing)',
-   PGHOST_VALUE: process.env.PGHOST ? process.env.PGHOST.replace(/[^a-zA-Z0-9._-]/g, '') : '(missing)',
-   RAILWAY: _envLoad.onRailway ? 'yes' : 'no',
-   CONFIG_VALID: DB_BOOT_CONFIG.valid !== false,
-   CONFIG_ERROR: DB_BOOT_CONFIG.valid === false ? DB_BOOT_CONFIG.error : null,
-   PG_SSL: DB_BOOT_CONFIG.ssl === false ? 'off' : DB_BOOT_CONFIG.ssl ? 'on' : 'off',
+   DB_HOST: DB_CONFIG.host || '(missing)',
+   DB_PORT: String(DB_CONFIG.port || 3306),
+   DB_USER: DB_CONFIG.user ? '(set)' : '(missing)',
+   DB_PASSWORD: DB_CONFIG.password ? '(set)' : '(missing)',
+   DB_NAME: DB_CONFIG.database || '(missing)',
+   DB_SOURCE: DB_CONFIG.source,
+   POSTGRES_URL_LINKED: DB_CONFIG.postgresLinked,
    PORT: process.env.PORT || '(default)',
-   NODE_ENV: process.env.NODE_ENV || '(unset)',
+   NODE_ENV: process.env.NODE_ENV || '(unset)'
   },
   boot: BOOT_TRACE.slice(-50),
   db: { reachable: false, error: null, version: null, appointment_columns: [] }
  };
  try {
   if (typeof pool === 'undefined' || !pool) throw new Error('Database pool was not initialized at boot.');
-  const probe = pool.query('SELECT VERSION() AS v');
-  const timeout = new Promise((_, reject) => {
-   setTimeout(() => reject(new Error('Database probe timed out after 10s')), 10000);
-  });
-  const [[v]] = await Promise.race([probe, timeout]);
+  const [[v]] = await pool.query('SELECT VERSION() AS v');
   out.db.reachable = true;
   out.db.version = v && v.v;
   const [cols] = await pool.query(
    `SELECT COLUMN_NAME FROM information_schema.COLUMNS
      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tbl_appointment'`
   ).catch(() => [[]]);
-  out.db.appointment_columns = cols.map((c) => c.COLUMN_NAME || c.column_name);
+  out.db.appointment_columns = cols.map(c => c.COLUMN_NAME);
   const [empTables] = await pool.query(
    `SELECT 1 FROM information_schema.TABLES
      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tbl_employee' LIMIT 1`
@@ -467,7 +438,7 @@ app.get('/__health', async (req, res) => {
     `SELECT COLUMN_NAME FROM information_schema.COLUMNS
       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tbl_employee'`
    ).catch(() => [[]]);
-   const names = empCols.map((c) => c.COLUMN_NAME || c.column_name);
+   const names = empCols.map(c => c.COLUMN_NAME);
    out.db.tbl_employee.has_specialisation = names.includes('specialisation');
    try {
     await pool.query(
@@ -484,21 +455,6 @@ app.get('/__health', async (req, res) => {
   out.ok = false;
   out.db.error = e && e.message ? e.message : String(e);
   out.db.code = e && e.code ? e.code : null;
-  if (DB_BOOT_CONFIG.valid === false && DB_BOOT_CONFIG.error) {
-   out.db.config_error = DB_BOOT_CONFIG.error;
-  }
-  if (
-    DB_BOOT_CONFIG.driver === 'postgres' &&
-    (out.db.code === 'ECONNREFUSED' || /ECONNREFUSED/i.test(out.db.error)) &&
-    /localhost|127\.0\.0\.1|::1/i.test(DB_BOOT_CONFIG.host || '')
-  ) {
-   out.db.hint =
-    'Postgres is pointing at localhost. On Railway: link the Postgres service, set ' +
-    'DATABASE_URL=${{Postgres.DATABASE_URL}}, and delete DB_HOST / DB_PORT / DB_USER / DB_PASSWORD / DB_NAME from the web service.';
-  } else if (DB_BOOT_CONFIG.driver === 'postgres' && !process.env.DATABASE_URL && !process.env.PGHOST) {
-   out.db.hint =
-    'No DATABASE_URL or PGHOST on this service. Reference Postgres variables from the linked database service.';
-  }
  }
  res.set('Cache-Control', 'no-store');
  // Always HTTP 200 so hosting panels don't treat DB issues as "app failed to start".
@@ -530,39 +486,56 @@ app.get('/__boot', (req, res) => {
  res.set('Cache-Control', 'no-store').json(out);
 });
 
-app.get('/__env-debug', (req, res) => {
- const keys = Object.keys(process.env)
-  .filter((k) => /^(DB_|PG|POSTGRES|DATABASE|HMS_DB|RAILWAY|NODE_ENV|PORT)/i.test(k))
-  .sort();
- const pgKeys = ['DATABASE_URL', 'DATABASE_PUBLIC_URL', 'PGHOST', 'PGPORT', 'PGUSER', 'PGPASSWORD', 'POSTGRES_PASSWORD', 'PGDATABASE'];
- const keyStatus = {};
- for (const k of pgKeys) {
-  const v = process.env[k];
-  keyStatus[k] = v && String(v).trim() ? 'has_value' : (k in process.env ? 'empty' : 'absent');
- }
- res.set('Cache-Control', 'no-store').json({
-  build: require('./lib/resolveDbConfig').HMS_BUILD,
-  railway: _envLoad.onRailway,
-  keys_present: keys,
-  pg_key_status: keyStatus,
-  keys_with_values: keys.filter((k) => String(process.env[k] || '').trim()),
-  hints: {
-   DATABASE_URL: process.env.DATABASE_URL && String(process.env.DATABASE_URL).trim() ? 'set' : 'empty_or_missing',
-   PGHOST: process.env.PGHOST && String(process.env.PGHOST).trim() ? 'set' : 'empty_or_missing',
-   POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD && String(process.env.POSTGRES_PASSWORD).trim() ? 'set' : 'empty_or_missing',
-   HMS_DB_DRIVER: process.env.HMS_DB_DRIVER || '(unset)',
-   fix: 'Railway web service → Variables → delete empty DATABASE_URL/PGHOST → Add Reference → Postgres → DATABASE_URL',
-  },
- });
-});
-
-// Database pool — MySQL (mysql2) or PostgreSQL (pg) via lib/dbPool.js
+// Database Pool — wrapped in try/catch so that a bad DB config does not
+// prevent the process from even starting (we want /__health to be reachable).
+//
+// iFastNet shared-host hardening: the server drops idle MySQL connections
+// after ~60 s, causing ECONNRESET / PROTOCOL_CONNECTION_LOST on the next
+// query. enableKeepAlive + connectTimeout let the pool replace stale
+// connections before mysql2 tries to reuse them.
+const { resolveDbConfig } = require('./lib/resolveDbConfig');
+const DB_CONFIG = resolveDbConfig();
+if (DB_CONFIG.postgresLinked) {
+ console.warn(
+  '[HMS] PostgreSQL DATABASE_URL detected — HMS requires MySQL. Add a Railway MySQL service and set MYSQLHOST/MYSQLPASSWORD (or DB_*).'
+ );
+}
 let pool = null;
 try {
- pool = createDbPool();
- bootStep('db-pool', 'ok', `${pool.driver} → ${pool.config?.host}:${pool.config?.port} ssl=${pool.config?.ssl === false ? 'off' : 'on'} (${pool.config?.source || '?'})`);
+ pool = mysql.createPool({
+  host:                    DB_CONFIG.host,
+  port:                    DB_CONFIG.port,
+  user:                    DB_CONFIG.user,
+  password:                DB_CONFIG.password,
+  database:                DB_CONFIG.database,
+  charset:                 'utf8mb4',
+  waitForConnections:      true,
+  connectionLimit:         5,    // keep low on shared hosting
+  queueLimit:              0,
+  // ── Reconnect / keepalive (prevents ECONNRESET on idle shared hosts) ───
+  enableKeepAlive:         true,
+  keepAliveInitialDelay:   10000, // start keepalive after 10 s of idle
+  connectTimeout:          10000, // fail fast on bad host rather than hanging
+ });
+ bootStep('mysql-pool', 'ok');
+ const _origPoolQuery = pool.query.bind(pool);
+ pool.query = async function catalogAwareQuery(sql, ...args) {
+  const result = await _origPoolQuery(sql, ...args);
+  const s = typeof sql === 'string' ? sql : '';
+  if (/tbl_service_catalog/i.test(s) && /\b(INSERT|UPDATE|DELETE)\b/i.test(s)) {
+   try {
+    require('./lib/catalogAccountCoreSync').scheduleServiceCatalogSync(pool);
+    require('./lib/coreAccountProductSync').scheduleProductSync(pool);
+   } catch (_) { /* non-fatal */ }
+  }
+  if (/tbl_inventory_item/i.test(s) && /\b(INSERT|UPDATE|DELETE)\b/i.test(s)) {
+   try {
+    require('./lib/coreAccountProductSync').scheduleProductSync(pool);
+   } catch (_) { /* non-fatal */ }
+  }
+  return result;
+ };
  pool.query('SELECT 1 AS ok').then(async () => {
-  bootStep('db-pool-probe', 'ok');
   try {
    const ensureFinAccountingSchema = require('./lib/ensureFinAccountingSchema');
    await ensureFinAccountingSchema(pool);
@@ -570,18 +543,20 @@ try {
   } catch (schemaErr) {
    bootStep('fin-accounting-schema', 'warn', schemaErr);
   }
- }).catch((e) => {
-  bootStep('db-pool-probe', 'fail', e);
- });
+  try {
+   const { exportAndSyncServiceCatalog } = require('./lib/catalogAccountCoreSync');
+   exportAndSyncServiceCatalog(pool).catch((e) => console.warn('[catalog-sync] startup:', e.message));
+   const { syncProductsToAccountCore } = require('./lib/coreAccountProductSync');
+   syncProductsToAccountCore(pool).catch((e) => console.warn('[product-sync] startup:', e.message));
+  } catch (_) { /* optional */ }
+ }).catch((e) => bootStep('fin-accounting-schema-probe', 'warn', e));
  betterPayConfig.init(pool).catch((e) => console.warn('[BetterPay] init:', e.message));
 } catch (e) {
- bootStep('db-pool', 'fail', e);
- console.error('[HMS] Database pool not created:', e.message || e);
+ bootStep('mysql-pool', 'fail', e);
 }
 
 /** Ensures tbl_patient_insurance exists and columns match INSERTs (MySQL 5.7+ / MariaDB: no IF NOT EXISTS on ADD COLUMN). */
 async function migratePatientInsuranceSchema(db) {
- if (db && db.driver === 'postgres') return;
  await db.query(`
   CREATE TABLE IF NOT EXISTS tbl_patient_insurance (
    id INT AUTO_INCREMENT PRIMARY KEY,
@@ -627,7 +602,6 @@ async function migratePatientInsuranceSchema(db) {
 }
 
 async function ensureOpdOrderItemsSchema(db) {
- if (db && db.driver === 'postgres') return;
  // Core queue table: per-item billing state for consultation-prescribed lab/radiology
  await db.query(`
   CREATE TABLE IF NOT EXISTS tbl_opd_order_item (
@@ -696,7 +670,6 @@ async function ensureOpdOrderItemsSchema(db) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function ensureServiceCatalogSchema(db) {
- if (db && db.driver === 'postgres') return;
  await db.query(`
   CREATE TABLE IF NOT EXISTS tbl_service_catalog (
    id INT AUTO_INCREMENT PRIMARY KEY,
@@ -733,14 +706,7 @@ app.locals.db = pool;
 // events + absorbing the unhandledRejection from its internal Promise chain.
 let sessionStore = null;
 try {
- if (pool && pool.driver === 'postgres' && PgSessionStore && pool.nativePool) {
-  sessionStore = new PgSessionStore({
-   pool: pool.nativePool,
-   createTableIfMissing: true,
-   tableName: 'session',
-  });
-  bootStep('session-store', 'ok', 'postgres');
- } else if (pool && MySQLStore) {
+ if (pool && MySQLStore) {
   sessionStore = new MySQLStore({
    // Don't let the store create its own connection — use our pool
    createDatabaseTable: true,
@@ -906,7 +872,7 @@ app.use('/financials', async (req, res, next) => {
  try {
   await attachFinReportOrgLocals(pool, req, res);
  } catch (_) {
-  res.locals.finReportOrgName = hmsBrand.orgName || 'ZAIZENS';
+  res.locals.finReportOrgName = hmsBrand.orgName || 'TSSF SOA';
   res.locals.finReportEntityLabel =
    'Facility #' + (parseInt(req.session?.facilityId, 10) || 1);
  }
@@ -988,6 +954,10 @@ app.use(async (req, res, next) => {
  }
  // Return cached perms if already set (within same request chain)
  if (res.locals.userPerms) return next();
+ if (Array.isArray(req.session.userPerms)) {
+  res.locals.userPerms = req.session.userPerms;
+  return next();
+ }
  try {
  const [perms] = await pool.query(
  `SELECT p.code FROM tbl_acl_role_permission rp
@@ -996,6 +966,7 @@ app.use(async (req, res, next) => {
  [role]
  );
  res.locals.userPerms = perms.map(p => p.code);
+ req.session.userPerms = res.locals.userPerms;
  } catch(e) {
  // Non–core roles: no implicit grants if ACL query fails (manage via Access Control).
  res.locals.userPerms = [];
@@ -1381,6 +1352,7 @@ safeMount('labLims', () => require('./routes/labLims')(app, pool, requireAuth, r
 safeMount('hmsClinical', () => require('./routes/hmsClinical')(app, pool, requireAuth, requirePerm));
 safeMount('portals',   () => require('./routes/portals')(app, pool, requireAuth));
 safeMount('nursingSupply', () => require('./routes/nursingSupply')(app, pool, requireAuth, requirePerm));
+safeMount('clinicalDeptRequisition', () => require('./routes/clinicalDeptRequisition')(app, pool, requireAuth, requirePerm));
 safeMount('patientPassport', () => require('./routes/patientPassport')(app, pool, requireAuth, requirePerm));
 safeMount('doctorErAlerts', () => require('./routes/doctorErAlerts')(app, pool, requireAuth));
 safeMount('procurement', () => require('./routes/procurement')(app, pool, requireAuth, requirePerm));
@@ -1389,46 +1361,12 @@ safeMount('pharmacyModule', () => require('./routes/pharmacyModule')(app, pool, 
 safeMount('pharmacyReporting', () => require('./routes/pharmacyReporting')(app, pool, requireAuth, requirePerm));
 safeMount('staff',     () => require('./routes/staff')(app, pool, requireAuth));
 safeMount('hmsLicense', () => require('./routes/hmsLicense')(app, pool, requireAuth));
+safeMount('integrations', () => require('./routes/integrations')(app, pool));
+safeMount('integrationSettings', () => require('./routes/integrationSettings')(app, pool, requireAuth, requireSuperAdmin));
 safeMount('hmsDirectorReports', () =>
  require('./routes/hmsDirectorReports')(app, pool, requireAuth)
 );
-safeMount('hrPayroll', () => require('./routes/hrPayroll')(app, pool, requireAuth, { requirePayrollAccess, requireAdminOrSuper, requireHrSelfService }));
-// Allowance repair (also registered in hrPayroll; kept here so /repair works after app restart)
-(() => {
- const {
-  repairMedicalAllowanceSettings,
-  loadAllowanceSettings,
-  saveAllowanceSettings,
-  rowToSavePayload,
- } = require('./lib/hmsAllowanceCameroon');
- const ensureHrPayrollSchema = require('./lib/ensureHrPayrollSchema');
- async function hmsAllowanceRepairHandler(req, res) {
-  try {
-   await ensureHrPayrollSchema(pool);
-   const fid = Math.max(1, parseInt(req.session.facilityId, 10) || 1);
-   const sector = String(req.body.sector || req.query.sector || 'medical').toLowerCase();
-   if (sector === 'medical') {
-    await repairMedicalAllowanceSettings(pool, fid);
-   } else {
-    const merged = await loadAllowanceSettings(pool, fid, sector);
-    await saveAllowanceSettings(pool, fid, sector, merged.map(rowToSavePayload));
-   }
-   res.redirect(
-    '/payroll/settings?sector=' + sector + '&tab=allowances&msg=' +
-    encodeURIComponent(flashT(res, 'flash.allowance_settings_restored_to_legal_defaults'))
-   );
-  } catch (e) {
-   const sector = String(req.query.sector || 'medical').toLowerCase();
-   res.redirect(
-    '/payroll/settings?sector=' + sector + '&tab=allowances&err=' + encodeURIComponent(e.message)
-   );
-  }
- }
- app.get('/payroll/settings/allowances/repair', requireAuth, hmsAllowanceRepairHandler);
- app.post('/payroll/settings/allowances/repair', requireAuth, hmsAllowanceRepairHandler);
-})();
-safeMount('taxHub', () => require('./routes/taxHub')(app, pool, requireAuth, { requirePerm }));
-safeMount('statutoryReports', () => require('./routes/statutoryReports')(app, pool, requireAuth, { requirePerm }));
+// Payroll moved to standalone Zaizens_PayRoll (C:\Zaizens_PayRoll)
 safeMount('internalBusinessRules', () => require('./routes/internalBusinessRules')(app, pool));
 safeMount('financialsTrialBalance', () =>
  require('./routes/financialsTrialBalance')(app, pool, requireAuth, requirePerm)
@@ -1537,16 +1475,19 @@ app.post('/login', async (req, res) => {
   return res.redirect('/visiting-doctor?err=' + encodeURIComponent('Visiting doctors must sign in from the Visiting Doctor page.'));
  }
  try {
- // Ensure HR columns (e.g. specialisation) exist before login SELECT — not all DB imports include them.
- await require('./lib/ensureEmployeeHrSchema')(pool).catch((e) => {
-  console.warn('[login] ensureEmployeeHrSchema:', e && e.message ? e.message : e);
- });
-
- // 1. Fetch user by username ONLY
- const [rows] = await pool.query(
- 'SELECT id, first_name, last_name, username, password, role, photo_path, specialisation, profile_emoji, gender FROM tbl_employee WHERE username = ? AND status = 1 LIMIT 1',
- [username]
- );
+ const loginSelectSql =
+  'SELECT id, first_name, last_name, username, password, role, photo_path, specialisation, profile_emoji, gender FROM tbl_employee WHERE username = ? AND status = 1 LIMIT 1';
+ let rows;
+ try {
+  [rows] = await pool.query(loginSelectSql, [username]);
+ } catch (selectErr) {
+  if (selectErr && selectErr.code === 'ER_BAD_FIELD_ERROR') {
+   await require('./lib/ensureEmployeeHrSchema')(pool);
+   [rows] = await pool.query(loginSelectSql, [username]);
+  } else {
+   throw selectErr;
+  }
+ }
 
  if (rows.length === 0) {
  return res.render('login', {
@@ -1602,6 +1543,26 @@ app.post('/login', async (req, res) => {
  };
  req.session.userId = user.id;
  setLoginActivity(req);
+ if (String(user.role) !== '1' && String(user.role) !== '99') {
+  try {
+   const [permRows] = await pool.query(
+    `SELECT p.code FROM tbl_acl_role_permission rp
+     JOIN tbl_acl_permission p ON p.id = rp.permission_id
+     WHERE rp.role = ?`,
+    [String(user.role)]
+   );
+   req.session.userPerms = (permRows || []).map((p) => p.code);
+  } catch (_) {
+   req.session.userPerms = [];
+  }
+ } else {
+  delete req.session.userPerms;
+ }
+
+ try {
+  const { attachCashierToSession } = require('./lib/cashierIdentity');
+  await attachCashierToSession(pool, req, { forceAssign: true });
+ } catch (_) {}
 
  // 4. Redirect based on role
  // Super Admin === Æ’ === Æ’ ============================== /super-admin console
@@ -1610,7 +1571,12 @@ app.post('/login', async (req, res) => {
  if (user.role == 99) return res.redirect('/super-admin');
  if (user.role == 1)  return res.redirect('/hms');
  // Primary: home portal from Access Control (tbl_acl_role_portal via aclLayout).
- const dest = aclLayout.staffHomeUrl(String(user.role), { specialisation: user.specialisation || null });
+ const homeOpts = { specialisation: user.specialisation || null };
+ let dest = aclLayout.staffHomeUrl(String(user.role), homeOpts);
+ if (!dest && typeof aclLayout.ensurePortalCacheReady === 'function') {
+  await aclLayout.ensurePortalCacheReady();
+  dest = aclLayout.staffHomeUrl(String(user.role), homeOpts);
+ }
  if (dest) return res.redirect(dest);
  return res.redirect('/profile?err=' + encodeURIComponent(flashT(res, 'flash.no_home_portal_is_assigned_for_your_role_an_administrator_must_set_role_')));
  } catch (err) {
@@ -3150,33 +3116,24 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
   }
 
   await ensurePatientInsuranceTables();
-  await ensurePatientAgeColumns(pool);
-
-  // Schema patches must run outside the transaction (PostgreSQL aborts the whole txn on any error).
-  if (pool.driver !== 'postgres') {
-    const patientColumnAlters = [
-      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS patient_type VARCHAR(30) NULL",
-      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS cni_number VARCHAR(100) NULL",
-      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS cni_issue_date DATE NULL",
-      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS next_of_kin_name VARCHAR(255) NULL",
-      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS next_of_kin_phone VARCHAR(50) NULL",
-      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS next_of_kin_relationship VARCHAR(100) NULL",
-      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS emergency_contact_name VARCHAR(255) NULL",
-      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS emergency_contact_phone VARCHAR(50) NULL",
-      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS portal_enabled TINYINT DEFAULT 0",
-      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS status TINYINT DEFAULT 1",
-      "ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS created_at DATETIME NULL",
-    ];
-    for (const sql of patientColumnAlters) {
-      await pool.query(sql).catch(() => {});
-    }
-  }
-  const ensurePatientCodeSchema = require('./lib/ensurePatientCodeSchema');
-  await ensurePatientCodeSchema(pool).catch((e) => console.warn('[ensurePatientCodeSchema]', e.message));
 
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
+
+    // Ensure schema columns exist (some deployments have older tbl_patient)
+    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS patient_type VARCHAR(30) NULL").catch(() => {});
+    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS cni_number VARCHAR(100) NULL").catch(() => {});
+    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS cni_issue_date DATE NULL").catch(() => {});
+    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS next_of_kin_name VARCHAR(255) NULL").catch(() => {});
+    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS next_of_kin_phone VARCHAR(50) NULL").catch(() => {});
+    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS next_of_kin_relationship VARCHAR(100) NULL").catch(() => {});
+    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS emergency_contact_name VARCHAR(255) NULL").catch(() => {});
+    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS emergency_contact_phone VARCHAR(50) NULL").catch(() => {});
+    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS portal_enabled TINYINT DEFAULT 0").catch(() => {});
+    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS status TINYINT DEFAULT 1").catch(() => {});
+    await conn.query("ALTER TABLE tbl_patient ADD COLUMN IF NOT EXISTS created_at DATETIME NULL").catch(() => {});
+    await ensurePatientAgeColumns(conn);
 
     const phoneNorm = normalizePatientPhone(phone);
     const nokPhoneNorm = normalizePatientPhone(next_of_kin_phone);
@@ -3214,6 +3171,8 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
       return res.redirect('/patients?err=' + encodeURIComponent(flashT(res, 'flash.duplicate_patient', { id: duplicate.id, name: ((duplicate.first_name||'')+' '+(duplicate.last_name||'')).trim() || flashT(res, 'flash.patient') })));
     }
 
+    const ensurePatientCodeSchema = require('./lib/ensurePatientCodeSchema');
+    await ensurePatientCodeSchema(conn).catch(() => {});
     const { allocateNextPatientCodeLocked } = require('./lib/hmsPatientCode');
     const patientCode = await allocateNextPatientCodeLocked(conn);
 
@@ -3234,14 +3193,15 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
     );
     const newPid = result.insertId;
     const { refreshPatientIdentityKey } = require('./lib/ensurePatientIdentitySchema');
-    await refreshPatientIdentityKey(conn, newPid);
+    await refreshPatientIdentityKey(conn, newPid).catch(() => {});
 
     if (newPid > 0) {
-      // 2. Auto-wallet (Postgres-safe — no INSERT IGNORE inside txn)
-      const { ensureWalletForPatient } = require('./lib/walletHub');
-      await ensureWalletForPatient(conn, newPid, req.session.facilityId || 1).catch((e) => {
-        console.warn('[patient-add] wallet:', e.message);
-      });
+      // 2. Auto-wallet
+      const qrToken = 'GBPAY-' + newPid + '-' + Date.now();
+      await conn.query(
+        "INSERT IGNORE INTO tbl_patient_wallet (patient_id, balance, status, qr_token, created_at, updated_at) VALUES (?,0,'active',?,NOW(),NOW())",
+        [newPid, qrToken]
+      ).catch(() => {});
 
       // 3. Open Credit Line
       if (open_credit_line) {
@@ -3703,14 +3663,20 @@ app.post('/staff/add', requireAuth, requirePerm('employee.write'), hmsStaffProfi
  }
  try {
  const { resolveProfileEmoji } = require('./lib/hmsEmployeeProfile');
- await require('./lib/ensureEmployeeHrSchema')(pool).catch(() => {});
  const profileEmoji = resolveProfileEmoji(profile_emoji, gender || 'Male');
 const photoPath = hmsUploadedStaffPhotoPath(req.file) || null;
  const hashedPassword = await bcrypt.hash(password, 10);
- await pool.query(
+ const [insertResult] = await pool.query(
 'INSERT INTO tbl_employee (first_name, last_name, username, password, emailid, phone, gender, profile_emoji, photo_path, role, status, joining_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW())',
 [first_name, last_name, username, hashedPassword, emailid, phone, gender || 'Male', profileEmoji, photoPath, role]
  );
+ try {
+  const { ensureCashierOnEmployeeSave } = require('./lib/cashierIdentity');
+  await ensureCashierOnEmployeeSave(pool, insertResult.insertId, role, {
+   status: 1,
+   facilityId: parseInt(req.session.facilityId, 10) || 1,
+  });
+ } catch (_) { /* non-blocking */ }
  res.redirect('/staff');
  } catch (err) {
  console.error(err);
@@ -3788,7 +3754,7 @@ app.post('/appointments/add', requireAuth, async (req, res) => {
 
   if (isPortalFlow && visitType === 'telemedicine') {
    const crypto = require('crypto');
-   const room = `zaizens-hms-${appt_id.toLowerCase()}-${crypto.randomBytes(6).toString('hex')}`;
+   const room = `tssf-hms-${appt_id.toLowerCase()}-${crypto.randomBytes(6).toString('hex')}`;
    if (colSet.has('meeting_room')) {
     await pool.query('UPDATE tbl_appointment SET meeting_room=? WHERE appointment_id=?', [room, appt_id]).catch(() => {});
    }
@@ -6659,7 +6625,6 @@ app.get(
 );
 
 async function ensureFinancialSettingsTable(db) {
- if (db && db.driver === 'postgres') return;
  await db.query(`
   CREATE TABLE IF NOT EXISTS tbl_hms_fin_setting (
    k VARCHAR(96) PRIMARY KEY,
@@ -6701,57 +6666,11 @@ app.get('/financials', requireAuth, requirePerm('accounting.read','accounting.wr
  }
 });
 
-// PAYROLL & HR (hub — sidebar links here)
-app.get('/payroll', requireAuth, requirePayrollAccess, async (req, res) => {
- try {
-  const { loadPayrollDashboard } = require('./lib/hmsPayrollDashboard');
-  const fid = Math.max(1, parseInt(req.session.facilityId, 10) || 1);
-  let headcount = 0;
-  try {
-   const [[r]] = await pool.query('SELECT COUNT(*) AS c FROM tbl_employee WHERE status = 1');
-   headcount = Number(r?.c || 0);
-  } catch (e) {
-   headcount = 0;
-  }
-  let metrics = {};
-  try {
-   metrics = await loadPayrollDashboard(pool, fid);
-  } catch (e) {
-   metrics = {};
-  }
-  const role = String((req.session.user || {}).role || '');
-  const isPayrollAdmin = role === '1' || role === '99';
-  const perms = Array.isArray(res.locals.userPerms) ? res.locals.userPerms : [];
-  const showHrLeaveAdmin =
-   isPayrollAdmin ||
-   perms.includes('*') ||
-   perms.includes('hr.leave.approve');
-  const canTaxHub =
-   perms.includes('*') ||
-   perms.includes('accounting.read') ||
-   perms.includes('accounting.write');
-  const canPayrollSettings =
-   isPayrollAdmin ||
-   perms.includes('*') ||
-   perms.includes('payroll.write');
-  res.render('payroll', {
-   title: pageTitle(res, 'document_titles.payroll_hr', 'Payroll & HR — ZAIZENS'),
-   headcount,
-   metrics,
-   isPayrollAdmin,
-   showHrLeaveAdmin,
-   canTaxHub,
-   canPayrollSettings,
-   flash: req.query.msg || null,
-   error: req.query.err || null
-  });
- } catch (err) {
-  console.error('PAYROLL:', err.message);
-  renderAppError(res, 500, 'page.load_payroll', 'Payroll page failed to load.')
- }
-});
+// PAYROLL & HR — moved to standalone Zaizens_PayRoll (http://127.0.0.1:3010)
 
-// Balance sheet → routes/financialsBalanceSheet.js (GL-based, Phase 5)
+// Balance sheet -> routes/financialsBalanceSheet.js (GL-based, Phase 5)
+
+// /financials/tax → /financials/settings (see routes/financialsSettings.js)
 
 // INVENTORY MANAGEMENT
 app.get('/inventory', requireAuth, requirePerm('inventory.read','inventory.write','pharmacy.read','pharmacy.write'), async (req, res) => {
@@ -7161,6 +7080,10 @@ app.get('/reports', requireAuth, async (req, res) => {
 // CASHIER MODULE — cashier ACL or admin
 app.get('/cashier', requireAuth, requirePerm('cashier.read','cashier.write'), async (req, res) => {
  try {
+ try {
+  const { attachCashierToSession } = require('./lib/cashierIdentity');
+  await attachCashierToSession(pool, req, { forceAssign: true });
+ } catch (_) {}
  const syncEmergencyCashierTickets = require('./lib/syncEmergencyCashierTickets');
  await syncEmergencyCashierTickets(pool);
  const histQ = String(req.query.hist_q || '').trim();
@@ -7293,7 +7216,6 @@ app.get('/cashier', requireAuth, requirePerm('cashier.read','cashier.write'), as
 
  const hmsDoctorStaff = require('./lib/hmsDoctorStaff');
  const { listSpecialisationCatalog } = require('./lib/hmsOrgClinicalCatalog');
- await require('./lib/ensureEmployeeHrSchema')(pool).catch(() => {});
  const doctors = await hmsDoctorStaff.fetchActiveDoctorsWithClinicalLinks(
   pool,
   'e.id, e.first_name, e.last_name, COALESCE(e.specialisation,"") AS specialisation, COALESCE(e.primary_department,"") AS primary_department'
@@ -7674,9 +7596,7 @@ app.get('/cashier', requireAuth, requirePerm('cashier.read','cashier.write'), as
 
  const { fetchCashierBillingInvoices } = require('./lib/cashierBillingInvoices');
  const { ensureCashierInvoiceSchema } = require('./lib/ensureCashierInvoiceSchema');
- const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
  await ensureCashierInvoiceSchema(pool).catch(() => {});
- await ensureCashierEodSchema(pool).catch(() => {});
  let billingInvoices = [];
  let billingSummary = { pending_count: 0, pending_total: 0, paid_today_count: 0, paid_today_total: 0 };
  let billingTotal = 0;
@@ -8563,8 +8483,49 @@ app.post('/cashier/opd-orders/refund', requireAuth, async (req, res) => {
    nextInvoiceNumber,
   });
   if (!result.ok) throw new Error(result.error || 'Refund failed.');
+
+  let cashierTxnResult = null;
+  if (result.receiptId && result.refundTotal > 0) {
+   try {
+    const { recordRefundInTransaction } = require('./lib/cashierTxnWire');
+    cashierTxnResult = await recordRefundInTransaction(conn, {
+     facilityId,
+     userId: uid,
+     sourceModule: 'opd_refund',
+     sourcePk: result.receiptId,
+     amount: result.refundTotal,
+     paymentMethod: refundMethod,
+     billingDocumentId: result.receiptId,
+     patientId: result.patientId,
+     lines: result.refundLines,
+     narration: refundReason,
+    });
+   } catch (txnErr) {
+    console.error('cashier txn (opd refund):', txnErr.message);
+   }
+  }
+
   await conn.commit();
   conn.release();
+
+  try {
+   const { runCashierPostCommit } = require('./lib/cashierTxnWire');
+   await runCashierPostCommit(pool, {
+    txnId: cashierTxnResult?.txnId || null,
+    journalKind: 'refund',
+    facilityId,
+    amount: result.refundTotal,
+    paymentMethod: refundMethod,
+    createdBy: uid,
+    reference: `OPD-REF-${result.receiptId}`,
+    narration: refundReason,
+    cashierCode: cashierTxnResult?.cashierCode,
+    cashierIdentity: cashierTxnResult?.cashierIdentity,
+    serviceKey: 'default',
+   });
+  } catch (pipeErr) {
+   console.error('cashier journal pipeline (opd refund):', pipeErr.message);
+  }
   const tab = consultId > 0 ? '&tab=rx' : '';
   const msg = `Refunded ${result.refundedIds.length} item(s) — ${result.refundTotal} FCFA via ${refundMethod}.`;
   if (result.receiptId) {
@@ -9162,15 +9123,85 @@ app.post('/cashier/ipd-settle', requireAuth, async (req, res) => {
 
   const receiptNo = await nextReceiptNumber(conn, fid);
   const invoiceNo = await nextInvoiceNumber(conn, fid);
-  await conn.query(
+  const [docIns] = await conn.query(
    `INSERT INTO tbl_billing_document
     (facility_id, patient_id, doc_type, doc_number, invoice_doc_number, total_amount, payment_method, status, source_module, source_pk, created_by, created_at)
     VALUES (?, ?, 'receipt', ?, ?, ?, ?, 'paid', 'ipd_settlement', ?, ?, NOW())`,
    [fid, adm.patient_id, receiptNo, invoiceNo, balance, payMethod, aid, uid]
   );
+  const billingDocId = parseInt(String(docIns?.insertId || 0), 10) || 0;
+
+  let receiptTxn = null;
+  let refundTxn = null;
+  try {
+   const { recordReceiptInTransaction, recordRefundInTransaction } = require('./lib/cashierTxnWire');
+   if (balance > 0) {
+    receiptTxn = await recordReceiptInTransaction(conn, {
+     facilityId: fid,
+     userId: uid,
+     sourceModule: 'ipd_settlement',
+     sourcePk: aid,
+     amount: balance,
+     paymentMethod: payMethod,
+     billingDocumentId: billingDocId || null,
+     patientId: adm.patient_id,
+     lines,
+     reference: receiptNo,
+     narration: `IPD settlement admission #${aid}`,
+    });
+   }
+   if (refund > 0) {
+    refundTxn = await recordRefundInTransaction(conn, {
+     facilityId: fid,
+     userId: uid,
+     sourceModule: 'ipd_refund',
+     sourcePk: aid,
+     amount: refund,
+     paymentMethod: refundMethod,
+     patientId: adm.patient_id,
+     lines,
+     serviceKey: 'hospitalisation',
+     reference: `IPD-REF-${aid}`,
+     narration: `IPD deposit refund admission #${aid}`,
+    });
+   }
+  } catch (txnErr) {
+   console.error('cashier txn (ipd-settle):', txnErr.message);
+  }
 
   await conn.commit();
   conn.release();
+
+  const { runCashierPostCommit } = require('./lib/cashierTxnWire');
+  if (balance > 0) {
+   await runCashierPostCommit(pool, {
+    txnId: receiptTxn?.txnId || null,
+    journalKind: 'receipt',
+    facilityId: fid,
+    billingDocumentId: billingDocId,
+    grandTotal: balance,
+    paymentMethod: payMethod,
+    createdBy: uid,
+    docNumber: receiptNo,
+    firstLineDescription: 'IPD Final Settlement',
+    sourceModule: 'ipd_settlement',
+   });
+  }
+  if (refund > 0) {
+   await runCashierPostCommit(pool, {
+    txnId: refundTxn?.txnId || null,
+    journalKind: 'refund',
+    facilityId: fid,
+    amount: refund,
+    paymentMethod: refundMethod,
+    createdBy: uid,
+    reference: `IPD-REF-${aid}`,
+    narration: `IPD deposit refund admission #${aid}`,
+    cashierCode: refundTxn?.cashierCode,
+    cashierIdentity: refundTxn?.cashierIdentity,
+    serviceKey: 'hospitalisation',
+   });
+  }
 
   const msg = refund > 0
    ? `IPD settlement complete. Refunded: ${refund} via ${refundMethod}. Code: ${code}. Receipt: ${receiptNo} · Invoice: ${invoiceNo}`
@@ -9266,8 +9297,61 @@ app.post('/cashier/er-settle', requireAuth, async (req, res) => {
   const { cancelPendingEmgTickets } = require('./lib/erCashierSettlement');
   await cancelPendingEmgTickets(conn, vid);
 
+  let billingDocId = 0;
+  let receiptNo = '';
+  let receiptTxn = null;
+  if (balance > 0) {
+   receiptNo = await nextReceiptNumber(conn, fid);
+   const invoiceNo = await nextInvoiceNumber(conn, fid);
+   const [docIns] = await conn.query(
+    `INSERT INTO tbl_billing_document
+     (facility_id, patient_id, doc_type, doc_number, invoice_doc_number, total_amount, payment_method, status, source_module, source_pk, created_by, created_at)
+     VALUES (?, ?, 'receipt', ?, ?, ?, ?, 'paid', 'er_settlement', ?, ?, NOW())`,
+    [fid, v.patient_id, receiptNo, invoiceNo, balance, payMethod, vid, uid]
+   );
+   billingDocId = parseInt(String(docIns?.insertId || 0), 10) || 0;
+   try {
+    const { recordReceiptInTransaction } = require('./lib/cashierTxnWire');
+    receiptTxn = await recordReceiptInTransaction(conn, {
+     facilityId: fid,
+     userId: uid,
+     sourceModule: 'er_settlement',
+     sourcePk: vid,
+     amount: balance,
+     paymentMethod: payMethod,
+     billingDocumentId: billingDocId || null,
+     patientId: v.patient_id,
+     lines: [{ kind: 'emergency_settlement', description: 'ER Final Settlement' }],
+     reference: receiptNo,
+     narration: `ER settlement visit #${vid}`,
+    });
+   } catch (txnErr) {
+    console.error('cashier txn (er-settle):', txnErr.message);
+   }
+  }
+
   await conn.commit();
   conn.release();
+
+  if (balance > 0) {
+   try {
+    const { runCashierPostCommit } = require('./lib/cashierTxnWire');
+    await runCashierPostCommit(pool, {
+     txnId: receiptTxn?.txnId || null,
+     journalKind: 'receipt',
+     facilityId: fid,
+     billingDocumentId: billingDocId,
+     grandTotal: balance,
+     paymentMethod: payMethod,
+     createdBy: uid,
+     docNumber: receiptNo,
+     firstLineDescription: 'ER Final Settlement',
+     sourceModule: 'er_settlement',
+    });
+   } catch (pipeErr) {
+    console.error('cashier journal pipeline (er-settle):', pipeErr.message);
+   }
+  }
 
   const syncEmergencyCashierTickets = require('./lib/syncEmergencyCashierTickets');
   await syncEmergencyCashierTickets(pool).catch(() => {});
@@ -9467,7 +9551,7 @@ app.get('/cashier/betterpay/print-qr/:ref', requireAuth, requirePerm('cashier.re
    patientPhone: patient?.phone || '',
    patientCode: patient?.patient_code || '',
    serviceLabel,
-   facilityName: hmsBrand.facilityName || 'ZAIZENS Demo Hospital',
+   facilityName: hmsBrand.facilityName || 'TSSF (Shisong Annex) SOA',
    labels: {
     amount: isFr ? 'Montant à payer' : 'Amount due',
     service: isFr ? 'Service' : 'Service',
@@ -9624,6 +9708,95 @@ app.get('/cashier/print-slip/:code', requireAuth, async (req, res) => {
  }
 });
 
+// CASHIER: desk expense / emergency payout (utilities, admin cash advance, etc.)
+app.post('/cashier/disbursement', requireAuth, requirePerm('cashier.write'), async (req, res) => {
+ const {
+  normalizeDisbursementType,
+  normalizeDisbursementCategory,
+  disbursementTypeLabel,
+ } = require('./lib/cashierDisbursementOptions');
+ const { txnType, glKind } = normalizeDisbursementType(req.body.txn_type);
+ const amount = parseFloat(req.body.amount) || 0;
+ const category = normalizeDisbursementCategory(req.body.category);
+ const paymentMethod = betterPayQr.normalizePaymentMethod(req.body.payment_method) || 'Cash';
+ const narration = String(req.body.narration || '').trim();
+ const uid = parseInt(String(req.session.userId || req.session.user?.id || 0), 10) || 0;
+ const fid = parseInt(String(req.session.facilityId || 1), 10) || 1;
+
+ if (amount < 1) {
+  return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.invalid_amount', { defaultValue: 'Enter a valid amount.' })));
+ }
+ if (!narration) {
+  return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.description_required', { defaultValue: 'Description is required.' })));
+ }
+ if (uid < 1) {
+  return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.access_denied', { defaultValue: 'Access denied' })));
+ }
+
+ const conn = await pool.getConnection();
+ try {
+  const { ensureCashierDisbursementSchema } = require('./lib/ensureCashierDisbursementSchema');
+  await ensureCashierDisbursementSchema(conn);
+  await conn.beginTransaction();
+
+  const [ins] = await conn.query(
+   `INSERT INTO tbl_cashier_disbursement
+    (facility_id, txn_type, category, amount, payment_method, narration, created_by)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+   [fid, txnType, category, amount, paymentMethod, narration.slice(0, 500), uid]
+  );
+  const disbursementId = parseInt(String(ins?.insertId || 0), 10) || 0;
+  if (disbursementId < 1) throw new Error('Could not save disbursement.');
+
+  let cashierTxnResult = null;
+  const { recordDisbursementInTransaction } = require('./lib/cashierTxnWire');
+  cashierTxnResult = await recordDisbursementInTransaction(conn, {
+   facilityId: fid,
+   userId: uid,
+   disbursementId,
+   glKind,
+   amount,
+   paymentMethod,
+   expenseCategory: category,
+   narration,
+  });
+
+  await conn.commit();
+  conn.release();
+
+  try {
+   const { runCashierPostCommit } = require('./lib/cashierTxnWire');
+   await runCashierPostCommit(pool, {
+    txnId: cashierTxnResult?.txnId || null,
+    journalKind: glKind === 'payout' ? 'payout' : 'expense',
+    expenseId: disbursementId,
+    disbursementId,
+    amount,
+    paymentMethod,
+    expenseCategory: category,
+    narration,
+    createdBy: uid,
+    facilityId: fid,
+    cashierCode: cashierTxnResult?.cashierCode,
+    cashierIdentity: cashierTxnResult?.cashierIdentity,
+    reference: `CD-${disbursementId}`,
+   });
+  } catch (pipeErr) {
+   console.error('cashier journal pipeline (disbursement):', pipeErr.message);
+  }
+
+  const typeLabel = disbursementTypeLabel(txnType);
+  const journalNote = cashierTxnResult?.txnId ? ' Till ledger and journal updated.' : ' Journal posted.';
+  const msg = `${typeLabel} recorded: ${amount} FCFA (${paymentMethod}). Cashier ${cashierTxnResult?.cashierCode || ''}.${journalNote}`;
+  return res.redirect('/cashier/ledger?msg=' + encodeURIComponent(msg));
+ } catch (err) {
+  await conn.rollback().catch(() => {});
+  conn.release();
+  console.error('CASHIER DISBURSEMENT:', err.message);
+  return res.redirect('/cashier?err=' + encodeURIComponent(err.message || 'Disbursement failed.'));
+ }
+});
+
 function cashierBatchPrintAccess(req, res) {
  const perms = res.locals.userPerms || req.session?.perms || [];
  if (perms.includes('*')) return { ok: true, allCashiers: true };
@@ -9634,21 +9807,130 @@ function cashierBatchPrintAccess(req, res) {
  return { ok: false };
 }
 
-function cashierDailySummaryOpts(req, access) {
- return {
-  period: req.query.period || 'day',
-  date: req.query.date || '',
-  allCashiers: access.allCashiers,
-  paidBy: access.paidBy,
-  filters: {
-   category: req.query.category,
-   method: req.query.method,
-   patient: req.query.patient,
-   min_amount: req.query.min_amount,
-   max_amount: req.query.max_amount,
-  },
- };
-}
+// CASHIER: till ledger (opening · debit · credit · closing per transaction)
+app.get('/cashier/ledger', requireAuth, requirePerm('cashier.read', 'cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
+ try {
+  const access = cashierBatchPrintAccess(req, res);
+  if (!access.ok) {
+   return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.access_denied', { defaultValue: 'Access denied' })));
+  }
+  const { ensureCashierTxnSchema } = require('./lib/ensureCashierTxnSchema');
+  await ensureCashierTxnSchema(pool).catch(() => {});
+  const { buildCashierLedgerReport } = require('./lib/cashierLedgerReport');
+  const { todayIso } = require('./lib/cashierEodReconciliation');
+  const date = String(req.query.date || '').trim() || todayIso();
+  const facilityId = parseInt(req.session?.facilityId, 10) || 1;
+  const report = await buildCashierLedgerReport(pool, {
+   date,
+   facilityId,
+   cashierCode: req.query.cashier_code,
+   paymentMethod: req.query.payment_method,
+  });
+  res.render('cashier-ledger', {
+   title: pageTitle(res, 'cashier.ledger.title', 'Cashier till ledger', { ns: 'clinical' }),
+   report,
+   filters: {
+    date,
+    cashier_code: String(req.query.cashier_code || '').trim(),
+    payment_method: String(req.query.payment_method || '').trim(),
+   },
+   flash: req.query.msg || null,
+  });
+ } catch (err) {
+  console.error('cashier ledger:', err.message);
+  res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.page_load_error', { defaultValue: 'Could not load ledger.' })));
+ }
+});
+
+// CASHIER: end-of-day reconciliation
+app.get('/cashier/eod-reconciliation', requireAuth, requirePerm('cashier.read', 'cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
+ try {
+  const access = cashierBatchPrintAccess(req, res);
+  if (!access.ok) {
+   return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.access_denied', { defaultValue: 'Access denied' })));
+  }
+  const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
+  await ensureCashierEodSchema(pool).catch(() => {});
+  const { buildCashierEodReport, todayIso } = require('./lib/cashierEodReconciliation');
+  const date = String(req.query.date || '').trim() || todayIso();
+  const facilityId = parseInt(req.session?.facilityId, 10) || 1;
+  const report = await buildCashierEodReport(pool, {
+   date,
+   facilityId,
+   allCashiers: access.allCashiers,
+   paidBy: access.paidBy,
+  });
+  res.render('cashier-eod-reconciliation', {
+   title: pageTitle(res, 'cashier.eod.title', 'End of day reconciliation', { ns: 'clinical' }),
+   report,
+   flash: req.query.msg || null,
+   error: req.query.err || null,
+  });
+ } catch (err) {
+  console.error('cashier eod-reconciliation:', err.message);
+  res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.page_load_error', { defaultValue: 'Could not load reconciliation.' })));
+ }
+});
+
+app.post('/cashier/eod-reconciliation', requireAuth, requirePerm('cashier.read', 'cashier.write'), async (req, res) => {
+ try {
+  const access = cashierBatchPrintAccess(req, res);
+  if (!access.ok) {
+   return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.access_denied', { defaultValue: 'Access denied' })));
+  }
+  const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
+  await ensureCashierEodSchema(pool).catch(() => {});
+  const { saveCashierEodReconciliation } = require('./lib/cashierEodReconciliation');
+  const date = String(req.body.date || req.query.date || '').trim();
+  const facilityId = parseInt(req.session?.facilityId, 10) || 1;
+  await saveCashierEodReconciliation(pool, {
+   date,
+   facilityId,
+   allCashiers: access.allCashiers,
+   paidBy: access.paidBy,
+   userId: req.session.userId || req.session.user?.id,
+   body: req.body,
+  });
+  const msg = flashT(res, 'cashier.eod.saved', { ns: 'clinical', defaultValue: 'Reconciliation saved.' });
+  const dest = date
+   ? `/cashier/eod-reconciliation?date=${encodeURIComponent(date)}&msg=${encodeURIComponent(msg)}`
+   : `/cashier/eod-reconciliation?msg=${encodeURIComponent(msg)}`;
+  return res.redirect(dest);
+ } catch (err) {
+  console.error('cashier eod-reconciliation POST:', err.message);
+  const date = String(req.body.date || '').trim();
+  const qs = date ? `?date=${encodeURIComponent(date)}&err=` : '?err=';
+  return res.redirect('/cashier/eod-reconciliation' + qs + encodeURIComponent(err.message || 'Save failed'));
+ }
+});
+
+app.get('/cashier/eod-reconciliation/print', requireAuth, requirePerm('cashier.read', 'cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
+ try {
+  const access = cashierBatchPrintAccess(req, res);
+  if (!access.ok) {
+   return res.status(403).send('Access denied');
+  }
+  const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
+  await ensureCashierEodSchema(pool).catch(() => {});
+  const { buildCashierEodReport, todayIso } = require('./lib/cashierEodReconciliation');
+  const date = String(req.query.date || '').trim() || todayIso();
+  const facilityId = parseInt(req.session?.facilityId, 10) || 1;
+  const report = await buildCashierEodReport(pool, {
+   date,
+   facilityId,
+   allCashiers: access.allCashiers,
+   paidBy: access.paidBy,
+  });
+  res.render('cashier-eod-reconciliation-print', {
+   title: pageTitle(res, 'cashier.eod.title', 'End of day reconciliation', { ns: 'clinical' }),
+   report,
+   facilityName: hmsBrand.facilityName,
+  });
+ } catch (err) {
+  console.error('cashier eod-reconciliation print:', err.message);
+  res.status(500).send(err.message || 'Print failed');
+ }
+});
 
 app.get('/api/cashier/batch-print', requireAuth, async (req, res) => {
  try {
@@ -9679,14 +9961,17 @@ app.get('/cashier/daily-summary', requireAuth, requirePerm('cashier.read', 'cash
   if (!access.ok) {
    return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.access_denied', { defaultValue: 'Access denied' })));
   }
-  const { buildCashierDailySummary, filtersToQueryString } = require('./lib/cashierDailySummary');
-  const opts = cashierDailySummaryOpts(req, access);
-  const report = await buildCashierDailySummary(pool, opts);
+  const { buildCashierDailySummary } = require('./lib/cashierDailySummary');
+  const report = await buildCashierDailySummary(pool, {
+   period: req.query.period || 'day',
+   date: req.query.date || '',
+   allCashiers: access.allCashiers,
+   paidBy: access.paidBy,
+  });
   res.render('cashier-daily-summary', {
    title: pageTitle(res, 'cashier.daily_summary.title', 'Daily transactions summary', { ns: 'clinical' }),
    report,
    facilityName: hmsBrand.facilityName,
-   filterQueryString: filtersToQueryString(report.filters, { period: opts.period, date: opts.date }),
   });
  } catch (err) {
   console.error('cashier daily-summary:', err.message);
@@ -9700,14 +9985,17 @@ app.get('/cashier/daily-summary/print', requireAuth, requirePerm('cashier.read',
   if (!access.ok) {
    return res.status(403).send('Access denied');
   }
-  const { buildCashierDailySummary, filtersToQueryString } = require('./lib/cashierDailySummary');
-  const opts = cashierDailySummaryOpts(req, access);
-  const report = await buildCashierDailySummary(pool, opts);
+  const { buildCashierDailySummary } = require('./lib/cashierDailySummary');
+  const report = await buildCashierDailySummary(pool, {
+   period: req.query.period || 'day',
+   date: req.query.date || '',
+   allCashiers: access.allCashiers,
+   paidBy: access.paidBy,
+  });
   res.render('cashier-daily-summary-print', {
    title: pageTitle(res, 'cashier.daily_summary.title', 'Daily transactions summary', { ns: 'clinical' }),
    report,
    facilityName: hmsBrand.facilityName,
-   filterQueryString: filtersToQueryString(report.filters, { period: opts.period, date: opts.date }),
   });
  } catch (err) {
   console.error('cashier daily-summary print:', err.message);
@@ -9722,104 +10010,15 @@ app.get('/api/cashier/daily-summary', requireAuth, requirePerm('cashier.read', '
    return res.status(403).json({ ok: false, error: 'Access denied' });
   }
   const { buildCashierDailySummary } = require('./lib/cashierDailySummary');
-  const report = await buildCashierDailySummary(pool, cashierDailySummaryOpts(req, access));
+  const report = await buildCashierDailySummary(pool, {
+   period: req.query.period || 'day',
+   date: req.query.date || '',
+   allCashiers: access.allCashiers,
+   paidBy: access.paidBy,
+  });
   return res.json({ ok: true, report });
  } catch (err) {
   console.error('cashier daily-summary api:', err.message);
-  return res.status(500).json({ ok: false, error: err.message || 'Report failed' });
- }
-});
-
-function cashierEodOpts(req, access) {
- return {
-  date: req.query.date || req.body?.date || '',
-  allCashiers: access.allCashiers,
-  paidBy: access.paidBy,
-  facilityId: req.session.facilityId || 1,
- };
-}
-
-// CASHIER: end-of-day report & reconciliation
-app.get('/cashier/eod-reconciliation', requireAuth, requirePerm('cashier.read', 'cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
- try {
-  const access = cashierBatchPrintAccess(req, res);
-  if (!access.ok) {
-   return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.access_denied', { defaultValue: 'Access denied' })));
-  }
-  const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
-  await ensureCashierEodSchema(pool);
-  const { buildCashierEodReport } = require('./lib/cashierEodReconciliation');
-  const report = await buildCashierEodReport(pool, cashierEodOpts(req, access));
-  res.render('cashier-eod-reconciliation', {
-   title: pageTitle(res, 'cashier.eod.title', 'End of day reconciliation', { ns: 'clinical' }),
-   report,
-   facilityName: hmsBrand.facilityName,
-   flash: req.query.msg || null,
-   error: req.query.err || null,
-  });
- } catch (err) {
-  console.error('cashier eod-reconciliation:', err.message);
-  res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.page_load_error', { defaultValue: 'Could not load EOD report.' })));
- }
-});
-
-app.post('/cashier/eod-reconciliation', requireAuth, requirePerm('cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
- try {
-  const access = cashierBatchPrintAccess(req, res);
-  if (!access.ok) {
-   return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.access_denied', { defaultValue: 'Access denied' })));
-  }
-  const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
-  await ensureCashierEodSchema(pool);
-  const { saveCashierEodReconciliation } = require('./lib/cashierEodReconciliation');
-  await saveCashierEodReconciliation(pool, {
-   ...cashierEodOpts(req, access),
-   body: req.body,
-   userId: req.session.userId || req.session.user?.id,
-  });
-  const qs = req.body.date ? `?date=${encodeURIComponent(String(req.body.date).slice(0, 10))}&msg=` : '?msg=';
-  return res.redirect('/cashier/eod-reconciliation' + qs + encodeURIComponent(flashT(res, 'cashier.eod.saved', { ns: 'clinical', defaultValue: 'End-of-day reconciliation saved.' })));
- } catch (err) {
-  console.error('cashier eod-reconciliation save:', err.message);
-  const d = req.body?.date ? `&date=${encodeURIComponent(String(req.body.date).slice(0, 10))}` : '';
-  return res.redirect('/cashier/eod-reconciliation?err=' + encodeURIComponent(err.message || 'Save failed') + d);
- }
-});
-
-app.get('/cashier/eod-reconciliation/print', requireAuth, requirePerm('cashier.read', 'cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
- try {
-  const access = cashierBatchPrintAccess(req, res);
-  if (!access.ok) {
-   return res.status(403).send('Access denied');
-  }
-  const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
-  await ensureCashierEodSchema(pool);
-  const { buildCashierEodReport } = require('./lib/cashierEodReconciliation');
-  const report = await buildCashierEodReport(pool, cashierEodOpts(req, access));
-  res.render('cashier-eod-reconciliation-print', {
-   title: pageTitle(res, 'cashier.eod.title', 'End of day reconciliation', { ns: 'clinical' }),
-   report,
-   facilityName: hmsBrand.facilityName,
-  });
- } catch (err) {
-  console.error('cashier eod-reconciliation print:', err.message);
-  res.status(500).send(err.message || 'Print failed');
- }
-});
-
-app.get('/api/cashier/eod-reconciliation', requireAuth, requirePerm('cashier.read', 'cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
- try {
-  const access = cashierBatchPrintAccess(req, res);
-  if (!access.ok) {
-   return res.status(403).json({ ok: false, error: 'Access denied' });
-  }
-  const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
-  await ensureCashierEodSchema(pool);
-  const { buildCashierEodReport } = require('./lib/cashierEodReconciliation');
-  const report = await buildCashierEodReport(pool, cashierEodOpts(req, access));
-  return res.json({ ok: true, report });
- } catch (err) {
-  console.error('cashier eod-reconciliation api:', err.message);
   return res.status(500).json({ ok: false, error: err.message || 'Report failed' });
  }
 });
@@ -9863,32 +10062,19 @@ app.get('/api/patients/search', requireAuth, async (req, res) => {
  const q = String(req.query.q || req.query.term || '').trim();
  try {
  if (!q) return res.json([]);
- const like = `%${q.toLowerCase()}%`;
- const idLike = `%${q}%`;
- const today = new Date().toISOString().split('T')[0];
+ const like = `%${q}%`;
  const [rows] = await pool.query(
-  `SELECT p.id, p.first_name, p.last_name, p.phone, p.patient_code,
-   COALESCE((
-    SELECT COALESCE(pi.insurer_covered_percent, 0)
-    FROM tbl_patient_insurance pi
-    WHERE pi.patient_id = p.id
-     AND COALESCE(pi.insurer_covered_percent, 0) > 0
-     AND (pi.effective_from IS NULL OR pi.effective_from <= ?)
-     AND (pi.effective_to IS NULL OR pi.effective_to >= ?)
-    ORDER BY pi.is_primary DESC, pi.insurer_covered_percent DESC, pi.id DESC
-    LIMIT 1
-   ), 0) AS coverage
-     FROM tbl_patient p
-    WHERE p.status = 1
+  `SELECT id, first_name, last_name, phone, patient_code
+     FROM tbl_patient
+    WHERE status = 1
       AND (
-        LOWER(p.first_name) LIKE ? OR LOWER(p.last_name) LIKE ? OR p.phone LIKE ?
-        OR LOWER(COALESCE(p.patient_code, '')) LIKE ? OR CAST(p.id AS CHAR) LIKE ?
-        OR LOWER(CONCAT(COALESCE(p.first_name,''), ' ', COALESCE(p.last_name,''))) LIKE ?
-        OR LOWER(CONCAT(COALESCE(p.last_name,''), ' ', COALESCE(p.first_name,''))) LIKE ?
+        first_name LIKE ? OR last_name LIKE ? OR phone LIKE ?
+        OR patient_code LIKE ? OR CAST(id AS CHAR) LIKE ?
+        OR CONCAT(COALESCE(first_name,''), ' ', COALESCE(last_name,'')) LIKE ?
       )
-    ORDER BY p.last_name, p.first_name
+    ORDER BY last_name, first_name
     LIMIT 25`,
-  [today, today, like, like, idLike, like, idLike, like, like]
+  [like, like, like, like, like, like]
  );
  res.json(rows);
  } catch (err) {
@@ -10142,13 +10328,6 @@ app.post('/cashier/collect', requireAuth, async (req, res) => {
  const userId = req.session.userId || req.session.user?.id || null;
  const facilityId = req.session.facilityId || 1;
 
- if (pool.driver === 'postgres') {
-  await ensurePostgresReceiptInvoiceSeq(pool);
- } else {
-  await ensureReceiptSeqTable(pool);
-  await ensureInvoiceSeqTable(pool);
- }
-
  await conn.beginTransaction();
  const receipt_no = await nextReceiptNumber(conn, facilityId);
  const invoice_no = await nextInvoiceNumber(conn, facilityId);
@@ -10188,16 +10367,15 @@ app.post('/cashier/collect', requireAuth, async (req, res) => {
  );
 
  //  -  Æ’ ============================== Æ’ === ¬ BILLING DOCUMENT === Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ === ¬
- const billingDocId = await insertReceiptForPaymentTicket(conn, {
-  facilityId,
-  patientId: ticket.patient_id,
-  ticketId: ticket_id,
-  totalAmount,
-  paymentMethod: payment_method,
-  receiptNo: receipt_no,
-  invoiceNo: invoice_no,
-  userId,
- });
+ const [result] = await conn.query(
+ `INSERT INTO tbl_billing_document
+ (facility_id, patient_id, doc_type, doc_number, invoice_doc_number, total_amount, payment_method,
+ status, source_module, source_pk, created_by, created_at)
+ SELECT ?, patient_id, 'receipt', ?, ?, total_amount, ?, 'paid',
+ 'payment_ticket', id, ?, NOW()
+ FROM tbl_payment_ticket WHERE id = ?`,
+ [facilityId, receipt_no, invoice_no, payment_method, userId, ticket_id]
+ );
 
  // OPD Orders hook: mark selected consultation-prescribed items as paid and create downstream requests
  try {
@@ -10293,8 +10471,47 @@ app.post('/cashier/collect', requireAuth, async (req, res) => {
   console.error('Emergency settlement post-collect hook:', e.message);
  }
 
+ let cashierTxnResult = null;
+ try {
+  const { recordReceiptInTransaction } = require('./lib/cashierTxnWire');
+  cashierTxnResult = await recordReceiptInTransaction(conn, {
+   facilityId,
+   userId,
+   sourceModule: 'payment_ticket',
+   sourcePk: ticket_id,
+   amount: totalAmount,
+   paymentMethod,
+   billingDocumentId: result.insertId,
+   patientId: ticket.patient_id,
+   lines,
+   ticket,
+   reference: receipt_no,
+   narration: `Payment ticket ${ticket.ticket_code || ticket_id}`,
+  });
+ } catch (txnErr) {
+  console.error('cashier txn (collect):', txnErr.message);
+ }
+
  await conn.commit();
  conn.release();
+
+ try {
+  const { runCashierPostCommit } = require('./lib/cashierTxnWire');
+  await runCashierPostCommit(pool, {
+   txnId: cashierTxnResult?.txnId || null,
+   journalKind: 'receipt',
+   facilityId,
+   billingDocumentId: result.insertId,
+   grandTotal: totalAmount,
+   paymentMethod,
+   createdBy: userId,
+   docNumber: receipt_no,
+   firstLineDescription: (lines[0] && lines[0].description) || ticket.ticket_code || '',
+   sourceModule: 'payment_ticket',
+  });
+ } catch (pipeErr) {
+  console.error('cashier journal pipeline (collect):', pipeErr.message);
+ }
 
  try {
   const hmsCommission = require('./lib/hmsCommission');
@@ -10313,7 +10530,7 @@ app.post('/cashier/collect', requireAuth, async (req, res) => {
  if (payment_method === 'Wallet') {
   res.redirect('/cashier/print-ticket/' + encodeURIComponent(ticket.ticket_code));
  } else {
-  res.redirect('/cashier?msg=' + encodeURIComponent(flashT(res, 'flash.payment_collected', { receipt: receipt_no, invoice: invoice_no })) + '&print_receipt=' + billingDocId);
+  res.redirect('/cashier?msg=' + encodeURIComponent(flashT(res, 'flash.payment_collected', { receipt: receipt_no, invoice: invoice_no })) + '&print_receipt=' + result.insertId);
  }
  } catch (err) {
  await conn.rollback().catch(() => {});
@@ -10781,11 +10998,101 @@ app.post('/cashier/lookup', requireAuth, async (req, res) => {
  }
 });
 
-const {
- enrichOpdVisitsPaymentCodeValidity,
- parseRegistryFilters,
- fetchOpdVisitRegistry,
-} = require('./lib/opdVisitRegistry');
+/** Visit Registry: mark paid codes that are past validity or have no uses left (blood-red column). */
+async function enrichOpdVisitsPaymentCodeValidity(pool, visitRows, facilityId) {
+ const fid = Number(facilityId) || 1;
+ const list = (visitRows || []).filter(Boolean);
+ const startOfDay = (d) => {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+ };
+ const byNorm = new Map();
+ for (const v of list) {
+  v.payment_code_blood_red = false;
+  v.payment_code_alert_title = '';
+  v.payment_code_remaining_uses = null;
+  v.payment_code_stale_reason = null;
+  v.payment_code_max_uses = null;
+  v.payment_code_uses_so_far = null;
+  v.payment_code_valid_until_display = null;
+  v.payment_code_validity_tooltip = '';
+  const norm = paymentValidity.normalizePaymentCodeInput(v.payment_code);
+  if (!norm) continue;
+  if (!byNorm.has(norm)) byNorm.set(norm, []);
+  byNorm.get(norm).push(v);
+ }
+ for (const [norm, visits] of byNorm) {
+  let ticket = null;
+  try {
+   ticket = await paymentValidity.findPaidTicketByNormalizedCode(pool, norm);
+  } catch (_) {
+   ticket = null;
+  }
+  const st = String((ticket && ticket.status) || '').trim().toLowerCase();
+  if (!ticket || st !== 'paid') continue;
+
+  for (const v of visits) {
+   let bloodRed = false;
+   let title = '';
+   let remainingUses = null;
+   let staleReason = null;
+   let maxUses = null;
+   let usesSoFar = null;
+   let validUntilDisplay = null;
+   let validityTooltip = '';
+   try {
+    const qs = String(v.queue_status || '').toLowerCase();
+    const excludeVisitId =
+     qs !== 'completed' && qs !== 'cancelled' ? parseInt(String(v.id || ''), 10) || 0 : 0;
+    const win = await paymentValidity.computePaidTicketValidityWindow(pool, ticket, norm, fid, {
+     excludeVisitId,
+    });
+    const usesTimeValidity = paymentValidity.kindUsesConsultationValidity(win.kind);
+    remainingUses = Math.max(0, win.maxUses - win.uses);
+    maxUses = win.maxUses;
+    usesSoFar = win.uses;
+    if (usesTimeValidity) {
+     try {
+      validUntilDisplay = hmsFormatDate.formatDisplayDate(win.expires);
+     } catch (_) {
+      validUntilDisplay = paymentValidity.toLocalDateISO(win.expires) || '—';
+     }
+     const polLabel = paymentValidity.intervalPolicyLabel(win.policy);
+     validityTooltip =
+      'Payment validity · Days (system ' +
+      win.systemDays +
+      ', effective ' +
+      win.effectiveDays +
+      ') + Policy: ' +
+      polLabel +
+      '. Calendar end.';
+     const today = startOfDay(new Date());
+     if (today > win.expires) {
+      bloodRed = true;
+      staleReason = 'expired';
+      title = 'Payment code expired on ' + hmsFormatDate.formatDisplayDate(win.expires) + '.';
+     }
+    }
+    if (win.uses >= win.maxUses) {
+     bloodRed = true;
+     staleReason = 'depleted';
+     title = 'No remaining uses (' + win.uses + ' of ' + win.maxUses + ' visit(s)).';
+    }
+   } catch (_) {
+    /* ignore */
+   }
+   v.payment_code_blood_red = bloodRed;
+   v.payment_code_alert_title = title;
+   v.payment_code_remaining_uses = remainingUses;
+   v.payment_code_stale_reason = staleReason;
+   v.payment_code_max_uses = maxUses;
+   v.payment_code_uses_so_far = usesSoFar;
+   v.payment_code_valid_until_display = validUntilDisplay;
+   v.payment_code_validity_tooltip = validityTooltip;
+  }
+ }
+}
 
 /** Only same-origin relative paths (prevents open redirects). */
 function safeInternalRedirectPath(s) {
@@ -10815,45 +11122,15 @@ app.post('/clinical/accept-not-assigned', requireAuth, (req, res) => {
 
 // OPD QUEUE & VISITS REGISTRY
 // VISITS & OPD QUEUE === Æ’ ===   Full legacy-parity
-app.get('/api/opd-queue/registry', requireAuth, requirePerm('opd.read','clinical.read','clinical.write','scheduling.read','nursing.read','lab.read','radiology.read','pharmacy.read'), async (req, res) => {
- try {
-  const fid = req.session.facilityId || 1;
-  const filters = parseRegistryFilters(req.query);
-  const { page: registryPage, pageSize: registryPageSize } = pagination.parsePage(req);
-  const data = await fetchOpdVisitRegistry(pool, {
-   facilityId: fid,
-   ...filters,
-   page: registryPage,
-   pageSize: registryPageSize,
-  });
-  return res.json({
-   ok: true,
-   visits: data.visits,
-   total: data.total,
-   pager: data.pager,
-   filters: {
-    q: filters.q,
-    dateFrom: filters.dateFrom,
-    dateTo: filters.dateTo,
-    status: filters.status,
-    sort: filters.sort,
-    dept: filters.dept,
-    doctor: filters.doctor || 0,
-    page: data.pager.page,
-    totalPages: data.pager.totalPages,
-    total: data.pager.total,
-   },
-  });
- } catch (e) {
-  console.error('OPD REGISTRY API:', e.message);
-  return res.status(500).json({ ok: false, error: e.message });
- }
-});
-
 app.get('/opd-queue', requireAuth, requirePerm('opd.read','clinical.read','clinical.write','scheduling.read','nursing.read','lab.read','radiology.read','pharmacy.read'), async (req, res) => {
- const filters = parseRegistryFilters(req.query);
- const { q, dateFrom, dateTo, status, sort, dept, doctor } = filters;
+ const q = (req.query.q || '').trim();
  const today = new Date().toISOString().split('T')[0];
+ const d90ago = new Date(Date.now() - 90*24*60*60*1000).toISOString().split('T')[0];
+ const dateFrom = req.query.date_from || d90ago;
+ const dateTo = req.query.date_to || today;
+ const status = req.query.status || 'all';
+ const sort = req.query.sort || 'newest';
+ const dept = req.query.dept || '';
  const fid = req.session.facilityId || 1;
 
  try {
@@ -10921,21 +11198,91 @@ app.get('/opd-queue', requireAuth, requirePerm('opd.read','clinical.read','clini
  await enrichOpdVisitsDoctorFromPaymentTicket(pool, todayVisits || []);
  await enrichOpdVisitsRoomContext(pool, todayVisits || []);
 
- const { page: registryPage, pageSize: registryPageSize } = pagination.parsePage(req);
- const registryResult = await fetchOpdVisitRegistry(pool, {
-  facilityId: fid,
-  q,
-  dateFrom,
-  dateTo,
-  status,
-  sort,
-  dept,
-  doctor,
-  page: registryPage,
-  pageSize: registryPageSize,
- });
- const allVisits = registryResult.visits;
- const registryPager = registryResult.pager;
+ // 2. Build WHERE for registry
+ let where  = 'v.facility_id = ? AND COALESCE(v.is_emergency, 0) = 0';
+ const params = [fid];
+
+ where += ' AND v.visit_date BETWEEN ? AND ?';
+ params.push(dateFrom, dateTo);
+
+ if (q) {
+ where += ' AND (p.first_name LIKE ? OR p.last_name LIKE ? OR CONCAT(p.first_name," ",p.last_name) LIKE ? OR v.ticket_number LIKE ? OR COALESCE(v.department,"") LIKE ? OR COALESCE(v.chief_complaint,"") LIKE ?)';
+ const like = `%${q}%`;
+ params.push(like,like,like,like,like,like);
+ }
+ if (dept) {
+ where += ' AND v.department = ?';
+ params.push(dept);
+ }
+ if (status === 'active') {
+ where += " AND v.queue_status NOT IN ('completed','cancelled')";
+ } else if (status !== 'all') {
+ where += ' AND v.queue_status = ?';
+ params.push(status);
+ }
+
+ const orderSql = sort === 'oldest'
+ ? 'v.visit_date ASC,  v.queue_started_at ASC,  v.id ASC'
+ : 'v.visit_date DESC, v.queue_started_at DESC, v.id DESC';
+
+ const registryPagerQuery = { q, date_from: dateFrom, date_to: dateTo, status, sort, dept };
+ const { page: registryPage, pageSize: registryPageSize, offset: registryOffset } = pagination.parsePage(req);
+ const [[registryCountRow]] = await pool.query(
+  `SELECT COUNT(DISTINCT v.id) AS total FROM tbl_opd_visit v JOIN tbl_patient p ON p.id = v.patient_id WHERE ${where}`,
+  params
+ );
+ const registryPager = pagination.metaFromTotal(registryCountRow?.total || 0, registryPage, registryPageSize);
+ registryPager.basePath = '/opd-queue';
+ registryPager.query = registryPagerQuery;
+ registryPager.pageParam = 'p';
+
+ // Paginated registry with doctor join + prev_visit_date
+ const [allVisits] = await pool.query(`
+ SELECT v.*, p.first_name, p.last_name, p.patient_type,
+ doc.id AS doc_id,
+ COALESCE(
+  doc.first_name,
+  (SELECT ept.first_name
+     FROM tbl_payment_ticket pt
+     LEFT JOIN tbl_employee ept ON ept.id = CAST(JSON_UNQUOTE(JSON_EXTRACT(pt.lines_json, '$[0].assigned_doctor_id')) AS UNSIGNED)
+    WHERE pt.ticket_code = v.payment_code AND pt.patient_id = v.patient_id
+    ORDER BY pt.id DESC
+    LIMIT 1)
+ ) AS ref_fn,
+ COALESCE(
+  doc.last_name,
+  (SELECT ept.last_name
+     FROM tbl_payment_ticket pt
+     LEFT JOIN tbl_employee ept ON ept.id = CAST(JSON_UNQUOTE(JSON_EXTRACT(pt.lines_json, '$[0].assigned_doctor_id')) AS UNSIGNED)
+    WHERE pt.ticket_code = v.payment_code AND pt.patient_id = v.patient_id
+    ORDER BY pt.id DESC
+    LIMIT 1)
+ ) AS ref_ln,
+ (SELECT es.first_name
+    FROM tbl_consultation c2
+    JOIN tbl_employee es ON es.id = c2.created_by
+   WHERE c2.opd_visit_id = v.id
+   ORDER BY c2.id DESC
+   LIMIT 1) AS seen_fn,
+ (SELECT es.last_name
+    FROM tbl_consultation c2
+    JOIN tbl_employee es ON es.id = c2.created_by
+   WHERE c2.opd_visit_id = v.id
+   ORDER BY c2.id DESC
+   LIMIT 1) AS seen_ln,
+ cr.code AS consultation_room_code,
+ cr.name AS consultation_room_name,
+ (SELECT MAX(v3.visit_date) FROM tbl_opd_visit v3
+ WHERE v3.patient_id = v.patient_id AND v3.id <> v.id) AS prev_visit_date,
+ (SELECT COUNT(*) FROM tbl_consultation cx WHERE cx.opd_visit_id = v.id) AS consult_count
+ FROM tbl_opd_visit v
+ JOIN tbl_patient p ON p.id = v.patient_id
+ LEFT JOIN tbl_employee doc ON doc.id = v.assigned_doctor_id
+ LEFT JOIN tbl_consultation_room cr ON cr.id = v.consultation_room_id
+ WHERE ${where}
+ ORDER BY ${orderSql}
+ LIMIT ? OFFSET ?
+ `, [...params, registryPager.pageSize, registryPager.offset]);
 
  // 5. Modal data (active doctors incl. custom role catalogues, e.g. role 100)
  const hmsDoctorStaff = require('./lib/hmsDoctorStaff');
@@ -10952,7 +11299,7 @@ app.get('/opd-queue', requireAuth, requirePerm('opd.read','clinical.read','clini
   .filter((id, i, a) => id && a.indexOf(id) === i);
  const visitIdsWithVitals = await fetchVisitIdsWithVitals(pool, visitIdsForVitals);
 
- await enrichOpdVisitsPaymentCodeValidity(pool, todayVisits || [], fid);
+ await enrichOpdVisitsPaymentCodeValidity(pool, [...(todayVisits || []), ...(allVisits || [])], fid);
  await enrichOpdVisitsDoctorFromPaymentTicket(pool, allVisits || []);
  await enrichOpdVisitsRoomContext(pool, allVisits || []);
 
@@ -11043,7 +11390,6 @@ app.get('/opd-queue', requireAuth, requirePerm('opd.read','clinical.read','clini
   allVisits,
   visitIdsWithVitals,
   doctors,
-  departments: (departments || []).map((d) => d.department_name).filter(Boolean),
   filters: {
    q,
    dateFrom,
@@ -11051,7 +11397,6 @@ app.get('/opd-queue', requireAuth, requirePerm('opd.read','clinical.read','clini
    status,
    sort,
    dept,
-   doctor: doctor || 0,
    page: registryPager.page,
    totalPages: registryPager.totalPages,
    total: registryPager.total,
@@ -13249,7 +13594,7 @@ app.get('/insurance-claims/export.x12', requireAuth, requirePerm('insurance.read
     LEFT JOIN tbl_insurance_carrier ic ON ic.id=c.carrier_id
     ORDER BY c.id DESC LIMIT 200`
   ).catch(() => [[]]);
-  const lines = ['ISA*00*          *00*          *ZZ*ZAIZENSHMS       *ZZ*CLEARINGHOUSE *' + new Date().toISOString().slice(2,10).replace(/-/g,'') + '*0000*U*00401*000000001*0*T*:~'];
+  const lines = ['ISA*00*          *00*          *ZZ*TSSFHMS       *ZZ*CLEARINGHOUSE *' + new Date().toISOString().slice(2,10).replace(/-/g,'') + '*0000*U*00401*000000001*0*T*:~'];
   (Array.isArray(rows) ? rows : []).forEach(r => {
    lines.push(`CLM*${r.id}*${Number(r.billed_amount||0).toFixed(2)}***${r.diagnosis||''}*${r.insurer_name||''}~`);
   });
@@ -13526,7 +13871,6 @@ async function getAppointmentColumns(db) {
 function invalidateAppointmentColumnsCache() { __apptColsCache = null; }
 
 async function ensureAppointmentTelemedColumns(db) {
- if (db && db.driver === 'postgres') return;
  const stmts = [
   "ALTER TABLE tbl_appointment ADD COLUMN visit_type VARCHAR(20) NOT NULL DEFAULT 'in_person'",
   "ALTER TABLE tbl_appointment ADD COLUMN meeting_room VARCHAR(120) DEFAULT NULL",
@@ -13578,7 +13922,6 @@ async function ensureAppointmentTelemedColumns(db) {
 }
 
 async function ensurePortalTables(pool) {
- if (pool && pool.driver === 'postgres') return;
  await pool.query(`
   CREATE TABLE IF NOT EXISTS tbl_patient_portal (
    id INT AUTO_INCREMENT PRIMARY KEY,
@@ -14107,7 +14450,7 @@ app.post('/appointments/:id/confirm', requireAuth, async (req, res) => {
   // If telemedicine and no room yet, create one now
   let room = appt.meeting_room || null;
   if (String(appt.visit_type || '').toLowerCase() === 'telemedicine' && !room) {
-   room = `zaizens-hms-${(appt.appointment_id || ('apt-' + aid)).toLowerCase()}-${crypto.randomBytes(6).toString('hex')}`;
+   room = `tssf-hms-${(appt.appointment_id || ('apt-' + aid)).toLowerCase()}-${crypto.randomBytes(6).toString('hex')}`;
   }
 
   // Stamp doctor_id / doctor name when the row was unclaimed so future
@@ -16858,8 +17201,19 @@ if (process.env.HMS_EXPORT_CHECK === '1') {
 }
 
 if (require.main === module && !underPassenger()) {
- bindHttpListener();
- bootStep('listen', 'ok', 'local listen (node app.js)');
+ (async () => {
+  if (pool) {
+   try {
+    await require('./lib/ensureEmployeeHrSchema')(pool);
+    await aclLayout.init(pool);
+    bootStep('pre-listen-schema', 'ok');
+   } catch (e) {
+    bootStep('pre-listen-schema', 'warn', e);
+   }
+  }
+  bindHttpListener();
+  bootStep('listen', 'ok', 'local listen (node app.js)');
+ })();
 } else {
  bootStep('listen', 'skip', underPassenger() ? 'Passenger (no listen)' : 'required as module');
 }
@@ -16869,34 +17223,6 @@ if (require.main === module && !underPassenger()) {
 // outcomes show up in /__health → boot.
 (async () => {
  if (!pool) { bootStep('migrations', 'skip', 'No DB pool'); return; }
- if (pool.driver === 'postgres' || process.env.HMS_SKIP_SCHEMA_MIGRATIONS === '1') {
-  bootStep('migrations', 'skip', 'PostgreSQL / HMS_SKIP_SCHEMA_MIGRATIONS — schema assumed migrated');
-  try {
-   const { ensureRuntimeAcl } = require('./lib/ensureRuntimeAcl');
-   const aclBoot = await ensureRuntimeAcl(pool);
-   bootStep(
-    'ensureRuntimeAcl',
-    'ok',
-    aclBoot.directorRole ? `directorRole=${aclBoot.directorRole}` : 'no director role in tbl_role'
-   );
-  } catch (e) {
-   bootStep('ensureRuntimeAcl', 'fail', e);
-  }
-  try {
-   await aclLayout.init(pool);
-   bootStep('aclLayout:init', 'ok', 'runtime ACL cache loaded (postgres/skip-migrations path)');
-  } catch (e) {
-   bootStep('aclLayout:init', 'fail', e);
-  }
-  try {
-   const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
-   await ensureCashierEodSchema(pool);
-   bootStep('ensureCashierEodSchema', 'ok', 'tbl_cashier_eod_reconciliation');
-  } catch (e) {
-   bootStep('ensureCashierEodSchema', 'fail', e);
-  }
-  return;
- }
  const steps = [
   ['migratePatientInsuranceSchema', () => migratePatientInsuranceSchema(pool)],
   ['ensureOpdOrderItemsSchema',     () => ensureOpdOrderItemsSchema(pool)],
@@ -16905,15 +17231,25 @@ if (require.main === module && !underPassenger()) {
    const fn = require('./lib/ensureHrPayrollSchema');
    await fn(pool);
   }],
+  ['ensureIntegrationSchema',       async () => {
+   await require('./lib/ensureIntegrationSchema').ensureIntegrationSchema(pool);
+  }],
+  ['ensureFacilityIntegrationSchema', async () => {
+   await require('./lib/ensureFacilityIntegrationSchema')(pool);
+  }],
   ['ensureDirectorPLManualSchema',  async () => {
    await require('./lib/ensureDirectorPLManualSchema')(pool);
   }],
   ['ensureEmployeeHrSchema',        async () => {
    await require('./lib/ensureEmployeeHrSchema')(pool);
+   await require('./lib/ensureEmployeeHrSchema').syncEmployeeHrSchemaData(pool);
   }],
   ['ensureAclSchema',               async () => {
    const fn = require('./lib/ensureAclSchema');
    await fn(pool);
+  }],
+  ['aclLayout:init',                async () => {
+   await aclLayout.init(pool);
   }],
   ['ensureVisitingDoctorSchema',    async () => {
    await require('./lib/ensureVisitingDoctorSchema')(pool);
@@ -16991,6 +17327,14 @@ if (require.main === module && !underPassenger()) {
    const fn = require('./lib/ensureInventorySchema');
    await fn(pool);
   }],
+  ['ensureProcurementExtendedSchema', async () => {
+   const { ensureProcurementExtendedSchema } = require('./lib/ensureProcurementExtendedSchema');
+   await ensureProcurementExtendedSchema(pool);
+  }],
+  ['ensureClinicalDeptRequisitionSchema', async () => {
+   const fn = require('./lib/ensureClinicalDeptRequisitionSchema');
+   await fn(pool);
+  }],
   ['ensureAssetManagementSchema', async () => {
    try {
     await require('./lib/ensureAssetManagementSchema')(pool);
@@ -17034,9 +17378,6 @@ if (require.main === module && !underPassenger()) {
   ['hmsLicense:remoteSync', async () => {
    const { startLicenseServerSync } = require('./lib/hmsLicenseRemote');
    startLicenseServerSync(pool);
-  }],
-  ['aclLayout:init',                async () => {
-   await aclLayout.init(pool);
   }]
  ];
  for (const [label, run] of steps) {

@@ -248,6 +248,11 @@ body.hms-body--assets .hms-surface-hero {
   position: relative;
 }
 
+html.hms-nav-pending,
+html.hms-nav-pending body {
+  cursor: progress;
+}
+
 .hms-surface-hero-icon {
   width: 48px;
   height: 48px;

@@ -1,0 +1,96 @@
+<%- include('partials/header') %>
+<div class="page-wrapper"><div class="content hms-module">
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap" style="gap:12px;">
+  <div>
+    <h1 class="h4 font-weight-bold mb-1"><i class="fa fa-plug mr-2 text-primary"></i>Integration &amp; API settings</h1>
+    <p class="text-muted small mb-0">Per-facility URLs and API keys for Account_Core and Zaizens PayRoll (cross-platform / public IP).</p>
+  </div>
+  <a href="/super-admin" class="btn btn-outline-secondary btn-sm">Back to Super Admin</a>
+</div>
+
+<% if(locals.flash){%><div class="alert alert-success"><%= flash %></div><%}%>
+<% if(locals.error){%><div class="alert alert-danger"><%= error %></div><%}%>
+
+<form method="POST" action="/super-admin/integrations">
+  <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+    <div class="card-body p-4">
+      <h2 class="h6 font-weight-bold mb-3">Facility (tenant)</h2>
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label class="small font-weight-bold text-muted">Facility</label>
+          <select name="facility_id" class="form-control" onchange="location.href='/super-admin/integrations?facility_id='+this.value">
+            <% (facilities || []).forEach(function(f){ %>
+            <option value="<%= f.id %>" <%= selectedId == f.id ? 'selected' : '' %>><%= f.name || ('Facility ' + f.id) %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="form-group col-md-8">
+          <label class="small font-weight-bold text-muted">HMS public URL</label>
+          <input type="url" name="public_base_url" class="form-control" value="<%= settings.public_base_url || '' %>" placeholder="https://hms.example.com">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+    <div class="card-body p-4">
+      <h2 class="h6 font-weight-bold mb-3">Account_Core (outbound)</h2>
+      <div class="custom-control custom-checkbox mb-3">
+        <input type="checkbox" class="custom-control-input" id="coreSync" name="core_account_sync_enabled" value="1" <%= settings.core_account_sync_enabled ? 'checked' : '' %>>
+        <label class="custom-control-label" for="coreSync">Sync employees &amp; journals to Account_Core</label>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label class="small font-weight-bold text-muted">Account_Core API URL</label>
+          <input type="url" name="core_account_url" class="form-control" value="<%= settings.core_account_url || '' %>">
+        </div>
+        <div class="form-group col-md-6">
+          <label class="small font-weight-bold text-muted">Outbound API key</label>
+          <input type="text" name="core_account_api_key" class="form-control" value="<%= settings.core_account_api_key || '' %>">
+        </div>
+      </div>
+      <button type="submit" formaction="/super-admin/integrations/test-core" formmethod="POST" class="btn btn-outline-secondary btn-sm">Test Account_Core</button>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+    <div class="card-body p-4">
+      <h2 class="h6 font-weight-bold mb-3">Zaizens PayRoll (outbound employees)</h2>
+      <div class="custom-control custom-checkbox mb-3">
+        <input type="checkbox" class="custom-control-input" id="paySync" name="zaizens_sync_enabled" value="1" <%= settings.zaizens_sync_enabled ? 'checked' : '' %>>
+        <label class="custom-control-label" for="paySync">Replicate employees to Zaizens PayRoll</label>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label class="small font-weight-bold text-muted">Zaizens PayRoll URL</label>
+          <input type="url" name="zaizens_url" class="form-control" value="<%= settings.zaizens_url || '' %>">
+        </div>
+        <div class="form-group col-md-6">
+          <label class="small font-weight-bold text-muted">Outbound API key</label>
+          <input type="text" name="zaizens_api_key_outbound" class="form-control" value="<%= settings.zaizens_api_key_outbound || '' %>">
+        </div>
+      </div>
+      <button type="submit" formaction="/super-admin/integrations/test-zaizens" formmethod="POST" class="btn btn-outline-secondary btn-sm">Test Zaizens</button>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+    <div class="card-body p-4">
+      <h2 class="h6 font-weight-bold mb-3">Inbound from Account_Core</h2>
+      <div class="form-group">
+        <label class="small font-weight-bold text-muted">Inbound API key (Account_Core sends this)</label>
+        <input type="text" name="hms_api_key_inbound" class="form-control" value="<%= settings.hms_api_key_inbound || '' %>">
+      </div>
+      <ul class="small mb-0">
+        <li><code>POST <%= inboundEndpoints.chartOfAccounts %></code></li>
+        <li><code>POST <%= inboundEndpoints.journalEntry %></code></li>
+      </ul>
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary font-weight-bold">Save integration settings</button>
+</form>
+
+</div></div>
+<%- include('partials/footer') %>

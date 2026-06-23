@@ -1,0 +1,151 @@
+{
+  "source": "C:\\HMS_JS",
+  "generated_at": "2026-06-21T01:38:15.285Z",
+  "header_code": "552600",
+  "accounts": [
+    {
+      "code": "552600",
+      "label": "Treasury — Patient payment methods",
+      "ohada_class": 5,
+      "account_type": "asset",
+      "parent_code": "500000",
+      "is_posting": 0
+    },
+    {
+      "code": "552601",
+      "label": "Cash — patient receipts",
+      "ohada_class": 5,
+      "account_type": "asset",
+      "parent_code": "552600",
+      "is_posting": 1,
+      "hms_method": "Cash",
+      "hms_keys": [
+        "cash"
+      ]
+    },
+    {
+      "code": "552602",
+      "label": "Orange Money (OM) — patient receipts",
+      "ohada_class": 5,
+      "account_type": "asset",
+      "parent_code": "552600",
+      "is_posting": 1,
+      "hms_method": "OM",
+      "hms_keys": [
+        "om",
+        "orange money"
+      ]
+    },
+    {
+      "code": "552603",
+      "label": "MTN Mobile Money (MOMO) — patient receipts",
+      "ohada_class": 5,
+      "account_type": "asset",
+      "parent_code": "552600",
+      "is_posting": 1,
+      "hms_method": "MOMO",
+      "hms_keys": [
+        "momo",
+        "mobile money",
+        "mobile_money"
+      ]
+    },
+    {
+      "code": "552604",
+      "label": "Bank — patient receipts",
+      "ohada_class": 5,
+      "account_type": "asset",
+      "parent_code": "552600",
+      "is_posting": 1,
+      "hms_method": "BANK",
+      "hms_keys": [
+        "bank",
+        "transfer",
+        "bank transfer",
+        "wire",
+        "card"
+      ]
+    },
+    {
+      "code": "552605",
+      "label": "BetterPay — patient receipts",
+      "ohada_class": 5,
+      "account_type": "asset",
+      "parent_code": "552600",
+      "is_posting": 1,
+      "hms_method": "BetterPay",
+      "hms_keys": [
+        "betterpay",
+        "qr code",
+        "qr"
+      ]
+    },
+    {
+      "code": "552606",
+      "label": "Patient wallet — patient receipts",
+      "ohada_class": 5,
+      "account_type": "asset",
+      "parent_code": "552600",
+      "is_posting": 1,
+      "hms_method": "Wallet",
+      "hms_keys": [
+        "wallet",
+        "patient wallet"
+      ]
+    }
+  ],
+  "by_method": {
+    "Cash": {
+      "code": "552601",
+      "label": "Cash — patient receipts",
+      "hms_keys": [
+        "cash"
+      ]
+    },
+    "OM": {
+      "code": "552602",
+      "label": "Orange Money (OM) — patient receipts",
+      "hms_keys": [
+        "om",
+        "orange money"
+      ]
+    },
+    "MOMO": {
+      "code": "552603",
+      "label": "MTN Mobile Money (MOMO) — patient receipts",
+      "hms_keys": [
+        "momo",
+        "mobile money",
+        "mobile_money"
+      ]
+    },
+    "BANK": {
+      "code": "552604",
+      "label": "Bank — patient receipts",
+      "hms_keys": [
+        "bank",
+        "transfer",
+        "bank transfer",
+        "wire",
+        "card"
+      ]
+    },
+    "BetterPay": {
+      "code": "552605",
+      "label": "BetterPay — patient receipts",
+      "hms_keys": [
+        "betterpay",
+        "qr code",
+        "qr"
+      ]
+    },
+    "Wallet": {
+      "code": "552606",
+      "label": "Patient wallet — patient receipts",
+      "hms_keys": [
+        "wallet",
+        "patient wallet"
+      ]
+    }
+  }
+}

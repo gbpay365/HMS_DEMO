@@ -344,7 +344,7 @@ module.exports = function(app, pool, requireAuth) {
             return res.redirect('/portal/call-queue');
         }
         res.render('portal-queue', {
-            title: 'OPD Queue — ZAIZENS',
+            title: 'OPD Queue — TSSF SOA',
             flash: req.query.msg || null,
             error: req.query.err || null
         });
@@ -405,7 +405,7 @@ module.exports = function(app, pool, requireAuth) {
                 })();
             const hmsWaitingScreen = require('../lib/hmsWaitingScreen');
             const displayConfig = await hmsWaitingScreen.getConfig(pool);
-            let boardTitle = focusMode ? 'Now serving' : (simpleMode ? 'Waiting room display' : 'OPD Queue — ZAIZENS');
+            let boardTitle = focusMode ? 'Now serving' : (simpleMode ? 'Waiting room display' : 'OPD Queue — TSSF SOA');
             if (doctorId) {
                 const [[doc]] = await pool.query('SELECT first_name, last_name FROM tbl_employee WHERE id=? LIMIT 1', [doctorId]).catch(() => [[null]]);
                 if (doc) boardTitle = `Dr. ${doc.first_name || ''} ${doc.last_name || ''}`.trim();
@@ -852,52 +852,57 @@ module.exports = function(app, pool, requireAuth) {
         let annualDomains = [];
         try {
             const aclLayout = require('../lib/aclLayout');
-            const { buildVisibleDashboardModel } = require('../lib/directorDashboardCatalog');
-            const { buildVisibleWeeklyModel } = require('../lib/directorWeeklyReportCatalog');
-            const { buildVisibleMonthlyModel } = require('../lib/directorMonthlyPLCatalog');
-            const { buildVisibleAnnualModel } = require('../lib/directorAnnualScorecardCatalog');
-            const { buildVisibleDashboardModel: buildAssistantDirectorModel } = require('../lib/assistantDirectorDashboardCatalog');
-            const { buildVisibleDashboardModel: buildFrontDeskModel } = require('../lib/frontDeskDashboardCatalog');
-            const { buildVisibleDashboardModel: buildSecretaryModel } = require('../lib/secretaryDashboardCatalog');
             const perms = res.locals.userPerms || [];
             tiles = (aclLayout.forPortal(tilePortal, perms, role) || {}).tiles || [];
-            const directorPack = aclLayout.forPortal('director', perms, role) || {};
-            const dashModel = buildVisibleDashboardModel(directorPack);
-            const weeklyModel = buildVisibleWeeklyModel(directorPack);
-            const monthlyModel = buildVisibleMonthlyModel(directorPack);
-            const annualModel = buildVisibleAnnualModel(directorPack);
             const isDirectorPortal = portalCode === 'director' || code === 'director';
-            showDailyDashboard = isDirectorPortal && dashModel.hasShell && dashModel.tabs.length > 0;
-            showWeeklyReport = isDirectorPortal && weeklyModel.hasShell && (weeklyModel.kpis.length > 0 || weeklyModel.panels.length > 0);
-            showMonthlyReport = isDirectorPortal && monthlyModel.hasShell && (monthlyModel.kpis.length > 0 || monthlyModel.panels.length > 0);
-            showAnnualScorecard = isDirectorPortal && annualModel.hasShell && (annualModel.panels.length > 0 || annualModel.domains.length > 0);
+            if (isDirectorPortal) {
+                const { buildVisibleDashboardModel } = require('../lib/directorDashboardCatalog');
+                const { buildVisibleWeeklyModel } = require('../lib/directorWeeklyReportCatalog');
+                const { buildVisibleMonthlyModel } = require('../lib/directorMonthlyPLCatalog');
+                const { buildVisibleAnnualModel } = require('../lib/directorAnnualScorecardCatalog');
+                const directorPack = aclLayout.forPortal('director', perms, role) || {};
+                const dashModel = buildVisibleDashboardModel(directorPack);
+                const weeklyModel = buildVisibleWeeklyModel(directorPack);
+                const monthlyModel = buildVisibleMonthlyModel(directorPack);
+                const annualModel = buildVisibleAnnualModel(directorPack);
+                showDailyDashboard = dashModel.hasShell && dashModel.tabs.length > 0;
+                showWeeklyReport = weeklyModel.hasShell && (weeklyModel.kpis.length > 0 || weeklyModel.panels.length > 0);
+                showMonthlyReport = monthlyModel.hasShell && (monthlyModel.kpis.length > 0 || monthlyModel.panels.length > 0);
+                showAnnualScorecard = annualModel.hasShell && (annualModel.panels.length > 0 || annualModel.domains.length > 0);
+                dashboardTabs = dashModel.tabs;
+                dashboardKpis = dashModel.kpis;
+                dashboardPanels = dashModel.panels;
+                weeklyKpis = weeklyModel.kpis;
+                weeklyPanels = weeklyModel.panels;
+                monthlyKpis = monthlyModel.kpis;
+                monthlyPanels = monthlyModel.panels;
+                annualPanels = annualModel.panels;
+                annualDomains = annualModel.domains;
+            }
 
             const staffProfileMap = {
-                assistant_director: { pack: aclLayout.forPortal('assistant_director', perms, role) || {}, build: buildAssistantDirectorModel },
-                front_desk: { pack: aclLayout.forPortal('front_desk', perms, role) || {}, build: buildFrontDeskModel },
-                secretary: { pack: aclLayout.forPortal('secretary', perms, role) || {}, build: buildSecretaryModel },
+                assistant_director: 'assistant_director',
+                front_desk: 'front_desk',
+                secretary: 'secretary',
             };
-            const staffCfg = staffProfileMap[portalCode] || staffProfileMap[code] || null;
-            if (staffCfg) {
-                const staffModel = staffCfg.build(staffCfg.pack);
+            const staffPortalKey = staffProfileMap[portalCode] || staffProfileMap[code] || null;
+            if (staffPortalKey) {
+                const { buildVisibleDashboardModel: buildAssistantDirectorModel } = require('../lib/assistantDirectorDashboardCatalog');
+                const { buildVisibleDashboardModel: buildFrontDeskModel } = require('../lib/frontDeskDashboardCatalog');
+                const { buildVisibleDashboardModel: buildSecretaryModel } = require('../lib/secretaryDashboardCatalog');
+                const buildByKey = {
+                    assistant_director: buildAssistantDirectorModel,
+                    front_desk: buildFrontDeskModel,
+                    secretary: buildSecretaryModel,
+                };
+                const staffPack = aclLayout.forPortal(staffPortalKey, perms, role) || {};
+                const staffModel = buildByKey[staffPortalKey](staffPack);
                 showStaffDashboard = staffModel.hasShell && (staffModel.tabs.length > 0 || staffModel.kpis.length > 0);
-                staffDashboardProfile = portalCode === 'assistant_director' || portalCode === 'front_desk' || portalCode === 'secretary'
-                    ? portalCode
-                    : (code === 'assistant_director' || code === 'front_desk' || code === 'secretary' ? code : '');
+                staffDashboardProfile = staffPortalKey;
                 staffDashboardTabs = staffModel.tabs;
                 staffDashboardKpis = staffModel.kpis;
                 staffDashboardPanels = staffModel.panels;
             }
-
-            dashboardTabs = dashModel.tabs;
-            dashboardKpis = dashModel.kpis;
-            dashboardPanels = dashModel.panels;
-            weeklyKpis = weeklyModel.kpis;
-            weeklyPanels = weeklyModel.panels;
-            monthlyKpis = monthlyModel.kpis;
-            monthlyPanels = monthlyModel.panels;
-            annualPanels = annualModel.panels;
-            annualDomains = annualModel.domains;
             if (showHmsHub) {
                 const hmsPack = aclLayout.forPortal('hms', perms, role) || {};
                 hubStatItems = hmsPack.stats || [];

@@ -10,7 +10,7 @@ function facilityId(req) {
 
 function sanitizeBankCode(raw) {
  const d = String(raw ?? '').replace(/\D/g, '');
- return d ? d.slice(0, 20) : '521000';
+ return d ? d.slice(0, 20) : '512000';
 }
 
 function parseStatementBalance(raw) {

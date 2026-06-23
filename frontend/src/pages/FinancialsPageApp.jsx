@@ -162,6 +162,7 @@ function GlAccountsView({ glAccounts = [] }) {
                 { key: 'debit', label: t('col_debit'), align: 'right', format: 'money' },
                 { key: 'credit', label: t('col_credit'), align: 'right', format: 'money' },
                 { key: 'running', label: t('col_running'), align: 'right', format: 'money' },
+                { key: 'journal_id', label: '', format: 'link', linkTemplate: '/financials/journal-view?id={journal_id}', linkLabel: t('view_detail', { defaultValue: 'View' }) },
               ]}
               rows={acct.rows || []}
               emptyLabel={t('no_lines')}
@@ -173,12 +174,17 @@ function GlAccountsView({ glAccounts = [] }) {
   );
 }
 
-function JournalDetailView({ journal, lines = [], columns = [], finCanWrite = false }) {
+function JournalDetailView({ journal, lines = [], columns = [], finCanWrite = false, detail = null }) {
   const { t } = useTranslation('financials');
   if (!journal) return <p className="text-slate-400">{t('journal_not_found')}</p>;
   const isDraft = String(journal.status || '') === 'draft';
   const isPosted = String(journal.status || '') === 'posted';
   const isReversed = String(journal.status || '') === 'reversed';
+  const cashier = detail?.cashierTxn;
+  const billing = detail?.billing;
+  const patient = detail?.patient;
+  const ticket = detail?.ticket;
+  const ticketLines = detail?.ticketLines || [];
   return (
     <>
       <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
@@ -191,6 +197,7 @@ function JournalDetailView({ journal, lines = [], columns = [], finCanWrite = fa
           <span>Status: {journal.status || 'posted'}</span>
           <span>{t('source_label')} {journal.source_type || journal.source || '—'}</span>
         </div>
+        {journal.narration ? <p className="mt-2 text-sm text-slate-700">{journal.narration}</p> : null}
         {finCanWrite && isDraft ? (
           <form method="POST" action={`/financials/journal/${journal.id}/post`} className="mt-3">
             <button type="submit" className="hms-btn-primary text-sm">{t('journal_post_draft', { defaultValue: 'Post draft' })}</button>
@@ -204,6 +211,75 @@ function JournalDetailView({ journal, lines = [], columns = [], finCanWrite = fa
         ) : null}
         {isReversed ? <p className="mt-2 text-sm text-amber-700">{t('journal_reversed_note', { defaultValue: 'This entry has been reversed.' })}</p> : null}
       </div>
+
+      {(cashier || billing || patient || ticket) ? (
+        <div className="mb-4 grid gap-4 lg:grid-cols-2">
+          {cashier ? (
+            <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm">
+              <h3 className="mb-2 text-xs font-bold uppercase text-slate-500">{t('journal_detail.cashier', { defaultValue: 'Cashier transaction' })}</h3>
+              <dl className="grid grid-cols-2 gap-x-3 gap-y-1">
+                <dt className="text-slate-500">{t('journal_detail.cashier_code', { defaultValue: 'Cashier' })}</dt>
+                <dd className="font-semibold">{cashier.cashier_code} — {cashier.cashier_identity}</dd>
+                <dt className="text-slate-500">{t('journal_detail.method', { defaultValue: 'Method' })}</dt>
+                <dd>{cashier.payment_method}</dd>
+                <dt className="text-slate-500">{t('journal_detail.amount', { defaultValue: 'Amount' })}</dt>
+                <dd className="font-mono">{cashier.amount_fmt}</dd>
+                <dt className="text-slate-500">{t('journal_detail.opening', { defaultValue: 'Opening' })}</dt>
+                <dd className="font-mono">{cashier.opening_balance_fmt}</dd>
+                <dt className="text-slate-500">{t('journal_detail.debit', { defaultValue: 'Debit' })}</dt>
+                <dd className="font-mono">{cashier.debit_amount_fmt}</dd>
+                <dt className="text-slate-500">{t('journal_detail.credit', { defaultValue: 'Credit' })}</dt>
+                <dd className="font-mono">{cashier.credit_amount_fmt}</dd>
+                <dt className="text-slate-500">{t('journal_detail.closing', { defaultValue: 'Closing' })}</dt>
+                <dd className="font-mono">{cashier.closing_balance_fmt}</dd>
+                <dt className="text-slate-500">GL Dr / Cr</dt>
+                <dd className="font-mono text-xs">{cashier.gl_debit_account} / {cashier.gl_credit_account}</dd>
+              </dl>
+              <a href="/cashier/ledger" className="mt-3 inline-block text-xs font-bold text-blue-600">{t('journal_detail.open_ledger', { defaultValue: 'Open cashier ledger' })}</a>
+            </div>
+          ) : null}
+          {(billing || patient || ticket) ? (
+            <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm">
+              <h3 className="mb-2 text-xs font-bold uppercase text-slate-500">{t('journal_detail.source_doc', { defaultValue: 'Source document' })}</h3>
+              {patient ? (
+                <p className="mb-1"><span className="text-slate-500">{t('journal_detail.patient', { defaultValue: 'Patient' })}:</span> <strong>{patient.name}</strong>{patient.patient_code ? ` (${patient.patient_code})` : ''}</p>
+              ) : null}
+              {billing?.doc_number ? (
+                <p className="mb-1"><span className="text-slate-500">{t('journal_detail.receipt', { defaultValue: 'Receipt' })}:</span> <strong>{billing.doc_number}</strong> · {billing.total_amount_fmt}</p>
+              ) : null}
+              {ticket?.ticket_code ? (
+                <p className="mb-1"><span className="text-slate-500">{t('journal_detail.ticket', { defaultValue: 'Ticket' })}:</span> <strong>{ticket.ticket_code}</strong></p>
+              ) : null}
+              {billing?.payment_method ? (
+                <p className="mb-1"><span className="text-slate-500">{t('journal_detail.method', { defaultValue: 'Method' })}:</span> {billing.payment_method}</p>
+              ) : null}
+              {billing?.created_at_fmt ? (
+                <p className="text-slate-500 text-xs">{t('journal_detail.collected_at', { defaultValue: 'Collected' })}: {billing.created_at_fmt}</p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {ticketLines.length ? (
+        <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
+          <h3 className="mb-2 text-xs font-bold uppercase text-slate-500">{t('journal_detail.line_items', { defaultValue: 'Service line items' })}</h3>
+          <DataTable
+            columns={[
+              { key: 'description', label: t('journal_detail.service', { defaultValue: 'Service' }) },
+              { key: 'quantity', label: t('journal_detail.qty', { defaultValue: 'Qty' }), align: 'right' },
+              { key: 'unit_price', label: t('journal_detail.unit', { defaultValue: 'Unit' }), align: 'right', format: 'money' },
+              { key: 'patient_due', label: t('journal_detail.patient_due', { defaultValue: 'Patient due' }), align: 'right', format: 'money' },
+            ]}
+            rows={ticketLines.map((ln, i) => ({
+              id: i,
+              ...ln,
+              patient_due: ln.patient_due != null ? ln.patient_due : ln.unit_price * ln.quantity,
+            }))}
+          />
+        </div>
+      ) : null}
+
       <DataTable columns={columns} rows={lines} />
       <div className="mt-3 flex flex-wrap gap-3">
         <a href="/financials/journal" className="text-sm font-bold text-blue-600">
@@ -252,9 +328,95 @@ function journalLineTotals(lines) {
   return { debit, credit, diff: debit - credit, balanced: debit === credit && debit > 0 };
 }
 
-function JournalNewForm({ accounts = [], body = {}, error = null }) {
+function accountById(accounts, accountId) {
+  if (!accountId) return null;
+  return accounts.find((a) => String(a.id) === String(accountId)) || null;
+}
+
+function lineSideForAccount(acct) {
+  if (!acct) return null;
+  return acct.normal_side || null;
+}
+
+function counterpartSide(side) {
+  if (side === 'debit') return 'credit';
+  if (side === 'credit') return 'debit';
+  return null;
+}
+
+function ohadaClassFromCode(code) {
+  const c = String(code || '').trim();
+  if (!c || !/^\d/.test(c)) return 0;
+  return parseInt(c[0], 10) || 0;
+}
+
+/** Default posting counterpart by source OHADA class (revenue ↔ treasury, expense ↔ treasury). */
+const COUNTERPART_CODE_BY_CLASS = {
+  7: '552601',
+  6: '552601',
+  5: '701601',
+};
+
+function pickDefaultCounterpart(accounts, sourceAcct, neededSide) {
+  if (!sourceAcct || !neededSide) return null;
+  const pool = accounts.filter((a) => a.normal_side === neededSide);
+  if (!pool.length) return null;
+  const srcClass = ohadaClassFromCode(sourceAcct.account_code || sourceAcct.code);
+  const preferred = COUNTERPART_CODE_BY_CLASS[srcClass];
+  if (preferred) {
+    const hit = pool.find((a) => (a.account_code || a.code) === preferred);
+    if (hit) return hit;
+  }
+  if (neededSide === 'debit' && srcClass === 7) {
+    const cash = pool.find((a) => String(a.account_code || a.code).startsWith('5526'));
+    if (cash) return cash;
+  }
+  if (neededSide === 'credit' && (srcClass === 6 || srcClass === 5)) {
+    if (srcClass === 6) {
+      const cash = pool.find((a) => String(a.account_code || a.code).startsWith('5526'));
+      if (cash) return cash;
+    }
+    if (srcClass === 5) {
+      const rev = pool.find((a) => String(a.account_code || a.code).startsWith('701'));
+      if (rev) return rev;
+    }
+  }
+  return pool[0];
+}
+
+function amountsForAccount(acct, catalogByAccount) {
+  const code = acct?.account_code || acct?.code || '';
+  const side = lineSideForAccount(acct);
+  const catalog = code ? catalogByAccount[code] : null;
+  const defaultPrice = catalog?.default_price ? parseInt(String(catalog.default_price), 10) : 0;
+  let debit = '';
+  let credit = '';
+  if (side === 'debit' && defaultPrice > 0) debit = String(defaultPrice);
+  if (side === 'credit' && defaultPrice > 0) credit = String(defaultPrice);
+  const memo = catalog?.hms_subcategory || catalog?.label || '';
+  return { debit, credit, memo, side, amount: defaultPrice || parseJournalAmount(debit || credit) };
+}
+
+function accountGroupsForLine(accounts, lineIndex, lines, showAll) {
+  if (showAll || lineIndex < 1) {
+    return { suggested: [], other: accounts };
+  }
+  const prevAcct = accountById(accounts, lines[lineIndex - 1]?.accountId);
+  const prevSide = lineSideForAccount(prevAcct);
+  const neededSide = counterpartSide(prevSide);
+  if (!prevAcct || !neededSide) {
+    return { suggested: [], other: accounts };
+  }
+  const suggested = accounts.filter((a) => a.normal_side === neededSide);
+  const suggestedIds = new Set(suggested.map((a) => String(a.id)));
+  const other = accounts.filter((a) => !suggestedIds.has(String(a.id)));
+  return { suggested, other };
+}
+
+function JournalNewForm({ accounts = [], catalogByAccount = {}, body = {}, error = null }) {
   const { t } = useTranslation('financials');
   const [lines, setLines] = useState(() => journalLinesFromBody(body, 2));
+  const [showAllAccounts, setShowAllAccounts] = useState({});
   const totals = journalLineTotals(lines);
   const validLineCount = lines.filter(
     (ln) => ln.accountId && (parseJournalAmount(ln.debit) > 0 || parseJournalAmount(ln.credit) > 0)
@@ -302,25 +464,114 @@ function JournalNewForm({ accounts = [], body = {}, error = null }) {
     });
   }
 
+  function applyCounterpartAmount(line, cpSide, amount) {
+    const amt = parseJournalAmount(amount);
+    if (amt <= 0) return { ...line, debit: '', credit: '' };
+    if (cpSide === 'debit') return { ...line, debit: String(amt), credit: '' };
+    if (cpSide === 'credit') return { ...line, credit: String(amt), debit: '' };
+    return line;
+  }
+
   function onAccountChange(index, accountId) {
     setLines((prev) => {
-      const next = prev.map((ln, i) => (i === index ? { ...ln, accountId } : ln));
-      if (index === 1 && accountId) {
+      if (!accountId) {
+        return prev.map((ln, i) => (i === index ? { ...ln, accountId: '', debit: '', credit: '', memo: '' } : ln));
+      }
+
+      const acct = accountById(accounts, accountId);
+      const { debit, credit, memo, side, amount } = amountsForAccount(acct, catalogByAccount);
+
+      let next = prev.map((ln, i) => {
+        if (i !== index) return ln;
+        return { ...ln, accountId, debit, credit, memo: memo || ln.memo };
+      });
+
+      const lineAmount = amount || parseJournalAmount(side === 'debit' ? debit : credit);
+      const cpIdx = index + 1;
+      if (cpIdx < next.length && side) {
+        const cpSide = counterpartSide(side);
+        const cpAcct = pickDefaultCounterpart(accounts, acct, cpSide);
+        if (cpAcct) {
+          next = next.map((ln, i) => {
+            if (i !== cpIdx) return ln;
+            const patched = {
+              ...ln,
+              accountId: String(cpAcct.id),
+              memo: ln.memo || cpAcct.account_label || '',
+            };
+            return applyCounterpartAmount(patched, cpSide, lineAmount);
+          });
+        }
+      } else if (lineAmount > 0) {
         const { diff } = journalLineTotals(next);
         if (diff !== 0) {
           const abs = Math.abs(diff);
-          next[1] =
-            diff > 0
-              ? { ...next[1], credit: String(abs), debit: '' }
-              : { ...next[1], debit: String(abs), credit: '' };
+          const counterpartIdx = next.findIndex(
+            (ln, i) => i !== index && ln.accountId && !parseJournalAmount(ln.debit) && !parseJournalAmount(ln.credit)
+          );
+          const useIdx = counterpartIdx >= 0 ? counterpartIdx : -1;
+          if (useIdx >= 0) {
+            const cpAcct = accountById(accounts, next[useIdx].accountId);
+            const cpSide = lineSideForAccount(cpAcct) || counterpartSide(side);
+            next = next.map((ln, i) => {
+              if (i !== useIdx) return ln;
+              return applyCounterpartAmount(ln, cpSide, abs);
+            });
+          }
         }
       }
+
       return next;
     });
   }
 
+  function onManualAccountChange(index, accountId) {
+    setShowAllAccounts((prev) => ({ ...prev, [index]: true }));
+    setLines((prev) => {
+      if (!accountId) {
+        return prev.map((ln, i) => (i === index ? { ...ln, accountId: '', debit: '', credit: '', memo: '' } : ln));
+      }
+      const acct = accountById(accounts, accountId);
+      const { debit, credit, memo } = amountsForAccount(acct, catalogByAccount);
+      const prevLine = prev[index];
+      const keepDebit = parseJournalAmount(prevLine.debit) > 0 ? prevLine.debit : debit;
+      const keepCredit = parseJournalAmount(prevLine.credit) > 0 ? prevLine.credit : credit;
+      return prev.map((ln, i) =>
+        i === index
+          ? {
+              ...ln,
+              accountId,
+              debit: lineSideForAccount(acct) === 'credit' ? '' : keepDebit,
+              credit: lineSideForAccount(acct) === 'debit' ? '' : keepCredit,
+              memo: memo || ln.memo,
+            }
+          : ln
+      );
+    });
+  }
+
+  function onAccountSelectChange(index, accountId) {
+    if (index > 0 && showAllAccounts[index]) {
+      onManualAccountChange(index, accountId);
+    } else {
+      onAccountChange(index, accountId);
+    }
+  }
+
   function onAmountBlur(index) {
-    if (index === 0) autoBalance(1);
+    setLines((prev) => {
+      const ln = prev[index];
+      const acct = accountById(accounts, ln.accountId);
+      const side = lineSideForAccount(acct);
+      const amt = parseJournalAmount(side === 'debit' ? ln.debit : ln.credit);
+      if (amt <= 0) return prev;
+      const cpIdx = index + 1;
+      if (cpIdx >= prev.length) return prev;
+      const cpAcct = accountById(accounts, prev[cpIdx].accountId);
+      const cpSide = lineSideForAccount(cpAcct) || counterpartSide(side);
+      if (!cpSide) return prev;
+      return prev.map((row, i) => (i === cpIdx ? applyCounterpartAmount(row, cpSide, amt) : row));
+    });
   }
 
   return (
@@ -363,39 +614,75 @@ function JournalNewForm({ accounts = [], body = {}, error = null }) {
         <span>{t('journal_form.credit_ph')}</span>
         <span>{t('journal_form.memo_ph', { defaultValue: 'Memo' })}</span>
       </div>
-      {lines.map((ln, i) => (
-        <div key={i} className="mb-2 grid gap-2 sm:grid-cols-5">
+      {lines.map((ln, i) => {
+        const acct = accountById(accounts, ln.accountId);
+        const side = lineSideForAccount(acct);
+        const hasAccount = Boolean(ln.accountId);
+        const debitDisabled = !hasAccount || side === 'credit';
+        const creditDisabled = !hasAccount || side === 'debit';
+        const { suggested, other } = accountGroupsForLine(accounts, i, lines, showAllAccounts[i]);
+        const prevAcct = i > 0 ? accountById(accounts, lines[i - 1]?.accountId) : null;
+        const showFilterToggle = i > 0 && prevAcct && !showAllAccounts[i];
+        return (
+        <div key={i} className="mb-2">
+        <div className="grid gap-2 sm:grid-cols-5">
+          <div className="sm:col-span-2">
           <select
             name={`acc_${i}`}
-            className="hms-input sm:col-span-2"
+            className="hms-input w-full"
             value={ln.accountId}
-            onChange={(e) => onAccountChange(i, e.target.value)}
+            onChange={(e) => onAccountSelectChange(i, e.target.value)}
             required={i < 2}
           >
             <option value="">{t('journal_form.account')}</option>
-            {accounts.map((a) => (
-              <option key={a.id} value={a.id}>
+            {(!showAllAccounts[i] && suggested.length) ? (
+              <optgroup label={t('journal_form.counterpart_accounts', { defaultValue: 'Counterpart accounts' })}>
+                {suggested.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.account_code || a.code} — {a.account_label || a.label || a.label_en}
+                  </option>
+                ))}
+              </optgroup>
+            ) : null}
+            {(showAllAccounts[i] || !suggested.length ? accounts : other).map((a) => (
+              <option key={showAllAccounts[i] || !suggested.length ? a.id : `other-${a.id}`} value={a.id}>
                 {a.account_code || a.code} — {a.account_label || a.label || a.label_en}
               </option>
             ))}
           </select>
+          {showFilterToggle ? (
+            <button
+              type="button"
+              className="mt-1 text-[11px] font-semibold text-blue-600"
+              onClick={() => setShowAllAccounts((prev) => ({ ...prev, [i]: true }))}
+            >
+              {t('journal_form.show_all_accounts', { defaultValue: 'Show all accounts' })}
+            </button>
+          ) : null}
+          </div>
           <input
             name={`dr_${i}`}
             inputMode="numeric"
             placeholder={t('journal_form.debit_ph')}
-            className="hms-input font-mono"
+            className={`hms-input font-mono ${debitDisabled ? 'cursor-not-allowed bg-slate-100 text-slate-400' : ''}`}
             value={ln.debit}
             onChange={(e) => onDebitChange(i, e.target.value)}
             onBlur={() => onAmountBlur(i)}
+            disabled={debitDisabled}
+            readOnly={debitDisabled}
+            tabIndex={debitDisabled ? -1 : 0}
           />
           <input
             name={`cr_${i}`}
             inputMode="numeric"
             placeholder={t('journal_form.credit_ph')}
-            className="hms-input font-mono"
+            className={`hms-input font-mono ${creditDisabled ? 'cursor-not-allowed bg-slate-100 text-slate-400' : ''}`}
             value={ln.credit}
             onChange={(e) => onCreditChange(i, e.target.value)}
             onBlur={() => onAmountBlur(i)}
+            disabled={creditDisabled}
+            readOnly={creditDisabled}
+            tabIndex={creditDisabled ? -1 : 0}
           />
           <input
             name={`memo_${i}`}
@@ -405,7 +692,9 @@ function JournalNewForm({ accounts = [], body = {}, error = null }) {
             onChange={(e) => patchLine(i, { memo: e.target.value })}
           />
         </div>
-      ))}
+        </div>
+        );
+      })}
       <button type="button" className="mb-4 text-sm font-bold text-blue-600" onClick={() => setLines((prev) => [...prev, emptyJournalLine()])}>
         + {t('journal_form.add_line', { defaultValue: 'Add line' })}
       </button>
@@ -749,7 +1038,15 @@ function PageBody(props) {
     return <DashboardView metrics={props.metrics} recentJournals={props.recentJournals} topAccounts={props.topAccounts} />;
   }
   if (pageKey === 'journal-view') {
-    return <JournalDetailView journal={props.journal} lines={props.rows} columns={props.columns} finCanWrite={props.finCanWrite} />;
+    return (
+      <JournalDetailView
+        journal={props.journal}
+        lines={props.rows}
+        columns={props.columns}
+        finCanWrite={props.finCanWrite}
+        detail={props.detail}
+      />
+    );
   }
   if (pageKey === 'livre-journal') {
     return (
@@ -765,7 +1062,14 @@ function PageBody(props) {
     return <ExpenseNewForm categories={props.categories} body={props.body} error={props.error} />;
   }
   if (formType === 'journal-new') {
-    return <JournalNewForm accounts={props.accounts} body={props.body} error={props.error} />;
+    return (
+      <JournalNewForm
+        accounts={props.accounts}
+        catalogByAccount={props.catalogByAccount || {}}
+        body={props.body}
+        error={props.error}
+      />
+    );
   }
   if (formType === 'settings') {
     return (
