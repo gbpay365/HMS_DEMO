@@ -2,7 +2,11 @@ const path = require('path');
 const fs = require('fs');
 const { loadEnv } = require('./lib/loadEnv');
 const _envLoad = loadEnv();
-if (_envLoad.loadedFrom === '.env.production') {
+if (_envLoad.onRailway) {
+ try {
+  console.log('[HMS] Railway runtime — DB config from service variables (not .env.production).');
+ } catch (_) {}
+} else if (_envLoad.loadedFrom === '.env.production') {
  try {
   console.warn('[HMS] No .env found — loaded .env.production. Upload .env (copy from .env.production) for production.');
  } catch (_) {}
@@ -48,7 +52,8 @@ const { flashT } = require('./lib/flashI18n');
 const { pageTitle } = require('./lib/pageTitle');
 const hmsI18n = require('./lib/hmsI18n');
 const session = require('express-session');
-const mysql = require('mysql2/promise');
+const { createDbPool, resolveDbConfig: resolveDbEnv } = require('./lib/dbPool');
+const DB_BOOT_CONFIG = resolveDbEnv();
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const cookieParser = require('cookie-parser');
@@ -96,15 +101,25 @@ try {
   _writeCrash('WARN-self-heal', _rmErr);
 }
 
-// Self-heal step 2: load express-mysql-session; fall back to MemoryStore if
-// it still fails for any other reason.
+// Self-heal step 2: load session store backends
 const MySQLStore = (() => {
+ if (DB_BOOT_CONFIG.driver === 'postgres') return null;
  try {
   return require('express-mysql-session')(session);
  } catch (e) {
   _writeCrash('WARN-MySQLStore-load', e);
   console.warn('[WARN] express-mysql-session failed to load:', e.message);
   console.warn('[WARN] Falling back to MemoryStore. Run npm install on server to fix.');
+  return null;
+ }
+})();
+const PgSessionStore = (() => {
+ if (DB_BOOT_CONFIG.driver !== 'postgres') return null;
+ try {
+  return require('connect-pg-simple')(session);
+ } catch (e) {
+  _writeCrash('WARN-PgSessionStore-load', e);
+  console.warn('[WARN] connect-pg-simple not installed — sessions will use MemoryStore.');
   return null;
  }
 })();
@@ -397,35 +412,48 @@ bootStep('middleware-base', 'ok');
 // creation may itself fail at boot, in which case we still want this
 // endpoint to respond.
 app.get('/__health', async (req, res) => {
+ const { HMS_BUILD } = require('./lib/resolveDbConfig');
  const out = {
   ok: true,
+  build: HMS_BUILD,
   node: process.version,
   pid: process.pid,
   uptime_s: Math.round(process.uptime()),
   env: {
-   DB_HOST: DB_CONFIG.host || '(missing)',
-   DB_PORT: String(DB_CONFIG.port || 3306),
-   DB_USER: DB_CONFIG.user ? '(set)' : '(missing)',
-   DB_PASSWORD: DB_CONFIG.password ? '(set)' : '(missing)',
-   DB_NAME: DB_CONFIG.database || '(missing)',
-   DB_SOURCE: DB_CONFIG.source,
-   POSTGRES_URL_LINKED: DB_CONFIG.postgresLinked,
+   DB_DRIVER: pool && pool.driver ? pool.driver : DB_BOOT_CONFIG.driver,
+   DB_SOURCE: DB_BOOT_CONFIG.source || '(unknown)',
+   DB_HOST: DB_BOOT_CONFIG.host || '(missing)',
+   DB_PORT: String(DB_BOOT_CONFIG.port || ''),
+   DB_USER: DB_BOOT_CONFIG.user ? '(set)' : '(missing)',
+   DB_PASSWORD: DB_BOOT_CONFIG.password ? '(set)' : '(missing)',
+   DB_NAME: DB_BOOT_CONFIG.database || '(missing)',
+   DATABASE_URL_SET: process.env.DATABASE_URL ? '(set)' : '(missing)',
+   PGHOST_SET: process.env.PGHOST ? '(set)' : '(missing)',
+   PGHOST_VALUE: process.env.PGHOST ? process.env.PGHOST.replace(/[^a-zA-Z0-9._-]/g, '') : '(missing)',
+   RAILWAY: _envLoad.onRailway ? 'yes' : 'no',
+   CONFIG_VALID: DB_BOOT_CONFIG.valid !== false,
+   CONFIG_ERROR: DB_BOOT_CONFIG.valid === false ? DB_BOOT_CONFIG.error : null,
+   PG_SSL: DB_BOOT_CONFIG.ssl === false ? 'off' : DB_BOOT_CONFIG.ssl ? 'on' : 'off',
    PORT: process.env.PORT || '(default)',
-   NODE_ENV: process.env.NODE_ENV || '(unset)'
+   NODE_ENV: process.env.NODE_ENV || '(unset)',
   },
   boot: BOOT_TRACE.slice(-50),
   db: { reachable: false, error: null, version: null, appointment_columns: [] }
  };
  try {
   if (typeof pool === 'undefined' || !pool) throw new Error('Database pool was not initialized at boot.');
-  const [[v]] = await pool.query('SELECT VERSION() AS v');
+  const probe = pool.query('SELECT VERSION() AS v');
+  const timeout = new Promise((_, reject) => {
+   setTimeout(() => reject(new Error('Database probe timed out after 10s')), 10000);
+  });
+  const [[v]] = await Promise.race([probe, timeout]);
   out.db.reachable = true;
   out.db.version = v && v.v;
   const [cols] = await pool.query(
    `SELECT COLUMN_NAME FROM information_schema.COLUMNS
      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tbl_appointment'`
   ).catch(() => [[]]);
-  out.db.appointment_columns = cols.map(c => c.COLUMN_NAME);
+  out.db.appointment_columns = cols.map((c) => c.COLUMN_NAME || c.column_name);
   const [empTables] = await pool.query(
    `SELECT 1 FROM information_schema.TABLES
      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tbl_employee' LIMIT 1`
@@ -438,7 +466,7 @@ app.get('/__health', async (req, res) => {
     `SELECT COLUMN_NAME FROM information_schema.COLUMNS
       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tbl_employee'`
    ).catch(() => [[]]);
-   const names = empCols.map(c => c.COLUMN_NAME);
+   const names = empCols.map((c) => c.COLUMN_NAME || c.column_name);
    out.db.tbl_employee.has_specialisation = names.includes('specialisation');
    try {
     await pool.query(
@@ -455,6 +483,21 @@ app.get('/__health', async (req, res) => {
   out.ok = false;
   out.db.error = e && e.message ? e.message : String(e);
   out.db.code = e && e.code ? e.code : null;
+  if (DB_BOOT_CONFIG.valid === false && DB_BOOT_CONFIG.error) {
+   out.db.config_error = DB_BOOT_CONFIG.error;
+  }
+  if (
+    DB_BOOT_CONFIG.driver === 'postgres' &&
+    (out.db.code === 'ECONNREFUSED' || /ECONNREFUSED/i.test(out.db.error)) &&
+    /localhost|127\.0\.0\.1|::1/i.test(DB_BOOT_CONFIG.host || '')
+  ) {
+   out.db.hint =
+    'Postgres is pointing at localhost. On Railway: link the Postgres service, set ' +
+    'DATABASE_URL=${{Postgres.DATABASE_URL}}, and delete DB_HOST / DB_PORT / DB_USER / DB_PASSWORD / DB_NAME from the web service.';
+  } else if (DB_BOOT_CONFIG.driver === 'postgres' && !process.env.DATABASE_URL && !process.env.PGHOST) {
+   out.db.hint =
+    'No DATABASE_URL or PGHOST on this service. Reference Postgres variables from the linked database service.';
+  }
  }
  res.set('Cache-Control', 'no-store');
  // Always HTTP 200 so hosting panels don't treat DB issues as "app failed to start".
@@ -486,38 +529,37 @@ app.get('/__boot', (req, res) => {
  res.set('Cache-Control', 'no-store').json(out);
 });
 
-// Database Pool — wrapped in try/catch so that a bad DB config does not
-// prevent the process from even starting (we want /__health to be reachable).
-//
-// iFastNet shared-host hardening: the server drops idle MySQL connections
-// after ~60 s, causing ECONNRESET / PROTOCOL_CONNECTION_LOST on the next
-// query. enableKeepAlive + connectTimeout let the pool replace stale
-// connections before mysql2 tries to reuse them.
-const { resolveDbConfig } = require('./lib/resolveDbConfig');
-const DB_CONFIG = resolveDbConfig();
-if (DB_CONFIG.postgresLinked) {
- console.warn(
-  '[HMS] PostgreSQL DATABASE_URL detected — HMS requires MySQL. Add a Railway MySQL service and set MYSQLHOST/MYSQLPASSWORD (or DB_*).'
- );
-}
+app.get('/__env-debug', (req, res) => {
+ const keys = Object.keys(process.env)
+  .filter((k) => /^(DB_|PG|POSTGRES|DATABASE|HMS_DB|RAILWAY|NODE_ENV|PORT)/i.test(k))
+  .sort();
+ const pgKeys = ['DATABASE_URL', 'DATABASE_PUBLIC_URL', 'PGHOST', 'PGPORT', 'PGUSER', 'PGPASSWORD', 'POSTGRES_PASSWORD', 'PGDATABASE'];
+ const keyStatus = {};
+ for (const k of pgKeys) {
+  const v = process.env[k];
+  keyStatus[k] = v && String(v).trim() ? 'has_value' : (k in process.env ? 'empty' : 'absent');
+ }
+ res.set('Cache-Control', 'no-store').json({
+  build: require('./lib/resolveDbConfig').HMS_BUILD,
+  railway: _envLoad.onRailway,
+  keys_present: keys,
+  pg_key_status: keyStatus,
+  keys_with_values: keys.filter((k) => String(process.env[k] || '').trim()),
+  hints: {
+   DATABASE_URL: process.env.DATABASE_URL && String(process.env.DATABASE_URL).trim() ? 'set' : 'empty_or_missing',
+   PGHOST: process.env.PGHOST && String(process.env.PGHOST).trim() ? 'set' : 'empty_or_missing',
+   POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD && String(process.env.POSTGRES_PASSWORD).trim() ? 'set' : 'empty_or_missing',
+   HMS_DB_DRIVER: process.env.HMS_DB_DRIVER || '(unset)',
+   fix: 'Railway web service → Variables → delete empty DATABASE_URL/PGHOST → Add Reference → Postgres → DATABASE_URL',
+  },
+ });
+});
+
+// Database pool — MySQL (mysql2) or PostgreSQL (pg) via lib/dbPool.js
 let pool = null;
 try {
- pool = mysql.createPool({
-  host:                    DB_CONFIG.host,
-  port:                    DB_CONFIG.port,
-  user:                    DB_CONFIG.user,
-  password:                DB_CONFIG.password,
-  database:                DB_CONFIG.database,
-  charset:                 'utf8mb4',
-  waitForConnections:      true,
-  connectionLimit:         5,    // keep low on shared hosting
-  queueLimit:              0,
-  // ── Reconnect / keepalive (prevents ECONNRESET on idle shared hosts) ───
-  enableKeepAlive:         true,
-  keepAliveInitialDelay:   10000, // start keepalive after 10 s of idle
-  connectTimeout:          10000, // fail fast on bad host rather than hanging
- });
- bootStep('mysql-pool', 'ok');
+ pool = createDbPool();
+ bootStep('db-pool', 'ok', `${pool.driver} → ${pool.config?.host}:${pool.config?.port} ssl=${pool.config?.ssl === false ? 'off' : 'on'} (${pool.config?.source || '?'})`);
  const _origPoolQuery = pool.query.bind(pool);
  pool.query = async function catalogAwareQuery(sql, ...args) {
   const result = await _origPoolQuery(sql, ...args);
@@ -536,6 +578,7 @@ try {
   return result;
  };
  pool.query('SELECT 1 AS ok').then(async () => {
+  bootStep('db-pool-probe', 'ok');
   try {
    const ensureFinAccountingSchema = require('./lib/ensureFinAccountingSchema');
    await ensureFinAccountingSchema(pool);
@@ -549,14 +592,16 @@ try {
    const { syncProductsToAccountCore } = require('./lib/coreAccountProductSync');
    syncProductsToAccountCore(pool).catch((e) => console.warn('[product-sync] startup:', e.message));
   } catch (_) { /* optional */ }
- }).catch((e) => bootStep('fin-accounting-schema-probe', 'warn', e));
+ }).catch((e) => bootStep('db-pool-probe', 'fail', e));
  betterPayConfig.init(pool).catch((e) => console.warn('[BetterPay] init:', e.message));
 } catch (e) {
- bootStep('mysql-pool', 'fail', e);
+ bootStep('db-pool', 'fail', e);
+ console.error('[HMS] Database pool not created:', e.message || e);
 }
 
 /** Ensures tbl_patient_insurance exists and columns match INSERTs (MySQL 5.7+ / MariaDB: no IF NOT EXISTS on ADD COLUMN). */
 async function migratePatientInsuranceSchema(db) {
+ if (db && db.driver === 'postgres') return;
  await db.query(`
   CREATE TABLE IF NOT EXISTS tbl_patient_insurance (
    id INT AUTO_INCREMENT PRIMARY KEY,
@@ -602,6 +647,7 @@ async function migratePatientInsuranceSchema(db) {
 }
 
 async function ensureOpdOrderItemsSchema(db) {
+ if (db && db.driver === 'postgres') return;
  // Core queue table: per-item billing state for consultation-prescribed lab/radiology
  await db.query(`
   CREATE TABLE IF NOT EXISTS tbl_opd_order_item (
@@ -670,6 +716,7 @@ async function ensureOpdOrderItemsSchema(db) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function ensureServiceCatalogSchema(db) {
+ if (db && db.driver === 'postgres') return;
  await db.query(`
   CREATE TABLE IF NOT EXISTS tbl_service_catalog (
    id INT AUTO_INCREMENT PRIMARY KEY,
@@ -706,7 +753,14 @@ app.locals.db = pool;
 // events + absorbing the unhandledRejection from its internal Promise chain.
 let sessionStore = null;
 try {
- if (pool && MySQLStore) {
+ if (pool && pool.driver === 'postgres' && PgSessionStore && pool.nativePool) {
+  sessionStore = new PgSessionStore({
+   pool: pool.nativePool,
+   createTableIfMissing: true,
+   tableName: 'session',
+  });
+  bootStep('session-store', 'ok', 'postgres');
+ } else if (pool && MySQLStore) {
   sessionStore = new MySQLStore({
    // Don't let the store create its own connection — use our pool
    createDatabaseTable: true,
@@ -17223,6 +17277,23 @@ if (require.main === module && !underPassenger()) {
 // outcomes show up in /__health → boot.
 (async () => {
  if (!pool) { bootStep('migrations', 'skip', 'No DB pool'); return; }
+ if (pool.driver === 'postgres' || process.env.HMS_SKIP_SCHEMA_MIGRATIONS === '1') {
+  bootStep('migrations', 'skip', 'PostgreSQL / HMS_SKIP_SCHEMA_MIGRATIONS — schema assumed migrated');
+  try {
+   const { ensureRuntimeAcl } = require('./lib/ensureRuntimeAcl');
+   const aclBoot = await ensureRuntimeAcl(pool);
+   bootStep(
+    'ensureRuntimeAcl',
+    'ok',
+    aclBoot.directorRole ? `directorRole=${aclBoot.directorRole}` : 'no director role in tbl_role'
+   );
+   await aclLayout.init(pool);
+   bootStep('aclLayout:init', 'ok', 'runtime ACL cache loaded (postgres/skip-migrations path)');
+  } catch (e) {
+   bootStep('migrations-postgres-acl', 'warn', e);
+  }
+  return;
+ }
  const steps = [
   ['migratePatientInsuranceSchema', () => migratePatientInsuranceSchema(pool)],
   ['ensureOpdOrderItemsSchema',     () => ensureOpdOrderItemsSchema(pool)],

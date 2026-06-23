@@ -70,3 +70,4 @@
     at Socket.<anonymous> (C:\HMS_DEMO\node_modules\pg\lib\connection.js:61:12)
     at Socket.emit (node:events:519:35)
     at TCP.<anonymous> (node:net:351:12)
+[2026-06-23T07:38:54.976Z] INFO: Self-healed: deleted broken nested mysql2 at startup.
