@@ -23,10 +23,10 @@ async function main() {
   let sql = `
     SELECT t.id
       FROM tbl_cashier_txn t
-      JOIN tbl_fin_journal_header h ON h.id = t.journal_header_id
+      LEFT JOIN tbl_fin_journal_header h ON h.id = t.journal_header_id
      WHERE t.txn_type = 'receipt'
        AND (t.external_sync_status IS NULL OR t.external_sync_status IN ('pending', 'failed'))
-       AND h.external_core_sync_status = 'sent'`;
+       AND (h.id IS NULL OR h.external_core_sync_status IS NULL OR h.external_core_sync_status IN ('pending', 'failed'))`;
   const params = [];
   if (payFilter) {
     sql += ' AND LOWER(TRIM(t.payment_method)) = LOWER(TRIM(?))';
