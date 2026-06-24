@@ -9646,7 +9646,7 @@ app.post('/cashier/issue-prepay', requireAuth, async (req, res) => {
   if (!result.ok) {
    return res.redirect('/cashier?err=' + encodeURIComponent(result.error));
   }
-  return res.redirect('/cashier/print-slip/' + result.ticket_code);
+  return res.redirect('/cashier/print-slip/' + encodeURIComponent(result.ticket_code));
  } catch (err) {
   console.error('PREPAY ERROR:', err.message);
   return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.payment_failed', { message: err.message })));
@@ -9715,16 +9715,15 @@ app.get('/cashier/print-receipt-batch', requireAuth, async (req, res) => {
 
 app.get('/cashier/print-slip/:code', requireAuth, async (req, res) => {
  try {
- const code = req.params.code;
- const [rows] = await pool.query(`
- SELECT t.*, p.first_name, p.last_name
- FROM tbl_payment_ticket t
- JOIN tbl_patient p ON p.id = t.patient_id
- WHERE t.ticket_code = ? LIMIT 1
- `, [code]);
- if (rows.length === 0) return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.slip_not_found')))
+ const { normalizePrintCode, resolvePaymentTicketForPrint } = require('./lib/resolvePaymentTicketForPrint');
+ const code = normalizePrintCode(req.params.code);
+ const resolved = await resolvePaymentTicketForPrint(pool, code);
+ // #region agent log
+ fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:print-slip',message:'print slip lookup',data:{code,found:!!resolved,source:resolved?.source||null},timestamp:Date.now(),hypothesisId:'C',runId:'post-fix'})}).catch(()=>{});
+ // #endregion
+ if (!resolved) return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.slip_not_found')))
 
- const ticket = rows[0];
+ const ticket = resolved.ticket;
  ticket.lines = JSON.parse(ticket.lines_json || '[]');
 
  let validityInfo = null;
