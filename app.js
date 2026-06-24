@@ -13452,9 +13452,15 @@ app.get('/api/wallet/patients-search', requireAuth, requirePerm('cashier.read', 
    .concat(withWallet.map(walletHub.mapSearchResult))
    .concat(withoutWallet.map(walletHub.mapSearchResult))
    .filter(Boolean);
+  // #region agent log
+  fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:wallet/patients-search',message:'patient search results',data:{q,withWallet:withWallet.length,withoutWallet:withoutWallet.length,total:results.length},timestamp:Date.now(),hypothesisId:'PS1',runId:'wallet-search-fix'})}).catch(()=>{});
+  // #endregion
   res.json({ ok: true, results });
  } catch (err) {
   console.error('wallet patients-search:', err.message);
+  // #region agent log
+  fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:wallet/patients-search',message:'patient search error',data:{q,error:err.message},timestamp:Date.now(),hypothesisId:'PS1',runId:'wallet-search-fix'})}).catch(()=>{});
+  // #endregion
   res.status(500).json({ ok: false, results: [], error: err.message });
  }
 });

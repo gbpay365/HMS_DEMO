@@ -24,6 +24,7 @@ function WalletTopupModal({ open, onClose, wallets, initial }) {
   const [selected, setSelected] = useState(null);
   const [amount, setAmount] = useState('');
   const [notes, setNotes] = useState('');
+  const [focused, setFocused] = useState(false);
   const searchTimer = useRef(null);
 
   const walletIndex = useMemo(
@@ -91,10 +92,12 @@ function WalletTopupModal({ open, onClose, wallets, initial }) {
     return localSearch(q);
   }, [query, walletIndex, remote, localSearch]);
 
+  const showDropdown = !selected && (focused || query.trim());
+
   useEffect(() => {
     if (!open) return undefined;
     const q = query.trim();
-    if (!q || q.length < 2) {
+    if (!q) {
       setRemote([]);
       return undefined;
     }
@@ -181,6 +184,10 @@ function WalletTopupModal({ open, onClose, wallets, initial }) {
                   setSelected(null);
                   setRemote([]);
                 }}
+                onFocus={() => setFocused(true)}
+                onBlur={() => {
+                  window.setTimeout(() => setFocused(false), 180);
+                }}
                 placeholder={t('wallet_page.search_patient_ph', { defaultValue: 'Search patient…' })}
                 autoComplete="off"
               />
@@ -199,7 +206,7 @@ function WalletTopupModal({ open, onClose, wallets, initial }) {
                 </button>
               ) : null}
             </div>
-            {query.trim() && !selected ? (
+            {showDropdown ? (
               <div className="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
                 {results.length ? (
                   results.map((p) => (

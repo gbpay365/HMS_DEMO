@@ -1,2 +1,0 @@
-{"sessionId":"968473","location":"hmsFinJournalPost.js:journalPostExtended","message":"ensure posting accounts","data":{"sourceType":"wallet_topup","sourceId":8,"lineCodes":["552601","552606"],"ensured":{"inserted":0,"updated":0,"missing":[]}},"timestamp":1782339242799,"hypothesisId":"E","runId":"post-fix"}
-{"sessionId":"968473","location":"walletTopupJournal.js:postWalletTopupJournal","message":"wallet topup journal posted","data":{"txnId":8,"journalId":77,"ok":true,"duplicate":false,"amount":100},"timestamp":1782339250601,"hypothesisId":"WT1","runId":"wallet-topup"}
