@@ -13208,10 +13208,7 @@ app.post('/wallet-management/topup', requireAuth, async (req, res) => {
  try {
   await conn.beginTransaction();
   const [[wallet]] = await conn.query(
-   `SELECT w.id, w.balance, w.patient_id, p.first_name, p.last_name
-    FROM tbl_patient_wallet w
-    LEFT JOIN tbl_patient p ON p.id = w.patient_id
-    WHERE w.id = ? FOR UPDATE`,
+   'SELECT id, balance, patient_id FROM tbl_patient_wallet WHERE id = ? FOR UPDATE',
    [wid]
   );
   if (!wallet) {
@@ -13219,7 +13216,16 @@ app.post('/wallet-management/topup', requireAuth, async (req, res) => {
    conn.release();
    return res.redirect('/wallet-management?err=' + encodeURIComponent(flashT(res, 'flash.wallet_not_found')))
   }
-  patientLabel = [wallet.first_name, wallet.last_name].filter(Boolean).join(' ').trim();
+  if (wallet.patient_id) {
+   const [[pRow]] = await conn.query(
+    'SELECT first_name, last_name FROM tbl_patient WHERE id = ? LIMIT 1',
+    [wallet.patient_id]
+   ).catch(() => [[null]]);
+   patientLabel = pRow ? [pRow.first_name, pRow.last_name].filter(Boolean).join(' ').trim() : '';
+  }
+  // #region agent log
+  fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:wallet-management/topup',message:'wallet locked for topup',data:{walletId:wid,patientId:wallet.patient_id||null,patientLabel},timestamp:Date.now(),hypothesisId:'WT2',runId:'wallet-topup-fix'})}).catch(()=>{});
+  // #endregion
   const cur = parseFloat(wallet.balance || 0);
   const next = cur + amount;
   topupRef = 'TOPUP-' + Date.now();
@@ -13344,10 +13350,7 @@ app.post('/wallet/topup', requireAuth, async (req, res) => {
  try {
   await conn.beginTransaction();
   const [[wallet]] = await conn.query(
-   `SELECT w.id, w.balance, w.patient_id, p.first_name, p.last_name
-    FROM tbl_patient_wallet w
-    LEFT JOIN tbl_patient p ON p.id = w.patient_id
-    WHERE w.id=? AND w.status='active' FOR UPDATE`,
+   "SELECT id, balance, patient_id FROM tbl_patient_wallet WHERE id=? AND status='active' FOR UPDATE",
    [wid]
   );
   if (!wallet) {
@@ -13355,7 +13358,16 @@ app.post('/wallet/topup', requireAuth, async (req, res) => {
    conn.release();
    return res.redirect('/wallet?err=' + encodeURIComponent(flashT(res, 'flash.wallet_not_found')))
   }
-  patientLabel = [wallet.first_name, wallet.last_name].filter(Boolean).join(' ').trim();
+  if (wallet.patient_id) {
+   const [[pRow]] = await conn.query(
+    'SELECT first_name, last_name FROM tbl_patient WHERE id = ? LIMIT 1',
+    [wallet.patient_id]
+   ).catch(() => [[null]]);
+   patientLabel = pRow ? [pRow.first_name, pRow.last_name].filter(Boolean).join(' ').trim() : '';
+  }
+  // #region agent log
+  fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:wallet/topup',message:'wallet locked for topup',data:{walletId:wid,patientId:wallet.patient_id||null,patientLabel},timestamp:Date.now(),hypothesisId:'WT2',runId:'wallet-topup-fix'})}).catch(()=>{});
+  // #endregion
   const cur = parseFloat(wallet.balance || 0);
   const next = cur + amount;
   topupRef = 'TOPUP-' + Date.now();
