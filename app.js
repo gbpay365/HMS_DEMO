@@ -9787,9 +9787,13 @@ app.post('/cashier/disbursement', requireAuth, requirePerm('cashier.write'), asy
  }
 
  const conn = await pool.getConnection();
+ let committed = false;
  try {
   const { ensureCashierDisbursementSchema } = require('./lib/ensureCashierDisbursementSchema');
-  await ensureCashierDisbursementSchema(conn);
+  const { ensureCashierTxnSchema } = require('./lib/ensureCashierTxnSchema');
+  await ensureCashierDisbursementSchema(pool);
+  await ensureCashierTxnSchema(pool);
+
   await conn.beginTransaction();
 
   const [ins] = await conn.query(
@@ -9801,21 +9805,42 @@ app.post('/cashier/disbursement', requireAuth, requirePerm('cashier.write'), asy
   const disbursementId = parseInt(String(ins?.insertId || 0), 10) || 0;
   if (disbursementId < 1) throw new Error('Could not save disbursement.');
 
-  let cashierTxnResult = null;
-  const { recordDisbursementInTransaction } = require('./lib/cashierTxnWire');
-  cashierTxnResult = await recordDisbursementInTransaction(conn, {
-   facilityId: fid,
-   userId: uid,
-   disbursementId,
-   glKind,
-   amount,
-   paymentMethod,
-   expenseCategory: category,
-   narration,
-  });
-
   await conn.commit();
+  committed = true;
   conn.release();
+
+  // #region agent log
+  fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:disbursement-post-commit',message:'disbursement committed',data:{disbursementId,amount,txnType,uid},timestamp:Date.now(),hypothesisId:'F',runId:'post-fix'})}).catch(()=>{});
+  // #endregion
+
+  let cashierTxnResult = null;
+  const conn2 = await pool.getConnection();
+  try {
+   await conn2.beginTransaction();
+   const { recordDisbursementInTransaction } = require('./lib/cashierTxnWire');
+   cashierTxnResult = await recordDisbursementInTransaction(conn2, {
+    facilityId: fid,
+    userId: uid,
+    disbursementId,
+    glKind,
+    amount,
+    paymentMethod,
+    expenseCategory: category,
+    narration,
+   });
+   await conn2.commit();
+   // #region agent log
+   fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:disbursement-cashier-txn',message:'cashier txn committed',data:{disbursementId,txnId:cashierTxnResult?.txnId||null,cashierCode:cashierTxnResult?.cashierCode||null},timestamp:Date.now(),hypothesisId:'F',runId:'post-fix'})}).catch(()=>{});
+   // #endregion
+  } catch (txnErr) {
+   await conn2.rollback().catch(() => {});
+   console.error('cashier txn (disbursement):', txnErr.message);
+   // #region agent log
+   fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:disbursement-cashier-txn',message:'cashier txn failed',data:{disbursementId,error:txnErr.message},timestamp:Date.now(),hypothesisId:'F',runId:'post-fix'})}).catch(()=>{});
+   // #endregion
+  } finally {
+   conn2.release();
+  }
 
   try {
    const { runCashierPostCommit } = require('./lib/cashierTxnWire');
@@ -9843,8 +9868,10 @@ app.post('/cashier/disbursement', requireAuth, requirePerm('cashier.write'), asy
   const msg = `${typeLabel} recorded: ${amount} FCFA (${paymentMethod}). Cashier ${cashierTxnResult?.cashierCode || ''}.${journalNote}`;
   return res.redirect('/cashier/ledger?msg=' + encodeURIComponent(msg));
  } catch (err) {
-  await conn.rollback().catch(() => {});
-  conn.release();
+  if (!committed) {
+   await conn.rollback().catch(() => {});
+   conn.release();
+  }
   console.error('CASHIER DISBURSEMENT:', err.message);
   return res.redirect('/cashier?err=' + encodeURIComponent(err.message || 'Disbursement failed.'));
  }
