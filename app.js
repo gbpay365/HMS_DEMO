@@ -10432,65 +10432,61 @@ app.post('/cashier/collect', requireAuth, async (req, res) => {
  );
 
  // OPD Orders hook: mark selected consultation-prescribed items as paid and create downstream requests
- try {
+ const { optionalInTransaction } = require('./lib/pgTransaction');
+ await optionalInTransaction(conn, 'opd_post_collect', async () => {
   let parsedLines = [];
   try { parsedLines = JSON.parse(ticket.lines_json || '[]'); } catch(e) { parsedLines = []; }
   const srcLines = Array.isArray(parsedLines) ? parsedLines.filter(ln => ln && ln.source_module === 'opd_order_item' && ln.source_pk) : [];
-  if (srcLines.length) {
-   await ensureOpdOrderItemsSchema(conn);
-   const itemIds = srcLines.map(ln => parseInt(ln.source_pk, 10)).filter(n => Number.isFinite(n) && n > 0);
-   for (const oid of itemIds) {
-    const [[oi]] = await conn.query(
-     'SELECT * FROM tbl_opd_order_item WHERE id=? FOR UPDATE',
-     [oid]
-    ).catch(() => [[null]]);
-    if (!oi || String(oi.status) !== 'pending') continue;
-    await conn.query(
-     "UPDATE tbl_opd_order_item SET status='paid', ticket_id=?, paid_at=NOW() WHERE id=?",
-     [ticket_id, oid]
-    ).catch(() => {});
+  if (!srcLines.length) return;
+  await ensureOpdOrderItemsSchema(conn);
+  const itemIds = srcLines.map(ln => parseInt(ln.source_pk, 10)).filter(n => Number.isFinite(n) && n > 0);
+  for (const oid of itemIds) {
+   const [[oi]] = await conn.query(
+    'SELECT * FROM tbl_opd_order_item WHERE id=? FOR UPDATE',
+    [oid]
+   );
+   if (!oi || String(oi.status) !== 'pending') continue;
+   await conn.query(
+    "UPDATE tbl_opd_order_item SET status='paid', ticket_id=?, paid_at=NOW() WHERE id=?",
+    [ticket_id, oid]
+   );
 
-    const tname = String(oi.item_name || '').trim();
-    if (!tname) continue;
-    const appt = new Date().toISOString().split('T')[0];
-    if (String(oi.item_type) === 'laboratory') {
-     const [[exists]] = await conn.query(
-      'SELECT id FROM tbl_lab_result WHERE opd_order_item_id=? LIMIT 1',
-      [oid]
-     ).catch(() => [[null]]);
-     if (!exists) {
-      const lf = await ensureFacilityRow(conn, oi.facility_id || 1);
-      await conn.query(
-       `INSERT INTO tbl_lab_result
-        (facility_id, patient_id, test_name, referred_by_id, appointment_date, notes, status, created_at, opd_order_item_id)
-        VALUES (?, ?, ?, NULL, ?, NULL, 'pending', NOW(), ?)`,
-       [lf, oi.patient_id, tname, appt, oid]
-      ).catch((e) => { console.error('lab-result insert (post-collect):', e.message); });
-     }
-    } else if (String(oi.item_type) === 'radiology') {
-     const [[exists]] = await conn.query(
-      'SELECT id FROM tbl_radiology_result WHERE opd_order_item_id=? LIMIT 1',
-      [oid]
-     ).catch(() => [[null]]);
-     if (!exists) {
-      // tbl_radiology_result uses `exam_name` (NOT NULL) — the previous
-      // INSERT used `test_name` (which doesn't exist), so it silently failed.
-      await conn.query(
-       `INSERT INTO tbl_radiology_result
-        (patient_id, exam_name, modality, body_part, referred_by_id, appointment_date, notes, status, created_at, opd_order_item_id)
-        VALUES (?, ?, 'X-Ray', '', NULL, ?, NULL, 'pending', NOW(), ?)`,
-       [oi.patient_id, tname, appt, oid]
-      ).catch((e) => { console.error('rad-result insert (post-collect):', e.message); });
-     }
+   const tname = String(oi.item_name || '').trim();
+   if (!tname) continue;
+   const appt = new Date().toISOString().split('T')[0];
+   if (String(oi.item_type) === 'laboratory') {
+    const [[exists]] = await conn.query(
+     'SELECT id FROM tbl_lab_result WHERE opd_order_item_id=? LIMIT 1',
+     [oid]
+    );
+    if (!exists) {
+     const lf = await ensureFacilityRow(conn, oi.facility_id || 1);
+     await conn.query(
+      `INSERT INTO tbl_lab_result
+       (facility_id, patient_id, test_name, referred_by_id, appointment_date, notes, status, created_at, opd_order_item_id)
+       VALUES (?, ?, ?, NULL, ?, NULL, 'pending', NOW(), ?)`,
+      [lf, oi.patient_id, tname, appt, oid]
+     );
+    }
+   } else if (String(oi.item_type) === 'radiology') {
+    const [[exists]] = await conn.query(
+     'SELECT id FROM tbl_radiology_result WHERE opd_order_item_id=? LIMIT 1',
+     [oid]
+    );
+    if (!exists) {
+     await conn.query(
+      `INSERT INTO tbl_radiology_result
+       (patient_id, exam_name, modality, body_part, referred_by_id, appointment_date, notes, status, created_at, opd_order_item_id)
+       VALUES (?, ?, 'X-Ray', '', NULL, ?, NULL, 'pending', NOW(), ?)`,
+      [oi.patient_id, tname, appt, oid]
+     );
     }
    }
   }
- } catch (e) {
-  console.error('OPD order post-collect hook:', e.message);
- }
+ });
 
  // Emergency (A&E) charges: mark line items settled when cashier collects EMG-SET ticket
- try {
+ await optionalInTransaction(conn, 'er_post_collect', async () => {
   let erLines = [];
   try { erLines = JSON.parse(ticket.lines_json || '[]'); } catch (e2) { erLines = []; }
   const visitIds = new Set();
@@ -10507,44 +10503,43 @@ app.post('/cashier/collect', requireAuth, async (req, res) => {
     if (ln && ln.source_module === 'emergency_charge' && ln.source_pk) {
      const cid = parseInt(ln.source_pk, 10);
      if (Number.isFinite(cid) && cid > 0) {
-      await conn.query('UPDATE tbl_emergency_charge SET settled = 1 WHERE id = ?', [cid]).catch(() => {});
+      await conn.query('UPDATE tbl_emergency_charge SET settled = 1 WHERE id = ?', [cid]);
      }
     }
    }
   }
   for (const vid of visitIds) {
-   await conn.query('UPDATE tbl_emergency_charge SET settled = 1 WHERE visit_id = ? AND settled = 0', [vid]).catch(() => {});
-   try {
-    const { ensureErDischargeCodeAfterCollect } = require('./lib/erCashierSettlement');
-    await ensureErDischargeCodeAfterCollect(conn, vid, userId);
-   } catch (erCodeErr) {
-    console.error('ER discharge code after collect:', erCodeErr.message);
-   }
+   await conn.query('UPDATE tbl_emergency_charge SET settled = 1 WHERE visit_id = ? AND settled = 0', [vid]);
+   const { ensureErDischargeCodeAfterCollect } = require('./lib/erCashierSettlement');
+   await ensureErDischargeCodeAfterCollect(conn, vid, userId);
   }
- } catch (e) {
-  console.error('Emergency settlement post-collect hook:', e.message);
- }
+ });
 
  let cashierTxnResult = null;
  try {
-  const { recordReceiptInTransaction } = require('./lib/cashierTxnWire');
-  cashierTxnResult = await recordReceiptInTransaction(conn, {
-   facilityId,
-   userId,
-   sourceModule: 'payment_ticket',
-   sourcePk: ticket_id,
-   amount: totalAmount,
-   paymentMethod,
-   billingDocumentId: result.insertId,
-   patientId: ticket.patient_id,
-   lines,
-   ticket,
-   reference: receipt_no,
-   narration: `Payment ticket ${ticket.ticket_code || ticket_id}`,
+  cashierTxnResult = await optionalInTransaction(conn, 'cashier_txn_collect', async () => {
+   const { recordReceiptInTransaction } = require('./lib/cashierTxnWire');
+   return recordReceiptInTransaction(conn, {
+    facilityId,
+    userId,
+    sourceModule: 'payment_ticket',
+    sourcePk: ticket_id,
+    amount: totalAmount,
+    paymentMethod,
+    billingDocumentId: result.insertId,
+    patientId: ticket.patient_id,
+    lines,
+    ticket,
+    reference: receipt_no,
+    narration: `Payment ticket ${ticket.ticket_code || ticket_id}`,
+   });
   });
  } catch (txnErr) {
   console.error('cashier txn (collect):', txnErr.message);
  }
+ // #region agent log
+ fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:collect-pre-commit',message:'cashier collect before commit',data:{ticketId:ticket_id,driver:conn.driver||null,cashierTxn:!!cashierTxnResult,billingDocId:result?.insertId||null},timestamp:Date.now(),hypothesisId:'B',runId:'post-fix'})}).catch(()=>{});
+ // #endregion
 
  await conn.commit();
  conn.release();
@@ -17287,8 +17282,16 @@ if (require.main === module && !underPassenger()) {
     'ok',
     aclBoot.directorRole ? `directorRole=${aclBoot.directorRole}` : 'no director role in tbl_role'
    );
+   await require('./lib/ensureClinicalDeptRequisitionSchema')(pool);
+   bootStep('ensureClinicalDeptRequisitionSchema', 'ok', 'postgres');
+   const { ensureProcurementExtendedSchema } = require('./lib/ensureProcurementExtendedSchema');
+   await ensureProcurementExtendedSchema(pool);
+   bootStep('ensureProcurementExtendedSchema', 'ok', 'postgres');
    await aclLayout.init(pool);
    bootStep('aclLayout:init', 'ok', 'runtime ACL cache loaded (postgres/skip-migrations path)');
+   const { ensurePostgresReceiptInvoiceSeq } = require('./lib/receiptNumber');
+   await ensurePostgresReceiptInvoiceSeq(pool);
+   bootStep('ensurePostgresReceiptInvoiceSeq', 'ok', 'tbl_receipt_seq / tbl_invoice_seq');
   } catch (e) {
    bootStep('migrations-postgres-acl', 'warn', e);
   }
