@@ -13199,12 +13199,19 @@ app.post('/wallet-management/topup', requireAuth, async (req, res) => {
  const amount = parseFloat(req.body.amount) || 0;
  const notes = String(req.body.notes || '').trim();
  const uid = req.session.userId || req.session.user?.id || null;
+ const facilityId = Math.max(1, parseInt(req.session.facilityId || req.session.user?.facility_id || req.session.user?.facilityId || 1, 10) || 1);
  if (wid < 1 || amount <= 0) return res.redirect('/wallet-management?err=' + encodeURIComponent(flashT(res, 'flash.invalid_topup_data')))
  const conn = await pool.getConnection();
+ let txnId = 0;
+ let topupRef = '';
+ let patientLabel = '';
  try {
   await conn.beginTransaction();
   const [[wallet]] = await conn.query(
-   'SELECT id, balance FROM tbl_patient_wallet WHERE id = ? FOR UPDATE',
+   `SELECT w.id, w.balance, w.patient_id, p.first_name, p.last_name
+    FROM tbl_patient_wallet w
+    LEFT JOIN tbl_patient p ON p.id = w.patient_id
+    WHERE w.id = ? FOR UPDATE`,
    [wid]
   );
   if (!wallet) {
@@ -13212,16 +13219,32 @@ app.post('/wallet-management/topup', requireAuth, async (req, res) => {
    conn.release();
    return res.redirect('/wallet-management?err=' + encodeURIComponent(flashT(res, 'flash.wallet_not_found')))
   }
+  patientLabel = [wallet.first_name, wallet.last_name].filter(Boolean).join(' ').trim();
   const cur = parseFloat(wallet.balance || 0);
   const next = cur + amount;
+  topupRef = 'TOPUP-' + Date.now();
   await conn.query('UPDATE tbl_patient_wallet SET balance = ?, updated_at = NOW() WHERE id = ?', [next, wid]);
-  await conn.query(
+  const [ins] = await conn.query(
    `INSERT INTO tbl_patient_wallet_txn (wallet_id, txn_type, direction, amount, balance_after, reference_id, notes, created_by)
     VALUES (?, 'topup_cash', 'cr', ?, ?, ?, ?, ?)`,
-   [wid, amount, next, 'TOPUP-' + Date.now(), notes || null, uid]
+   [wid, amount, next, topupRef, notes || null, uid]
   );
+  txnId = parseInt(ins?.insertId || 0, 10) || 0;
   await conn.commit();
   conn.release();
+  if (txnId > 0) {
+   const { postWalletTopupJournal } = require('./lib/walletTopupJournal');
+   await postWalletTopupJournal(pool, {
+    facilityId,
+    walletTxnId: txnId,
+    amount,
+    createdBy: uid,
+    patientLabel,
+    reference: topupRef,
+    notes,
+    paymentMethod: 'Cash',
+   }).catch((e) => console.warn('[wallet-topup-journal]', txnId, e.message || e));
+  }
   res.redirect('/wallet-management?msg=' + encodeURIComponent(flashT(res, 'flash.top_up_processed_successfully')))
  } catch (err) {
   await conn.rollback().catch(() => {});
@@ -13312,12 +13335,19 @@ app.post('/wallet/topup', requireAuth, async (req, res) => {
  const amount = parseFloat(req.body.amount) || 0;
  const notes = String(req.body.notes || '').trim();
  const uid = req.session.userId || req.session.user?.id || null;
+ const facilityId = Math.max(1, parseInt(req.session.facilityId || req.session.user?.facility_id || req.session.user?.facilityId || 1, 10) || 1);
  if (wid < 1 || amount <= 0) return res.redirect('/wallet?err=' + encodeURIComponent(flashT(res, 'flash.invalid_topup_data')))
  const conn = await pool.getConnection();
+ let txnId = 0;
+ let topupRef = '';
+ let patientLabel = '';
  try {
   await conn.beginTransaction();
   const [[wallet]] = await conn.query(
-   "SELECT id, balance FROM tbl_patient_wallet WHERE id=? AND status='active' FOR UPDATE",
+   `SELECT w.id, w.balance, w.patient_id, p.first_name, p.last_name
+    FROM tbl_patient_wallet w
+    LEFT JOIN tbl_patient p ON p.id = w.patient_id
+    WHERE w.id=? AND w.status='active' FOR UPDATE`,
    [wid]
   );
   if (!wallet) {
@@ -13325,17 +13355,33 @@ app.post('/wallet/topup', requireAuth, async (req, res) => {
    conn.release();
    return res.redirect('/wallet?err=' + encodeURIComponent(flashT(res, 'flash.wallet_not_found')))
   }
+  patientLabel = [wallet.first_name, wallet.last_name].filter(Boolean).join(' ').trim();
   const cur = parseFloat(wallet.balance || 0);
   const next = cur + amount;
+  topupRef = 'TOPUP-' + Date.now();
   await conn.query('UPDATE tbl_patient_wallet SET balance=?, updated_at=NOW() WHERE id=?', [next, wid]);
-  await conn.query(
+  const [ins] = await conn.query(
    `INSERT INTO tbl_patient_wallet_txn
     (wallet_id, txn_type, direction, amount, balance_after, reference_id, notes, created_by)
     VALUES (?, 'deposit_cash', 'cr', ?, ?, ?, ?, ?)`,
-   [wid, amount, next, 'TOPUP-' + Date.now(), notes || null, uid]
+   [wid, amount, next, topupRef, notes || null, uid]
   );
+  txnId = parseInt(ins?.insertId || 0, 10) || 0;
   await conn.commit();
   conn.release();
+  if (txnId > 0) {
+   const { postWalletTopupJournal } = require('./lib/walletTopupJournal');
+   await postWalletTopupJournal(pool, {
+    facilityId,
+    walletTxnId: txnId,
+    amount,
+    createdBy: uid,
+    patientLabel,
+    reference: topupRef,
+    notes,
+    paymentMethod: 'Cash',
+   }).catch((e) => console.warn('[wallet-topup-journal]', txnId, e.message || e));
+  }
   res.redirect('/wallet?msg=' + encodeURIComponent(flashT(res, 'flash.top_up_processed')))
  } catch (err) {
   await conn.rollback().catch(() => {});
