@@ -64,12 +64,21 @@ async function upsertFinAccount(pool, facilityId, acct) {
 
 module.exports = function mountIntegrations(app, pool) {
   const integrationApiKeyGuard = createIntegrationApiKeyGuard(pool);
+  const { getJournalSyncStats, syncAllJournalsToAccountCore, resolveCoreAccountTarget } = require('../lib/syncJournalsToAccountCore');
 
-  app.get('/api/v1/integrations/health', (req, res) => {
+  app.get('/api/v1/integrations/health', async (req, res) => {
+    const facilityId = parseFacilityId(req);
+    let core = { enabled: cfg.isIntegrationEnabled(), url: cfg.coreAccountUrl(), key: cfg.coreAccountApiKey() };
+    try {
+      core = await resolveCoreAccountTarget(pool, facilityId);
+    } catch (_) { /* env only */ }
     res.json({
       status: 'ok',
       service: 'HMS_JS',
-      integrationsEnabled: cfg.isIntegrationEnabled(),
+      integrationsEnabled: core.enabled,
+      coreAccountUrl: core.url ? core.url : null,
+      hasApiKey: !!core.key,
+      journalAutoSync: true,
       timestamp: new Date().toISOString(),
     });
   });
@@ -84,6 +93,33 @@ module.exports = function mountIntegrations(app, pool) {
   });
 
   app.use('/api/integrations', integrationApiKeyGuard);
+  app.use('/api/v1/integrations', integrationApiKeyGuard);
+
+  app.get('/api/v1/integrations/journal-sync-status', async (req, res) => {
+    try {
+      const facilityId = parseFacilityId(req);
+      const stats = await getJournalSyncStats(pool, facilityId);
+      return res.json(stats);
+    } catch (e) {
+      return res.status(500).json({ error: e.message || String(e) });
+    }
+  });
+
+  app.post('/api/v1/integrations/sync-journals', async (req, res) => {
+    try {
+      const facilityId = parseFacilityId(req, req.body?.facility_id);
+      const force = !!(req.body?.force || req.query?.force);
+      const summary = await syncAllJournalsToAccountCore(pool, {
+        facilityId,
+        force,
+        limit: parseInt(String(req.body?.limit || 500), 10) || 500,
+        onlyPending: !force,
+      });
+      return res.json(summary);
+    } catch (e) {
+      return res.status(500).json({ error: e.message || String(e) });
+    }
+  });
 
   app.post('/api/integrations/chart-of-accounts', async (req, res) => {
     try {

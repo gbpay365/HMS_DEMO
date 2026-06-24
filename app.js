@@ -591,6 +591,8 @@ try {
    exportAndSyncServiceCatalog(pool).catch((e) => console.warn('[catalog-sync] startup:', e.message));
    const { syncProductsToAccountCore } = require('./lib/coreAccountProductSync');
    syncProductsToAccountCore(pool).catch((e) => console.warn('[product-sync] startup:', e.message));
+   const { syncPendingJournalsOnStartup } = require('./lib/journalAccountCoreSync');
+   syncPendingJournalsOnStartup(pool).catch((e) => console.warn('[journal-core-sync] startup:', e.message));
   } catch (_) { /* optional */ }
  }).catch((e) => bootStep('db-pool-probe', 'fail', e));
  betterPayConfig.init(pool).catch((e) => console.warn('[BetterPay] init:', e.message));

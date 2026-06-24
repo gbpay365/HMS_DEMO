@@ -73,8 +73,35 @@ module.exports = function mountIntegrationSettings(app, pool, requireAuth, requi
         'X-API-Key': s.core_account_api_key || cfg.coreAccountApiKey(),
         'X-Facility-Id': String(facilityId),
       });
-      const msg = r.ok ? 'Account_Core connection OK.' : `Account_Core test failed (HTTP ${r.status}).`;
+      let msg;
+      if (r.ok) {
+        msg = 'Account_Core connection OK.';
+      } else if (r.status === 401) {
+        msg =
+          'Account_Core test failed (HTTP 401 — wrong API key). ' +
+          'Use the Account_Core inbound key (Integrations__ApiKey): dev-integration-key-change-in-production. ' +
+          'Do NOT use dev-hms-inbound-key-change-in-production here — that key is only for Core → HMS.';
+      } else {
+        msg = `Account_Core test failed (HTTP ${r.status}). ${r.data?.error || ''}`.trim();
+      }
       res.redirect(`/super-admin/integrations?facility_id=${facilityId}&msg=${encodeURIComponent(msg)}`);
+    } catch (e) {
+      res.redirect(`/super-admin/integrations?facility_id=${facilityId}&err=${encodeURIComponent(e.message)}`);
+    }
+  });
+
+  app.post('/super-admin/integrations/sync-journals', requireAuth, requireSuperAdmin, async (req, res) => {
+    const facilityId = Math.max(1, parseInt(String(req.body.facility_id || '1'), 10) || 1);
+    try {
+      const { syncAllJournalsToAccountCore } = require('../lib/syncJournalsToAccountCore');
+      const summary = await syncAllJournalsToAccountCore(pool, {
+        facilityId,
+        force: req.body.force === '1',
+        limit: 2000,
+      });
+      const msg = `Journal sync: ${summary.sent} sent, ${summary.duplicate} duplicate, ${summary.failed} failed, ${summary.skipped} skipped.`;
+      const err = summary.firstError ? ` First error: ${summary.firstError}` : '';
+      res.redirect(`/super-admin/integrations?facility_id=${facilityId}&msg=${encodeURIComponent(msg + err)}`);
     } catch (e) {
       res.redirect(`/super-admin/integrations?facility_id=${facilityId}&err=${encodeURIComponent(e.message)}`);
     }

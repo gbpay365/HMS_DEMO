@@ -4,7 +4,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap" style="gap:12px;">
   <div>
     <h1 class="h4 font-weight-bold mb-1"><i class="fa fa-plug mr-2 text-primary"></i>Integration &amp; API settings</h1>
-    <p class="text-muted small mb-0">Per-facility URLs and API keys for Account_Core and Zaizens PayRoll (cross-platform / public IP).</p>
+    <p class="text-muted small mb-0">Per-facility URLs and API keys for Account_Core and Zaizens PayRoll.</p>
   </div>
   <a href="/super-admin" class="btn btn-outline-secondary btn-sm">Back to Super Admin</a>
 </div>
@@ -12,7 +12,30 @@
 <% if(locals.flash){%><div class="alert alert-success"><%= flash %></div><%}%>
 <% if(locals.error){%><div class="alert alert-danger"><%= error %></div><%}%>
 
+<div class="alert alert-info small mb-4">
+  <strong>API key cheat sheet (dev defaults)</strong>
+  <table class="table table-sm table-borderless mb-0 mt-2" style="background:transparent;">
+    <tr>
+      <td><strong>HMS → Account_Core</strong> (outbound below)</td>
+      <td><code>dev-integration-key-change-in-production</code></td>
+      <td class="text-muted">Same as Account_Core <em>Inbound API key</em> on Integrations page</td>
+    </tr>
+    <tr>
+      <td><strong>Account_Core → HMS</strong> (inbound below)</td>
+      <td><code>dev-hms-inbound-key-change-in-production</code></td>
+      <td class="text-muted">Core sends this when calling HMS</td>
+    </tr>
+    <tr>
+      <td><strong>HMS → Zaizens PayRoll</strong></td>
+      <td><code>dev-hms-inbound-key-change-in-production</code></td>
+      <td class="text-muted">Zaizens <code>HMS_INTEGRATION_API_KEY</code></td>
+    </tr>
+  </table>
+</div>
+
 <form method="POST" action="/super-admin/integrations">
+  <input type="hidden" name="facility_id" value="<%= selectedId %>">
+
   <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
     <div class="card-body p-4">
       <h2 class="h6 font-weight-bold mb-3">Facility (tenant)</h2>
@@ -27,7 +50,7 @@
         </div>
         <div class="form-group col-md-8">
           <label class="small font-weight-bold text-muted">HMS public URL</label>
-          <input type="url" name="public_base_url" class="form-control" value="<%= settings.public_base_url || '' %>" placeholder="https://hms.example.com">
+          <input type="url" name="public_base_url" class="form-control" value="<%= settings.public_base_url || '' %>" placeholder="https://zaizens-hms.up.railway.app">
         </div>
       </div>
     </div>
@@ -35,40 +58,46 @@
 
   <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
     <div class="card-body p-4">
-      <h2 class="h6 font-weight-bold mb-3">Account_Core (outbound)</h2>
+      <h2 class="h6 font-weight-bold mb-1">Account_Core (HMS → Core outbound)</h2>
+      <p class="text-muted small mb-3">Journals, employees, receipts sync <strong>from HMS to Account_Core API</strong> (not the React UI URL).</p>
       <div class="custom-control custom-checkbox mb-3">
         <input type="checkbox" class="custom-control-input" id="coreSync" name="core_account_sync_enabled" value="1" <%= settings.core_account_sync_enabled ? 'checked' : '' %>>
-        <label class="custom-control-label" for="coreSync">Sync employees &amp; journals to Account_Core</label>
+        <label class="custom-control-label" for="coreSync">Enable sync to Account_Core</label>
       </div>
       <div class="form-row">
         <div class="form-group col-md-6">
           <label class="small font-weight-bold text-muted">Account_Core API URL</label>
-          <input type="url" name="core_account_url" class="form-control" value="<%= settings.core_account_url || '' %>">
+          <input type="url" name="core_account_url" class="form-control" value="<%= settings.core_account_url || '' %>" placeholder="https://zaizens-account.up.railway.app">
+          <small class="text-muted">API host — use <code>zaizens-account.up</code>, not <code>zaizens-account-ui</code></small>
         </div>
         <div class="form-group col-md-6">
-          <label class="small font-weight-bold text-muted">Outbound API key</label>
-          <input type="text" name="core_account_api_key" class="form-control" value="<%= settings.core_account_api_key || '' %>">
+          <label class="small font-weight-bold text-muted">Outbound API key (X-API-Key → Core)</label>
+          <input type="text" name="core_account_api_key" class="form-control" value="<%= settings.core_account_api_key || '' %>" placeholder="dev-integration-key-change-in-production" autocomplete="off">
+          <small class="text-muted">Must match Account_Core <code>Integrations__ApiKey</code> / Integrations → Inbound API key</small>
         </div>
       </div>
-      <button type="submit" formaction="/super-admin/integrations/test-core" formmethod="POST" class="btn btn-outline-secondary btn-sm">Test Account_Core</button>
+      <div class="d-flex flex-wrap" style="gap:8px;">
+        <button type="submit" formaction="/super-admin/integrations/test-core" formmethod="POST" class="btn btn-outline-secondary btn-sm">Test Account_Core</button>
+        <button type="submit" formaction="/super-admin/integrations/sync-journals" formmethod="POST" class="btn btn-outline-primary btn-sm">Sync journals now</button>
+      </div>
     </div>
   </div>
 
   <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
     <div class="card-body p-4">
-      <h2 class="h6 font-weight-bold mb-3">Zaizens PayRoll (outbound employees)</h2>
+      <h2 class="h6 font-weight-bold mb-3">Zaizens PayRoll (HMS → PayRoll outbound)</h2>
       <div class="custom-control custom-checkbox mb-3">
         <input type="checkbox" class="custom-control-input" id="paySync" name="zaizens_sync_enabled" value="1" <%= settings.zaizens_sync_enabled ? 'checked' : '' %>>
         <label class="custom-control-label" for="paySync">Replicate employees to Zaizens PayRoll</label>
       </div>
       <div class="form-row">
         <div class="form-group col-md-6">
-          <label class="small font-weight-bold text-muted">Zaizens PayRoll URL</label>
-          <input type="url" name="zaizens_url" class="form-control" value="<%= settings.zaizens_url || '' %>">
+          <label class="small font-weight-bold text-muted">Zaizens PayRoll API URL</label>
+          <input type="url" name="zaizens_url" class="form-control" value="<%= settings.zaizens_url || '' %>" placeholder="https://zaizenspay.up.railway.app">
         </div>
         <div class="form-group col-md-6">
-          <label class="small font-weight-bold text-muted">Outbound API key</label>
-          <input type="text" name="zaizens_api_key_outbound" class="form-control" value="<%= settings.zaizens_api_key_outbound || '' %>">
+          <label class="small font-weight-bold text-muted">Outbound API key (X-API-Key → Zaizens)</label>
+          <input type="text" name="zaizens_api_key_outbound" class="form-control" value="<%= settings.zaizens_api_key_outbound || '' %>" placeholder="dev-hms-inbound-key-change-in-production" autocomplete="off">
         </div>
       </div>
       <button type="submit" formaction="/super-admin/integrations/test-zaizens" formmethod="POST" class="btn btn-outline-secondary btn-sm">Test Zaizens</button>
@@ -77,10 +106,11 @@
 
   <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
     <div class="card-body p-4">
-      <h2 class="h6 font-weight-bold mb-3">Inbound from Account_Core</h2>
+      <h2 class="h6 font-weight-bold mb-3">Inbound from Account_Core (Core → HMS)</h2>
       <div class="form-group">
-        <label class="small font-weight-bold text-muted">Inbound API key (Account_Core sends this)</label>
-        <input type="text" name="hms_api_key_inbound" class="form-control" value="<%= settings.hms_api_key_inbound || '' %>">
+        <label class="small font-weight-bold text-muted">Inbound API key (Core sends this to HMS)</label>
+        <input type="text" name="hms_api_key_inbound" class="form-control" value="<%= settings.hms_api_key_inbound || '' %>" placeholder="dev-hms-inbound-key-change-in-production" autocomplete="off">
+        <small class="text-muted">Must match Account_Core Integrations → <em>Outbound key (Core → HMS)</em></small>
       </div>
       <ul class="small mb-0">
         <li><code>POST <%= inboundEndpoints.chartOfAccounts %></code></li>
