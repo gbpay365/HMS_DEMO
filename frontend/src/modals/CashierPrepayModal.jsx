@@ -112,6 +112,7 @@ export function CashierPrepayModal({
   const [betterPay, setBetterPay] = useState(null);
   const [waitingPay, setWaitingPay] = useState(false);
   const [bpUiStatus, setBpUiStatus] = useState('idle');
+  const [walletStatus, setWalletStatus] = useState({ hasWallet: false, balance: 0, loading: false });
   const qrHostRef = useRef(null);
   const pollRef = useRef(null);
   const timeoutRef = useRef(null);
@@ -448,6 +449,29 @@ export function CashierPrepayModal({
     () => cartLines.reduce((sum, line) => sum + (Number(line.patientDue) || 0), 0),
     [cartLines]
   );
+
+  useEffect(() => {
+    if (!open || payMethod !== 'Wallet' || !patientId) {
+      setWalletStatus({ hasWallet: false, balance: 0, loading: false });
+      return undefined;
+    }
+    let cancelled = false;
+    setWalletStatus((s) => ({ ...s, loading: true }));
+    fetch(`/api/cashier/prepay/wallet-status?patient_id=${encodeURIComponent(patientId)}`, { credentials: 'same-origin' })
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        setWalletStatus({
+          hasWallet: !!data.hasWallet,
+          balance: Number(data.balance) || 0,
+          loading: false,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setWalletStatus({ hasWallet: false, balance: 0, loading: false });
+      });
+    return () => { cancelled = true; };
+  }, [open, payMethod, patientId, grandTotal, catalogId, draftQty, coveragePct]);
 
   const addServiceToCart = useCallback(() => {
     setFormError('');
@@ -1124,7 +1148,27 @@ export function CashierPrepayModal({
         ) : null}
 
         {payMethod === 'Wallet' ? (
-          <p className="text-xs text-slate-600">{t('modals.cashierPrepay.wallet_deduct_hint')}</p>
+          <div className="space-y-1">
+            <p className="text-xs text-slate-600">{t('modals.cashierPrepay.wallet_deduct_hint')}</p>
+            {patientId && !walletStatus.loading ? (
+              !walletStatus.hasWallet ? (
+                <p className="text-xs font-semibold text-red-700">{t('modals.cashierPrepay.wallet_no_account')}</p>
+              ) : walletStatus.balance < (grandTotal || computePatientDue(selectedCatalog?.price, draftQty, coveragePct)) ? (
+                <p className="text-xs font-semibold text-red-700">
+                  {t('modals.cashierPrepay.wallet_insufficient', {
+                    balance: Number(walletStatus.balance || 0).toLocaleString('fr-FR'),
+                    required: Number(grandTotal || computePatientDue(selectedCatalog?.price, draftQty, coveragePct) || 0).toLocaleString('fr-FR'),
+                  })}
+                </p>
+              ) : (
+                <p className="text-xs font-semibold text-emerald-800">
+                  {t('modals.cashierPrepay.wallet_balance_ok', {
+                    balance: Number(walletStatus.balance || 0).toLocaleString('fr-FR'),
+                  })}
+                </p>
+              )
+            ) : null}
+          </div>
         ) : null}
       </form>
     </Modal>

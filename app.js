@@ -9637,6 +9637,24 @@ app.post('/api/cashier/prepay/issue', requireAuth, async (req, res) => {
  }
 });
 
+app.get('/api/cashier/prepay/wallet-status', requireAuth, async (req, res) => {
+ try {
+  const pid = parseInt(String(req.query.patient_id || ''), 10) || 0;
+  if (pid < 1) return res.json({ ok: true, hasWallet: false, balance: 0 });
+  const walletHub = require('./lib/walletHub');
+  const wallet = await walletHub.findWalletForPatient(pool, pid, req.session.facilityId || 1);
+  const active = !!(wallet && String(wallet.status || '').toLowerCase() === 'active');
+  return res.json({
+    ok: true,
+    hasWallet: active,
+    balance: active ? parseFloat(wallet.balance) || 0 : 0,
+  });
+ } catch (e) {
+  console.error('PREPAY WALLET STATUS:', e.message);
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
 // CASHIER: ISSUE PREPAYMENT (Wallet / BetterPay verify payment before issuing)
 app.post('/cashier/issue-prepay', requireAuth, async (req, res) => {
  try {
