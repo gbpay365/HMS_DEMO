@@ -10324,6 +10324,7 @@ app.post('/cashier/collect', requireAuth, async (req, res) => {
  const { ticket_id } = req.body;
  const payment_method = betterPayQr.normalizePaymentMethod(req.body.payment_method);
  const conn = await pool.getConnection();
+ let committed = false;
  try {
  // Load ticket
  const [[ticket]] = await conn.query(
@@ -10381,6 +10382,11 @@ app.post('/cashier/collect', requireAuth, async (req, res) => {
  const userId = req.session.userId || req.session.user?.id || null;
  const facilityId = req.session.facilityId || 1;
 
+ if (pool.driver === 'postgres') {
+  const { ensurePostgresReceiptInvoiceSeq } = require('./lib/receiptNumber');
+  await ensurePostgresReceiptInvoiceSeq(pool);
+ }
+
  await conn.beginTransaction();
  const receipt_no = await nextReceiptNumber(conn, facilityId);
  const invoice_no = await nextInvoiceNumber(conn, facilityId);
@@ -10430,159 +10436,38 @@ app.post('/cashier/collect', requireAuth, async (req, res) => {
  [facilityId, receipt_no, invoice_no, payment_method, userId, ticket_id]
  );
 
- // OPD Orders hook: mark selected consultation-prescribed items as paid and create downstream requests
- const { optionalInTransaction } = require('./lib/pgTransaction');
- await optionalInTransaction(conn, 'opd_post_collect', async () => {
-  let parsedLines = [];
-  try { parsedLines = JSON.parse(ticket.lines_json || '[]'); } catch(e) { parsedLines = []; }
-  const srcLines = Array.isArray(parsedLines) ? parsedLines.filter(ln => ln && ln.source_module === 'opd_order_item' && ln.source_pk) : [];
-  if (!srcLines.length) return;
-  await ensureOpdOrderItemsSchema(conn);
-  const itemIds = srcLines.map(ln => parseInt(ln.source_pk, 10)).filter(n => Number.isFinite(n) && n > 0);
-  for (const oid of itemIds) {
-   const [[oi]] = await conn.query(
-    'SELECT * FROM tbl_opd_order_item WHERE id=? FOR UPDATE',
-    [oid]
-   );
-   if (!oi || String(oi.status) !== 'pending') continue;
-   await conn.query(
-    "UPDATE tbl_opd_order_item SET status='paid', ticket_id=?, paid_at=NOW() WHERE id=?",
-    [ticket_id, oid]
-   );
-
-   const tname = String(oi.item_name || '').trim();
-   if (!tname) continue;
-   const appt = new Date().toISOString().split('T')[0];
-   if (String(oi.item_type) === 'laboratory') {
-    const [[exists]] = await conn.query(
-     'SELECT id FROM tbl_lab_result WHERE opd_order_item_id=? LIMIT 1',
-     [oid]
-    );
-    if (!exists) {
-     const lf = await ensureFacilityRow(conn, oi.facility_id || 1);
-     await conn.query(
-      `INSERT INTO tbl_lab_result
-       (facility_id, patient_id, test_name, referred_by_id, appointment_date, notes, status, created_at, opd_order_item_id)
-       VALUES (?, ?, ?, NULL, ?, NULL, 'pending', NOW(), ?)`,
-      [lf, oi.patient_id, tname, appt, oid]
-     );
-    }
-   } else if (String(oi.item_type) === 'radiology') {
-    const [[exists]] = await conn.query(
-     'SELECT id FROM tbl_radiology_result WHERE opd_order_item_id=? LIMIT 1',
-     [oid]
-    );
-    if (!exists) {
-     await conn.query(
-      `INSERT INTO tbl_radiology_result
-       (patient_id, exam_name, modality, body_part, referred_by_id, appointment_date, notes, status, created_at, opd_order_item_id)
-       VALUES (?, ?, 'X-Ray', '', NULL, ?, NULL, 'pending', NOW(), ?)`,
-      [oi.patient_id, tname, appt, oid]
-     );
-    }
-   }
-  }
- });
-
- // Emergency (A&E) charges: mark line items settled when cashier collects EMG-SET ticket
- await optionalInTransaction(conn, 'er_post_collect', async () => {
-  let erLines = [];
-  try { erLines = JSON.parse(ticket.lines_json || '[]'); } catch (e2) { erLines = []; }
-  const visitIds = new Set();
-  if (ticket.emergency_visit_id) {
-   const ev = parseInt(ticket.emergency_visit_id, 10);
-   if (Number.isFinite(ev) && ev > 0) visitIds.add(ev);
-  }
-  if (Array.isArray(erLines)) {
-   for (const ln of erLines) {
-    if (ln && ln.visit_id) {
-     const ev = parseInt(ln.visit_id, 10);
-     if (Number.isFinite(ev) && ev > 0) visitIds.add(ev);
-    }
-    if (ln && ln.source_module === 'emergency_charge' && ln.source_pk) {
-     const cid = parseInt(ln.source_pk, 10);
-     if (Number.isFinite(cid) && cid > 0) {
-      await conn.query('UPDATE tbl_emergency_charge SET settled = 1 WHERE id = ?', [cid]);
-     }
-    }
-   }
-  }
-  for (const vid of visitIds) {
-   await conn.query('UPDATE tbl_emergency_charge SET settled = 1 WHERE visit_id = ? AND settled = 0', [vid]);
-   const { ensureErDischargeCodeAfterCollect } = require('./lib/erCashierSettlement');
-   await ensureErDischargeCodeAfterCollect(conn, vid, userId);
-  }
- });
-
- let cashierTxnResult = null;
- try {
-  cashierTxnResult = await optionalInTransaction(conn, 'cashier_txn_collect', async () => {
-   const { recordReceiptInTransaction } = require('./lib/cashierTxnWire');
-   return recordReceiptInTransaction(conn, {
-    facilityId,
-    userId,
-    sourceModule: 'payment_ticket',
-    sourcePk: ticket_id,
-    amount: totalAmount,
-    paymentMethod,
-    billingDocumentId: result.insertId,
-    patientId: ticket.patient_id,
-    lines,
-    ticket,
-    reference: receipt_no,
-    narration: `Payment ticket ${ticket.ticket_code || ticket_id}`,
-   });
-  });
- } catch (txnErr) {
-  console.error('cashier txn (collect):', txnErr.message);
- }
- // #region agent log
- fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:collect-pre-commit',message:'cashier collect before commit',data:{ticketId:ticket_id,driver:conn.driver||null,cashierTxn:!!cashierTxnResult,billingDocId:result?.insertId||null},timestamp:Date.now(),hypothesisId:'B',runId:'post-fix'})}).catch(()=>{});
- // #endregion
-
+ const billingDocId = result.insertId;
  await conn.commit();
+ committed = true;
  conn.release();
 
- try {
-  const { runCashierPostCommit } = require('./lib/cashierTxnWire');
-  await runCashierPostCommit(pool, {
-   txnId: cashierTxnResult?.txnId || null,
-   journalKind: 'receipt',
-   facilityId,
-   billingDocumentId: result.insertId,
-   grandTotal: totalAmount,
-   paymentMethod,
-   createdBy: userId,
-   docNumber: receipt_no,
-   firstLineDescription: (lines[0] && lines[0].description) || ticket.ticket_code || '',
-   sourceModule: 'payment_ticket',
-  });
- } catch (pipeErr) {
-  console.error('cashier journal pipeline (collect):', pipeErr.message);
- }
+ // #region agent log
+ fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:collect-post-commit',message:'payment committed',data:{ticketId:ticket_id,driver:pool.driver||null,billingDocId},timestamp:Date.now(),hypothesisId:'D',runId:'post-fix'})}).catch(()=>{});
+ // #endregion
 
- try {
-  const hmsCommission = require('./lib/hmsCommission');
-  const ensureHmsExtendedSchema = require('./lib/ensureHmsExtendedSchema');
-  await ensureHmsExtendedSchema(pool).catch(() => {});
-  await hmsCommission.accrueFromPaymentSettlement(pool, {
-   ticketId: ticket_id,
-   patientId: ticket.patient_id,
-   lines,
-   consultationId: ticket.consultation_id,
-  });
- } catch (commErr) {
-  console.warn('Commission accrual after collect:', commErr.message);
- }
+ const { runCashierCollectSideEffects } = require('./lib/cashierCollectSideEffects');
+ await runCashierCollectSideEffects(pool, {
+  ticket,
+  ticketId: ticket_id,
+  userId,
+  facilityId,
+  totalAmount,
+  paymentMethod: payment_method,
+  receiptNo: receipt_no,
+  billingDocId,
+  lines,
+ });
 
  if (payment_method === 'Wallet') {
   res.redirect('/cashier/print-ticket/' + encodeURIComponent(ticket.ticket_code));
  } else {
-  res.redirect('/cashier?msg=' + encodeURIComponent(flashT(res, 'flash.payment_collected', { receipt: receipt_no, invoice: invoice_no })) + '&print_receipt=' + result.insertId);
+  res.redirect('/cashier?msg=' + encodeURIComponent(flashT(res, 'flash.payment_collected', { receipt: receipt_no, invoice: invoice_no })) + '&print_receipt=' + billingDocId);
  }
  } catch (err) {
- await conn.rollback().catch(() => {});
- conn.release();
+ if (!committed) {
+  await conn.rollback().catch(() => {});
+  conn.release();
+ }
  console.error('COLLECT ERR:', err);
  res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.collection_failed', { message: err.message })));
  }
