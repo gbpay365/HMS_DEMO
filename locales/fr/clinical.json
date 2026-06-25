@@ -305,6 +305,7 @@
     "eod_reconciliation_link": "Clôture caisse (fin de journée)",
     "ledger_link": "Registre de caisse",
     "disbursement_link": "Décaissement petite caisse",
+    "cash_topup_link": "Recharge cash",
     "daily_summary": {
       "title": "Récapitulatif des transactions",
       "subtitle": "Encaissements cumulés par catégorie de service",

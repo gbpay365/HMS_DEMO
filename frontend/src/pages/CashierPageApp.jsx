@@ -20,6 +20,7 @@ import { OpdOrdersBillModal } from '../modals/OpdOrdersBillModal';
 import { OpdRefundModal } from '../modals/OpdRefundModal';
 import { CashierBillingModal } from '../modals/CashierBillingModal';
 import { CashierDisbursementModal } from '../modals/CashierDisbursementModal';
+import { openWalletTopup } from '../lib/walletModalBridge';
 import { FaIcon } from '../components/FaIcon';
 
 const RX_CODE_KEYS = {
@@ -356,6 +357,13 @@ export function CashierPageApp({
             </a>
             <button type="button" className="hms-btn-secondary px-6 py-3 text-base" onClick={() => setDisbursementOpen(true)}>
               <FaIcon name="money" /> {t('cashier.disbursement_link')}
+            </button>
+            <button
+              type="button"
+              className="hms-btn-secondary px-6 py-3 text-base"
+              onClick={() => openWalletTopup()}
+            >
+              <FaIcon name="upload" /> {t('cashier.cash_topup_link')}
             </button>
           </div>
         </SurfaceHero>

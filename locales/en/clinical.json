@@ -305,6 +305,7 @@
     "eod_reconciliation_link": "Close till (EOD)",
     "ledger_link": "Till register",
     "disbursement_link": "Petty cash payout",
+    "cash_topup_link": "Cash Top-up",
     "ledger": {
       "title": "Cashier till ledger",
       "subtitle": "Opening balance · Debit · Credit · Closing balance per transaction",
