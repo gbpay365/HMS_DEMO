@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-25T16:13:28.733Z",
+  "generatedAt": "2026-06-25T22:40:24.261Z",
   "baseUrl": "http://127.0.0.1:3004",
   "context": {
     "opd": {
@@ -7,7 +7,7 @@
       "visitId": 22,
       "paymentCode": "CON-0624-33VVXHUC",
       "ticketNumber": "OPD-2026-0014",
-      "queueStatus": "waiting_doctor",
+      "queueStatus": "in_consultation",
       "label": "Afor Josso"
     },
     "ipd": {
@@ -32,24 +32,33 @@
   },
   "guides": [
     {
+      "id": "opd-e2e",
       "htmlPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-OPD-E2E.html",
       "pdfPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-OPD-E2E.pdf",
-      "steps": 21
+      "steps": 36
     },
     {
+      "id": "ipd-e2e",
       "htmlPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-IPD-E2E.html",
       "pdfPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-IPD-E2E.pdf",
-      "steps": 12
+      "steps": 26
     },
     {
+      "id": "maternity-e2e",
       "htmlPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-MATERNITY-E2E.html",
       "pdfPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-MATERNITY-E2E.pdf",
-      "steps": 12
+      "steps": 24
     },
     {
+      "id": "emergency-e2e",
       "htmlPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-EMERGENCY-E2E.html",
       "pdfPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-EMERGENCY-E2E.pdf",
-      "steps": 12
+      "steps": 32
     }
-  ]
+  ],
+  "master": {
+    "htmlPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-COMPREHENSIVE-LIVE-WORKFLOW-GUIDE.html",
+    "pdfPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-COMPREHENSIVE-LIVE-WORKFLOW-GUIDE.pdf"
+  },
+  "totalSteps": 118
 }

@@ -7,12 +7,13 @@ import { FormField } from '../components/FormField';
 import { Modal } from '../components/Modal';
 import { ModalCancelButton, ModalSubmitButton } from '../components/ModalActions';
 import { PatientInsuranceFields } from '../components/PatientInsuranceFields';
+import { DateDmyInput } from '../components/DateDmyInput';
 import {
   filterPhoneInput,
-  formatDmyInput,
   isValidEmail,
   isValidOptionalPhone,
   isValidPhone,
+  isoToDmy,
   parseDmyToIso} from '../lib/formValidation';
 
 const INITIAL = {
@@ -189,15 +190,11 @@ export function RegisterPatientModal({ open, onClose, fromMaternity = false }) {
               <input id="rp-cni" name="cni_number" className="hms-input" />
             </FormField>
             <FormField label={t('modals.registerPatient.cni_issue_date')} htmlFor="rp-cni-date">
-              <input
+              <DateDmyInput
                 id="rp-cni-date"
-                type="text"
-                inputMode="numeric"
-                autoComplete="off"
                 placeholder={datePh}
-                className="hms-input"
-                value={state.cniDateDmy}
-                onChange={(ev) => setState((s) => ({ ...s, cniDateDmy: formatDmyInput(ev.target.value) }))}
+                value={parseDmyToIso(state.cniDateDmy) || ''}
+                onChange={(iso) => setState((s) => ({ ...s, cniDateDmy: iso ? isoToDmy(iso) : '' }))}
               />
             </FormField>
             <FormField label={t('modals.registerPatient.dob')} htmlFor={state.dobMode === 'dob' ? 'rp-dob' : 'rp-age'} required>
@@ -218,16 +215,13 @@ export function RegisterPatientModal({ open, onClose, fromMaternity = false }) {
                 </button>
               </div>
               {state.dobMode === 'dob' ? (
-                <input
+                <DateDmyInput
                   id="rp-dob"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="bday"
                   placeholder={datePh}
+                  autoComplete="bday"
                   required
-                  className="hms-input"
-                  value={state.dobDmy}
-                  onChange={(ev) => setState((s) => ({ ...s, dobDmy: formatDmyInput(ev.target.value) }))}
+                  value={parseDmyToIso(state.dobDmy) || ''}
+                  onChange={(iso) => setState((s) => ({ ...s, dobDmy: iso ? isoToDmy(iso) : '' }))}
                 />
               ) : (
                 <input

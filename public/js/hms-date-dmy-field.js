@@ -1,5 +1,7 @@
 /**
  * DD/MM/YYYY text input paired with a hidden YYYY-MM-DD field for form POST.
+ * Adds a calendar picker button (native date input) on every date field.
+ *
  * Markup: hidden [data-hms-dmy-hidden] + text [data-hms-dmy-display] in the same parent.
  */
 (function () {
@@ -28,16 +30,91 @@
     );
   }
 
+  function isoToDmy(iso) {
+    var s = String(iso || '').trim();
+    var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!m) return '';
+    return m[3] + '/' + m[2] + '/' + m[1];
+  }
+
+  function openNativePicker(native) {
+    if (!native) return;
+    if (typeof native.showPicker === 'function') {
+      try {
+        native.showPicker();
+        return;
+      } catch (e) {
+        /* fall through */
+      }
+    }
+    native.focus();
+    native.click();
+  }
+
   function syncHidden(display, hidden) {
     var iso = parseDmyToIso(display.value);
     if (iso) hidden.value = iso;
   }
 
-  function bindPair(display, hidden) {
+  function syncFromIso(iso, display, hidden, native) {
+    hidden.value = iso || '';
+    display.value = iso ? isoToDmy(iso) : '';
+    native.value = iso || '';
+  }
+
+  function wrapDmyPair(display, hidden) {
+    if (display.closest('.hms-dmy-date-wrap')) return;
+
+    var parent = display.parentElement;
+    if (!parent) return;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'hms-dmy-date-wrap';
+    parent.insertBefore(wrap, display);
+    wrap.appendChild(hidden);
+    wrap.appendChild(display);
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'hms-dmy-picker-btn';
+    btn.setAttribute('aria-label', 'Pick date');
+    btn.innerHTML = '<i class="fa fa-calendar" aria-hidden="true"></i>';
+
+    var native = document.createElement('input');
+    native.type = 'date';
+    native.className = 'hms-dmy-native-picker';
+    native.tabIndex = -1;
+    native.setAttribute('aria-hidden', 'true');
+
+    wrap.appendChild(btn);
+    wrap.appendChild(native);
+
+    if (hidden.value) syncFromIso(hidden.value, display, hidden, native);
+
     display.addEventListener('input', function () {
       display.value = formatDmyInput(display.value);
-      syncHidden(display, hidden);
+      var iso = parseDmyToIso(display.value);
+      if (iso) {
+        hidden.value = iso;
+        native.value = iso;
+      }
     });
+
+    native.addEventListener('change', function () {
+      if (native.value) syncFromIso(native.value, display, hidden, native);
+    });
+
+    btn.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      if (!native.value && hidden.value) native.value = hidden.value;
+      openNativePicker(native);
+    });
+
+    display.addEventListener('dblclick', function () {
+      if (!native.value && hidden.value) native.value = hidden.value;
+      openNativePicker(native);
+    });
+
     var form = display.closest('form');
     if (form) {
       form.addEventListener('submit', function () {
@@ -46,14 +123,45 @@
     }
   }
 
+  function enhanceNativeDateInput(el) {
+    if (el.getAttribute('data-hms-date-enhanced') === '1') return;
+    if (el.closest('.hms-dmy-date-wrap')) return;
+
+    var parent = el.parentElement;
+    if (!parent) return;
+
+    el.setAttribute('data-hms-date-enhanced', '1');
+
+    if (parent.classList.contains('hms-native-date-wrap')) return;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'hms-native-date-wrap';
+    parent.insertBefore(wrap, el);
+    wrap.appendChild(el);
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'hms-date-picker-btn';
+    btn.setAttribute('aria-label', 'Pick date');
+    btn.innerHTML = '<i class="fa fa-calendar" aria-hidden="true"></i>';
+    wrap.appendChild(btn);
+
+    btn.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      openNativePicker(el);
+    });
+  }
+
   function init() {
     document.querySelectorAll('[data-hms-dmy-display]').forEach(function (display) {
       var parent = display.parentElement;
       if (!parent) return;
       var hidden = parent.querySelector('[data-hms-dmy-hidden]');
       if (!hidden) return;
-      bindPair(display, hidden);
+      wrapDmyPair(display, hidden);
     });
+
+    document.querySelectorAll('input[type="date"], input[type="datetime-local"]').forEach(enhanceNativeDateInput);
   }
 
   if (document.readyState === 'loading') {
@@ -61,4 +169,6 @@
   } else {
     init();
   }
+
+  window.HmsDateFields = { init: init, openNativePicker: openNativePicker };
 })();

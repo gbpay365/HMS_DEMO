@@ -4,9 +4,9 @@ import { FormErrorBanner } from '../components/FormErrorBanner';
 import { FormField } from '../components/FormField';
 import { Modal } from '../components/Modal';
 import { ModalCancelButton, ModalSubmitButton } from '../components/ModalActions';
+import { DateDmyInput } from '../components/DateDmyInput';
 import {
   filterPhoneInput,
-  formatDmyInput,
   isValidEmail,
   isValidOptionalPhone,
   isValidPhone,
@@ -206,16 +206,13 @@ export function EditPatientModal({ open, onClose, patientId }) {
                 </button>
               </div>
               {dobMode === 'dob' ? (
-                <input
+                <DateDmyInput
                   id="ep-dob"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="bday"
                   placeholder={datePh}
+                  autoComplete="bday"
                   required
-                  className="hms-input"
-                  value={form.dobDmy}
-                  onChange={(e) => setForm({ ...form, dobDmy: formatDmyInput(e.target.value) })}
+                  value={parseDmyToIso(form.dobDmy) || ''}
+                  onChange={(iso) => setForm({ ...form, dobDmy: iso ? isoToDmy(iso) : '' })}
                 />
               ) : (
                 <input
