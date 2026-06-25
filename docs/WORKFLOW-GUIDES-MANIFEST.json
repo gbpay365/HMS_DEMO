@@ -1,0 +1,55 @@
+{
+  "generatedAt": "2026-06-25T16:13:28.733Z",
+  "baseUrl": "http://127.0.0.1:3004",
+  "context": {
+    "opd": {
+      "patientId": 1061,
+      "visitId": 22,
+      "paymentCode": "CON-0624-33VVXHUC",
+      "ticketNumber": "OPD-2026-0014",
+      "queueStatus": "waiting_doctor",
+      "label": "Afor Josso"
+    },
+    "ipd": {
+      "patientId": 1055,
+      "admissionId": 2,
+      "bedId": 9,
+      "label": "Tibi Fred"
+    },
+    "maternity": {
+      "patientId": 1023,
+      "maternityId": 1,
+      "label": "Abianwi Joel"
+    },
+    "emergency": {
+      "patientId": 1052,
+      "visitId": 18,
+      "queueStatus": "waiting_doctor",
+      "erPaymentCode": null,
+      "label": "Ghouenzen Soulemanou",
+      "completedVisitId": 16
+    }
+  },
+  "guides": [
+    {
+      "htmlPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-OPD-E2E.html",
+      "pdfPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-OPD-E2E.pdf",
+      "steps": 21
+    },
+    {
+      "htmlPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-IPD-E2E.html",
+      "pdfPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-IPD-E2E.pdf",
+      "steps": 12
+    },
+    {
+      "htmlPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-MATERNITY-E2E.html",
+      "pdfPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-MATERNITY-E2E.pdf",
+      "steps": 12
+    },
+    {
+      "htmlPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-EMERGENCY-E2E.html",
+      "pdfPath": "C:\\HMS_DEMO\\docs\\ZAIZENS-WORKFLOW-EMERGENCY-E2E.pdf",
+      "steps": 12
+    }
+  ]
+}

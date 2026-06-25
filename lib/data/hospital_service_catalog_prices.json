@@ -1,6 +1,6 @@
 {
   "source": "C:\\HMS_JS",
-  "generated_at": "2026-06-21T01:22:33.824Z",
+  "generated_at": "2026-06-25T16:23:20.240Z",
   "currency": "XAF",
   "by_account_code": {
     "701601": {
@@ -40,7 +40,7 @@
         {
           "key": "APTT",
           "name": "Activated Partial Thromboplastin Time (aPTT)",
-          "price": 8000
+          "price": 3000
         },
         {
           "key": "BLEED_CLOTT",
@@ -55,7 +55,7 @@
         {
           "key": "XMATCH",
           "name": "Cross-Match",
-          "price": 5000
+          "price": 3000
         },
         {
           "key": "CSF",
@@ -75,12 +75,12 @@
         {
           "key": "FBC",
           "name": "Full Blood Count (FBC / CBC)",
-          "price": 6000
+          "price": 5000
         },
         {
           "key": "HB",
           "name": "Haemoglobin (Hb) Estimation",
-          "price": 1500
+          "price": 1000
         },
         {
           "key": "HB_ELECTRO",
@@ -95,12 +95,12 @@
         {
           "key": "PLT",
           "name": "Platelet Count",
-          "price": 2000
+          "price": 1500
         },
         {
           "key": "PT_INR",
           "name": "Prothrombin Time (PT/INR)",
-          "price": 8000
+          "price": 3000
         },
         {
           "key": "RETIC",
@@ -123,7 +123,7 @@
           "price": 1500
         }
       ],
-      "default_price": 2000
+      "default_price": 3000
     },
     "702602": {
       "account_code": "702602",
@@ -139,17 +139,17 @@
         {
           "key": "ALB",
           "name": "Albumin",
-          "price": 2500
+          "price": 2000
         },
         {
           "key": "ALP",
           "name": "Alkaline Phosphatase (ALP)",
-          "price": 2500
+          "price": 2000
         },
         {
           "key": "ALT",
           "name": "ALT (SGPT)",
-          "price": 3500
+          "price": 3000
         },
         {
           "key": "AMYL",
@@ -159,22 +159,22 @@
         {
           "key": "AST",
           "name": "AST (SGOT)",
-          "price": 3500
+          "price": 3000
         },
         {
           "key": "CRP",
           "name": "C-Reactive Protein (CRP)",
-          "price": 2500
+          "price": 3000
         },
         {
           "key": "CA",
           "name": "Calcium (Ca2+)",
-          "price": 2500
+          "price": 2000
         },
         {
           "key": "CL",
           "name": "Chloride (Cl-)",
-          "price": 2500
+          "price": 2000
         },
         {
           "key": "CREA",
@@ -184,12 +184,12 @@
         {
           "key": "BILI_D",
           "name": "Direct Bilirubin",
-          "price": 2500
+          "price": 2000
         },
         {
           "key": "LYTES",
           "name": "Electrolytes Panel (Na/K/Cl)",
-          "price": 15000
+          "price": 6000
         },
         {
           "key": "FBS",
@@ -204,12 +204,12 @@
         {
           "key": "GGT",
           "name": "GGT (Gamma GT)",
-          "price": 2500
+          "price": 2000
         },
         {
           "key": "HBA1C",
           "name": "HbA1c (Glycated Haemoglobin)",
-          "price": 6000
+          "price": 5000
         },
         {
           "key": "LH",
@@ -219,22 +219,22 @@
         {
           "key": "LIPASE",
           "name": "Lipase",
-          "price": 2500
+          "price": 3000
         },
         {
           "key": "LIPID",
           "name": "Lipid Profile — Full Panel",
-          "price": 12000
+          "price": 10000
         },
         {
           "key": "LFT",
           "name": "Liver Function Tests (LFT) — Full Panel",
-          "price": 15000
+          "price": 10000
         },
         {
           "key": "MG",
           "name": "Magnesium",
-          "price": 2500
+          "price": 2000
         },
         {
           "key": "OESTROGEN",
@@ -244,12 +244,12 @@
         {
           "key": "PHOS",
           "name": "Phosphate",
-          "price": 2500
+          "price": 2000
         },
         {
           "key": "K",
           "name": "Potassium (K+)",
-          "price": 2500
+          "price": 2000
         },
         {
           "key": "PREG_TEST",
@@ -269,7 +269,7 @@
         {
           "key": "PSA",
           "name": "PSA (Prostate-Specific Antigen)",
-          "price": 12000
+          "price": 15000
         },
         {
           "key": "RBS",
@@ -279,12 +279,12 @@
         {
           "key": "URIC",
           "name": "Serum Uric Acid",
-          "price": 2500
+          "price": 3000
         },
         {
           "key": "NA",
           "name": "Sodium (Na+)",
-          "price": 2500
+          "price": 2000
         },
         {
           "key": "FT3",
@@ -309,12 +309,12 @@
         {
           "key": "BILI_T",
           "name": "Total Bilirubin",
-          "price": 2500
+          "price": 2000
         },
         {
           "key": "TP",
           "name": "Total Protein",
-          "price": 2500
+          "price": 2000
         },
         {
           "key": "TSH",
@@ -332,7 +332,7 @@
           "price": 15000
         }
       ],
-      "default_price": 2500
+      "default_price": 10000
     },
     "702603": {
       "account_code": "702603",
@@ -343,7 +343,7 @@
         {
           "key": "AFB",
           "name": "AFB Smear (TB/Tuberculosis)",
-          "price": 6000
+          "price": 5000
         },
         {
           "key": "ASLO",
@@ -353,7 +353,7 @@
         {
           "key": "BC_S",
           "name": "Blood Culture & Sensitivity",
-          "price": 10000
+          "price": 7000
         },
         {
           "key": "BODY_FL_C",
@@ -388,12 +388,12 @@
         {
           "key": "GENEXPERT",
           "name": "Genexpert MTB/RIF",
-          "price": 0
+          "price": 10000
         },
         {
           "key": "HBSAG",
           "name": "HBsAg (Hepatitis B Surface Antigen)",
-          "price": 3000
+          "price": 3500
         },
         {
           "key": "HEP_B_PANEL",
@@ -408,12 +408,12 @@
         {
           "key": "HIV_ELISA",
           "name": "HIV 1 & 2 Screening (ELISA)",
-          "price": 0
+          "price": 3000
         },
         {
           "key": "HIV_RDT",
           "name": "HIV Rapid Test",
-          "price": 1000
+          "price": 2000
         },
         {
           "key": "MAL_RDT",
@@ -423,7 +423,7 @@
         {
           "key": "MAL_FILM",
           "name": "Malaria Thick/Thin Film",
-          "price": 1500
+          "price": 2000
         },
         {
           "key": "PUS_C",
@@ -453,7 +453,7 @@
         {
           "key": "STOOL_C_S",
           "name": "Stool Culture & Sensitivity",
-          "price": 8000
+          "price": 5000
         },
         {
           "key": "SWAB_C",
@@ -473,12 +473,12 @@
         {
           "key": "TPHA",
           "name": "TPHA (Treponema Confirmation)",
-          "price": 3000
+          "price": 3500
         },
         {
           "key": "UC_S",
           "name": "Urine Culture & Sensitivity",
-          "price": 8000
+          "price": 5000
         },
         {
           "key": "VS_US_C",
@@ -488,15 +488,15 @@
         {
           "key": "VDRL",
           "name": "VDRL / RPR (Syphilis Screening)",
-          "price": 2000
+          "price": 3500
         },
         {
           "key": "WIDAL",
           "name": "Widal Test (Typhoid)",
-          "price": 2000
+          "price": 3000
         }
       ],
-      "default_price": 6000
+      "default_price": 5000
     },
     "702604": {
       "account_code": "702604",
@@ -507,7 +507,7 @@
         {
           "key": "UR_PROT24",
           "name": "24-hour Urine Protein",
-          "price": 0
+          "price": 3000
         },
         {
           "key": "UR_DIP",
@@ -517,7 +517,7 @@
         {
           "key": "UR_MICRO",
           "name": "Urine Microscopy (Full Urinalysis)",
-          "price": 1500
+          "price": 2000
         },
         {
           "key": "UR_HCG",
@@ -525,7 +525,7 @@
           "price": 1500
         }
       ],
-      "default_price": 1500
+      "default_price": 3000
     },
     "702605": {
       "account_code": "702605",
@@ -541,7 +541,7 @@
         {
           "key": "HPYLORI",
           "name": "H. Pylori Antigen (Stool)",
-          "price": 3000
+          "price": 4500
         },
         {
           "key": "HS",
@@ -551,12 +551,12 @@
         {
           "key": "STOOL_OB",
           "name": "Occult Blood (Stool)",
-          "price": 3000
+          "price": 2500
         },
         {
           "key": "STOOL_OVP",
           "name": "Stool Microscopy (Ova & Parasites)",
-          "price": 1500
+          "price": 2500
         },
         {
           "key": "US",
@@ -596,9 +596,54 @@
           "key": "TRANSFUSION",
           "name": "Transfusion bill",
           "price": 10000
+        },
+        {
+          "key": "DB46",
+          "name": "Beta-hCG (Pregnancy Test — Quantitative)",
+          "price": 3500
+        },
+        {
+          "key": "DB13",
+          "name": "Fasting Blood Glucose (FBG)",
+          "price": 1000
+        },
+        {
+          "key": "DB30",
+          "name": "HDL Cholesterol",
+          "price": 2000
+        },
+        {
+          "key": "DB54",
+          "name": "Hepatitis C Antibody (Anti HCV)",
+          "price": 3500
+        },
+        {
+          "key": "DB31",
+          "name": "LDL Cholesterol (Calculated)",
+          "price": 2000
+        },
+        {
+          "key": "DB12",
+          "name": "Random Blood Glucose (RBG)",
+          "price": 1000
+        },
+        {
+          "key": "DB28",
+          "name": "Total Cholesterol",
+          "price": 2000
+        },
+        {
+          "key": "DB29",
+          "name": "Triglycerides",
+          "price": 2000
+        },
+        {
+          "key": "DB17",
+          "name": "Urea + Creatinine (Renal Panel)",
+          "price": 2500
         }
       ],
-      "default_price": 12500
+      "default_price": 15000
     },
     "703601": {
       "account_code": "703601",
@@ -722,7 +767,7 @@
           "price": 15000
         }
       ],
-      "default_price": 15000
+      "default_price": 7000
     },
     "703602": {
       "account_code": "703602",
@@ -741,7 +786,7 @@
           "price": 7000
         }
       ],
-      "default_price": 8500
+      "default_price": 10000
     },
     "703603": {
       "account_code": "703603",
@@ -805,7 +850,7 @@
           "price": 55000
         }
       ],
-      "default_price": 50000
+      "default_price": 7000
     },
     "703604": {
       "account_code": "703604",
@@ -856,7 +901,7 @@
         {
           "key": "XR_CLAV_PED",
           "name": "Clavicle X-Ray (Paediatric)",
-          "price": 10000
+          "price": 15000
         },
         {
           "key": "XR_DORSAL",
@@ -1113,7 +1158,7 @@
           "price": 80000
         }
       ],
-      "default_price": 52500
+      "default_price": 40000
     },
     "703606": {
       "account_code": "703606",
@@ -1257,7 +1302,7 @@
           "price": 85000
         }
       ],
-      "default_price": 85000
+      "default_price": 75000
     },
     "703607": {
       "account_code": "703607",
@@ -1301,7 +1346,7 @@
           "price": 60000
         }
       ],
-      "default_price": 75000
+      "default_price": 80000
     },
     "703608": {
       "account_code": "703608",
@@ -1350,7 +1395,7 @@
           "price": 45000
         }
       ],
-      "default_price": 47500
+      "default_price": 55000
     },
     "704601": {
       "account_code": "704601",
@@ -1459,7 +1504,7 @@
           "price": 2500
         }
       ],
-      "default_price": 125
+      "default_price": 1000
     },
     "704602": {
       "account_code": "704602",
@@ -1573,7 +1618,7 @@
           "price": 100
         }
       ],
-      "default_price": 1500
+      "default_price": 250
     },
     "704603": {
       "account_code": "704603",
@@ -1716,7 +1761,7 @@
           "price": 200
         }
       ],
-      "default_price": 88
+      "default_price": 75
     },
     "704605": {
       "account_code": "704605",
@@ -1765,7 +1810,7 @@
           "price": 200
         }
       ],
-      "default_price": 850
+      "default_price": 2000
     },
     "704606": {
       "account_code": "704606",
@@ -1789,7 +1834,7 @@
           "price": 1000
         }
       ],
-      "default_price": 1000
+      "default_price": 10
     },
     "704607": {
       "account_code": "704607",
@@ -1853,7 +1898,7 @@
           "price": 100
         }
       ],
-      "default_price": 1000
+      "default_price": 5500
     },
     "704608": {
       "account_code": "704608",
@@ -1930,7 +1975,7 @@
           "price": 500
         }
       ],
-      "default_price": 1000
+      "default_price": 500
     },
     "704611": {
       "account_code": "704611",
@@ -1989,7 +2034,7 @@
           "price": 100
         }
       ],
-      "default_price": 1250
+      "default_price": 1000
     },
     "704612": {
       "account_code": "704612",
@@ -2153,7 +2198,7 @@
           "price": 3000
         }
       ],
-      "default_price": 500
+      "default_price": 3000
     },
     "706611": {
       "account_code": "706611",
@@ -2328,12 +2373,12 @@
         {
           "key": "Caesarean Section (Elective)",
           "name": "Caesarean Section (Elective)",
-          "price": 225000
+          "price": 230000
         },
         {
           "key": "Caesarean Section (Emergency)",
           "name": "Caesarean Section (Emergency)",
-          "price": 250000
+          "price": 300000
         },
         {
           "key": "Delivery by Doctor (SND)",
@@ -2348,7 +2393,7 @@
         {
           "key": "Episiotomy & Repair",
           "name": "Episiotomy & Repair",
-          "price": 20000
+          "price": 30000
         },
         {
           "key": "Ergometrine Injection",
@@ -2383,7 +2428,7 @@
         {
           "key": "Manual Removal of Placenta",
           "name": "Manual Removal of Placenta",
-          "price": 40000
+          "price": 80000
         },
         {
           "key": "Oxytocin Infusion for Induction",
@@ -2421,7 +2466,7 @@
           "price": 50000
         }
       ],
-      "default_price": 15000
+      "default_price": 10000
     },
     "706613": {
       "account_code": "706613",
@@ -2510,7 +2555,7 @@
           "price": 1500
         }
       ],
-      "default_price": 1750
+      "default_price": 1000
     },
     "706614": {
       "account_code": "706614",
@@ -2619,7 +2664,7 @@
           "price": 1500
         }
       ],
-      "default_price": 2000
+      "default_price": 1000
     },
     "706615": {
       "account_code": "706615",
@@ -2685,10 +2730,10 @@
         {
           "key": "Repair of Vesico-Vaginal Fistula (VVF)",
           "name": "Repair of Vesico-Vaginal Fistula (VVF)",
-          "price": 200000
+          "price": 350000
         }
       ],
-      "default_price": 22500
+      "default_price": 30000
     },
     "706621": {
       "account_code": "706621",
@@ -3031,7 +3076,7 @@
           "price": 120000
         }
       ],
-      "default_price": 185000
+      "default_price": 85000
     },
     "706623": {
       "account_code": "706623",
@@ -3150,7 +3195,7 @@
           "price": 150000
         }
       ],
-      "default_price": 240000
+      "default_price": 340000
     },
     "706624": {
       "account_code": "706624",
@@ -3249,7 +3294,7 @@
           "price": 145000
         }
       ],
-      "default_price": 170000
+      "default_price": 85000
     },
     "706625": {
       "account_code": "706625",
@@ -3318,7 +3363,7 @@
           "price": 170000
         }
       ],
-      "default_price": 167500
+      "default_price": 160000
     },
     "706626": {
       "account_code": "706626",
@@ -3377,7 +3422,7 @@
           "price": 215000
         }
       ],
-      "default_price": 145000
+      "default_price": 220000
     },
     "706631": {
       "account_code": "706631",

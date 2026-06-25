@@ -21,6 +21,7 @@
     "build:deployment-pdf": "node scripts/build-deployment-guide-pdf.js",
     "build:ops-docs": "node scripts/build-ops-docs-pdf.js",
     "build:role-profiles-guide": "node scripts/generate-role-profiles-user-guide-pdf.js",
+    "build:e2e-workflow-guides": "node scripts/build-e2e-workflow-guides.js",
     "vendor:offline": "node scripts/download-vendor-assets.js",
     "dev:ui": "npm install --prefix frontend --include=dev && npm run dev --prefix frontend",
     "check:ui-legacy": "node scripts/check-ejs-legacy-ui.mjs",
