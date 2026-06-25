@@ -1525,14 +1525,15 @@ app.get('/', (req, res) => {
 
 // LOGIN POST
 app.post('/login', async (req, res) => {
- const { username, password } = req.body;
+ const { username: rawUsername, password } = req.body;
+ const { normalizeLoginUsername, EMPLOYEE_LOGIN_SELECT_SQL } = require('./lib/employeeLogin');
+ const username = normalizeLoginUsername(rawUsername);
  const visitingDoctor = require('./lib/visitingDoctor');
  if (visitingDoctor.isVisitingDoctorUsername(username)) {
   return res.redirect('/visiting-doctor?err=' + encodeURIComponent('Visiting doctors must sign in from the Visiting Doctor page.'));
  }
  try {
- const loginSelectSql =
-  'SELECT id, first_name, last_name, username, password, role, photo_path, specialisation, profile_emoji, gender FROM tbl_employee WHERE username = ? AND status = 1 LIMIT 1';
+ const loginSelectSql = EMPLOYEE_LOGIN_SELECT_SQL;
  let rows;
  try {
   [rows] = await pool.query(loginSelectSql, [username]);
