@@ -4,6 +4,7 @@ const mat = require('../lib/hmsMaternity');
 const matInt = require('../lib/maternityIntegration');
 const matBill = require('../lib/maternityBilling');
 const newbornFlow = require('../lib/maternityNewbornFlow');
+const { NOT_DISCHARGED } = require('../lib/ipdHospitalization');
 const { formatDisplayDate, formatObjectDates, formatRowsDates } = require('../lib/hmsFormatDate');
 
 module.exports = function createMaternityController(pool) {
@@ -176,7 +177,7 @@ module.exports = function createMaternityController(pool) {
            FROM labor_records lr
            LEFT JOIN delivery_records dr ON dr.labor_record_id = lr.id
            LEFT JOIN tbl_admission a ON a.id = lr.admission_id
-             AND (a.discharged_at IS NULL OR a.discharged_at = '0000-00-00 00:00:00' OR a.discharged_at = '0000-00-00')
+             AND ${NOT_DISCHARGED}
            LEFT JOIN tbl_bed b ON b.id = a.bed_id
            WHERE lr.maternity_patient_id = ?
            ORDER BY lr.admission_date DESC LIMIT 1`,
