@@ -586,14 +586,20 @@ try {
   } catch (schemaErr) {
    bootStep('fin-accounting-schema', 'warn', schemaErr);
   }
-  try {
-   const { exportAndSyncServiceCatalog } = require('./lib/catalogAccountCoreSync');
-   exportAndSyncServiceCatalog(pool).catch((e) => console.warn('[catalog-sync] startup:', e.message));
-   const { syncProductsToAccountCore } = require('./lib/coreAccountProductSync');
-   syncProductsToAccountCore(pool).catch((e) => console.warn('[product-sync] startup:', e.message));
-   const { syncPendingJournalsOnStartup } = require('./lib/journalAccountCoreSync');
-   syncPendingJournalsOnStartup(pool).catch((e) => console.warn('[journal-core-sync] startup:', e.message));
-  } catch (_) { /* optional */ }
+  const localOnly = process.env.HMS_LOCAL_ONLY === '1';
+  const coreSyncOn = String(process.env.CORE_ACCOUNT_SYNC_ENABLED || '0').trim() === '1';
+  if (!localOnly && coreSyncOn) {
+   try {
+    const { exportAndSyncServiceCatalog } = require('./lib/catalogAccountCoreSync');
+    exportAndSyncServiceCatalog(pool).catch((e) => console.warn('[catalog-sync] startup:', e.message));
+    const { syncProductsToAccountCore } = require('./lib/coreAccountProductSync');
+    syncProductsToAccountCore(pool).catch((e) => console.warn('[product-sync] startup:', e.message));
+    const { syncPendingJournalsOnStartup } = require('./lib/journalAccountCoreSync');
+    syncPendingJournalsOnStartup(pool).catch((e) => console.warn('[journal-core-sync] startup:', e.message));
+   } catch (_) { /* optional */ }
+  } else if (localOnly) {
+   bootStep('account-core-startup-sync', 'skip', 'HMS_LOCAL_ONLY — no remote Account_Core sync');
+  }
  }).catch((e) => bootStep('db-pool-probe', 'fail', e));
  betterPayConfig.init(pool).catch((e) => console.warn('[BetterPay] init:', e.message));
 } catch (e) {
@@ -9804,13 +9810,9 @@ app.post('/cashier/disbursement', requireAuth, requirePerm('cashier.write'), asy
  }
 
  const conn = await pool.getConnection();
- let committed = false;
  try {
   const { ensureCashierDisbursementSchema } = require('./lib/ensureCashierDisbursementSchema');
-  const { ensureCashierTxnSchema } = require('./lib/ensureCashierTxnSchema');
-  await ensureCashierDisbursementSchema(pool);
-  await ensureCashierTxnSchema(pool);
-
+  await ensureCashierDisbursementSchema(conn);
   await conn.beginTransaction();
 
   const [ins] = await conn.query(
@@ -9822,42 +9824,21 @@ app.post('/cashier/disbursement', requireAuth, requirePerm('cashier.write'), asy
   const disbursementId = parseInt(String(ins?.insertId || 0), 10) || 0;
   if (disbursementId < 1) throw new Error('Could not save disbursement.');
 
-  await conn.commit();
-  committed = true;
-  conn.release();
-
-  // #region agent log
-  fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:disbursement-post-commit',message:'disbursement committed',data:{disbursementId,amount,txnType,uid},timestamp:Date.now(),hypothesisId:'F',runId:'post-fix'})}).catch(()=>{});
-  // #endregion
-
   let cashierTxnResult = null;
-  const conn2 = await pool.getConnection();
-  try {
-   await conn2.beginTransaction();
-   const { recordDisbursementInTransaction } = require('./lib/cashierTxnWire');
-   cashierTxnResult = await recordDisbursementInTransaction(conn2, {
-    facilityId: fid,
-    userId: uid,
-    disbursementId,
-    glKind,
-    amount,
-    paymentMethod,
-    expenseCategory: category,
-    narration,
-   });
-   await conn2.commit();
-   // #region agent log
-   fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:disbursement-cashier-txn',message:'cashier txn committed',data:{disbursementId,txnId:cashierTxnResult?.txnId||null,cashierCode:cashierTxnResult?.cashierCode||null},timestamp:Date.now(),hypothesisId:'F',runId:'post-fix'})}).catch(()=>{});
-   // #endregion
-  } catch (txnErr) {
-   await conn2.rollback().catch(() => {});
-   console.error('cashier txn (disbursement):', txnErr.message);
-   // #region agent log
-   fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:disbursement-cashier-txn',message:'cashier txn failed',data:{disbursementId,error:txnErr.message},timestamp:Date.now(),hypothesisId:'F',runId:'post-fix'})}).catch(()=>{});
-   // #endregion
-  } finally {
-   conn2.release();
-  }
+  const { recordDisbursementInTransaction } = require('./lib/cashierTxnWire');
+  cashierTxnResult = await recordDisbursementInTransaction(conn, {
+   facilityId: fid,
+   userId: uid,
+   disbursementId,
+   glKind,
+   amount,
+   paymentMethod,
+   expenseCategory: category,
+   narration,
+  });
+
+  await conn.commit();
+  conn.release();
 
   try {
    const { runCashierPostCommit } = require('./lib/cashierTxnWire');
@@ -9885,10 +9866,8 @@ app.post('/cashier/disbursement', requireAuth, requirePerm('cashier.write'), asy
   const msg = `${typeLabel} recorded: ${amount} FCFA (${paymentMethod}). Cashier ${cashierTxnResult?.cashierCode || ''}.${journalNote}`;
   return res.redirect('/cashier/ledger?msg=' + encodeURIComponent(msg));
  } catch (err) {
-  if (!committed) {
-   await conn.rollback().catch(() => {});
-   conn.release();
-  }
+  await conn.rollback().catch(() => {});
+  conn.release();
   console.error('CASHIER DISBURSEMENT:', err.message);
   return res.redirect('/cashier?err=' + encodeURIComponent(err.message || 'Disbursement failed.'));
  }
@@ -17250,7 +17229,9 @@ if (require.main === module && !underPassenger()) {
  (async () => {
   if (pool) {
    try {
-    await require('./lib/ensureEmployeeHrSchema')(pool);
+    if (process.env.HMS_SKIP_SCHEMA_MIGRATIONS !== '1') {
+     await require('./lib/ensureEmployeeHrSchema')(pool);
+    }
     await aclLayout.init(pool);
     bootStep('pre-listen-schema', 'ok');
    } catch (e) {
@@ -17279,16 +17260,18 @@ if (require.main === module && !underPassenger()) {
     'ok',
     aclBoot.directorRole ? `directorRole=${aclBoot.directorRole}` : 'no director role in tbl_role'
    );
-   await require('./lib/ensureClinicalDeptRequisitionSchema')(pool);
-   bootStep('ensureClinicalDeptRequisitionSchema', 'ok', 'postgres');
-   const { ensureProcurementExtendedSchema } = require('./lib/ensureProcurementExtendedSchema');
-   await ensureProcurementExtendedSchema(pool);
-   bootStep('ensureProcurementExtendedSchema', 'ok', 'postgres');
+   if (pool.driver === 'postgres') {
+    await require('./lib/ensureClinicalDeptRequisitionSchema')(pool);
+    bootStep('ensureClinicalDeptRequisitionSchema', 'ok', 'postgres');
+    const { ensureProcurementExtendedSchema } = require('./lib/ensureProcurementExtendedSchema');
+    await ensureProcurementExtendedSchema(pool);
+    bootStep('ensureProcurementExtendedSchema', 'ok', 'postgres');
+    const { ensurePostgresReceiptInvoiceSeq } = require('./lib/receiptNumber');
+    await ensurePostgresReceiptInvoiceSeq(pool);
+    bootStep('ensurePostgresReceiptInvoiceSeq', 'ok', 'tbl_receipt_seq / tbl_invoice_seq');
+   }
    await aclLayout.init(pool);
-   bootStep('aclLayout:init', 'ok', 'runtime ACL cache loaded (postgres/skip-migrations path)');
-   const { ensurePostgresReceiptInvoiceSeq } = require('./lib/receiptNumber');
-   await ensurePostgresReceiptInvoiceSeq(pool);
-   bootStep('ensurePostgresReceiptInvoiceSeq', 'ok', 'tbl_receipt_seq / tbl_invoice_seq');
+   bootStep('aclLayout:init', 'ok', 'runtime ACL cache loaded (skip-migrations path)');
   } catch (e) {
    bootStep('migrations-postgres-acl', 'warn', e);
   }

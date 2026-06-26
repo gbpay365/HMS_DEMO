@@ -64,13 +64,14 @@ async function upsertFinAccount(pool, facilityId, acct) {
 
 module.exports = function mountIntegrations(app, pool) {
   const integrationApiKeyGuard = createIntegrationApiKeyGuard(pool);
-  const { getJournalSyncStats, syncAllJournalsToAccountCore, resolveCoreAccountTarget } = require('../lib/syncJournalsToAccountCore');
+  const { getJournalSyncStats, syncAllJournalsToAccountCore } = require('../lib/syncJournalsToAccountCore');
+  const { resolveCoreAccountConfig } = require('../lib/resolveCoreAccountConfig');
 
   app.get('/api/v1/integrations/health', async (req, res) => {
     const facilityId = parseFacilityId(req);
-    let core = { enabled: cfg.isIntegrationEnabled(), url: cfg.coreAccountUrl(), key: cfg.coreAccountApiKey() };
+    let core = { enabled: cfg.isIntegrationEnabled(), url: cfg.coreAccountUrl() };
     try {
-      core = await resolveCoreAccountTarget(pool, facilityId);
+      core = await resolveCoreAccountConfig(pool, facilityId);
     } catch (_) { /* env only */ }
     res.json({
       status: 'ok',
