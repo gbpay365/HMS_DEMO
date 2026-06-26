@@ -6,6 +6,8 @@ const ensureFinAccountingSchema = require('../lib/ensureFinAccountingSchema');
 const { finTablesOk } = require('../lib/hmsFinGeneralLedger');
 const { loadPostingAccounts } = require('../lib/hmsFinPostingCatalog');
 const { journalPostManualWithResult, journalPostLastError } = require('../lib/hmsFinJournalPost');
+const { loadActiveCostCenters, resolveCostCenterIdByCode } = require('../lib/finCostCenters');
+const { generateJournalReference, todayIsoDate } = require('../lib/journalEntryReference');
 const { mapFinRows, formatDisplayDate } = require('../lib/hmsFormatDate');
 
 function finRead(req, res, next) {
@@ -147,11 +149,21 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
    await seedFinAccounts(pool).catch(() => {});
    accounts = await loadPostingAccounts(pool);
   }
+  const costCenters = await loadActiveCostCenters(pool);
+  const today = todayIsoDate();
   res.render('financials-journal-new', {
    title: 'New journal entry — ZAIZENS',
    ...journalNewPayload({
     accounts,
-    body: {},
+    costCenters,
+    body: {
+      journal_date: today,
+      reference: generateJournalReference(today),
+      journal_type: 'JNL',
+      journal_code: 'OD',
+      currency_code: 'XAF',
+      exchange_rate: 1,
+    },
     flash: req.query.msg || null,
     error: req.query.err || null,
    }),
@@ -171,14 +183,15 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
    accounts = await loadPostingAccounts(pool);
   }
   const validIds = new Set(accounts.map((a) => parseInt(a.id, 10) || 0));
+  const costCenters = await loadActiveCostCenters(pool);
+  const requireCostCentre = costCenters.length > 0;
 
-  const jdate = ymBounds(req.body.journal_date);
+  const jdate = ymBounds(req.body.journal_date) || todayIsoDate();
   const desc = String(req.body.description || '').trim();
-  const ref = String(req.body.reference || '').trim().slice(0, 64);
+  const ref = (String(req.body.reference || '').trim() || generateJournalReference(jdate)).slice(0, 64);
 
   let err = '';
-  if (!jdate) err = 'Invalid journal date.';
-  else if (!desc) err = 'Description is required.';
+  if (!desc) err = 'Description is required.';
 
   const lines = [];
   if (!err) {
@@ -192,13 +205,18 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
     const dr = parseMoneyXaf(req.body[`dr_${i}`]);
     const cr = parseMoneyXaf(req.body[`cr_${i}`]);
     const memo = String(req.body[`memo_${i}`] || '').trim().slice(0, 255);
+    const ccCode = String(req.body[`cc_${i}`] || '').trim().slice(0, 24);
     if (aid < 1) continue;
     if (dr > 0 && cr > 0) {
      err = 'Each line must be either debit or credit, not both.';
      break;
     }
     if (dr < 1 && cr < 1) continue;
-    lines.push({ aid, dr, cr, memo });
+    if (!err && requireCostCentre && !ccCode) {
+     err = 'Each line with an amount must have a cost centre (OHADA analytical axis).';
+     break;
+    }
+    lines.push({ aid, dr, cr, memo, ccCode });
    }
    let td = 0;
    let tc = 0;
@@ -230,12 +248,18 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
     if (!a) continue;
     const code = String(a.code || '').trim().slice(0, 32);
     const lab = String(a.label_en || a.code || '').trim().slice(0, 160);
+    const costCenterId = ln.ccCode ? await resolveCostCenterIdByCode(pool, ln.ccCode) : null;
+    if (ln.ccCode && !costCenterId) {
+     err = `Invalid cost centre: ${ln.ccCode}`;
+     break;
+    }
     glLines.push({
      code,
      label: lab,
      debit: ln.dr,
      credit: ln.cr,
      line_memo: ln.memo,
+     cost_center_id: costCenterId,
     });
    }
   }
@@ -243,7 +267,7 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
   if (err) {
    return res.render('financials-journal-new', {
     title: 'New journal entry — ZAIZENS',
-    ...journalNewPayload({ accounts, body: req.body, flash: null, error: err }),
+    ...journalNewPayload({ accounts, costCenters, body: req.body, flash: null, error: err }),
    });
   }
 
@@ -257,6 +281,7 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
     title: 'New journal entry — ZAIZENS',
     ...journalNewPayload({
      accounts,
+     costCenters,
      body: req.body,
      flash: null,
      error: journalPostLastError() || 'Could not post journal.',
