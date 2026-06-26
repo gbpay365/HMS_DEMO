@@ -2325,13 +2325,9 @@ app.get('/patients/print-list', requireAuth, requirePerm('patient.read', 'patien
   let where = 'COALESCE(status, 1) = 1';
   const params = [];
   if (q) {
-   where += ` AND (
-    first_name LIKE ? OR last_name LIKE ? OR phone LIKE ? OR CAST(id AS CHAR) LIKE ? OR patient_code LIKE ?
-    OR CONCAT(COALESCE(first_name,''), ' ', COALESCE(last_name,'')) LIKE ?
-    OR CONCAT(COALESCE(last_name,''), ' ', COALESCE(first_name,'')) LIKE ?
-   )`;
-   const like = '%' + q + '%';
-   params.push(like, like, like, like, like, like, like);
+   const { patientSearchWhere, patientSearchBindings } = require('./lib/hmsCaseInsensitiveSearch');
+   where += ` AND ${patientSearchWhere('')}`;
+   params.push(...patientSearchBindings(q));
   }
   const [patients] = await pool.query(
    `SELECT id, patient_code, first_name, last_name, phone, gender, patient_type,
@@ -10163,20 +10159,24 @@ app.get('/api/patients/search', requireAuth, async (req, res) => {
  const q = String(req.query.q || req.query.term || '').trim();
  try {
  if (!q) return res.json([]);
- const like = `%${q}%`;
+ const {
+  normalizeSearchTerm,
+  patientSearchWhere,
+  patientSearchBindings,
+ } = require('./lib/hmsCaseInsensitiveSearch');
+ if (!normalizeSearchTerm(q)) return res.json([]);
  const [rows] = await pool.query(
   `SELECT id, first_name, last_name, phone, patient_code
      FROM tbl_patient
     WHERE status = 1
-      AND (
-        first_name LIKE ? OR last_name LIKE ? OR phone LIKE ?
-        OR patient_code LIKE ? OR CAST(id AS CHAR) LIKE ?
-        OR CONCAT(COALESCE(first_name,''), ' ', COALESCE(last_name,'')) LIKE ?
-      )
+      AND ${patientSearchWhere('')}
     ORDER BY last_name, first_name
     LIMIT 25`,
-  [like, like, like, like, like, like]
+  patientSearchBindings(q)
  );
+ // #region agent log
+ fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:/api/patients/search',message:'patient search',data:{q,resultCount:rows.length,sample:rows.slice(0,3).map(r=>r.first_name)},timestamp:Date.now(),hypothesisId:'CI1',runId:'case-insensitive-search'})}).catch(()=>{});
+ // #endregion
  res.json(rows);
  } catch (err) {
  console.error('Search error:', err.message);
@@ -13158,8 +13158,9 @@ app.get('/wallet-management', requireAuth, async (req, res) => {
   const params = [];
   let where = '';
   if (q) {
-   where = 'WHERE (p.first_name LIKE ? OR p.last_name LIKE ? OR p.phone LIKE ? OR CAST(p.id AS CHAR) LIKE ?)';
-   params.push(`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`);
+   const { patientSearchWhere, patientSearchBindings } = require('./lib/hmsCaseInsensitiveSearch');
+   where = `WHERE ${patientSearchWhere('p')}`;
+   params.push(...patientSearchBindings(q));
   }
   const [wallets] = await pool.query(
    `
