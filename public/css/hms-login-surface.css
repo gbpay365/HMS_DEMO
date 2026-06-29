@@ -30,8 +30,8 @@ body.login-page.hms-body--login {
 
 .login-card__hero {
   height: 5.5rem;
-  background: linear-gradient(135deg, #0f172a 0%, #134e4a 48%, #047857 100%);
-  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+  background: #fff;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .login-card__body {

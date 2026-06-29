@@ -14,6 +14,10 @@ export function JournalNewForm({ accounts = [], catalogByAccount = {}, costCente
   const [journalType, setJournalType] = useState(metadata.journalType);
   const journalCode = mapJournalTypeToCode(journalType);
   const [lines, setLines] = useState(() => journalLinesFromBody(body, 2));
+  const [busy, setBusy] = useState(false);
+  const [formError, setFormError] = useState(error || '');
+  const [subAccountPrompt, setSubAccountPrompt] = useState(null);
+  const [pendingPayload, setPendingPayload] = useState(null);
   const totals = journalLineTotals(lines);
   const validLineCount = lines.filter(
     (ln) => ln.accountId && (parseJournalAmount(ln.debit) > 0 || parseJournalAmount(ln.credit) > 0)
@@ -26,18 +30,85 @@ export function JournalNewForm({ accounts = [], catalogByAccount = {}, costCente
     !requireCostCentre || linesWithAmount.every((ln) => String(ln.costCentre || '').trim());
   const canPost = totals.balanced && validLineCount >= 2 && allHaveCostCentre;
 
-  return (
-    <form method="POST" action="/financials/journal-new" className="jem--page">
-      {error ? <div className="jem-form-err">{error}</div> : null}
+  function buildPayload(asDraft) {
+    return {
+      journal_date: metadata.journalDate,
+      reference: metadata.reference,
+      journal_code: journalCode,
+      journal_type: journalType,
+      currency_code: metadata.currencyCode,
+      exchange_rate: metadata.exchangeRate,
+      fiscal_year: metadata.fiscalYear,
+      fiscal_period: metadata.fiscalPeriod,
+      description: document.getElementById('journal_description')?.value || body.description || '',
+      saveAsDraft: asDraft,
+      lines: lines.map((ln) => ({
+        accountId: ln.accountId,
+        debit: parseJournalAmount(ln.debit),
+        credit: parseJournalAmount(ln.credit),
+        memo: ln.memo || '',
+        costCentre: ln.costCentre || '',
+      })),
+    };
+  }
 
-      <input type="hidden" name="journal_date" value={metadata.journalDate} />
-      <input type="hidden" name="reference" value={metadata.reference} />
-      <input type="hidden" name="journal_code" value={journalCode} />
-      <input type="hidden" name="journal_type" value={journalType} />
-      <input type="hidden" name="currency_code" value={metadata.currencyCode} />
-      <input type="hidden" name="exchange_rate" value={metadata.exchangeRate} />
-      <input type="hidden" name="fiscal_year" value={metadata.fiscalYear} />
-      <input type="hidden" name="fiscal_period" value={metadata.fiscalPeriod} />
+  async function submitJournal(asDraft, autoCreateSubAccounts = false) {
+    setBusy(true);
+    setFormError('');
+    try {
+      const payload = pendingPayload || buildPayload(asDraft);
+      const res = await fetch('/api/financials/journal-new', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ ...payload, autoCreateSubAccounts }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 422 && data.needsSubAccounts) {
+        setPendingPayload({ ...payload, saveAsDraft: asDraft });
+        setSubAccountPrompt(data.missing || []);
+        return;
+      }
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || t('journal_form.failed', { defaultValue: 'Could not post journal.' }));
+      }
+      setSubAccountPrompt(null);
+      setPendingPayload(null);
+      window.location.assign(
+        `/financials/journal-view?id=${data.journalId}&msg=${encodeURIComponent(data.message || 'Journal saved.')}`
+      );
+    } catch (e) {
+      setFormError(e.message || String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="jem--page">
+      {formError ? <div className="jem-form-err">{formError}</div> : null}
+
+      {subAccountPrompt ? (
+        <div className="jem-subaccount-prompt" style={{ margin: '1rem', padding: '1rem', border: '1px solid #f59e0b', borderRadius: '8px', background: '#fffbeb' }}>
+          <h3 style={{ margin: '0 0 0.5rem', fontWeight: 700 }}>{t('journal_form.subaccounts_title')}</h3>
+          <p style={{ margin: '0 0 0.75rem' }}>{t('journal_form.subaccounts_body')}</p>
+          <ul style={{ margin: '0 0 1rem', paddingLeft: '1.25rem' }}>
+            {subAccountPrompt.map((row) => (
+              <li key={`${row.role}-${row.motherCode}`}>
+                <strong>{row.role}</strong>: {row.motherCode} ({row.motherLabel}) → <code>{row.proposedCode}</code>
+              </li>
+            ))}
+          </ul>
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+            <button type="button" className="jem-btn-ghost" disabled={busy} onClick={() => { setSubAccountPrompt(null); setPendingPayload(null); }}>
+              {t('journal_form.cancel')}
+            </button>
+            <button type="button" className="jem-btn-secondary" disabled={busy} onClick={() => submitJournal(pendingPayload?.saveAsDraft, true)}>
+              {busy ? t('journal_form.working') : t('journal_form.subaccounts_confirm')}
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <div className="jem-body--page">
         <aside className="jem-sidebar">
@@ -81,37 +152,16 @@ export function JournalNewForm({ accounts = [], catalogByAccount = {}, costCente
                 <FaIcon name="calendar" />
                 {t('journal_form.posting_date', { defaultValue: 'Posting date' })}
               </label>
-              <input
-                type="date"
-                className="jem-field jem-field--locked"
-                value={metadata.journalDate}
-                readOnly
-                tabIndex={-1}
-                title={t('journal_form.auto_locked', { defaultValue: 'Set automatically; not editable' })}
-              />
+              <input type="date" className="jem-field jem-field--locked" value={metadata.journalDate} readOnly tabIndex={-1} />
             </div>
             <div className="jem-grid-2" style={{ marginTop: '0.75rem' }}>
               <div className="jem-input-group">
                 <span className="jem-label">{t('journal_form.fiscal_year', { defaultValue: 'Fiscal year' })}</span>
-                <input
-                  type="text"
-                  className="jem-field jem-field--locked"
-                  value={metadata.fiscalYear}
-                  readOnly
-                  tabIndex={-1}
-                  title={t('journal_form.auto_locked', { defaultValue: 'Set automatically; not editable' })}
-                />
+                <input type="text" className="jem-field jem-field--locked" value={metadata.fiscalYear} readOnly tabIndex={-1} />
               </div>
               <div className="jem-input-group">
                 <span className="jem-label">{t('journal_form.period', { defaultValue: 'Period' })}</span>
-                <input
-                  type="text"
-                  className="jem-field jem-field--locked"
-                  value={metadata.fiscalPeriod}
-                  readOnly
-                  tabIndex={-1}
-                  title={t('journal_form.auto_locked', { defaultValue: 'Set automatically; not editable' })}
-                />
+                <input type="text" className="jem-field jem-field--locked" value={metadata.fiscalPeriod} readOnly tabIndex={-1} />
               </div>
             </div>
             <div className="jem-input-group" style={{ marginTop: '0.75rem' }}>
@@ -119,14 +169,7 @@ export function JournalNewForm({ accounts = [], catalogByAccount = {}, costCente
                 <FaIcon name="info-circle" />
                 {t('journal_form.reference')}
               </label>
-              <input
-                type="text"
-                className="jem-field jem-mono jem-field--locked"
-                value={metadata.reference}
-                readOnly
-                tabIndex={-1}
-                title={t('journal_form.ref_autogen', { defaultValue: 'Autogenerated; not editable' })}
-              />
+              <input type="text" className="jem-field jem-mono jem-field--locked" value={metadata.reference} readOnly tabIndex={-1} />
             </div>
             <div className="jem-grid-2" style={{ marginTop: '0.75rem' }}>
               <div className="jem-input-group">
@@ -134,28 +177,14 @@ export function JournalNewForm({ accounts = [], catalogByAccount = {}, costCente
                   <FaIcon name="money" />
                   {t('journal_form.currency', { defaultValue: 'CCY' })}
                 </label>
-                <input
-                  type="text"
-                  className="jem-field jem-mono jem-field--locked"
-                  value={metadata.currencyCode}
-                  readOnly
-                  tabIndex={-1}
-                  title={t('journal_form.auto_locked', { defaultValue: 'Set automatically; not editable' })}
-                />
+                <input type="text" className="jem-field jem-mono jem-field--locked" value={metadata.currencyCode} readOnly tabIndex={-1} />
               </div>
               <div className="jem-input-group">
                 <label className="jem-label jem-label--inline">
                   <FaIcon name="percent" />
                   {t('journal_form.fx_rate', { defaultValue: '% FX' })}
                 </label>
-                <input
-                  type="text"
-                  className="jem-field jem-mono jem-field--locked"
-                  value={metadata.exchangeRate}
-                  readOnly
-                  tabIndex={-1}
-                  title={t('journal_form.auto_locked', { defaultValue: 'Set automatically; not editable' })}
-                />
+                <input type="text" className="jem-field jem-mono jem-field--locked" value={metadata.exchangeRate} readOnly tabIndex={-1} />
               </div>
             </div>
           </div>
@@ -202,16 +231,16 @@ export function JournalNewForm({ accounts = [], catalogByAccount = {}, costCente
             <a href="/financials/journal" className="jem-btn-ghost">
               {t('journal_form.cancel', { defaultValue: 'Cancel' })}
             </a>
-            <button type="submit" name="save_as_draft" value="1" className="jem-btn-primary" disabled={!canPost}>
+            <button type="button" className="jem-btn-primary" disabled={!canPost || busy} onClick={() => submitJournal(true, false)}>
               <FaIcon name="floppy-o" />
-              {t('journal_form.save_draft', { defaultValue: 'Save draft' })}
+              {busy ? t('journal_form.working') : t('journal_form.save_draft', { defaultValue: 'Save draft' })}
             </button>
-            <button type="submit" name="save_as_draft" value="0" className="jem-btn-secondary" disabled={!canPost}>
-              {t('journal_form.post', { defaultValue: 'Post journal' })}
+            <button type="button" className="jem-btn-secondary" disabled={!canPost || busy} onClick={() => submitJournal(false, false)}>
+              {busy ? t('journal_form.working') : t('journal_form.post', { defaultValue: 'Post journal' })}
             </button>
           </div>
         </main>
       </div>
-    </form>
+    </div>
   );
 }

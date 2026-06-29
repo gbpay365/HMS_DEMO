@@ -1,5 +1,7 @@
 /** Cash disbursement dropdown options — keep in sync with lib/cashierDisbursementOptions.js */
 
+import { isNigeriaInstall } from './paymentMethodAccounts';
+
 export const DISBURSEMENT_TYPES = [
   { value: 'expense', labelKey: 'cashier.disbursement.type_expense' },
   { value: 'payout', labelKey: 'cashier.disbursement.type_payout' },
@@ -47,30 +49,13 @@ export const DISBURSEMENT_CATEGORIES = [
   { value: 'general', labelKey: 'cashier.disbursement.cat_general' },
 ];
 
-export const DISBURSEMENT_PAYMENT_METHODS = [
-  'Cash',
-  'MOMO',
-  'OM',
-  'Bank',
-  'Bank Transfer',
-  'BetterPay',
-  'Wallet',
-  'Card',
-];
+/** Petty-cash disbursements — country-aware payment methods. */
+export const DISBURSEMENT_PAYMENT_METHODS_CM = ['Cash', 'MOMO', 'OM'];
+export const DISBURSEMENT_PAYMENT_METHODS_NG = ['Cash', 'Bank', 'CARD', 'Paystack', 'MOMO', 'Wallet'];
 
-export function resolveDisbursementPaymentMethods(serverList) {
-  const raw = Array.isArray(serverList) && serverList.length ? serverList : DISBURSEMENT_PAYMENT_METHODS;
-  const out = [];
-  for (const m of raw) {
-    let v = String(m || '').trim();
-    if (v === 'Mobile Money') v = 'MOMO';
-    if (v === 'Orange Money') v = 'OM';
-    if (v === 'QR Code') v = 'BetterPay';
-    if (!v) continue;
-    if (!out.includes(v)) out.push(v);
-  }
-  for (const m of DISBURSEMENT_PAYMENT_METHODS) {
-    if (!out.includes(m)) out.push(m);
-  }
-  return out;
+export function resolveDisbursementPaymentMethods() {
+  return isNigeriaInstall() ? [...DISBURSEMENT_PAYMENT_METHODS_NG] : [...DISBURSEMENT_PAYMENT_METHODS_CM];
 }
+
+/** @deprecated Use resolveDisbursementPaymentMethods() */
+export const DISBURSEMENT_PAYMENT_METHODS = DISBURSEMENT_PAYMENT_METHODS_CM;

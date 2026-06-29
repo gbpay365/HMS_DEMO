@@ -1,0 +1,83 @@
+{
+  "code": "BJ",
+  "name": "Benin",
+  "regionLabel": "Department",
+  "subRegionLabel": "Commune",
+  "regions": [
+    "Alibori",
+    "Atakora",
+    "Atlantique",
+    "Borgou",
+    "Collines",
+    "Donga",
+    "Kouffo",
+    "Littoral",
+    "Mono",
+    "Ouémé",
+    "Plateau",
+    "Zou"
+  ],
+  "subRegions": {
+    "Alibori": [
+      "Banikoara",
+      "Kandi",
+      "Malanville"
+    ],
+    "Atakora": [
+      "Guilmaro",
+      "Natitingou",
+      "Tanguieta"
+    ],
+    "Atlantique": [
+      "Abomey-Calavi",
+      "Allada",
+      "Hévié",
+      "Hinvi",
+      "Ouidah"
+    ],
+    "Borgou": [
+      "Bembèrèkè",
+      "Bétérou",
+      "Nikki",
+      "Parakou",
+      "Tchaourou"
+    ],
+    "Collines": [
+      "Comé",
+      "Dassa-Zoumé",
+      "Savalou",
+      "Savé"
+    ],
+    "Donga": [
+      "Bassila",
+      "Commune of Djougou",
+      "Djougou"
+    ],
+    "Kouffo": [
+      "Djakotomey",
+      "Dogbo"
+    ],
+    "Littoral": [
+      "Cotonou"
+    ],
+    "Mono": [
+      "Commune of Athieme",
+      "Lokossa"
+    ],
+    "Ouémé": [
+      "Porto-Novo"
+    ],
+    "Plateau": [
+      "Kétou",
+      "Pobé",
+      "Sakété"
+    ],
+    "Zou": [
+      "Abomey",
+      "Bohicon",
+      "Commune of Agbangnizoun",
+      "Cové"
+    ]
+  },
+  "source": "dr5hn/countries-states-cities-database"
+}

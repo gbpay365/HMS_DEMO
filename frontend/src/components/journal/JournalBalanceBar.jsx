@@ -1,10 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { FaIcon } from '../FaIcon';
 import { journalLineTotals } from '../../lib/journalEntryFormHelpers';
+import { currencyCode, formatAmount } from '../../lib/hmsLocale';
 
 export function JournalBalanceBar({ lines = [] }) {
   const { t } = useTranslation('financials');
   const totals = journalLineTotals(lines);
+  const cur = currencyCode();
   const validCount = lines.filter(
     (ln) => ln.accountId && (parseInt(String(ln.debit).replace(/\D/g, ''), 10) || parseInt(String(ln.credit).replace(/\D/g, ''), 10))
   ).length;
@@ -45,16 +47,16 @@ export function JournalBalanceBar({ lines = [] }) {
         <div className="jem-balance__cell">
           <p className="jem-balance__cell--small">{t('journal_form.total_debit', { defaultValue: 'Total Debits' })}</p>
           <p className="jem-balance__val">
-            {totals.debit.toLocaleString('fr-FR')}
-            <span className="jem-balance__unit">XAF</span>
+            {formatAmount(totals.debit)}
+            <span className="jem-balance__unit">{cur}</span>
           </p>
         </div>
         <div className="jem-balance__sep" />
         <div className="jem-balance__cell">
           <p className="jem-balance__cell--small">{t('journal_form.total_credit', { defaultValue: 'Total Credits' })}</p>
           <p className="jem-balance__val">
-            {totals.credit.toLocaleString('fr-FR')}
-            <span className="jem-balance__unit">XAF</span>
+            {formatAmount(totals.credit)}
+            <span className="jem-balance__unit">{cur}</span>
           </p>
         </div>
         {showImbalance ? (
@@ -63,8 +65,8 @@ export function JournalBalanceBar({ lines = [] }) {
             <div className="jem-balance__cell">
               <p className="jem-balance__cell--small">{t('journal_form.difference', { defaultValue: 'Imbalance' })}</p>
               <p className="jem-balance__val" style={{ color: '#be123c' }}>
-                {Math.abs(totals.diff).toLocaleString('fr-FR')}
-                <span className="jem-balance__unit">XAF</span>
+                {formatAmount(Math.abs(totals.diff))}
+                <span className="jem-balance__unit">{cur}</span>
               </p>
             </div>
           </>

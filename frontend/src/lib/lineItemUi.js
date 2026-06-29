@@ -6,16 +6,28 @@ const SURFACE_ORDER_THEME = {
   addBtn: 'border-slate-200 text-brand hover:bg-brand-light',
   footer: 'border-slate-100 bg-slate-50 text-slate-600',
   rowHover: 'hover:border-slate-200',
-  dash: 'text-slate-400'};
+  dash: 'text-slate-400',
+  variant: 'default'};
+
+const MOCDOC_ORDER_THEME = {
+  shell: '',
+  header: '',
+  icon: '',
+  addBtn: '',
+  footer: '',
+  rowHover: '',
+  dash: 'text-orange-500',
+  variant: 'mocdoc'};
 
 export const ORDER_THEMES = {
   plan: SURFACE_ORDER_THEME,
   pharmacy: SURFACE_ORDER_THEME,
-  lab: SURFACE_ORDER_THEME,
-  radiology: SURFACE_ORDER_THEME};
+  lab: MOCDOC_ORDER_THEME,
+  radiology: MOCDOC_ORDER_THEME,
+  mocdoc: MOCDOC_ORDER_THEME};
 
 export function lineGradient() {
-  return 'from-emerald-500 to-teal-600 shadow-emerald-500/25';
+  return 'from-[#1a9e9e] to-[#148585] shadow-teal-500/25';
 }
 
 export function fmtCatalogPrice(n) {

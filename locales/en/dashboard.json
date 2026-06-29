@@ -2,8 +2,61 @@
   "hospital": "Hospital",
   "title": "Dashboard",
   "subtitle": "Operational overview — patients, appointments, and department shortcuts.",
+  "profiles": {
+    "doctor": {
+      "title": "Doctor dashboard",
+      "subtitle": "Today's consultations, queue, orders, and inpatient load.",
+      "open_portal": "Open doctor portal"
+    },
+    "nurse": {
+      "title": "Nursing dashboard",
+      "subtitle": "Vitals, OPD queue, wards, emergency, and care tasks today.",
+      "open_portal": "Open nursing portal"
+    },
+    "laboratory": {
+      "title": "Laboratory dashboard",
+      "subtitle": "Pending requests, processing, completions, and validation queue.",
+      "open_portal": "Open laboratory portal"
+    },
+    "pharmacy": {
+      "title": "Pharmacy dashboard",
+      "subtitle": "Dispense queue, prescriptions, stock alerts, and returns.",
+      "open_portal": "Open pharmacy portal"
+    },
+    "radiology": {
+      "title": "Radiology dashboard",
+      "subtitle": "Imaging worklist, reporting, and validation queue.",
+      "open_portal": "Open radiology portal"
+    },
+    "cashier": {
+      "title": "Cashier dashboard",
+      "subtitle": "Live collections, disbursements, balance, and payment methods.",
+      "open_portal": "Open cashier portal"
+    },
+    "secretary": {
+      "title": "Secretary dashboard",
+      "subtitle": "Director schedule, briefings, and hospital pulse.",
+      "open_portal": "Open secretary portal"
+    },
+    "director": {
+      "title": "Director dashboard",
+      "subtitle": "Hospital performance, revenue, beds, and operational alerts.",
+      "open_portal": "Open director portal"
+    },
+    "front_desk": {
+      "title": "Front desk dashboard",
+      "subtitle": "Registrations, visits, vitals, and payment codes today.",
+      "open_portal": "Open front desk portal"
+    },
+    "assistant_director": {
+      "title": "Operations dashboard",
+      "subtitle": "Live hospital metrics and operational oversight.",
+      "open_portal": "Open assistant director portal"
+    }
+  },
   "open_shortcut": "Open →",
   "new_patient": "+ New patient",
+  "hero_more": "More",
   "sections": {
     "clinical": "Clinical",
     "operations": "Operations",
@@ -57,6 +110,10 @@
     "view_all_doctors": "View all doctors",
     "no_active_doctors": "No active doctors found.",
     "doctor_role": "Doctor",
-    "active": "Active"
+    "active": "Active",
+    "empty_chart": "No registrations in the last 7 days.",
+    "empty_cta_appointments": "Open scheduling",
+    "empty_cta_patients": "Register a patient",
+    "empty_cta_doctors": "View doctors"
   }
 }

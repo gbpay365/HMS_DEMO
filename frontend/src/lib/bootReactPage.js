@@ -19,6 +19,7 @@ import { OpdQueuePageApp } from '../pages/OpdQueuePageApp';
 import { OpdMedPageApp } from '../pages/OpdMedPageApp';
 import { CashierPageApp } from '../pages/CashierPageApp';
 import { FrontDeskPageApp } from '../pages/FrontDeskPageApp';
+import { FrontDeskValidatePaymentPageApp } from '../pages/FrontDeskValidatePaymentPageApp';
 import { LoginPageApp } from '../pages/LoginPageApp';
 import { DashboardPageApp } from '../pages/DashboardPageApp';
 import { StaffPageApp } from '../pages/StaffPageApp';
@@ -57,12 +58,13 @@ import { VisitingDoctorAdminPageApp } from '../pages/VisitingDoctorAdminPageApp'
 import { VisitingDoctorMyVisitPageApp } from '../pages/VisitingDoctorMyVisitPageApp';
 import { MaternityChartPageApp } from '../pages/MaternityChartPageApp';
 import { PayrollSettingsPageApp } from '../pages/PayrollSettingsPageApp';
+import { CountryConfigurationPageApp } from '../pages/CountryConfigurationPageApp';
 import { NavBackButton, PageNavActions } from '../components/PageNavActions';
 import { EmployeeProfilePicturePicker } from '../components/EmployeeProfilePicturePicker';
 import { EmployeeDoctorMultiFields } from '../components/EmployeeDoctorMultiFields';
 import { mountModalBridge } from './modalBridge';
 import { mountNotifyBridge } from './notifyBridge';
-import { consumeQueryFlash } from './queryFlash';
+import { consumeQueryFlash, stripQueryMsgErr } from './queryFlash';
 import { parsePageData } from './parsePageData';
 import { NotifyHost } from '../components/NotifyHost';
 import { PayrollModalsHost } from '../components/payroll/PayrollModalsHost';
@@ -87,6 +89,7 @@ const APPS = {
   'opd-med': OpdMedPageApp,
   cashier: CashierPageApp,
   'front-desk': FrontDeskPageApp,
+  'front-desk-validate-payment': FrontDeskValidatePaymentPageApp,
   login: LoginPageApp,
   dashboard: DashboardPageApp,
   staff: StaffPageApp,
@@ -127,7 +130,8 @@ const APPS = {
   'death-registry': DeathRegistryPageApp,
   'ui-kit': HmsUiKitPageApp,
   'maternity-chart': MaternityChartPageApp,
-  'payroll-settings': PayrollSettingsPageApp};
+  'payroll-settings': PayrollSettingsPageApp,
+  'country-configuration': CountryConfigurationPageApp};
 
 function showBootError(message) {
   const root = document.getElementById('hms-react-root');
@@ -156,6 +160,7 @@ export async function bootReactPage() {
       createRoot(notifyRoot).render(createElement(NotifyHost));
     }
     mountNotifyBridge();
+    stripQueryMsgErr();
     consumeQueryFlash();
     mountModalBridge();
 

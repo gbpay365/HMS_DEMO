@@ -32,6 +32,8 @@ import enVisitingDoctor from '../../../locales/en/visitingDoctor.json';
 import frVisitingDoctor from '../../../locales/fr/visitingDoctor.json';
 import enDeath from '../../../locales/en/death.json';
 import frDeath from '../../../locales/fr/death.json';
+import enConfiguration from '../../../locales/en/configuration.json';
+import frConfiguration from '../../../locales/en/configuration.json';
 
 export const resources = {
   en: {
@@ -51,7 +53,8 @@ export const resources = {
     legacy: enLegacy,
     portal: enPortal,
     visitingDoctor: enVisitingDoctor,
-    death: enDeath},
+    death: enDeath,
+    configuration: enConfiguration},
   fr: {
     common: frCommon,
     errors: frErrors,
@@ -69,4 +72,5 @@ export const resources = {
     legacy: frLegacy,
     portal: frPortal,
     visitingDoctor: frVisitingDoctor,
-    death: frDeath}};
+    death: frDeath,
+    configuration: frConfiguration}};

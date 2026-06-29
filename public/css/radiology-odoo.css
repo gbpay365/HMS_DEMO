@@ -1,10 +1,10 @@
 /**
- * Radiology — workflow content styles (nav: hms-dept-nav.css)
+ * Radiology — dept shell + registry worklist (nav: hms-dept-nav.css)
  */
 .radiology-odoo-app {
-  --o-brand: var(--hms-dept-radiology);
-  --o-brand-hover: #0284c7;
-  --o-brand-soft: rgba(14, 165, 233, 0.12);
+  --o-brand: var(--hms-theme-accent, var(--hms-dept-radiology));
+  --o-brand-hover: var(--hms-theme-accent-deep, #4338ca);
+  --o-brand-soft: var(--hms-theme-accent-soft, rgba(129, 140, 248, 0.12));
 }
 
 .radiology-odoo-app .o_nav_module--radiology::before {
@@ -14,12 +14,222 @@
   font-weight: normal;
 }
 
+body.hms-body--dept-odoo .radiology-odoo-app .hms-react-page.page-wrapper {
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+  background: transparent !important;
+}
+
+body.hms-body--dept-odoo .radiology-odoo-app .hms-react-root {
+  min-height: 0;
+}
+
+.rad-registry-page {
+  padding-bottom: 2rem;
+}
+
+.rad-stat-row {
+  margin-bottom: 1rem;
+}
+
+.radiology-odoo-app .o_stat_card {
+  background: var(--hms-theme-card-bg, #fff);
+  border: 1px solid var(--hms-theme-border, #a5b4fc);
+  border-radius: 0.85rem;
+  padding: 0.85rem 1rem;
+  box-shadow: 0 1px 4px rgba(26, 26, 46, 0.05);
+}
+
+.radiology-odoo-app .o_stat_card .n {
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--hms-theme-ink, #1a1a2e);
+}
+
+.radiology-odoo-app .o_stat_card .l {
+  margin-top: 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--hms-theme-muted, #4338ca);
+}
+
+.radiology-odoo-app .o_stat_card--brand .n { color: var(--hms-theme-accent, #818cf8); }
+.radiology-odoo-app .o_stat_card--warning .n { color: #ea580c; }
+.radiology-odoo-app .o_stat_card--info .n { color: #2563eb; }
+
+.rad-toolbar {
+  margin-bottom: 0.85rem;
+}
+
+.rad-searchbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0 !important;
+  padding: 0.85rem 1rem;
+  background: var(--hms-theme-card-bg, #fff);
+  border: 1px solid var(--hms-theme-border, #a5b4fc);
+  border-radius: 0.85rem;
+  box-shadow: 0 1px 4px rgba(26, 26, 46, 0.04);
+}
+
+.rad-searchbar .hms-search-field,
+.rad-searchbar > div[role='search'],
+.rad-searchbar input[type='search'],
+.rad-searchbar input[type='text'],
+.rad-searchbar .hms-input {
+  flex: 1 1 16rem;
+  min-width: 0;
+  max-width: none !important;
+  width: 100%;
+  border: 1px solid var(--hms-theme-border, #c7d2fe);
+  border-radius: 999px;
+  padding: 0.55rem 1rem 0.55rem 2.25rem;
+  font-size: 0.88rem;
+  background: var(--hms-theme-page-bg, #eef2ff);
+}
+
+.rad-toolbar__count {
+  flex-shrink: 0;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--hms-theme-muted, #4338ca);
+  background: color-mix(in srgb, var(--hms-theme-page-bg, #eef2ff) 80%, #fff);
+  border: 1px solid var(--hms-theme-border, #c7d2fe);
+}
+
+.rad-print-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.85rem;
+  border: 1px solid #c7d2fe;
+  background: #eef2ff;
+}
+
+.rad-print-bar__label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #312e81;
+}
+
+.rad-print-bar__btn {
+  font-size: 0.76rem !important;
+  padding: 0.45rem 0.85rem !important;
+}
+
+.rad-print-bar__clear {
+  border: none;
+  background: transparent;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #4338ca;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.rad-table-wrap {
+  overflow-x: auto;
+  overflow-y: visible;
+  border-radius: 0.85rem;
+  border: 1px solid var(--hms-theme-border, #a5b4fc);
+  background: var(--hms-theme-card-bg, #fff);
+  box-shadow: 0 1px 4px rgba(26, 26, 46, 0.04);
+}
+
+.rad-list-table {
+  min-width: 920px;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.rad-list-table th {
+  background: color-mix(in srgb, var(--hms-theme-page-bg, #eef2ff) 65%, #fff) !important;
+  color: var(--hms-theme-muted, #4338ca) !important;
+  white-space: nowrap;
+}
+
+.rad-list-table td {
+  vertical-align: middle;
+}
+
+.rad-list-table tr.is-selected td {
+  background: #eef2ff;
+}
+
+.rad-col-check {
+  width: 2.5rem;
+  text-align: center;
+}
+
+.rad-col-action {
+  width: 4.5rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.rad-row-check {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--hms-theme-accent, #818cf8);
+}
+
+.rad-row-check-spacer {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+}
+
+.rad-col-id {
+  font-weight: 800;
+  color: var(--hms-theme-accent-deep, #312e81);
+  white-space: nowrap;
+}
+
+.rad-patient-name {
+  font-weight: 700;
+  color: var(--hms-theme-ink, #1a1a2e);
+}
+
+.rad-patient-meta,
+.rad-col-ref,
+.rad-col-date {
+  font-size: 0.78rem;
+  color: var(--hms-theme-muted, #64748b);
+}
+
+.rad-col-exam {
+  font-weight: 600;
+  color: var(--hms-theme-ink, #1a1a2e);
+}
+
+.rad-empty {
+  padding: 2.5rem 1rem !important;
+  text-align: center;
+  color: var(--hms-theme-muted, #64748b);
+}
+
+.rad-action-empty {
+  color: #94a3b8;
+}
+
 .radiology-odoo-app .o_btn_primary {
-  background: linear-gradient(135deg, var(--hms-dept-radiology), #0284c7);
+  background: linear-gradient(135deg, var(--hms-theme-accent, #818cf8), var(--hms-theme-accent-deep, #312e81));
   color: #fff;
   border: none;
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 600;
   font-size: 0.88rem;
   text-decoration: none;
@@ -72,9 +282,9 @@
 }
 
 .radiology-odoo-app .o_pill.active {
-  background: #e0f2fe;
-  border-color: #7dd3fc;
-  color: #0369a1;
+  background: var(--hms-theme-accent-soft, #eef2ff);
+  border-color: var(--hms-theme-accent, #818cf8);
+  color: var(--hms-theme-accent-deep, #312e81);
 }
 
 .radiology-odoo-app .o_list_table {
@@ -143,9 +353,9 @@
   text-transform: uppercase;
 }
 
-.radiology-odoo-app .o_status--submitted { background: #fef3c7; color: #92400e; }
-.radiology-odoo-app .o_status--in_progress { background: #dbeafe; color: #1d4ed8; }
-.radiology-odoo-app .o_status--done { background: #d1fae5; color: #047857; }
+.radiology-odoo-app .o_status--submitted { background: #fff7ed; color: #c2410c; }
+.radiology-odoo-app .o_status--in_progress { background: #eef2ff; color: #4338ca; }
+.radiology-odoo-app .o_status--done { background: #ecfdf5; color: #047857; }
 .radiology-odoo-app .o_status--draft { background: #f1f5f9; color: #475569; }
 
 .radiology-odoo-app .o_form_sheet {

@@ -248,6 +248,48 @@ body.hms-body--dept-odoo .page-wrapper > .content {
   gap: 0.35rem;
 }
 
+/* Language switcher (Cameroon only) */
+.hms-dept-app .hms-lang-form--odoo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.hms-dept-app .o_nav_lang_label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--o-muted, var(--hms-ink-muted));
+  white-space: nowrap;
+}
+
+.hms-dept-app .o_nav_lang_btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  background: #fff;
+  color: #334155;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.hms-dept-app .o_nav_lang_btn.is-active {
+  background: var(--o-brand, var(--hms-brand));
+  border-color: var(--o-brand, var(--hms-brand));
+  color: #fff;
+}
+
+.hms-dept-app .o_nav_lang_btn:hover {
+  border-color: var(--o-brand, var(--hms-brand));
+  text-decoration: none;
+}
+
 /* ── Main content area ── */
 .hms-dept-app .o_action_manager {
   flex: 1;

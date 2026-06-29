@@ -1,0 +1,60 @@
+<%- include('partials/header') %>
+<%- include('partials/laboratory-odoo-start', {
+  labOdooMenu: 'operations',
+  labOdooTitle: 'Dispatch management'
+}) %>
+<div class="o_content">
+<%- include('partials/lims-ops-nav', { limsOpsMenu: 'dispatch' }) %>
+<% if (flash) { %><div class="alert alert-success small mb-3"><%= flash %></div><% } %>
+<% if (error) { %><div class="alert alert-danger small mb-3"><%= error %></div><% } %>
+<div class="hms-chip-row mb-3">
+ <a href="/lims/ops/dispatch" class="hms-chip<%= pendingOnly ? ' active' : '' %>">Pending dispatch</a>
+ <a href="/lims/ops/dispatch?all=1" class="hms-chip<%= !pendingOnly ? ' active' : '' %>">All results</a>
+</div>
+<div class="hms-surface-card">
+ <div class="table-responsive">
+  <table class="table table-sm table-hover mb-0">
+   <thead class="thead-light">
+    <tr>
+     <th>Patient</th><th>Test</th><th>Verified</th><th>Approved</th><th>Dispatch</th><th>Actions</th>
+    </tr>
+   </thead>
+   <tbody>
+   <% if (!rows || !rows.length) { %>
+   <tr><td colspan="6" class="text-muted text-center py-4">Nothing to dispatch.</td></tr>
+   <% } %>
+   <% (rows || []).forEach(function(r){ %>
+   <tr>
+    <td><%= r.first_name %> <%= r.last_name %></td>
+    <td><%= r.test_name %></td>
+    <td class="small"><%= r.verified_at ? 'Yes' : '—' %></td>
+    <td class="small"><%= r.approved_at ? 'Yes' : '—' %></td>
+    <td><span class="badge badge-light border"><%= r.dispatch_status || 'pending' %></span></td>
+    <td class="text-nowrap">
+     <% if (!r.verified_at) { %>
+     <form method="post" action="/lims/ops/verify/<%= r.lab_result_id %>" class="d-inline">
+      <input type="hidden" name="returnTo" value="/lims/ops/dispatch">
+      <button type="submit" class="btn btn-xs btn-outline-secondary btn-sm">Verify</button>
+     </form>
+     <% } %>
+     <% if (!r.approved_at) { %>
+     <form method="post" action="/lims/ops/approve/<%= r.lab_result_id %>" class="d-inline">
+      <input type="hidden" name="returnTo" value="/lims/ops/dispatch">
+      <button type="submit" class="btn btn-xs btn-outline-primary btn-sm">Approve</button>
+     </form>
+     <% } %>
+     <form method="post" action="/lims/ops/dispatch/<%= r.lab_result_id %>" class="d-inline">
+      <input type="hidden" name="channel" value="print">
+      <button type="submit" class="btn btn-xs btn-success btn-sm">Dispatch</button>
+     </form>
+     <a href="/lab/templates?lab_result_id=<%= r.lab_result_id %>" class="btn btn-xs btn-link btn-sm">Report</a>
+    </td>
+   </tr>
+   <% }); %>
+   </tbody>
+  </table>
+ </div>
+</div>
+</div>
+<%- include('partials/laboratory-odoo-end') %>
+<%- include('partials/footer') %>

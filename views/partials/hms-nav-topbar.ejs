@@ -43,11 +43,8 @@ function _dropPrefixes(menu) {
   <button type="button" class="o_nav_home" id="hmsOdooAppsBtn" title="<%= _t('all_applications', { ns: 'nav', defaultValue: 'All applications' }) %>" aria-label="<%= _t('all_applications', { ns: 'nav', defaultValue: 'All applications' }) %>">
     <i class="fa fa-th"></i>
   </button>
-  <% if (canHospitalDashboard()) { %>
-  <a href="/dashboard" class="o_nav_module"><%= _t('hospital_dashboard', { ns: 'nav', defaultValue: 'Dashboard' }) %></a>
-  <% } %>
-  <button type="button" class="o_nav_menu_toggle" id="hmsOdooMenuToggle" aria-label="<%= _t('menu', { ns: 'nav', defaultValue: 'Menu' }) %>"><i class="fa fa-bars"></i></button>
-  <nav class="o_nav_menu" id="hmsOdooNavMenu">
+  <button type="button" class="o_nav_menu_toggle o_nav_menu_toggle--hidden" id="hmsOdooMenuToggle" aria-hidden="true" aria-label="<%= _t('menu', { ns: 'nav', defaultValue: 'Menu' }) %>"><i class="fa fa-bars"></i></button>
+  <nav class="o_nav_menu o_nav_menu--hidden" id="hmsOdooNavMenu" aria-hidden="true">
     <% (_nav.primaryLinks || []).forEach(function(it){ %>
     <a href="<%= (it.url && it.url !== '__home__') ? it.url : _homeUrl %>" class="o_nav_link<%= _navActive(it.url) %>"><%= _navLbl(it.code, it.label) %></a>
     <% }); %>
@@ -64,6 +61,7 @@ function _dropPrefixes(menu) {
     <% }); %>
   </nav>
   <div class="o_nav_right">
+    <%- include('hms-nav-topbar-extras') %>
     <a href="<%= _homeUrl %>" class="o_nav_right_link o_nav_home_link"><i class="fa fa-home"></i> <%= _homeLabel %></a>
     <%- include('hms-lang-switcher', { langSwitcherOdoo: true }) %>
     <div class="dropdown">

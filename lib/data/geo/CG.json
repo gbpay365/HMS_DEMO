@@ -1,0 +1,62 @@
+{
+  "code": "CG",
+  "name": "Congo",
+  "regionLabel": "Department",
+  "subRegionLabel": "District",
+  "regions": [
+    "Bouenza",
+    "Brazzaville",
+    "Cuvette",
+    "Cuvette-Ouest",
+    "Kouilou",
+    "Lékoumou",
+    "Likouala",
+    "Niari",
+    "Plateaux",
+    "Pointe-Noire",
+    "Pool",
+    "Sangha"
+  ],
+  "subRegions": {
+    "Bouenza": [
+      "Kayes",
+      "Madingou"
+    ],
+    "Brazzaville": [
+      "Brazzaville"
+    ],
+    "Cuvette": [
+      "Makoua",
+      "Owando"
+    ],
+    "Cuvette-Ouest": [
+      "Ewo"
+    ],
+    "Lékoumou": [
+      "Sibiti"
+    ],
+    "Likouala": [
+      "Impfondo"
+    ],
+    "Niari": [
+      "Dolisie",
+      "Mossendjo"
+    ],
+    "Plateaux": [
+      "Djambala",
+      "Gamboma"
+    ],
+    "Pointe-Noire": [
+      "Loandjili",
+      "Pointe-Noire"
+    ],
+    "Pool": [
+      "Kinkala"
+    ],
+    "Sangha": [
+      "Ouésso",
+      "Sémbé"
+    ]
+  },
+  "source": "dr5hn/countries-states-cities-database"
+}

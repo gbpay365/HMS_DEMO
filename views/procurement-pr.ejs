@@ -1,7 +1,11 @@
 <%- include('partials/header') %>
-
-<div class="page-wrapper hms-surface-module">
- <div class="content">
+<% var _hub = locals.procHubUrl || '/procurement'; var _prBase = locals.procPrBase || '/procurement/purchase-requests'; %>
+<% if (locals.pharmacyOdooApp) { %>
+<%- include('partials/pharmacy-odoo-start', { phaOdooMenu: 'purchase', phaOdooSub: 'procurement', phaOdooTitle: locals.phaOdooTitle || 'Purchase requests', nursingSupplyPending, flash, error }) %>
+<div class="o_content p-3 hms-surface-module"><div class="content">
+<% } else { %>
+<div class="page-wrapper hms-surface-module"><div class="content">
+<% } %>
  <% if(locals.flash){ %><div class="alert alert-success border-0 shadow-sm mb-3"><%= flash %></div><% } %>
  <% if(locals.error){ %><div class="alert alert-danger border-0 shadow-sm mb-3"><%= error %></div><% } %>
 
@@ -33,7 +37,7 @@
      <% if (pr.estimated_total) { %> · Est. <%= Number(pr.estimated_total).toLocaleString() %> XAF<% } %>
     </div>
     <div class="d-flex flex-wrap gap-2">
-     <a href="/procurement/purchase-requests/<%= pr.id %>/print?print=1" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="fa fa-print mr-1"></i>Download / Print</a>
+     <a href="<%= _prBase %>/<%= pr.id %>/print?print=1" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="fa fa-print mr-1"></i>Download / Print</a>
      <% if (canWrite && pr.status === 'draft') { %>
      <form method="post" action="/procurement/purchase-requests" class="d-inline">
       <input type="hidden" name="pr_action" value="issue">
@@ -56,7 +60,8 @@
      </form>
      <% } %>
      <% if (pr.converted_po_id) { %>
-     <a href="/procurement/purchase-orders/<%= pr.converted_po_id %>" class="btn btn-outline-primary btn-sm">View PO</a>
+     <% var _poDetail = (locals.procLinks && locals.procLinks.purchaseOrderDetail) || '/procurement/purchase-orders/'; %>
+     <a href="<%= _poDetail %><%= pr.converted_po_id %>" class="btn btn-outline-primary btn-sm">View PO</a>
      <% } %>
     </div>
    </div>
@@ -112,7 +117,7 @@
   </div>
  </div>
 
- <a href="/procurement/purchase-requests" class="btn btn-link btn-sm">← All purchase requests</a>
+ <a href="<%= _prBase %>" class="btn btn-link btn-sm">← All purchase requests</a>
 
  <% } else { %>
  <!-- PR List -->
@@ -125,20 +130,20 @@
   <div class="hms-stat-card hms-stat-card--success"><div class="hms-stat-card__value"><%= _prs.reviewed %></div><div class="hms-stat-card__label">Reviewed</div></div>
  </div>
 
- <form method="get" action="/procurement/purchase-requests" class="hms-filter-bar">
+ <form method="get" action="<%= _prBase %>" class="hms-filter-bar">
   <input type="search" name="q" class="form-control hms-filter-bar__search" value="<%= _search %>" placeholder="Search PR #, title or vendor">
   <% if (_pst) { %><input type="hidden" name="status" value="<%= _pst %>"><% } %>
   <button type="submit" class="btn btn-outline-secondary">Search</button>
-  <% if (_search || _pst) { %><a href="/procurement/purchase-requests" class="btn btn-link">Reset</a><% } %>
+  <% if (_search || _pst) { %><a href="<%= _prBase %>" class="btn btn-link">Reset</a><% } %>
  </form>
 
  <div class="hms-chip-row">
-  <a href="/procurement/purchase-requests<%= _search ? ('?q=' + encodeURIComponent(_search)) : '' %><%= _dept ? ((_search ? '&' : '?') + 'dept=' + encodeURIComponent(_dept)) : '' %>" class="hms-chip<%= !_pst && !_dept ? ' active' : '' %>">All</a>
-  <a href="/procurement/purchase-requests?dept=laboratory<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _dept === 'laboratory' ? ' active' : '' %>">Laboratory</a>
-  <a href="/procurement/purchase-requests?dept=radiology<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _dept === 'radiology' ? ' active' : '' %>">Radiology</a>
-  <a href="/procurement/purchase-requests?status=draft<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %><%= _dept ? ('&dept=' + encodeURIComponent(_dept)) : '' %>" class="hms-chip<%= _pst === 'draft' ? ' active' : '' %>">Draft</a>
-  <a href="/procurement/purchase-requests?status=issued<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %><%= _dept ? ('&dept=' + encodeURIComponent(_dept)) : '' %>" class="hms-chip<%= _pst === 'issued' ? ' active' : '' %>">Issued</a>
-  <a href="/procurement/purchase-requests?status=reviewed<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %><%= _dept ? ('&dept=' + encodeURIComponent(_dept)) : '' %>" class="hms-chip<%= _pst === 'reviewed' ? ' active' : '' %>">Reviewed</a>
+  <a href="<%= _prBase %><%= _search ? ('?q=' + encodeURIComponent(_search)) : '' %><%= _dept ? ((_search ? '&' : '?') + 'dept=' + encodeURIComponent(_dept)) : '' %>" class="hms-chip<%= !_pst && !_dept ? ' active' : '' %>">All</a>
+  <a href="<%= _prBase %>?dept=laboratory<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _dept === 'laboratory' ? ' active' : '' %>">Laboratory</a>
+  <a href="<%= _prBase %>?dept=radiology<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _dept === 'radiology' ? ' active' : '' %>">Radiology</a>
+  <a href="<%= _prBase %>?status=draft<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %><%= _dept ? ('&dept=' + encodeURIComponent(_dept)) : '' %>" class="hms-chip<%= _pst === 'draft' ? ' active' : '' %>">Draft</a>
+  <a href="<%= _prBase %>?status=issued<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %><%= _dept ? ('&dept=' + encodeURIComponent(_dept)) : '' %>" class="hms-chip<%= _pst === 'issued' ? ' active' : '' %>">Issued</a>
+  <a href="<%= _prBase %>?status=reviewed<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %><%= _dept ? ('&dept=' + encodeURIComponent(_dept)) : '' %>" class="hms-chip<%= _pst === 'reviewed' ? ' active' : '' %>">Reviewed</a>
  </div>
 
  <div class="hms-surface-card">
@@ -157,8 +162,8 @@
       <td><span class="badge badge-light text-uppercase extra-small"><%= row.status %></span></td>
       <td><%= row.needed_by || '—' %></td>
       <td class="text-right">
-       <a href="/procurement/purchase-requests/<%= row.id %>" class="btn btn-outline-primary btn-sm rounded-pill">Open</a>
-       <a href="/procurement/purchase-requests/<%= row.id %>/print" target="_blank" class="btn btn-outline-secondary btn-sm rounded-pill"><i class="fa fa-print"></i></a>
+       <a href="<%= _prBase %>/<%= row.id %>" class="btn btn-outline-primary btn-sm rounded-pill">Open</a>
+       <a href="<%= _prBase %>/<%= row.id %>/print" target="_blank" class="btn btn-outline-secondary btn-sm rounded-pill"><i class="fa fa-print"></i></a>
       </td>
      </tr>
      <% }) %>
@@ -168,8 +173,6 @@
   </div>
  </div>
  <% } %>
- </div>
-</div>
 
 <% if (canWrite && !pr) { %>
 <div class="modal fade" id="newPrModal" tabindex="-1" role="dialog" aria-labelledby="newPrModalTitle">
@@ -205,4 +208,8 @@
 <% } %>
 
 <style>.extra-small{font-size:0.65rem;}</style>
+</div></div>
+<% if (locals.pharmacyOdooApp) { %>
+<%- include('partials/pharmacy-odoo-end') %>
+<% } %>
 <%- include('partials/footer') %>

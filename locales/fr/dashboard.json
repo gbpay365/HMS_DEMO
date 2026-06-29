@@ -2,6 +2,58 @@
   "hospital": "Hôpital",
   "title": "Tableau de bord",
   "subtitle": "Vue opérationnelle — patients, rendez-vous et raccourcis par service.",
+  "profiles": {
+    "doctor": {
+      "title": "Tableau de bord — Médecin",
+      "subtitle": "Consultations, file d'attente, ordonnances et hospitalisations du jour.",
+      "open_portal": "Ouvrir le portail médecin"
+    },
+    "nurse": {
+      "title": "Tableau de bord — Infirmier(ère)",
+      "subtitle": "Constantes, file OPD, lits, urgences et soins du jour.",
+      "open_portal": "Ouvrir le portail infirmier"
+    },
+    "laboratory": {
+      "title": "Tableau de bord — Laboratoire",
+      "subtitle": "Demandes en attente, en cours, terminées et validation.",
+      "open_portal": "Ouvrir le portail laboratoire"
+    },
+    "pharmacy": {
+      "title": "Tableau de bord — Pharmacie",
+      "subtitle": "File de dispensation, ordonnances, stock et retours.",
+      "open_portal": "Ouvrir le portail pharmacie"
+    },
+    "radiology": {
+      "title": "Tableau de bord — Radiologie",
+      "subtitle": "Worklist imagerie, rapports et validation.",
+      "open_portal": "Ouvrir le portail radiologie"
+    },
+    "cashier": {
+      "title": "Tableau de bord — Caisse",
+      "subtitle": "Encaissements, décaissements, solde et modes de paiement.",
+      "open_portal": "Ouvrir le portail caisse"
+    },
+    "secretary": {
+      "title": "Tableau de bord — Secrétariat",
+      "subtitle": "Agenda directeur, briefings et pouls de l'hôpital.",
+      "open_portal": "Ouvrir le portail secrétariat"
+    },
+    "director": {
+      "title": "Tableau de bord — Direction",
+      "subtitle": "Performance, recettes, lits et alertes opérationnelles.",
+      "open_portal": "Ouvrir le portail direction"
+    },
+    "front_desk": {
+      "title": "Tableau de bord — Accueil",
+      "subtitle": "Enregistrements, visites, constantes et codes paiement.",
+      "open_portal": "Ouvrir le portail accueil"
+    },
+    "assistant_director": {
+      "title": "Tableau de bord — Direction adjointe",
+      "subtitle": "Indicateurs opérationnels en direct.",
+      "open_portal": "Ouvrir le portail direction adjointe"
+    }
+  },
   "open_shortcut": "Ouvrir →",
   "new_patient": "+ Nouveau patient",
   "sections": {

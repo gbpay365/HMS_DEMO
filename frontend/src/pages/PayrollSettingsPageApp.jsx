@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { FlashMessages } from '../components/FlashMessages';
 import { FormField } from '../components/FormField';
 import { confirmModal } from '../lib/modalBridge';
+import { currencyCode } from '../lib/hmsLocale';
 
 function calcTypeLabel(t, ct) {
   if (ct === 'seniority_scale') return t('settings.calc_seniority', { defaultValue: 'Seniority scale (auto)' });
   if (ct === 'pct_basic') return t('settings.calc_pct_basic', { defaultValue: '% of Basic' });
-  if (ct === 'fixed') return t('settings.calc_fixed', { defaultValue: 'Fixed amount (XAF)' });
-  if (ct === 'per_shift') return t('settings.calc_per_shift', { defaultValue: 'Per shift (XAF × shifts)' });
+  const cur = currencyCode();
+  if (ct === 'fixed') return t('settings.calc_fixed', { defaultValue: `Fixed amount (${cur})` });
+  if (ct === 'per_shift') return t('settings.calc_per_shift', { defaultValue: `Per shift (${cur} × shifts)` });
   return t('settings.calc_disabled', { defaultValue: 'Disabled' });
 }
 

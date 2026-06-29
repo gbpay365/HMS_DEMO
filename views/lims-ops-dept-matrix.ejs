@@ -1,0 +1,46 @@
+<%- include('partials/header') %>
+<%- include('partials/laboratory-odoo-start', {
+  labOdooMenu: 'operations',
+  labOdooTitle: 'Department matrix'
+}) %>
+<div class="o_content">
+<%- include('partials/lims-ops-nav', { limsOpsMenu: 'dept' }) %>
+<form method="get" class="form-inline mb-3">
+ <input type="date" name="date" value="<%= date %>" class="form-control form-control-sm mr-2">
+ <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+</form>
+<div class="hms-surface-card">
+ <div class="table-responsive">
+  <table class="table table-sm table-bordered mb-0">
+   <thead class="thead-light">
+    <tr>
+     <th>Patient</th>
+     <% (departments || []).forEach(function(d){ %>
+     <th class="text-center small"><%= d.code %></th>
+     <% }); %>
+     <th>Status</th>
+    </tr>
+   </thead>
+   <tbody>
+   <% if (!rows || !rows.length) { %>
+   <tr><td colspan="<%= (departments || []).length + 2 %>" class="text-muted text-center py-4">No data.</td></tr>
+   <% } %>
+   <% (rows || []).forEach(function(r){ %>
+   <tr>
+    <td><%= r.patient %></td>
+    <% (departments || []).forEach(function(d){ %>
+    <td class="text-center">
+     <% var st = r.cells && r.cells[d.code]; %>
+     <% if (st === 'done') { %><span class="text-success">✓</span><% } else if (st === 'pending') { %><span class="text-warning">●</span><% } else { %>—<% } %>
+    </td>
+    <% }); %>
+    <td><span class="badge badge-light border"><%= r.status %></span></td>
+   </tr>
+   <% }); %>
+   </tbody>
+  </table>
+ </div>
+</div>
+</div>
+<%- include('partials/laboratory-odoo-end') %>
+<%- include('partials/footer') %>

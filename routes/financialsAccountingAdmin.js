@@ -23,7 +23,16 @@ module.exports = function registerFinancialsAccountingAdmin(app, pool, requireAu
     const fid = parseInt(String(req.session.facilityId || 1), 10) || 1;
     const uid = parseInt(String(req.session.userId || 0), 10) || 0;
     const id = parseInt(String(req.params.id || '0'), 10) || 0;
-    const r = await postDraftJournal(pool, fid, id, uid);
+    const r = await postDraftJournal(pool, fid, id, uid, {
+      autoCreateSubAccounts: Boolean(req.body.auto_create_sub_accounts || req.body.autoCreateSubAccounts),
+    });
+    if (!r.ok && r.needsSubAccounts) {
+      const detail = (r.missing || []).map((m) => `${m.motherCode} → ${m.proposedCode}`).join('; ');
+      return res.redirect(
+        `/financials/journal-view?id=${id}&err=` +
+          encodeURIComponent(`${r.error || 'GL sub-accounts required.'} ${detail}`)
+      );
+    }
     const q = r.ok ? 'msg' : 'err';
     return res.redirect(`/financials/journal-view?id=${id}&${q}=` + encodeURIComponent(r.ok ? 'Journal posted.' : r.error));
   });

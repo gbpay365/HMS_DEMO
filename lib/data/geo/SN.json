@@ -1,0 +1,126 @@
+{
+  "code": "SN",
+  "name": "Senegal",
+  "regionLabel": "Region",
+  "subRegionLabel": "Department",
+  "regions": [
+    "Dakar",
+    "Diourbel Region",
+    "Fatick",
+    "Kaffrine",
+    "Kaolack",
+    "Kédougou",
+    "Kolda",
+    "Louga",
+    "Matam",
+    "Saint-Louis",
+    "Sédhiou",
+    "Tambacounda Region",
+    "Thiès Region",
+    "Ziguinchor"
+  ],
+  "subRegions": {
+    "Dakar": [
+      "Dakar",
+      "Dakar Department",
+      "Guédiawaye Department",
+      "Mermoz Boabab",
+      "N’diareme limamoulaye",
+      "Pikine",
+      "Pikine Department",
+      "Rufisque Department"
+    ],
+    "Diourbel Region": [
+      "Mbacké",
+      "Mbaké",
+      "Tiébo",
+      "Touba"
+    ],
+    "Fatick": [
+      "Diofior",
+      "Fatick Department",
+      "Foundiougne",
+      "Guinguinéo",
+      "Passi",
+      "Pourham",
+      "Sokone"
+    ],
+    "Kaffrine": [
+      "Kaffrine",
+      "Koungheul"
+    ],
+    "Kaolack": [
+      "Gandiaye",
+      "Kaolack",
+      "Ndofane",
+      "Nioro du Rip"
+    ],
+    "Kédougou": [
+      "Département de Salémata",
+      "Kédougou",
+      "Kédougou Department",
+      "Saraya"
+    ],
+    "Kolda": [
+      "Kolda",
+      "Kolda Department",
+      "Marsassoum",
+      "Vélingara"
+    ],
+    "Louga": [
+      "Dara",
+      "Guéoul",
+      "Linguere Department",
+      "Louga",
+      "Ndibène Dahra"
+    ],
+    "Matam": [
+      "Diawara",
+      "Kanel",
+      "Matam",
+      "Matam Department",
+      "Ouro Sogui",
+      "Ranérou",
+      "Sémé",
+      "Waoundé"
+    ],
+    "Saint-Louis": [
+      "Goléré",
+      "Ndioum",
+      "Polel Diaoubé",
+      "Richard-Toll",
+      "Rosso",
+      "Saint-Louis"
+    ],
+    "Sédhiou": [
+      "Goudomp Department",
+      "Sédhiou"
+    ],
+    "Tambacounda Region": [
+      "Tambacounda",
+      "Tambacounda Department"
+    ],
+    "Thiès Region": [
+      "Joal-Fadiout",
+      "Kayar",
+      "Khombole",
+      "Mbour",
+      "Mékhé",
+      "Nguékhokh",
+      "Pout",
+      "Thiès",
+      "Thiès Nones",
+      "Tiadiaye",
+      "Tivaouane",
+      "Warang"
+    ],
+    "Ziguinchor": [
+      "Adéane",
+      "Bignona",
+      "Oussouye",
+      "Tionk Essil",
+      "Ziguinchor"
+    ]
+  },
+  "source": "dr5hn/countries-states-cities-database"
+}

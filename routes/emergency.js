@@ -12,6 +12,7 @@
 // Schema is created by lib/ensureEmergencySchema.js at boot.
 // ============================================================
 const crypto = require('crypto');
+const { formatMoney: fmtMoney } = require('../lib/hmsMoneyFormat');
 const syncEmergencyCashierTickets = require('../lib/syncEmergencyCashierTickets');
 const { buildClinicalDetailFromBody, summarizeChargeClinical } = require('../lib/ipdChargeClinical');
 const clinicalDeptAlerts = require('../lib/clinicalDeptAlerts');
@@ -726,7 +727,7 @@ module.exports = function (app, pool, requireAuth) {
           addedBy: uid,
         });
         if (chargeResult.ok && chargeResult.amount > 0) {
-          chargeMsg = ` — ${Math.round(chargeResult.amount).toLocaleString('fr-FR')} FCFA added to credit tab`;
+          chargeMsg = ` — ${fmtMoney(chargeResult.amount)} added to credit tab`;
           await syncAfterErCharge(pool).catch(() => {});
         } else if (chargeResult.reason === 'no_price') {
           chargeMsg = ' — no catalog price matched; add charge manually if needed';
@@ -1059,7 +1060,7 @@ module.exports = function (app, pool, requireAuth) {
         const tot = admitResult && admitResult.chargeTransfer ? admitResult.chargeTransfer.total : 0;
         ipdAdmitMsg =
           n > 0
-            ? `IPD admission queued on Ward board. ${n} emergency charge line(s) (${Math.round(tot).toLocaleString('fr-FR')} FCFA) added to hospitalisation bill.`
+            ? `IPD admission queued on Ward board. ${n} emergency charge line(s) (${fmtMoney(tot)}) added to hospitalisation bill.`
             : 'IPD admission queued on Ward board — assign bed and collect HOS deposit at Cashier.';
       }
 

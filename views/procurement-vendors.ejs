@@ -1,9 +1,13 @@
 <%- include('partials/header') %>
 <% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
 <% var classes = vendorClasses || ['pharmaceutical','consumables','equipment','services','general']; %>
-
-<div class="page-wrapper hms-surface-module">
- <div class="content">
+<% var _hub = locals.procHubUrl || '/procurement'; var _vendorsBase = (locals.procLinks && locals.procLinks.vendors) || '/procurement/vendors'; %>
+<% if (locals.pharmacyOdooApp) { %>
+<%- include('partials/pharmacy-odoo-start', { phaOdooMenu: 'purchase', phaOdooSub: 'procurement', phaOdooTitle: locals.phaOdooTitle || 'Vendor directory', nursingSupplyPending, flash, error }) %>
+<div class="o_content p-3 hms-surface-module"><div class="content">
+<% } else { %>
+<div class="page-wrapper hms-surface-module"><div class="content">
+<% } %>
  <% if(locals.flash){ %>
  <div class="hms-flash hms-flash--success"><%= flash %></div>
  <% } %>
@@ -35,10 +39,10 @@
   </div>
  </div>
 
- <form method="get" action="/procurement/vendors" class="hms-filter-bar">
+ <form method="get" action="<%= _vendorsBase %>" class="hms-filter-bar">
   <input type="search" name="q" class="form-control hms-filter-bar__search" value="<%= locals.vendorSearch || '' %>" placeholder="<%= _t('procurement_vendors.search_ph', { ns: 'legacy', defaultValue: 'Search name, code, contact or email' }) %>">
   <button type="submit" class="btn btn-outline-secondary"><%= _t('procurement_vendors.search', { ns: 'legacy', defaultValue: 'Search' }) %></button>
-  <% if (locals.vendorSearch) { %><a href="/procurement/vendors" class="btn btn-link"><%= _t('procurement_vendors.reset', { ns: 'legacy', defaultValue: 'Reset' }) %></a><% } %>
+  <% if (locals.vendorSearch) { %><a href="<%= _vendorsBase %>" class="btn btn-link"><%= _t('procurement_vendors.reset', { ns: 'legacy', defaultValue: 'Reset' }) %></a><% } %>
  </form>
 
  <div class="hms-surface-card">
@@ -82,14 +86,17 @@
  </button>
  <% if (vendor.is_active) { %>
  <form method="post" action="/procurement/vendors/<%= vendor.id %>/suspend" class="d-inline" onsubmit="return confirm('Suspend this vendor?');">
+ <input type="hidden" name="return_to" value="<%= _vendorsBase %>">
  <button type="submit" class="btn btn-outline-warning btn-sm rounded-pill px-2" title="Suspend"><i class="fa fa-ban"></i></button>
  </form>
  <% } else { %>
  <form method="post" action="/procurement/vendors/<%= vendor.id %>/activate" class="d-inline">
+ <input type="hidden" name="return_to" value="<%= _vendorsBase %>">
  <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-2" title="Reactivate"><i class="fa fa-check"></i></button>
  </form>
  <% } %>
  <form method="post" action="/procurement/vendors/<%= vendor.id %>/delete" class="d-inline" onsubmit="return confirm('Delete this vendor permanently?');">
+ <input type="hidden" name="return_to" value="<%= _vendorsBase %>">
  <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-2" title="Delete"><i class="fa fa-trash"></i></button>
  </form>
  </div>
@@ -114,6 +121,7 @@
  <div class="modal-dialog modal-lg">
  <div class="modal-content border-0 rounded-xl shadow-lg">
  <form action="/procurement/vendors/add" method="POST">
+ <input type="hidden" name="return_to" value="<%= _vendorsBase %>">
  <div class="modal-header bg-indigo text-white p-4">
  <h5 class="modal-title font-weight-bold" id="addVendorModalTitle"><%= _t('procurement_vendors.modal_title', { ns: 'legacy' }) %></h5>
  <button type="button" class="close text-white" data-dismiss="modal" aria-label="<%= _t('procurement_vendors.cancel', { ns: 'legacy' }) %>"><span aria-hidden="true">&times;</span></button>
@@ -170,6 +178,7 @@
  <div class="modal-dialog modal-lg">
  <div class="modal-content border-0 rounded-xl shadow-lg">
  <form action="/procurement/vendors/<%= vendor.id %>/update" method="POST">
+ <input type="hidden" name="return_to" value="<%= _vendorsBase %>">
  <div class="modal-header bg-primary text-white p-4">
  <h5 class="modal-title font-weight-bold" id="editVendorTitle<%= vendor.id %>"><%= _t('procurement_vendors.edit', { ns: 'legacy' }) %>: <%= vendor.name %></h5>
  <button type="button" class="close text-white" data-dismiss="modal" aria-label="<%= _t('procurement_vendors.cancel', { ns: 'legacy' }) %>"><span aria-hidden="true">&times;</span></button>
@@ -211,5 +220,10 @@
  .badge-success-light { background: #dcfce7; color: #166534; }
  .badge-danger-light { background: #fee2e2; color: #991b1b; }
 </style>
+
+</div></div>
+<% if (locals.pharmacyOdooApp) { %>
+<%- include('partials/pharmacy-odoo-end') %>
+<% } %>
 
 <%- include('partials/footer') %>

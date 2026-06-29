@@ -2,13 +2,14 @@
   var _page = locals.reactPage || 'pharmacy';
   var _loadingLabel = locals.reactLoadingLabel || (typeof t === 'function' ? t('loading_pages.pharmacy', { ns: 'common' }) : 'Loading…');
   var _view = locals.phaView || 'products';
-  var _menuMap = { overview: 'overview', dispensing: 'dispensing', products: 'products', prescriptions: 'prescriptions' };
-  var _titles = { overview: 'Dashboard', dispensing: 'Dispensing', products: 'Products', prescriptions: 'Prescriptions' };
+  var _menuMap = { overview: 'overview', dispensing: 'dispensing', products: 'products', prescriptions: 'prescriptions', sales: 'sales', expiry: 'expiry' };
+  var _titles = { overview: 'Dashboard', dispensing: 'Dispensing', products: 'Products', prescriptions: 'Prescriptions', sales: 'Sales & billing', expiry: 'Expiry tracking' };
 %>
 <%- include('pharmacy-odoo-start', {
   phaOdooMenu: _menuMap[_view] || 'products',
   phaOdooTitle: _titles[_view] || 'Products',
   nursingSupplyPending: locals.nursingSupplyPending,
+  expiryAlertCount: locals.expiryAlertCount,
   flash: locals.flash,
   error: locals.error
 }) %>

@@ -4,6 +4,7 @@
 } else {
   var _pd = locals.pageData || {};
   var _kind = _pd.kind || 'laboratory';
+  if (_kind === 'pharmacy') { locals.pharmacyOdooApp = true; }
   locals.hmsSurfaceBodyClass = ' hms-body--validate-detail hms-body--validate-detail-' + (_kind === 'pharmacy' ? 'pharmacy' : _kind === 'radiology' ? 'rad' : 'lab');
 } %>
 <%- include('partials/header') %>
@@ -174,11 +175,24 @@
 <script src="/js/hms-diagnostic-report-handover.js?v=3"></script>
 
 <% } else { %>
+<% var _detailPd = locals.pageData || {}; var _detailKind = _detailPd.kind || 'laboratory'; %>
+<% if (_detailKind === 'pharmacy') { %>
+<%- include('partials/react-pharmacy-validate-mount', {
+  reactPage: locals.reactPage || 'lab-workflow',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.order', { ns: 'common' }) : 'Loading…'),
+  pageData: locals.pageData || {},
+  phaOdooTitle: _detailPd.code || (typeof t === 'function' ? t('document_titles.validate_code_pharmacy', { ns: 'common', defaultValue: 'Validate code' }) : 'Validate code'),
+  nursingSupplyPending: locals.nursingSupplyPending,
+  flash: locals.flash,
+  error: locals.error
+}) %>
+<% } else { %>
 <%- include('partials/react-page-mount', {
   reactPage: locals.reactPage || 'lab-workflow',
   reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.order', { ns: 'common' }) : 'Loading…'),
   pageData: locals.pageData || {}
 }) %>
+<% } %>
 <% } %>
 
 <%- include('partials/footer') %>

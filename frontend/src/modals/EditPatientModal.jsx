@@ -12,9 +12,11 @@ import {
   isValidPhone,
   isoToDmy,
   parseDmyToIso} from '../lib/formValidation';
+import { applyPhoneDialPrefix, patientRegistrationFromBoot } from '../lib/hmsLocale';
 
 export function EditPatientModal({ open, onClose, patientId }) {
   const { t } = useTranslation(['ops', 'clinical']);
+  const patientReg = patientRegistrationFromBoot();
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [formError, setFormError] = useState('');
@@ -229,11 +231,18 @@ export function EditPatientModal({ open, onClose, patientId }) {
               )}
               {dobMode === 'dob' ? <input type="hidden" name="age_years" value={form.age_years} /> : null}
             </FormField>
-            <FormField label={t('modals.editPatient.cni')} htmlFor="ep-cni">
+            <FormField
+              label={patientReg.identityIdLabel || t('modals.editPatient.cni', { defaultValue: 'National ID' })}
+              htmlFor="ep-cni"
+              hint={patientReg.identityHint || ''}
+            >
               <input
                 id="ep-cni"
                 name="cni_number"
                 className="hms-input"
+                inputMode={patientReg.identityInputMode === 'numeric' ? 'numeric' : 'text'}
+                maxLength={patientReg.identityMaxLength || 100}
+                placeholder={patientReg.identityHint || ''}
                 value={form.cni_number}
                 onChange={(e) => setForm({ ...form, cni_number: e.target.value })}
               />
@@ -249,7 +258,7 @@ export function EditPatientModal({ open, onClose, patientId }) {
                 inputMode="tel"
                 autoComplete="tel"
                 value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: filterPhoneInput(e.target.value) })}
+                onChange={(e) => setForm({ ...form, phone: applyPhoneDialPrefix(e.target.value) })}
               />
             </FormField>
             <FormField

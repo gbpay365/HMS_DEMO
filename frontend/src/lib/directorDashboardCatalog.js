@@ -1,14 +1,16 @@
+import { currencyCode, formatMoney } from './hmsLocale';
+
 export const DIRECTOR_TAB_IDS = ['overview', 'beds', 'flow', 'staff', 'revenue', 'alerts'];
+
+/** @deprecated Use directorCurrencyCode() */
 export const DIRECTOR_CURRENCY = 'XAF';
 
-function formatDashboardNumber(value) {
-  return Math.round(Number(value || 0)).toLocaleString('en-GB', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0});
+export function directorCurrencyCode() {
+  return currencyCode() || DIRECTOR_CURRENCY;
 }
 
 export function formatDashboardMoney(value) {
-  return `${formatDashboardNumber(value)} ${DIRECTOR_CURRENCY}`;
+  return formatMoney(value);
 }
 
 export function formatDashboardAmount(value) {

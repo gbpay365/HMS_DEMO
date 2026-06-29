@@ -1,0 +1,144 @@
+/* HMS clinical hub — grouped stats + module shortcuts (portal + /hms) */
+
+.hms-hub-section-title {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hms-ink-muted, #64748b);
+  margin: 0 0 0.65rem 0.1rem;
+}
+
+.hms-hub-stat-row {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+  .hms-hub-stat-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .hms-hub-stat-row {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+}
+
+.hms-hub-module-row {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+  .hms-hub-module-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .hms-hub-module-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.hms-hub-layout {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 992px) {
+  .hms-hub-layout--with-opd {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+    align-items: start;
+  }
+}
+
+.hms-hub-layout__opd {
+  position: sticky;
+  top: 1rem;
+}
+
+.hms-stat-grid--band {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .hms-stat-grid--band {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .hms-stat-grid--band {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+.hms-hub-module-grid--grouped {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+  .hms-hub-module-grid--grouped {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .hms-hub-module-grid--grouped {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+a.hms-hub-module-tile--compact {
+  padding: 0.85rem 0.9rem;
+  text-align: center;
+}
+
+a.hms-hub-module-tile--compact .hms-hub-module-tile__ico {
+  font-size: 1.1rem;
+  margin-bottom: 0.35rem;
+}
+
+a.hms-hub-module-tile--compact strong {
+  font-size: 0.82rem;
+  line-height: 1.25;
+}
+
+a.hms-hub-module-tile--compact .small {
+  display: none;
+}
+
+.hms-stat-link--compact {
+  padding: 0.65rem 0.75rem;
+  gap: 0.55rem;
+}
+
+.hms-stat-link--compact .hms-stat-link__icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 0.95rem;
+  border-radius: 0.65rem;
+}
+
+.hms-stat-link--compact .hms-stat-link__value {
+  font-size: 1.35rem;
+}
+
+.hms-stat-link--compact .hms-stat-link__label {
+  font-size: 0.62rem;
+}
+
+.hms-stat-link--compact .hms-stat-link__shortcut,
+.hms-stat-link--compact .hms-stat-link__hint {
+  display: none;
+}

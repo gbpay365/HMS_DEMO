@@ -2,9 +2,12 @@
  * HMS — Odoo 17 Hospital Management shell (global)
  * Purple brand, horizontal module menu, control panel, list/kanban views.
  */
-body.hms-body--odoo #hms-sidebar,
 body.hms-body--odoo .hms-topbar {
   display: none !important;
+}
+
+body.hms-body--odoo #hms-sidebar {
+  display: flex !important;
 }
 
 body.hms-body--odoo {
@@ -14,27 +17,45 @@ body.hms-body--odoo {
   font-family: 'Roboto', 'Inter', 'Segoe UI', sans-serif;
 }
 
-body.hms-body--odoo .main-wrapper {
+body.hms-body--odoo .hms-odoo-app {
+  margin-left: var(--sb-width, 260px);
+  width: calc(100% - var(--sb-width, 260px));
+  max-width: calc(100% - var(--sb-width, 260px));
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+body.hms-body--odoo .hms-odoo-app .main-wrapper,
+body.hms-body--odoo .hms-odoo-app > .main-wrapper {
   margin-left: 0 !important;
+  width: 100%;
+  max-width: none;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: transparent;
+}
+
+body.hms-body--odoo:not(:has(.hms-odoo-app)) .main-wrapper {
+  margin-left: var(--sb-width, 260px) !important;
   min-height: 100vh;
   background: #f9fafb;
   display: flex;
   flex-direction: column;
 }
 
-body.hms-body--odoo .hms-odoo-app {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+body.hms-body--odoo #hms-sidebar .sb-logo {
+  padding-top: 24px;
+  padding-bottom: 16px;
 }
 
-body.hms-body--odoo .hms-odoo-app > .main-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  background: transparent;
+body.hms-body--odoo .o_nav_menu--hidden,
+body.hms-body--odoo .o_nav_menu_toggle--hidden,
+body.hms-body--odoo .o_nav_module {
+  display: none !important;
 }
 
 body.hms-body--odoo .o_action_manager {
@@ -51,6 +72,12 @@ body.hms-body--odoo .page-wrapper > .content {
   margin: 0 !important;
   max-width: none !important;
   width: 100% !important;
+  left: 0 !important;
+}
+
+body.hms-body--odoo .page-wrapper .page-wrapper {
+  margin-left: 0 !important;
+  padding-top: 0 !important;
 }
 
 body.hms-body--odoo .main-wrapper .page-wrapper {
@@ -342,6 +369,117 @@ body.hms-body--odoo .hms-dashboard-page .o_content {
   margin-right: 0;
   flex-shrink: 0;
   box-sizing: border-box;
+}
+
+.hms-odoo-app .o_nav_extras,
+.hms-module-odoo-app .o_nav_extras,
+.topbar-right .o_nav_extras {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.hms-odoo-app .o_nav_datetime,
+.hms-module-odoo-app .o_nav_datetime,
+.topbar-right .o_nav_datetime {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+  color: #334155;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.hms-odoo-app .o_nav_icon_btn,
+.hms-module-odoo-app .o_nav_icon_btn,
+.topbar-right .o_nav_icon_btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: #1e40af;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.hms-odoo-app .o_nav_icon_btn:hover,
+.hms-module-odoo-app .o_nav_icon_btn:hover,
+.topbar-right .o_nav_icon_btn:hover {
+  background: rgba(30, 64, 175, 0.08);
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+.hms-odoo-app .o_nav_icon_btn .fa,
+.hms-module-odoo-app .o_nav_icon_btn .fa,
+.topbar-right .o_nav_icon_btn .fa {
+  font-size: 1.05rem;
+}
+
+.hms-odoo-app .o_nav_badge,
+.hms-module-odoo-app .o_nav_badge,
+.topbar-right .o_nav_badge {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  color: #fff;
+  border: 2px solid #fff;
+  box-sizing: border-box;
+}
+
+.hms-odoo-app .o_nav_badge--blue,
+.hms-module-odoo-app .o_nav_badge--blue,
+.topbar-right .o_nav_badge--blue {
+  background: #38bdf8;
+}
+
+.hms-odoo-app .o_nav_badge--amber,
+.hms-module-odoo-app .o_nav_badge--amber,
+.topbar-right .o_nav_badge--amber {
+  background: #f59e0b;
+}
+
+.hms-odoo-app .o_nav_status_stack,
+.hms-module-odoo-app .o_nav_status_stack,
+.topbar-right .o_nav_status_stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 2px;
+}
+
+.hms-odoo-app .o_nav_status_pill,
+.hms-module-odoo-app .o_nav_status_pill,
+.topbar-right .o_nav_status_pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
 }
 
 .hms-odoo-app .o_nav_right_link,

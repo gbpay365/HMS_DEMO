@@ -102,6 +102,8 @@
     "workflow_footnote": "Étape 2 — Accueil : patients connus → directement à l'étape 4 (Caisse) · Nouveaux patients → étape 3 (Inscription) d'abord · Après paiement → étape 5 (File d'attente).",
     "workflow_station": "Étape {{n}}",
     "workflow_stations_aria": "Étapes du parcours consultations externes",
+    "workflow_show": "Afficher le parcours",
+    "workflow_hide": "Masquer le parcours",
     "wf_patient_arrives": "Arrivée\npatient",
     "wf_front_checkin": "Accueil\nenregistrement",
     "wf_registration": "Inscription\n(nouveaux)",
@@ -284,7 +286,19 @@
     "tile_opd_queue": "File d'attente",
     "today_queue": "File du jour",
     "no_appointments": "Aucun rendez-vous prévu aujourd'hui.",
-    "showing_top": "Affichage des 10 premiers rendez-vous"
+    "showing_top": "Affichage des 10 premiers rendez-vous",
+    "validate": {
+      "title": "Valider un code de paiement",
+      "subtitle": "Vérifier un reçu caisse avant d'enregistrer une visite OPD",
+      "back_portal": "Portail accueil",
+      "opd_queue": "File OPD",
+      "valid_title": "Code de paiement valide",
+      "valid_until": "Valide jusqu'au {{date}} · {{count}} utilisation(s) restante(s)",
+      "amount_paid": "Montant payé",
+      "register_visit": "Enregistrer la visite OPD",
+      "department": "Service",
+      "invalid": "Code de paiement invalide."
+    }
   },
   "cashier": {
     "title": "Paiement et facturation",
@@ -301,6 +315,16 @@
     "kpi_quick": "Accès rapide",
     "kpi_wallet_hub": "Espace portefeuille",
     "kpi_wallet_link": "recharges et soldes",
+    "today_kpi": {
+      "total_amount_received": "Total",
+      "total_disbursement": "Total des décaissements",
+      "balance": "Solde",
+      "cash": "Espèces",
+      "momo": "MOMO",
+      "om": "OM",
+      "betterpay": "BetterPay",
+      "wallet": "Portefeuille"
+    },
     "daily_summary_link": "Récapitulatif du jour",
     "eod_reconciliation_link": "Clôture caisse (fin de journée)",
     "ledger_link": "Registre de caisse",
@@ -1265,6 +1289,10 @@
     "portal_heading": "Portail",
     "view_dashboard": "Tableau de bord",
     "view_modules": "Modules",
+    "modules_heading": "Accès rapide",
+    "modules_subtitle": "Ouvrir un module",
+    "summary_heading": "Résumé du jour",
+    "payment_methods_heading": "Par mode de paiement",
     "tab_today": "Aujourd'hui",
     "loading": "Chargement du tableau de bord…",
     "load_error": "Impossible de charger le tableau de bord.",
@@ -1282,6 +1310,10 @@
     "secretary": {
       "title": "Tableau de bord — Secrétariat",
       "subtitle": "Support exécutif · Agenda · Briefings · Rapports"
+    },
+    "cashier": {
+      "title": "Tableau de bord — Caisse",
+      "subtitle": "Encaissements · Décaissements · Solde · Modes de paiement"
     }
   },
   "directorAnnual": {
@@ -1852,6 +1884,17 @@
       "title_ph": "ex. Médication post-opératoire",
       "medication_items": "Médicaments",
       "items_ph": "Un médicament par ligne…",
+      "med_search_ph": "Rechercher dans le stock pharmacie…",
+      "med_loading": "Chargement des médicaments…",
+      "med_no_matches": "Aucun médicament correspondant.",
+      "med_type_to_search": "Saisir pour rechercher…",
+      "med_add_selected": "Ajouter à l'ordonnance",
+      "med_dosage_ph": "Posologie (ex. 2×/jour)",
+      "med_qty_ph": "Qté",
+      "med_add_btn": "Ajouter",
+      "med_added_count": "{{count}} médicament(s) ajouté(s)",
+      "med_remove": "Retirer le médicament",
+      "med_hint": "Recherchez et ajoutez les médicaments un par un depuis le stock.",
       "clinical_notes": "Notes cliniques",
       "notes_ph": "Instructions pour la pharmacie…"
     }

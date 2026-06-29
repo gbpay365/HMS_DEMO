@@ -12,7 +12,74 @@ const { ensureProcurementExtendedSchema } = require('../lib/ensureProcurementExt
 const { parseQtyWithUom, PROCUREMENT_UNITS } = require('../lib/procurementQty');
 const { tableExists } = require('../lib/hmsFinGeneralLedger');
 const recordInventoryMovement = require('../lib/recordInventoryMovement');
+const { loadProcurementHubData, userCanProcureWrite } = require('../lib/procurementHub');
+const { pharmacyProcHubLocals } = require('../lib/pharmacyProcurementUrls');
 const { postPurchaseOrderToGl, purchaseOrderJournalSuffix } = require('../lib/finPurchaseOrderJournal');
+const { ensureProcurementVendorSchema } = require('../lib/ensureProcurementVendorSchema');
+const { loadPrList, loadPrDetail } = require('../lib/procurementPurchaseRequest');
+const { suggestInventoryId, loadInventoryPickList } = require('../lib/procurementInventoryMatch');
+
+const VENDOR_CLASSES = ['pharmaceutical', 'consumables', 'equipment', 'services', 'general'];
+
+function rfqBadgeClass(status) {
+  const s = String(status || '').toLowerCase();
+  const map = {
+    draft: 'badge-warning',
+    issued: 'badge-info',
+    closed: 'badge-secondary',
+    cancelled: 'badge-dark',
+    submitted: 'badge-primary',
+    accepted: 'badge-success',
+    rejected: 'badge-danger',
+  };
+  return map[s] || 'badge-secondary';
+}
+
+async function loadRfqLines(pool, rfqId) {
+  if (!(await tableExists(pool, 'tbl_procurement_rfq_line'))) return [];
+  const [rows] = await pool.query(
+    `SELECT l.*, i.name AS inv_name, i.sku AS inv_sku
+       FROM tbl_procurement_rfq_line l
+       LEFT JOIN tbl_inventory_item i ON i.id = l.inventory_item_id
+      WHERE l.rfq_id = ?
+      ORDER BY l.line_no ASC, l.id ASC`,
+    [rfqId]
+  ).catch(() => [[]]);
+  return rows || [];
+}
+
+async function enrichRfqLinesForSkuPick(pool, lines) {
+  const out = [];
+  for (const ln of lines || []) {
+    const suggested =
+      parseInt(ln.inventory_item_id, 10) ||
+      (await suggestInventoryId(pool, ln.description, null)) ||
+      null;
+    out.push({ ...ln, suggested_inventory_id: suggested });
+  }
+  return out;
+}
+
+async function loadQuotationsForRfq(pool, fid, rfqId) {
+  if (!(await tableExists(pool, 'tbl_procurement_quotation'))) return [];
+  const [rows] = await pool.query(
+    `SELECT q.*, v.name AS vendor_name FROM tbl_procurement_quotation q
+     INNER JOIN tbl_procurement_vendor v ON v.id = q.vendor_id AND v.facility_id = ?
+     WHERE q.facility_id = ? AND q.rfq_id = ? ORDER BY q.created_at DESC`,
+    [fid, fid, rfqId]
+  ).catch(() => [[]]);
+  return rows || [];
+}
+
+async function loadActiveVendors(pool, fid) {
+  if (!(await tableExists(pool, 'tbl_procurement_vendor'))) return [];
+  await ensureProcurementVendorSchema(pool).catch(() => {});
+  const [rows] = await pool.query(
+    'SELECT id, name, vendor_code, email FROM tbl_procurement_vendor WHERE facility_id = ? AND is_active = 1 ORDER BY name ASC',
+    [fid]
+  ).catch(() => [[]]);
+  return rows || [];
+}
 
 module.exports = function registerPharmacyModule(app, pool, requireAuth, requirePerm) {
   const phaRead = requirePerm('pharmacy.read', 'pharmacy.write');
@@ -209,6 +276,294 @@ module.exports = function registerPharmacyModule(app, pool, requireAuth, require
       check,
       lineId
     });
+  });
+
+  // ── Full procurement hub (pharmacy shell) ───────────────────
+  app.get('/pharmacy/procurement', requireAuth, phaRead, async (req, res) => {
+    try {
+      const fid = facilityId(req);
+      const hub = await loadProcurementHubData(pool, fid);
+      const perms = res.locals.userPerms || [];
+      res.render('pharmacy-procurement', pharmacyProcHubLocals({
+        title: 'Procurement Hub — Pharmacy',
+        phaOdooTitle: 'Procurement Hub',
+        nursingSupplyPending: await nursingBadge(),
+        stats: hub.stats,
+        pos: hub.pos,
+        canWrite: userCanProcureWrite(perms, req.session.user?.role),
+        flash: req.query.msg || null,
+        error: req.query.err || null,
+      }));
+    } catch (e) {
+      console.error('pharmacy procurement hub:', e);
+      return res.redirect('/pharmacy?view=products&err=' + encodeURIComponent(e.message || 'Could not load procurement hub.'));
+    }
+  });
+
+  app.get('/pharmacy/procurement/vendors', requireAuth, phaRead, async (req, res) => {
+    try {
+      const fid = facilityId(req);
+      await ensureProcurementVendorSchema(pool).catch(() => {});
+      const search = String(req.query.q || '').trim();
+      let vendors = [];
+      if (await tableExists(pool, 'tbl_procurement_vendor')) {
+        let sql = 'SELECT * FROM tbl_procurement_vendor WHERE facility_id = ?';
+        const params = [fid];
+        if (search) {
+          sql += ' AND (name LIKE ? OR vendor_code LIKE ? OR contact_name LIKE ? OR email LIKE ?)';
+          const like = `%${search}%`;
+          params.push(like, like, like, like);
+        }
+        sql += ' ORDER BY name ASC LIMIT 500';
+        const [rows] = await pool.query(sql, params);
+        vendors = rows || [];
+      }
+      const perms = res.locals.userPerms || [];
+      res.render('procurement-vendors', pharmacyProcHubLocals({
+        title: 'Vendors — Pharmacy',
+        phaOdooTitle: 'Vendor directory',
+        nursingSupplyPending: await nursingBadge(),
+        vendors,
+        vendorSearch: search,
+        vendorClasses: VENDOR_CLASSES,
+        canWrite: userCanProcureWrite(perms, req.session.user?.role),
+        flash: req.query.msg || null,
+        error: req.query.err || null,
+      }));
+    } catch (e) {
+      console.error('pharmacy procurement vendors:', e);
+      return res.redirect('/pharmacy/procurement?err=' + encodeURIComponent(e.message || 'Could not load vendors.'));
+    }
+  });
+
+  app.get('/pharmacy/procurement/rfq', requireAuth, phaRead, async (req, res) => {
+    try {
+      const fid = facilityId(req);
+      const rfqReady = await tableExists(pool, 'tbl_procurement_rfq');
+      let allRfqs = [];
+      if (rfqReady) {
+        const [rows] = await pool.query(
+          'SELECT * FROM tbl_procurement_rfq WHERE facility_id = ? ORDER BY created_at DESC LIMIT 100',
+          [fid]
+        );
+        allRfqs = rows || [];
+      }
+      const rfqFilter = String(req.query.status || '').trim().toLowerCase();
+      const rfqSearch = String(req.query.q || '').trim();
+      const qLower = rfqSearch.toLowerCase();
+      let rfqList = allRfqs;
+      if (rfqFilter) rfqList = rfqList.filter((r) => String(r.status || '').toLowerCase() === rfqFilter);
+      if (qLower) {
+        rfqList = rfqList.filter((r) => {
+          const num = String(r.rfq_number || '').toLowerCase();
+          const title = String(r.title || '').toLowerCase();
+          return num.includes(qLower) || title.includes(qLower);
+        });
+      }
+      const rfqStats = {
+        total: allRfqs.length,
+        draft: allRfqs.filter((r) => String(r.status || '').toLowerCase() === 'draft').length,
+        issued: allRfqs.filter((r) => String(r.status || '').toLowerCase() === 'issued').length,
+        closed: allRfqs.filter((r) => String(r.status || '').toLowerCase() === 'closed').length,
+      };
+      const perms = res.locals.userPerms || [];
+      res.render('procurement-rfq', pharmacyProcHubLocals({
+        title: 'RFQs — Pharmacy',
+        phaOdooTitle: 'Requests for quotation',
+        nursingSupplyPending: await nursingBadge(),
+        rfqReady,
+        rfq: null,
+        rfqNotFound: false,
+        rfqList,
+        rfqStats,
+        rfqFilter,
+        rfqSearch,
+        lines: [],
+        quotes: [],
+        canWrite: userCanProcureWrite(perms, req.session.user?.role),
+        badgeClass: (status) => {
+          const map = { draft: 'badge-warning', issued: 'badge-info', closed: 'badge-secondary' };
+          return map[String(status || '').toLowerCase()] || 'badge-secondary';
+        },
+        flash: req.query.msg || null,
+        error: req.query.err || null,
+      }));
+    } catch (e) {
+      console.error('pharmacy procurement rfq:', e);
+      return res.redirect('/pharmacy/procurement?err=' + encodeURIComponent(e.message || 'Could not load RFQs.'));
+    }
+  });
+
+  app.get('/pharmacy/procurement/rfq/:id(\\d+)', requireAuth, phaRead, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10) || 0;
+      const fid = facilityId(req);
+      const rfqReady = await tableExists(pool, 'tbl_procurement_rfq');
+      if (!rfqReady || id < 1) {
+        return res.redirect('/pharmacy/procurement/rfq?err=' + encodeURIComponent('Invalid RFQ.'));
+      }
+      const [[rfq]] = await pool.query(
+        'SELECT * FROM tbl_procurement_rfq WHERE id = ? AND facility_id = ? LIMIT 1',
+        [id, fid]
+      );
+      if (!rfq) {
+        return res.render('procurement-rfq', pharmacyProcHubLocals({
+          title: 'RFQ — Pharmacy',
+          phaOdooTitle: 'Requests for quotation',
+          nursingSupplyPending: await nursingBadge(),
+          rfqReady: true,
+          rfq: null,
+          rfqNotFound: true,
+          rfqList: [],
+          lines: [],
+          quotes: [],
+          canWrite: userCanProcureWrite(res.locals.userPerms || [], req.session.user?.role),
+          badgeClass: rfqBadgeClass,
+          flash: req.query.msg || null,
+          error: req.query.err || null,
+        }));
+      }
+      const lines = await enrichRfqLinesForSkuPick(pool, await loadRfqLines(pool, id));
+      const quotes = await loadQuotationsForRfq(pool, fid, id);
+      const vendors = await loadActiveVendors(pool, fid);
+      const inventoryItems = await loadInventoryPickList(pool, 400);
+      const perms = res.locals.userPerms || [];
+      res.render('procurement-rfq', pharmacyProcHubLocals({
+        title: `RFQ ${rfq.rfq_number} — Pharmacy`,
+        phaOdooTitle: rfq.rfq_number,
+        nursingSupplyPending: await nursingBadge(),
+        rfqReady: true,
+        rfq,
+        rfqNotFound: false,
+        rfqList: [],
+        lines,
+        quotes,
+        vendors,
+        inventoryItems,
+        canWrite: userCanProcureWrite(perms, req.session.user?.role),
+        badgeClass: rfqBadgeClass,
+        flash: req.query.msg || null,
+        error: req.query.err || null,
+      }));
+    } catch (e) {
+      console.error('pharmacy procurement rfq detail:', e);
+      return res.redirect('/pharmacy/procurement/rfq?err=' + encodeURIComponent(e.message || 'Could not load RFQ.'));
+    }
+  });
+
+  app.get('/pharmacy/procurement/purchase-requests', requireAuth, phaRead, async (req, res) => {
+    try {
+      await ensureProcurementExtendedSchema(pool).catch(() => {});
+      await ensureProcurementVendorSchema(pool).catch(() => {});
+      const fid = facilityId(req);
+      const allPr = await loadPrList(pool, fid, 200);
+      const status = String(req.query.status || '').trim().toLowerCase();
+      const dept = String(req.query.dept || '').trim().toLowerCase();
+      const search = String(req.query.q || '').trim();
+      const qLower = search.toLowerCase();
+      let prList = allPr;
+      if (status) prList = prList.filter((row) => String(row.status || '').toLowerCase() === status);
+      if (dept) prList = prList.filter((row) => String(row.source_department || '').toLowerCase() === dept);
+      if (qLower) {
+        prList = prList.filter((row) => {
+          const num = String(row.pr_number || '').toLowerCase();
+          const title = String(row.title || '').toLowerCase();
+          const vendor = String(row.vendor_name || '').toLowerCase();
+          return num.includes(qLower) || title.includes(qLower) || vendor.includes(qLower);
+        });
+      }
+      const prStats = {
+        total: allPr.length,
+        draft: allPr.filter((row) => String(row.status || '').toLowerCase() === 'draft').length,
+        issued: allPr.filter((row) => String(row.status || '').toLowerCase() === 'issued').length,
+        reviewed: allPr.filter((row) => String(row.status || '').toLowerCase() === 'reviewed').length,
+      };
+      let vendors = [];
+      if (await tableExists(pool, 'tbl_procurement_vendor')) {
+        const [rows] = await pool.query(
+          'SELECT id, name, vendor_code, email FROM tbl_procurement_vendor WHERE facility_id = ? AND is_active = 1 ORDER BY name ASC',
+          [fid]
+        );
+        vendors = rows || [];
+      }
+      const perms = res.locals.userPerms || [];
+      res.render('procurement-pr', pharmacyProcHubLocals({
+        title: 'Purchase requests — Pharmacy',
+        phaOdooTitle: 'Purchase requests',
+        nursingSupplyPending: await nursingBadge(),
+        prList,
+        prStats,
+        prFilter: status,
+        prDeptFilter: dept,
+        prSearch: search,
+        pr: null,
+        lines: [],
+        vendors,
+        canWrite: userCanProcureWrite(perms, req.session.user?.role),
+        flash: req.query.msg || null,
+        error: req.query.err || null,
+      }));
+    } catch (e) {
+      console.error('pharmacy procurement purchase-requests:', e);
+      return res.redirect('/pharmacy/procurement?err=' + encodeURIComponent(e.message || 'Could not load purchase requests.'));
+    }
+  });
+
+  app.get('/pharmacy/procurement/purchase-requests/:id(\\d+)', requireAuth, phaRead, async (req, res) => {
+    try {
+      await ensureProcurementExtendedSchema(pool).catch(() => {});
+      await ensureProcurementVendorSchema(pool).catch(() => {});
+      const id = parseInt(req.params.id, 10) || 0;
+      const fid = facilityId(req);
+      const detail = await loadPrDetail(pool, fid, id);
+      if (!detail) {
+        return res.redirect('/pharmacy/procurement/purchase-requests?err=' + encodeURIComponent('Purchase request not found.'));
+      }
+      const vendors = await loadActiveVendors(pool, fid);
+      const inventoryItems = await loadInventoryPickList(pool, 400);
+      const perms = res.locals.userPerms || [];
+      res.render('procurement-pr', pharmacyProcHubLocals({
+        title: `PR ${detail.pr.pr_number} — Pharmacy`,
+        phaOdooTitle: detail.pr.pr_number,
+        nursingSupplyPending: await nursingBadge(),
+        prList: [],
+        prStats: null,
+        prFilter: '',
+        prSearch: '',
+        pr: detail.pr,
+        lines: detail.lines,
+        vendors,
+        inventoryItems,
+        units: PROCUREMENT_UNITS,
+        canWrite: userCanProcureWrite(perms, req.session.user?.role),
+        flash: req.query.msg || null,
+        error: req.query.err || null,
+      }));
+    } catch (e) {
+      console.error('pharmacy procurement purchase-request detail:', e);
+      return res.redirect('/pharmacy/procurement/purchase-requests?err=' + encodeURIComponent(e.message || 'Could not load purchase request.'));
+    }
+  });
+
+  app.get('/pharmacy/procurement/purchase-requests/:id(\\d+)/print', requireAuth, phaRead, async (req, res) => {
+    try {
+      await ensureProcurementExtendedSchema(pool).catch(() => {});
+      const id = parseInt(req.params.id, 10) || 0;
+      const fid = facilityId(req);
+      const detail = await loadPrDetail(pool, fid, id);
+      if (!detail) {
+        return res.redirect('/pharmacy/procurement/purchase-requests?err=' + encodeURIComponent('Purchase request not found.'));
+      }
+      res.render('procurement-pr-print', {
+        title: `PR ${detail.pr.pr_number}`,
+        pr: detail.pr,
+        lines: detail.lines,
+        autoPrint: req.query.print === '1',
+      });
+    } catch (e) {
+      console.error('pharmacy procurement purchase-request print:', e);
+      return res.redirect('/pharmacy/procurement/purchase-requests?err=' + encodeURIComponent(e.message || 'Could not print purchase request.'));
+    }
   });
 
   // ── Purchase orders ─────────────────────────────────────────

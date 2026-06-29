@@ -1,0 +1,52 @@
+<%- include('partials/header') %>
+<%- include('partials/laboratory-odoo-start', {
+  labOdooMenu: 'operations',
+  labOdooTitle: 'Emergency priority queue'
+}) %>
+<div class="o_content">
+<%- include('partials/lims-ops-nav', { limsOpsMenu: 'priority' }) %>
+<div class="hms-chip-row mb-3">
+ <a href="/lims/ops/priority" class="hms-chip<%= emergencyOnly ? ' active' : '' %>">Emergency only</a>
+ <a href="/lims/ops/priority?all=1" class="hms-chip<%= !emergencyOnly ? ' active' : '' %>">All orders</a>
+</div>
+<div class="hms-surface-card">
+ <div class="table-responsive">
+  <table class="table table-sm table-hover mb-0">
+   <thead class="thead-light">
+    <tr>
+     <th>Priority</th><th>Patient</th><th>Test</th><th>Dept</th><th>Abnormal</th><th>Stage</th><th>Created</th><th></th>
+    </tr>
+   </thead>
+   <tbody>
+   <% if (!rows || !rows.length) { %>
+   <tr><td colspan="8" class="text-muted text-center py-4">Queue is empty.</td></tr>
+   <% } %>
+   <% (rows || []).forEach(function(r){ %>
+   <tr class="<%= r.is_emergency || r.priority === 'emergency' ? 'table-warning' : '' %>">
+    <td>
+     <% if (r.is_emergency || r.priority === 'emergency') { %>
+     <span class="badge badge-danger">EMERGENCY</span>
+     <% } else { %>
+     <span class="badge badge-secondary">Normal</span>
+     <% } %>
+    </td>
+    <td><%= r.first_name %> <%= r.last_name %></td>
+    <td><%= r.test_name %></td>
+    <td class="small"><%= r.dept_name || r.dept_code || '—' %></td>
+    <td>
+     <% if (r.is_critical) { %><span class="badge badge-danger">Critical</span><% } %>
+     <% if (r.is_abnormal && !r.is_critical) { %><span class="badge badge-warning">Abnormal</span><% } %>
+     <% if (!r.is_abnormal && !r.is_critical) { %>—<% } %>
+    </td>
+    <td><%= r.pipeline_stage || r.status %></td>
+    <td class="small"><%= r.created_at ? String(r.created_at).slice(0,16) : '—' %></td>
+    <td><a href="/lab/templates?lab_result_id=<%= r.lab_result_id %>" class="btn btn-sm btn-outline-primary">Open</a></td>
+   </tr>
+   <% }); %>
+   </tbody>
+  </table>
+ </div>
+</div>
+</div>
+<%- include('partials/laboratory-odoo-end') %>
+<%- include('partials/footer') %>

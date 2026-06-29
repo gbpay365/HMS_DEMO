@@ -1,3 +1,5 @@
+import { currencyWordsLabel } from './currencyWords';
+
 /** Map stored payment_method values to print.json receipt.payment_methods.* keys. */
 export function printPaymentMethodLabel(method, t) {
   const raw = String(method || 'cash').trim();
@@ -16,6 +18,5 @@ export function amountWordsForLocale(amountWords, grand, fmt, language) {
     if (amountWords.en) return amountWords.en;
   }
   const n = Number(grand || 0);
-  if (lng === 'fr') return `${fmt(n)} francs CFA`;
-  return `${fmt(n)} CFA francs`;
+  return `${fmt(n)} (${currencyWordsLabel(lng)})`;
 }

@@ -4,6 +4,7 @@ import { Modal } from '../Modal';
 import { FormField } from '../FormField';
 import { parsePageData } from '../../lib/parsePageData';
 import { confirmModal } from '../../lib/modalBridge';
+import { formatMoney, priceUnitLabel } from '../../lib/hmsLocale';
 import { mountWalletModalBridge, registerWalletModalsHost } from '../../lib/walletModalBridge';
 
 const TXN_LABELS = {
@@ -14,7 +15,7 @@ const TXN_LABELS = {
 };
 
 function fmtBal(n) {
-  return `${Number(n || 0).toLocaleString('fr-FR')} FCFA`;
+  return formatMoney(n);
 }
 
 function WalletTopupModal({ open, onClose, wallets, initial }) {
@@ -279,7 +280,7 @@ function WalletTopupModal({ open, onClose, wallets, initial }) {
               required
             />
             <span className="flex items-center rounded-lg bg-slate-100 px-3 text-sm font-bold text-slate-600">
-              FCFA
+              {priceUnitLabel()}
             </span>
           </div>
         </FormField>
@@ -374,7 +375,7 @@ function WalletTxnModal({ open, onClose, walletId, patientName }) {
                   <div className="text-right">
                     <div className={`text-sm font-bold ${dir === 'cr' ? 'text-emerald-700' : 'text-red-600'}`}>
                       {dir === 'cr' ? '+' : '-'}
-                      {Number(txn.amount).toLocaleString('fr-FR')} FCFA
+                      {formatMoney(txn.amount)}
                     </div>
                     <div className="text-xs text-slate-500">
                       Bal: {Number(txn.balance_after).toLocaleString('fr-FR')}

@@ -1,0 +1,61 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _top = function (key, fallback, opts) {
+  return _t(key, Object.assign({ ns: 'ops', defaultValue: fallback }, opts || {}));
+};
+var _pageTitle = locals.rosterPageTitle || (locals.cashierPage === 'doctor-roster'
+  ? _top('cashier_odoo.page_doctor_roster', 'Doctor Duty Roster')
+  : _top('cashier_odoo.page_nurse_roster', 'Nurse Shift Roster'));
+var _userName = locals.userDisplayName || '';
+var _initials = locals.cashierUserInitials || 'ZA';
+var _cashierCode = (locals.cashierIdentity && (locals.cashierIdentity.code || locals.cashierIdentity.cashier_code)) || '';
+var _balance = locals.balanceLabel || '';
+var _dateTime = locals.dateTimeLabel || '';
+var _pending = parseInt(locals.pendingCount, 10) || 0;
+%>
+<div class="shift-bar">
+  <div class="shift-dot" aria-hidden="true"></div>
+  <span><%= _top('cashier_odoo.shift_open', 'Shift open') %></span>
+  <span class="shift-bar__meta">
+    <% if (_userName) { %><strong><%= _userName %></strong><% } %>
+    <% if (_cashierCode) { %>
+      &nbsp;|&nbsp; <%= _top('cashier_odoo.code_label', 'Code') %>: <strong><%= _cashierCode %></strong>
+    <% } %>
+    <% if (_balance) { %>
+      &nbsp;|&nbsp; <%= _top('cashier_odoo.float_label', 'Balance') %>: <strong><%= _balance %></strong>
+    <% } %>
+    <% if (_dateTime) { %>
+      &nbsp;|&nbsp; <%= _dateTime %>
+    <% } %>
+  </span>
+  <a href="/cashier?page=reports&amp;report=eod" class="cs-btn cs-btn-sm shift-bar__close-btn">
+    <i class="fa fa-lock"></i> <%= _top('cashier_odoo.close_shift', 'Close shift') %>
+  </a>
+</div>
+
+<header class="cs-topbar">
+  <div class="cs-topbar-title"><%= _pageTitle %></div>
+  <div class="cs-search-wrap">
+    <i class="fa fa-search cs-search-icon" aria-hidden="true"></i>
+    <input type="search" class="cs-search" placeholder="<%= _top('cashier_odoo.search_ph', 'Search patient, bill, receipt…') %>" aria-label="<%= _top('cashier_odoo.search_ph', 'Search patient, bill, receipt…') %>" onclick="window.location.href='/cashier?page=bills';" readonly>
+  </div>
+  <% if (_pending > 0) { %>
+  <a href="/cashier?page=bills" class="cs-btn cs-notif" style="width:32px;padding:0;justify-content:center;" aria-label="Pending bills">
+    <i class="fa fa-bell" style="font-size:15px;"></i>
+    <span class="cs-notif-dot"><%= _pending > 9 ? '9+' : _pending %></span>
+  </a>
+  <% } %>
+  <div class="cs-avatar" style="background:var(--cs-light);color:var(--cs-primary);font-size:10px;"><%= _initials %></div>
+  <a href="/cashier?page=pos" class="cs-btn cs-btn-primary">
+    <i class="fa fa-plus"></i> <%= _top('cashier_odoo.new_bill', 'New bill') %>
+  </a>
+</header>
+
+<%- include('cashier-roster-tabs', {
+  cashierPage: locals.cashierPage,
+  pendingCount: locals.pendingCount,
+  billingPendingCount: locals.billingPendingCount,
+  insurancePendingCount: locals.insurancePendingCount
+}) %>

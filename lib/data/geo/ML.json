@@ -1,0 +1,87 @@
+{
+  "code": "ML",
+  "name": "Mali",
+  "regionLabel": "Region",
+  "subRegionLabel": "Cercle",
+  "regions": [
+    "Bamako",
+    "Gao",
+    "Kayes",
+    "Kidal",
+    "Koulikoro",
+    "Ménaka",
+    "Mopti",
+    "Ségou",
+    "Sikasso",
+    "Taoudénit",
+    "Tombouctou"
+  ],
+  "subRegions": {
+    "Bamako": [
+      "Bamako"
+    ],
+    "Gao": [
+      "Ansongo",
+      "Cercle de Bourem",
+      "Gao",
+      "Gao Cercle",
+      "Inékar"
+    ],
+    "Kayes": [
+      "Bafoulabé",
+      "Kayes",
+      "Kita",
+      "Kokofata",
+      "Sagalo"
+    ],
+    "Kidal": [
+      "Abeïbara",
+      "Cercle d’Abeïbara",
+      "Kidal"
+    ],
+    "Koulikoro": [
+      "Banamba",
+      "Kangaba",
+      "Kati",
+      "Kolokani",
+      "Koulikoro"
+    ],
+    "Mopti": [
+      "Bandiagara",
+      "Djénné",
+      "Douentza",
+      "Douentza Cercle",
+      "Mopti",
+      "Ténenkou"
+    ],
+    "Ségou": [
+      "Baroueli",
+      "Cercle de San",
+      "Ké-Macina",
+      "Kinmparana",
+      "Markala",
+      "San",
+      "Ségou",
+      "Sokolo"
+    ],
+    "Sikasso": [
+      "Bougouni",
+      "Kolondiéba",
+      "Koutiala",
+      "Koutiala Cercle",
+      "Ntossoni",
+      "Sikasso",
+      "Yorosso"
+    ],
+    "Tombouctou": [
+      "Araouane",
+      "Cercle de Goundam",
+      "Dire",
+      "Goundam",
+      "Gourma-Rharous Cercle",
+      "Niafunké",
+      "Timbuktu"
+    ]
+  },
+  "source": "dr5hn/countries-states-cities-database"
+}

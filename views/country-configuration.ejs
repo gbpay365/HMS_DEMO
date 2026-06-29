@@ -1,0 +1,18 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--country-config'; %>
+<%- include('partials/header') %>
+<%
+var _pageData = {
+  activeCode: activeCode || 'NG',
+  profiles: profiles || [],
+  flash: flash || null,
+  error: error || null
+};
+%>
+<div id="hms-react-root" class="hms-ui" data-page="country-configuration">
+  <div class="content px-4 py-10 text-center text-muted" id="hms-react-fallback">
+    <div class="spinner-border text-primary mb-2" role="status" aria-hidden="true"></div>
+    <p class="small mb-0"><%= typeof t === 'function' ? t('loading_pages.default', { ns: 'common', defaultValue: 'Loading…' }) : 'Loading…' %></p>
+  </div>
+</div>
+<script id="hms-page-data" type="application/json"><%- JSON.stringify(_pageData).replace(/</g, '\\u003c') %></script>
+<%- include('partials/footer') %>

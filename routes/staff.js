@@ -45,6 +45,8 @@ const {
 } = require('../lib/staffProfilePhotoUpload');
 const orgClinical = require('../lib/hmsOrgClinicalCatalog');
 const employeeDirectoryExport = require('../lib/employeeDirectoryExport');
+const { updateEmployeeProfile } = require('../lib/employeeProfileSave');
+const { toIsoDatePart } = require('../lib/hmsFormatDate');
 
 module.exports = function(app, pool, requireAuth) {
 
@@ -566,6 +568,106 @@ module.exports = function(app, pool, requireAuth) {
     });
 
     // ────────────────────────────────────────────────────────
+    // EMPLOYEE PROFILE API (modal on /employees)
+    // ────────────────────────────────────────────────────────
+    async function loadEmployeeProfilePayload(id, req, res) {
+        await ensureEmployeeHrSchema(pool);
+        const empId = parseInt(String(id), 10);
+        if (!empId) return { ok: false, status: 400, error: 'Invalid employee.' };
+
+        const [empRows] = await pool.query('SELECT * FROM tbl_employee WHERE id=? LIMIT 1', [empId]).catch(() => [[], []]);
+        const emp = empRows?.[0];
+        if (!emp) return { ok: false, status: 404, error: 'Employee not found.' };
+        if (hmsStaffAccountGuard.isSystemUserRole(emp.role)) {
+            return { ok: false, status: 403, error: 'Manage Admin and Super Admin accounts under System Users.' };
+        }
+
+        const actorRole = String(req.session.user?.role ?? '');
+        if (!hmsStaffAccountGuard.canManageEmployeeAccount(actorRole, emp.role)) {
+            return { ok: false, status: 403, error: hmsStaffAccountGuard.manageDeniedMessage(actorRole, emp.role) };
+        }
+
+        const rolesRaw = await sq('SELECT role, title FROM tbl_role ORDER BY CAST(role AS UNSIGNED)');
+        const roles = hmsStaffAccountGuard.filterStaffDirectoryRoles(actorRole, rolesRaw);
+        const departments = await sq('SELECT department_name AS name FROM tbl_department WHERE status=1 ORDER BY department_name');
+        const { doctorSpecialisations, doctorRoleIds } = await loadEmployeeFormContext();
+        const userPerms = res.locals.userPerms || [];
+        const canResetPassword = hmsStaffAccountGuard.canManageEmployeePassword(actorRole, emp.role, userPerms);
+        const departmentsList = await loadEmployeeDepartments(pool, empId);
+        const specialisationsList = await loadEmployeeSpecialisations(pool, empId);
+
+        return {
+            ok: true,
+            employee: {
+                id: emp.id,
+                first_name: emp.first_name || '',
+                last_name: emp.last_name || '',
+                username: emp.username || '',
+                emailid: emp.emailid || '',
+                phone: emp.phone || '',
+                gender: emp.gender || 'Male',
+                dob: toIsoDatePart(emp.dob) || '',
+                employee_id: emp.employee_id || '',
+                joining_date: toIsoDatePart(emp.joining_date) || '',
+                address: emp.address || '',
+                bio: emp.bio || '',
+                role: String(emp.role || ''),
+                status: emp.status == null ? 1 : Number(emp.status),
+                profile_emoji: emp.profile_emoji || '',
+                photo_path: emp.photo_path || '',
+                primary_department: emp.primary_department || '',
+                specialisation: emp.specialisation || '',
+                departments: departmentsList,
+                specialisations: specialisationsList,
+            },
+            form: {
+                roles: roles.map((r) => ({
+                    role: String(r.role),
+                    title: r.title || '',
+                    isDoctor: /doctor|physician|m[eé]decin|specialist|sp[eé]cialiste/i.test(String(r.title || '')),
+                })),
+                departments,
+                doctorSpecialisations,
+                doctorRoleIds: (doctorRoleIds || []).map(String),
+                canResetPassword,
+            },
+        };
+    }
+
+    app.get('/api/employees/:id/profile', requireAuth, requireEmployeeWrite, async (req, res) => {
+        try {
+            const payload = await loadEmployeeProfilePayload(req.params.id, req, res);
+            if (!payload.ok) return res.status(payload.status || 400).json(payload);
+            return res.json(payload);
+        } catch (e) {
+            console.error('employees profile GET:', e);
+            return res.status(500).json({ ok: false, error: e.message || 'Could not load employee profile.' });
+        }
+    });
+
+    app.post('/api/employees/:id/profile', requireAuth, requireEmployeeWrite, staffProfilePhotoMiddleware(), async (req, res) => {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const userPerms = res.locals.userPerms || [];
+            const result = await updateEmployeeProfile(pool, req, id, userPerms);
+            if (!result.ok) return res.status(result.status || 400).json(result);
+
+            const payload = await loadEmployeeProfilePayload(id, req, res);
+            if (!payload.ok) {
+                return res.json({ ok: true, message: 'Employee updated successfully.', employeeId: id });
+            }
+            return res.json({
+                ok: true,
+                message: 'Employee updated successfully.',
+                employee: payload.employee,
+            });
+        } catch (e) {
+            console.error('employees profile POST:', e);
+            return res.status(500).json({ ok: false, error: e.message || 'Could not save employee profile.' });
+        }
+    });
+
+    // ────────────────────────────────────────────────────────
     // EDIT EMPLOYEE
     // ────────────────────────────────────────────────────────
     app.get('/employees/:id/edit', requireAuth, requireEmployeeWrite, async (req, res) => {
@@ -603,116 +705,16 @@ module.exports = function(app, pool, requireAuth) {
 
     app.post('/employees/:id/edit', requireAuth, requireEmployeeWrite, staffProfilePhotoMiddleware(), async (req, res) => {
         const id = parseInt(req.params.id);
-        const actorRole = String(req.session.user?.role ?? '');
         const userPerms = res.locals.userPerms || [];
-        const [targetRows] = await pool.query('SELECT id, role FROM tbl_employee WHERE id=? LIMIT 1', [id]).catch(() => [[], []]);
-        if (!targetRows || !targetRows[0]) {
-            return res.redirect('/employees?err=Employee+not+found');
-        }
-        const targetRole = targetRows[0].role;
-        if (hmsStaffAccountGuard.isSystemUserRole(targetRole)) {
-            return res.redirect('/users?err=' + encodeURIComponent('Manage Admin and Super Admin accounts under System Users.'));
-        }
-        if (!hmsStaffAccountGuard.canManageEmployeeAccount(actorRole, targetRole)) {
-            return res.redirect('/employees?err=' + encodeURIComponent(hmsStaffAccountGuard.manageDeniedMessage(actorRole, targetRole)));
-        }
-        const { first_name, last_name, username, emailid, pwd, dob,
-                employee_id, joining_date, gender, phone, address, bio,
-                primary_department, role, status } = req.body;
-        if (!hmsStaffAccountGuard.canAssignEmployeeRole(actorRole, role)) {
-            return res.redirect(`/employees/${id}/edit?err=${encodeURIComponent(hmsStaffAccountGuard.assignDeniedMessage(actorRole, role))}`);
-        }
-        if (hmsStaffAccountGuard.isSystemUserRole(role)) {
-            return res.redirect(`/employees/${id}/edit?err=${encodeURIComponent('Admin and Super Admin roles must be managed under System Users.')}`);
-        }
-        const hr = { job_title: '', cnps_number: '', tax_niu: '', nic_number: '', bank_name: '', bank_account_no: '' };
-        try {
-            const doctorRoleIds = await resolveDoctorRoleIds(pool);
-            const isDoc = isDoctorRoleId(role, doctorRoleIds);
-            let doctorDepartments = [];
-            let staffSpecialisations = parseSpecialisationsFromBody(req.body);
-            if (isDoc) {
-                doctorDepartments = requireDoctorDepartments(role, req.body, doctorRoleIds);
-                staffSpecialisations = requireDoctorSpecialisations(role, req.body, doctorRoleIds);
+        const result = await updateEmployeeProfile(pool, req, id, userPerms);
+        if (!result.ok) {
+            if (result.status === 404) return res.redirect('/employees?err=Employee+not+found');
+            if (result.error && result.error.includes('System Users')) {
+                return res.redirect(`/users?err=${encodeURIComponent(result.error)}`);
             }
-            for (const spec of staffSpecialisations) {
-                await registerDoctorSpecialisation(pool, spec);
-            }
-            const legacyClinical = primaryLegacyFields(
-                isDoc && doctorDepartments.length ? doctorDepartments : parseDepartmentsFromBody(req.body),
-                staffSpecialisations
-            );
-            const specialisation = legacyClinical.specialisation;
-            const resolvedPrimaryDepartment = legacyClinical.primary_department || primary_department || '';
-            await ensureEmployeeHrSchema(pool);
-            await ensureEmployeeClinicalLinksSchema(pool);
-            let passField = '';
-            let passParam = [];
-            const allowPwd = hmsStaffAccountGuard.canManageEmployeePassword(actorRole, targetRole, userPerms);
-            if (allowPwd && pwd && pwd.trim()) {
-                const hash = await bcrypt.hash(pwd.trim(), 10);
-                passField = 'password=?,';
-                passParam = [hash];
-            }
-            const profileEmoji = resolveProfileEmoji(req.body.profile_emoji, gender);
-            const uploadedPhotoPath = uploadedStaffPhotoPath(req.file);
-            const removePhoto = String(req.body.remove_profile_photo || '') === '1';
-            const photoSql = uploadedPhotoPath
-                ? ',photo_path=?'
-                : removePhoto
-                    ? ',photo_path=NULL'
-                    : '';
-            const photoParams = uploadedPhotoPath ? [uploadedPhotoPath] : [];
-            await pool.query(
-                `UPDATE tbl_employee SET first_name=?,last_name=?,username=?,emailid=?,${passField}
-                 dob=?,employee_id=?,joining_date=?,gender=?,address=?,phone=?,bio=?,
-                 job_title=?,cnps_number=?,tax_niu=?,nic_number=?,bank_name=?,bank_account_no=?,
-                 primary_department=?,specialisation=?,profile_emoji=?${photoSql},role=?,status=? WHERE id=?`,
-                [first_name, last_name, username, emailid,
-                 ...passParam,
-                 dob||null, employee_id, joining_date||null, gender,
-                 address||'', phone, bio||'',
-                 hr.job_title, hr.cnps_number, hr.tax_niu, hr.nic_number, hr.bank_name, hr.bank_account_no,
-                 resolvedPrimaryDepartment,
-                 specialisation || null,
-                 profileEmoji,
-                 ...photoParams,
-                 parseInt(role)||2, parseInt(status??1), id]
-            );
-            if (isDoc) {
-                await syncEmployeeDepartments(pool, id, doctorDepartments);
-            } else {
-                await pool.query('DELETE FROM tbl_employee_department WHERE employee_id=?', [id]).catch(() => {});
-            }
-            if (staffSpecialisations.length) {
-                await syncEmployeeSpecialisations(pool, id, staffSpecialisations);
-            } else {
-                await pool.query('DELETE FROM tbl_employee_doctor_specialisation WHERE employee_id=?', [id]).catch(() => {});
-            }
-            if (String(req.session.userId || req.session.user?.id || '') === String(id)) {
-                req.session.user.profile_emoji = profileEmoji;
-                if (uploadedPhotoPath) req.session.user.photo = uploadedPhotoPath;
-                if (removePhoto) req.session.user.photo = null;
-                req.session.user.gender = gender || null;
-                req.session.user.name = `${first_name} ${last_name}`.trim();
-            }
-            try {
-                const { ensureCashierOnEmployeeSave, attachCashierToSession } = require('../lib/cashierIdentity');
-                await ensureCashierOnEmployeeSave(pool, id, role, {
-                    status: parseInt(status ?? 1, 10),
-                    facilityId: parseInt(req.session.facilityId, 10) || 1,
-                });
-                if (String(req.session.userId || req.session.user?.id || '') === String(id)) {
-                    await attachCashierToSession(pool, req, { forceAssign: true });
-                }
-            } catch (_) { /* non-blocking */ }
-            try {
-                await replicateEmployeeOut(pool, id, 'upsert');
-            } catch (_) { /* non-blocking */ }
-            res.redirect(`/employees?msg=Employee+updated+successfully`);
-        } catch (e) {
-            res.redirect(`/employees/${id}/edit?err=${encodeURIComponent(e.message)}`);
+            return res.redirect(`/employees/${id}/edit?err=${encodeURIComponent(result.error || 'Could not save.')}`);
         }
+        res.redirect('/employees?msg=Employee+updated+successfully');
     });
 
     // ────────────────────────────────────────────────────────

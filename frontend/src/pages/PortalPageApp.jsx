@@ -5,11 +5,10 @@ import { HubOpdTodayPanel } from '../components/HubOpdTodayPanel';
 import { PortalQuickActionCard, PortalQuickActions } from '../components/PortalQuickActionCard';
 import { DirectorPortalShell } from '../components/DirectorPortalShell';
 import { StaffPortalShell } from '../components/StaffPortalShell';
-import { HubStatCard } from '../components/HubStatCard';
+import { HubDashboardSections } from '../components/HubDashboardSections';
 import { StatCard } from '../components/StatCard';
 import { SurfaceHero } from '../components/SurfaceHero';
-import { hubItemLabel } from '../lib/hubI18n';
-import { enrichHubStats, hubStatValue } from '../lib/hubStatCatalog';
+import { enrichHubStats } from '../lib/hubStatCatalog';
 import { VisitingDoctorVisitBanner } from './VisitingDoctorMyVisitPageApp';
 
 export function PortalPageApp({
@@ -96,8 +95,8 @@ export function PortalPageApp({
 
   if (showStaffDashboard && staffDashboardProfile) {
     return (
-      <div className="page-wrapper hms-surface-module">
-        <div className="content px-4 pb-10 pt-2 sm:px-6">
+      <div className="page-wrapper hms-surface-module hms-staff-dashboard-page">
+        <div className="content hms-staff-dashboard-content px-4 pb-10 pt-2 sm:px-6">
           <FlashMessages flash={flash} error={error} />
           <StaffPortalShell
             profile={staffDashboardProfile}
@@ -173,36 +172,16 @@ export function PortalPageApp({
           </div>
         ) : null}
 
-        {showHmsHub && visibleHubStats.length > 0 ? (
-          <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {visibleHubStats.map((s) => (
-              <HubStatCard
-                key={s.code}
-                label={hubItemLabel(s.code, s.label, t)}
-                value={hubStatValue(liveHubStats, s.code)}
-                icon={s.icon}
-                color={s.color}
-              />
-            ))}
-          </div>
-        ) : null}
-
-        {showHmsHub && (hubCardsAsTiles.length > 0 || showOpdToday) ? (
-          <div className={`mb-6 grid gap-4 ${showOpdToday ? 'lg:grid-cols-3' : ''}`}>
-            {hubCardsAsTiles.length > 0 ? (
-              <div className={showOpdToday ? 'lg:col-span-2' : ''}>
-                <h2 className="mb-3 text-sm font-bold text-ink">
-                  {t('hub.clinical_modules', { ns: 'legacy' })}
-                </h2>
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                  {hubCardsAsTiles.map((card) => (
-                    <PortalQuickActionCard key={card.code} tile={card} accentColor={color} compact />
-                  ))}
-                </div>
-              </div>
-            ) : null}
+        {showHmsHub && (visibleHubStats.length > 0 || hubCardsAsTiles.length > 0) ? (
+          <div className={`mb-6 grid gap-5 ${showOpdToday ? 'lg:grid-cols-[minmax(0,1fr)_minmax(280px,320px)]' : ''}`}>
+            <HubDashboardSections
+              hubStatItems={hubStatItems}
+              liveHubStats={liveHubStats}
+              hubModuleCards={hubModuleCards}
+              portalAccent={color}
+            />
             {showOpdToday ? (
-              <div className={hubCardsAsTiles.length > 0 ? '' : 'lg:col-span-3'}>
+              <div className="lg:sticky lg:top-4 lg:self-start">
                 <HubOpdTodayPanel visits={todayVisits} showOpdQueueLink={showOpdQueueLink} />
               </div>
             ) : null}

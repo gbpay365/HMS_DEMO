@@ -11,14 +11,14 @@
   <% } else { %>
   <table class="table table-sm mb-2"><tbody>
   <% lines.forEach(function(l){ %>
-  <tr><td class="small"><%=l.description%></td><td class="text-right small font-weight-bold"><%=Number(l.amount||0).toLocaleString()%></td></tr>
+  <tr><td class="small"><%=l.description%></td><td class="text-right small font-weight-bold"><%= fmtMoney(l.amount||0) %></td></tr>
   <% }); %>
   </tbody></table>
   <% } %>
   <div class="d-flex flex-wrap" style="gap:12px;">
-   <div><span class="small text-muted d-block"><%= _t('forecast_card.forecast_total', { ns: 'ipd', defaultValue: 'Forecast total' }) %></span><strong class="text-danger"><%=Number(fc.forecast_total||0).toLocaleString()%> FCFA</strong></div>
-   <div><span class="small text-muted d-block"><%= _t('forecast_card.deposit', { ns: 'ipd', defaultValue: 'Deposit' }) %></span><strong class="text-success"><%=Number(fc.deposit||0).toLocaleString()%> FCFA</strong></div>
-   <div><span class="small text-muted d-block"><%= _t('forecast_card.balance_due', { ns: 'ipd', defaultValue: 'Balance due' }) %></span><strong><%=Number(fc.balance_due||0).toLocaleString()%> FCFA</strong></div>
+   <div><span class="small text-muted d-block"><%= _t('forecast_card.forecast_total', { ns: 'ipd', defaultValue: 'Forecast total' }) %></span><strong class="text-danger"><%= fmtMoney(fc.forecast_total||0) %></strong></div>
+   <div><span class="small text-muted d-block"><%= _t('forecast_card.deposit', { ns: 'ipd', defaultValue: 'Deposit' }) %></span><strong class="text-success"><%= fmtMoney(fc.deposit||0) %></strong></div>
+   <div><span class="small text-muted d-block"><%= _t('forecast_card.balance_due', { ns: 'ipd', defaultValue: 'Balance due' }) %></span><strong><%= fmtMoney(fc.balance_due||0) %></strong></div>
   </div>
   <a href="/ipd/running-bill/<%=typeof admId!=='undefined'?admId:(adm&&adm.id)%>" class="btn btn-outline-secondary btn-sm mt-2 mr-1"><%= _t('forecast_card.running_bill', { ns: 'ipd', defaultValue: 'Running bill' }) %></a>
   <a href="/cashier/ipd-settle" class="btn btn-outline-success btn-sm mt-2"><%= _t('forecast_card.cashier_settle', { ns: 'ipd', defaultValue: 'Cashier settlement' }) %></a>

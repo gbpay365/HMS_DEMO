@@ -5,6 +5,7 @@ import { FormField } from '../components/FormField';
 import { ModalCancelButton, ModalSubmitButton } from '../components/ModalActions';
 import { PatientSearchField } from '../components/PatientSearchField';
 import { confirmModal } from '../lib/modalBridge';
+import { formatMoney } from '../lib/hmsLocale';
 
 export function WardAdmitModal({ open, onClose, bed, pendingPatient = null, availableBeds = [] }) {
   const { t } = useTranslation('ipd');
@@ -214,7 +215,7 @@ export function WardAdmitModal({ open, onClose, bed, pendingPatient = null, avai
             {validated && !payLater ? (
               <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900">
                 <i className="fa fa-check-circle mr-1" aria-hidden="true" />
-                {t('modals.assign_payment_ok', { amount: validated.deposit ?? 0 })}
+                {t('modals.assign_payment_ok', { amount: formatMoney(validated.deposit ?? 0), defaultValue: 'Hospitalisation fee validated · deposit {{amount}}' })}
               </div>
             ) : null}
           </>

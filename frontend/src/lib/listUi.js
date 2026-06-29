@@ -1,5 +1,6 @@
 import { notifyError } from './notifyBridge';
 import { tFallback } from './tFallback';
+import { formatMoney as formatHmsMoney, currencyCode as profileCurrencyCode } from './hmsLocale';
 
 export function appointmentStatus(status) {
   const s = Number(status);
@@ -111,9 +112,12 @@ export function formatDateTime(value) {
   }
 }
 
-export function formatMoney(amount, currency = 'XAF') {
-  const n = Number(amount) || 0;
-  return `${n.toLocaleString()} ${currency}`;
+export function formatMoney(amount) {
+  return formatHmsMoney(amount);
+}
+
+export function moneyCurrencyCode() {
+  return profileCurrencyCode();
 }
 
 export function employeeStatus(status) {

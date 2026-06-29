@@ -1,6 +1,7 @@
 'use strict';
 
 const hmsFinSettings = require('../lib/hmsFinSettings');
+const hmsCountry = require('../lib/hmsCountry');
 
 module.exports = function mountFinancialsSettings(app, pool, requireAuth, requirePerm) {
   const readPerm = requirePerm(
@@ -69,7 +70,7 @@ module.exports = function mountFinancialsSettings(app, pool, requireAuth, requir
         const pairs = [
           ['company.legal_name', s.company_legal_name],
           ['company.city', s.company_city],
-          ['company.currency', s.company_currency || 'XAF'],
+          ['company.currency', s.company_currency || hmsCountry.currencyCode()],
           ['company.fiscal_regime', s.company_fiscal_regime],
           ['accounting.chart', s.accounting_chart],
           ['tax.company_niu', s.company_niu],

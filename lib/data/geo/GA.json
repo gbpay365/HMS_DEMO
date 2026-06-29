@@ -1,0 +1,66 @@
+{
+  "code": "GA",
+  "name": "Gabon",
+  "regionLabel": "Province",
+  "subRegionLabel": "Department",
+  "regions": [
+    "Estuaire",
+    "Haut-Ogooué",
+    "Moyen-Ogooué",
+    "Ngounié",
+    "Nyanga",
+    "Ogooué-Ivindo",
+    "Ogooué-Lolo",
+    "Ogooué-Maritime",
+    "Woleu-Ntem"
+  ],
+  "subRegions": {
+    "Estuaire": [
+      "Cocobeach",
+      "Libreville",
+      "Ntoum"
+    ],
+    "Haut-Ogooué": [
+      "Franceville",
+      "Lékoni",
+      "Moanda",
+      "Mounana",
+      "Okondja"
+    ],
+    "Moyen-Ogooué": [
+      "Lambaréné",
+      "Ndjolé"
+    ],
+    "Ngounié": [
+      "Fougamou",
+      "Mbigou",
+      "Mimongo",
+      "Mouila",
+      "Ndendé"
+    ],
+    "Nyanga": [
+      "Mayumba",
+      "Tchibanga"
+    ],
+    "Ogooué-Ivindo": [
+      "Booué",
+      "Makokou",
+      "Zadie"
+    ],
+    "Ogooué-Lolo": [
+      "Koulamoutou",
+      "Lastoursville"
+    ],
+    "Ogooué-Maritime": [
+      "Gamba",
+      "Omboué",
+      "Port-Gentil"
+    ],
+    "Woleu-Ntem": [
+      "Bitam",
+      "Mitzic",
+      "Oyem"
+    ]
+  },
+  "source": "dr5hn/countries-states-cities-database"
+}

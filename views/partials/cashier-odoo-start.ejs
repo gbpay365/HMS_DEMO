@@ -1,0 +1,41 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _top = function (key, fallback, opts) {
+  return _t(key, Object.assign({ ns: 'ops', defaultValue: fallback }, opts || {}));
+};
+var _brand = locals.brand || {};
+var _brandLogo = _brand.faviconPath || '/img/zaizens-favicon.svg';
+var _brandName = _brand.name || 'ZAIZENS';
+%>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/cashier-module.css?v=49">
+<style>
+body.hms-body--cashier-odoo .main-wrapper,
+body.hms-body--cashier-roster .main-wrapper,
+body.hms-body--cashier-roster #mainWrapper {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+body.hms-body--cashier-odoo #hms-sidebar,
+body.hms-body--cashier-roster #hms-sidebar {
+  display: none !important;
+}
+body.hms-body--cashier-odoo .hms-odoo-app,
+body.hms-body--cashier-roster .hms-odoo-app {
+  margin-left: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+}
+body.hms-body--cashier-odoo .hms-odoo-app > .o_web_navbar,
+body.hms-body--cashier-roster .hms-odoo-app > .o_web_navbar {
+  display: none !important;
+}
+</style>
+<div class="cs-shell" id="cashierOdooApp">
+  <%- include('cashier-rail') %>
+  <div class="cs-main">

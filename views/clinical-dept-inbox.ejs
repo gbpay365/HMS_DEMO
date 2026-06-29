@@ -1,8 +1,26 @@
-<% locals.hmsSurfaceBodyClass = ' hms-body--clinical-dept-inbox'; %>
+<%
+  var _pd = locals.pageData || {};
+  var _isPharmacy = _pd.dept === 'pharmacy';
+  locals.hmsSurfaceBodyClass = (locals.hmsSurfaceBodyClass || '') + ' hms-body--clinical-dept-inbox' + (_isPharmacy ? ' hms-body--pharmacy-theme' : '');
+  var _reactMount = {
+    reactPage: locals.reactPage || 'lab-workflow',
+    reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.alerts', { ns: 'common' }) : 'Loading…'),
+    pageData: locals.pageData || {}
+  };
+%>
 <%- include('partials/header') %>
-<%- include('partials/react-page-mount', {
-  reactPage: locals.reactPage || 'lab-workflow',
-  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.alerts', { ns: 'common' }) : 'Loading…'),
-  pageData: locals.pageData || {}
+<% if (_isPharmacy) { %>
+<%- include('partials/pharmacy-odoo-start', {
+  phaOdooMenu: 'config',
+  phaOdooSub: 'order-alerts',
+  phaOdooTitle: locals.phaOdooTitle || (typeof t === 'function' ? t('document_titles.pharmacy_order_alerts', { ns: 'common', defaultValue: 'Order alerts' }) : 'Order alerts'),
+  nursingSupplyPending: locals.nursingSupplyPending,
+  flash: locals.flash || _pd.flash,
+  error: locals.error || _pd.error
 }) %>
+<%- include('partials/react-page-mount', _reactMount) %>
+<%- include('partials/pharmacy-odoo-end') %>
+<% } else { %>
+<%- include('partials/react-page-mount', _reactMount) %>
+<% } %>
 <%- include('partials/footer') %>

@@ -1,0 +1,52 @@
+<%- include('partials/header') %>
+<%- include('partials/laboratory-odoo-start', {
+  labOdooMenu: 'operations',
+  labOdooTitle: 'Laboratory MIS hub'
+}) %>
+<div class="o_content">
+<%- include('partials/lims-ops-nav', { limsOpsMenu: 'mis' }) %>
+<form method="get" class="form-inline mb-3">
+ <input type="date" name="date" value="<%= date %>" class="form-control form-control-sm mr-2">
+ <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+</form>
+<% var s = stats || {}; var lr = s.labResults || {}; %>
+<section class="hms-stat-section mb-4">
+ <div class="hms-stat-grid">
+  <div class="hms-stat-card"><span class="hms-stat-card__label">Total results</span><strong class="hms-stat-card__value"><%= lr.total || 0 %></strong></div>
+  <div class="hms-stat-card"><span class="hms-stat-card__label">Pending</span><strong class="hms-stat-card__value"><%= lr.pending || 0 %></strong></div>
+  <div class="hms-stat-card"><span class="hms-stat-card__label">Completed</span><strong class="hms-stat-card__value"><%= lr.completed || 0 %></strong></div>
+  <div class="hms-stat-card"><span class="hms-stat-card__label">Abnormal</span><strong class="hms-stat-card__value"><%= lr.abnormal || 0 %></strong></div>
+  <div class="hms-stat-card"><span class="hms-stat-card__label">Dispatched</span><strong class="hms-stat-card__value"><%= s.dispatchSent || 0 %></strong></div>
+  <div class="hms-stat-card"><span class="hms-stat-card__label">Open requests</span><strong class="hms-stat-card__value"><%= s.openRequests || 0 %></strong></div>
+ </div>
+</section>
+<div class="hms-surface-card">
+ <h6 class="font-weight-bold p-3 mb-0 border-bottom">Top tests today</h6>
+ <div class="table-responsive">
+  <table class="table table-sm mb-0">
+   <thead class="thead-light"><tr><th>Test</th><th>Total</th><th>Completed</th><th>Status</th></tr></thead>
+   <tbody>
+   <% if (!testRows || !testRows.length) { %>
+   <tr><td colspan="4" class="text-muted text-center py-3">No data.</td></tr>
+   <% } %>
+   <% (testRows || []).forEach(function(r){ %>
+   <tr>
+    <td><%= r.test_name %></td>
+    <td><%= r.total %></td>
+    <td><%= r.completed || 0 %></td>
+    <td><span class="badge badge-light border"><%= r.status %></span></td>
+   </tr>
+   <% }); %>
+   </tbody>
+  </table>
+ </div>
+</div>
+<div class="mt-3 small text-muted">
+ Quick links:
+ <a href="/lims/ops/investigation?date=<%= date %>">Investigation board</a> ·
+ <a href="/lims/ops/test-status?date=<%= date %>">Full analytics</a> ·
+ <a href="/lims/ops/dispatch">Dispatch queue</a>
+</div>
+</div>
+<%- include('partials/laboratory-odoo-end') %>
+<%- include('partials/footer') %>

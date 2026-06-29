@@ -1,0 +1,5500 @@
+/**
+ * Cashier module — pixel match to cashier-module.html reference (ZAIZENS)
+ */
+body.hms-body--cashier-odoo #hms-sidebar,
+body.hms-body--cashier-odoo .hms-topbar,
+body.hms-body--cashier-odoo .o_web_navbar {
+  display: none !important;
+}
+
+body.hms-body--cashier-odoo .main-wrapper {
+  margin-left: 0 !important;
+  min-height: 100vh;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+body.hms-body--cashier-odoo .hms-odoo-app,
+body.hms-body--cashier-roster .hms-odoo-app {
+  margin-left: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 100vh;
+}
+
+body.hms-body--cashier-odoo .hms-odoo-app > .o_web_navbar,
+body.hms-body--cashier-roster .hms-odoo-app > .o_web_navbar {
+  display: none !important;
+}
+
+body.hms-body--cashier-odoo .page-wrapper,
+body.hms-body--cashier-odoo .page-wrapper > .content {
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+}
+
+body.hms-body--cashier-odoo {
+  --cs-primary: #0f4c5c;
+  --cs-accent: #10b981;
+  --cs-accent-hover: #059669;
+  --cs-darker: #083544;
+  --cs-light: #d1fae5;
+  --cs-lighter: #f0faf8;
+  --cs-border: #a7f3d0;
+  --cs-border-mid: #6ee7b7;
+  --cs-paid-bg: #d1fae5;
+  --cs-paid-text: #065f46;
+  --cs-pending-bg: #fef9c3;
+  --cs-pending-text: #854d0e;
+  --cs-overdue-bg: #fef2f2;
+  --cs-overdue-text: #991b1b;
+  --cs-partial-bg: #ede9fe;
+  --cs-partial-text: #5b21b6;
+  --cs-waived-bg: #f3f4f6;
+  --cs-waived-text: #374151;
+  --cs-refunded-bg: #eff6ff;
+  --cs-refunded-text: #1e3a8a;
+  --cs-insurance-bg: #fff7ed;
+  --cs-insurance-text: #92400e;
+  --cs-cat-cons: #0f4c5c;
+  --cs-cat-cons-bg: #cffafe;
+  --cs-cat-lab: #7c3aed;
+  --cs-cat-lab-bg: #ede9fe;
+  --cs-cat-rad: #1e3a8a;
+  --cs-cat-rad-bg: #dbeafe;
+  --cs-cat-pharm: #d4537e;
+  --cs-cat-pharm-bg: #fce4ec;
+  --cs-cat-proc: #065f46;
+  --cs-cat-proc-bg: #d1fae5;
+  --cs-cat-room: #78350f;
+  --cs-cat-room-bg: #fef3c7;
+  --cs-cat-misc: #374151;
+  --cs-cat-misc-bg: #f3f4f6;
+  --cs-shadow-card: 0 1px 4px rgba(15, 76, 92, 0.08);
+  --cs-shadow-hover: 0 4px 14px rgba(15, 76, 92, 0.14);
+  --cs-sidebar-width: 296px;
+  --cs-logo-band-height: 74px;
+  --cs-text-xs: 14px;
+  --cs-text-sm: 16px;
+  --cs-text-base: 18px;
+  --cs-text-md: 20px;
+  --cs-text-lg: 22px;
+  --cs-text-xl: 28px;
+  --cs-text-2xl: 32px;
+  background: var(--cs-lighter);
+  font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
+  font-size: var(--cs-text-base);
+  color: #1a1a1a;
+}
+
+body.hms-body--cashier-odoo .cs-shell {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
+  color: #1a1a1a;
+}
+
+body.hms-body--cashier-odoo .cs-main,
+body.hms-body--cashier-odoo .cs-content {
+  font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
+  color: #1a1a1a;
+}
+
+body.hms-body--cashier-odoo .cs-sidebar {
+  width: var(--cs-sidebar-width);
+  background: var(--cs-primary);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+body.hms-body--cashier-odoo .cs-logo {
+  padding: 18px;
+  border-bottom: 0.5px solid var(--cs-darker);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: var(--cs-logo-band-height);
+  box-sizing: border-box;
+}
+
+body.hms-body--cashier-odoo .cs-logo-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+body.hms-body--cashier-odoo .cs-logo-icon--zaizens {
+  background: linear-gradient(145deg, #4f8ef7 0%, #1e3a8a 55%, #172554 100%);
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+body.hms-body--cashier-odoo .cs-logo-letter {
+  font-size: 19px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+body.hms-body--cashier-odoo .cs-logo-icon i {
+  color: #fff;
+  font-size: 18px;
+}
+
+body.hms-body--cashier-odoo .cs-logo-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.2;
+}
+
+body.hms-body--cashier-odoo .cs-logo-sub {
+  font-size: 13px;
+  color: #6ee7b7;
+  margin-top: 2px;
+}
+
+body.hms-body--cashier-odoo .cs-nav {
+  flex: 1;
+  padding: 8px 0;
+}
+
+body.hms-body--cashier-odoo .cs-nav-group {
+  font-size: 13px;
+  color: #6ee7b7;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 14px 18px 6px;
+}
+
+body.hms-body--cashier-odoo .cs-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  cursor: pointer;
+  color: #a7f3d0;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.35;
+  border-left: 3px solid transparent;
+  transition: background 0.15s;
+  text-decoration: none;
+}
+
+body.hms-body--cashier-odoo .cs-nav-item i,
+body.hms-body--cashier-odoo .cs-nav-item .cs-nav-icon {
+  font-size: 19px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  min-width: 22px;
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .cs-nav-item:hover {
+  background: var(--cs-darker);
+  color: #fff;
+  text-decoration: none;
+}
+
+body.hms-body--cashier-odoo .cs-nav-item.active {
+  background: var(--cs-darker);
+  color: #fff;
+  border-left-color: var(--cs-accent);
+}
+
+body.hms-body--cashier-odoo .cs-nav-badge {
+  margin-left: auto;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user {
+  padding: 16px 18px;
+  border-top: 0.5px solid var(--cs-darker);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-menu {
+  position: relative;
+  border-top: 0.5px solid var(--cs-darker);
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-trigger {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  color: inherit;
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-trigger::-webkit-details-marker {
+  display: none;
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-text {
+  flex: 1;
+  min-width: 0;
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-caret {
+  font-size: 12px;
+  color: #6ee7b7;
+  flex-shrink: 0;
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-menu[open] .cs-sidebar-user-trigger {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-dropdown {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(100% + 8px);
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.22);
+  border: 1px solid #e5e7eb;
+  padding: 6px;
+  z-index: 120;
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-action:hover {
+  background: #f0fdf4;
+  color: var(--cs-primary);
+  text-decoration: none;
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-action--logout:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+  line-height: 1.3;
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-role {
+  font-size: 13px;
+  color: #6ee7b7;
+  line-height: 1.3;
+}
+
+body.hms-body--cashier-odoo .cs-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .cs-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+body.hms-body--cashier-odoo .shift-bar {
+  background: var(--cs-primary);
+  color: #fff;
+  padding: 0 20px;
+  min-height: var(--cs-logo-band-height);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.35;
+  border-bottom: 0.5px solid var(--cs-darker);
+  flex-wrap: wrap;
+}
+
+body.hms-body--cashier-odoo .shift-bar strong {
+  font-weight: 700;
+}
+
+body.hms-body--cashier-odoo .shift-bar__meta {
+  margin-left: auto;
+  opacity: 0.95;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 0;
+  font-size: 17px;
+}
+
+body.hms-body--cashier-odoo .shift-bar__user-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+body.hms-body--cashier-odoo .shift-bar__user-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: inherit;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+body.hms-body--cashier-odoo .shift-bar__user-btn:hover,
+body.hms-body--cashier-odoo .shift-bar__user-btn[aria-expanded='true'] {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+body.hms-body--cashier-odoo .shift-bar__user-caret {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+body.hms-body--cashier-odoo .shift-bar__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 210px;
+  background: #fff;
+  color: #1f2937;
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18);
+  border: 1px solid #e5e7eb;
+  padding: 6px;
+  z-index: 200;
+}
+
+body.hms-body--cashier-odoo .shift-bar__menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #1f2937;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+
+body.hms-body--cashier-odoo .shift-bar__menu-item:hover {
+  background: #f0fdf4;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .shift-bar__close-btn {
+  border-color: #6ee7b7 !important;
+  color: #fff !important;
+  background: transparent !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  height: 34px !important;
+  padding: 0 14px !important;
+}
+
+body.hms-body--cashier-odoo .shift-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--cs-accent);
+  flex-shrink: 0;
+  animation: cs-pulse 2s infinite;
+}
+
+@keyframes cs-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+body.hms-body--cashier-odoo .cs-topbar {
+  background: #fff;
+  border-bottom: 0.5px solid #d1fae5;
+  padding: 0 18px;
+  height: 50px;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+body.hms-body--cashier-odoo .cs-topbar-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cs-primary);
+  flex: 1;
+}
+
+body.hms-body--cashier-odoo .cs-search-wrap {
+  position: relative;
+}
+
+body.hms-body--cashier-odoo .cs-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: 16px;
+  pointer-events: none;
+}
+
+body.hms-body--cashier-odoo .cs-search {
+  height: 38px;
+  border: 1px solid #d1fae5;
+  border-radius: 8px;
+  padding: 0 12px 0 34px;
+  font-size: 14px;
+  width: 260px;
+  outline: none;
+  background: #fff;
+  color: #1a1a1a;
+  font-family: inherit;
+}
+
+body.hms-body--cashier-odoo .cs-search:focus {
+  border-color: var(--cs-accent);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.12);
+}
+
+body.hms-body--cashier-odoo .cs-btn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid #d1fae5;
+  background: #fff;
+  color: var(--cs-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: inherit;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+body.hms-body--cashier-odoo .cs-btn:hover {
+  border-color: var(--cs-accent);
+  color: var(--cs-accent);
+  text-decoration: none;
+}
+
+body.hms-body--cashier-odoo .cs-btn-primary {
+  background: var(--cs-accent) !important;
+  border-color: var(--cs-accent) !important;
+  color: #fff !important;
+}
+
+body.hms-body--cashier-odoo .cs-btn-primary:hover {
+  background: var(--cs-accent-hover) !important;
+  color: #fff !important;
+}
+
+body.hms-body--cashier-odoo .cs-btn-sm {
+  height: 26px;
+  padding: 0 10px;
+  font-size: 11px;
+  border-radius: 6px;
+}
+
+body.hms-body--cashier-odoo .cs-btn-ghost {
+  border: none;
+  background: transparent;
+}
+
+body.hms-body--cashier-odoo .cs-notif {
+  position: relative;
+}
+
+body.hms-body--cashier-odoo .cs-notif-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #dc2626;
+  color: #fff;
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .cs-tabs {
+  background: #fff;
+  border-bottom: 0.5px solid #d1fae5;
+  padding: 0 18px;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+}
+
+body.hms-body--cashier-odoo .cs-tab {
+  padding: 10px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #6b7280;
+  border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: inherit;
+}
+
+body.hms-body--cashier-odoo .cs-tab:hover {
+  color: var(--cs-accent);
+}
+
+body.hms-body--cashier-odoo .cs-tab.active {
+  color: var(--cs-primary);
+  border-bottom-color: var(--cs-accent);
+  font-weight: 700;
+}
+
+body.hms-body--cashier-odoo .cs-tab-chip {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .cs-tab .fa {
+  font-size: 15px;
+}
+
+body.hms-body--cashier-odoo .cs-content {
+  padding: 0 16px 16px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+body.hms-body--cashier-odoo .cs-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 0.5px solid var(--cs-border);
+  box-shadow: var(--cs-shadow-card);
+  overflow: hidden;
+}
+
+body.hms-body--cashier-odoo .cs-card-head {
+  border-bottom: 0.5px solid var(--cs-border);
+  padding: 0 14px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .cs-card-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+}
+
+body.hms-body--cashier-odoo .cs-card-body {
+  padding: 14px;
+}
+
+body.hms-body--cashier-odoo .cs-card-body-0 {
+  padding: 0;
+}
+
+body.hms-body--cashier-odoo .cs-kpi {
+  background: #fff;
+  border-radius: 12px;
+  border: 0.5px solid var(--cs-border);
+  box-shadow: var(--cs-shadow-card);
+  padding: 11px 14px;
+  border-top-width: 3px;
+  border-top-style: solid;
+}
+
+body.hms-body--cashier-odoo .cs-kpi-label {
+  font-size: 11px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+body.hms-body--cashier-odoo .cs-kpi-value {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+body.hms-body--cashier-odoo .cs-kpi-sub {
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+body.hms-body--cashier-odoo .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+body.hms-body--cashier-odoo .col-4 {
+  flex: 0 0 calc(25% - 9px);
+  min-width: 0;
+}
+
+body.hms-body--cashier-odoo .col-7 {
+  flex: 0 0 calc(58.33% - 6px);
+  min-width: 0;
+}
+
+body.hms-body--cashier-odoo .col-5x {
+  flex: 0 0 calc(41.66% - 6px);
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  body.hms-body--cashier-odoo .col-4,
+  body.hms-body--cashier-odoo .col-7,
+  body.hms-body--cashier-odoo .col-5x {
+    flex: 0 0 calc(50% - 6px);
+  }
+  body.hms-body--cashier-odoo .cs-sidebar {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  body.hms-body--cashier-odoo .col-4,
+  body.hms-body--cashier-odoo .col-7,
+  body.hms-body--cashier-odoo .col-5x {
+    flex: 0 0 100%;
+  }
+}
+
+body.hms-body--cashier-odoo .cs-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 10px;
+  border: 0.5px solid;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .bg-paid {
+  background: var(--cs-paid-bg);
+  color: var(--cs-paid-text);
+  border-color: #6ee7b7;
+}
+
+body.hms-body--cashier-odoo .bg-pending {
+  background: var(--cs-pending-bg);
+  color: var(--cs-pending-text);
+  border-color: #fde68a;
+}
+
+body.hms-body--cashier-odoo .bg-overdue {
+  background: var(--cs-overdue-bg);
+  color: var(--cs-overdue-text);
+  border-color: #fecaca;
+}
+
+body.hms-body--cashier-odoo .bg-partial {
+  background: var(--cs-partial-bg);
+  color: var(--cs-partial-text);
+  border-color: #c4b5fd;
+}
+
+body.hms-body--cashier-odoo .bg-insurance {
+  background: var(--cs-insurance-bg);
+  color: var(--cs-insurance-text);
+  border-color: #fde68a;
+}
+
+body.hms-body--cashier-odoo .bg-refunded {
+  background: var(--cs-refunded-bg);
+  color: var(--cs-refunded-text);
+  border-color: #93c5fd;
+}
+
+body.hms-body--cashier-odoo .cs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+body.hms-body--cashier-odoo .cs-table thead tr th {
+  background: #f0faf8;
+  color: var(--cs-primary);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 9px 14px;
+  text-align: left;
+  border-bottom: 0.5px solid var(--cs-border);
+}
+
+body.hms-body--cashier-odoo .cs-table tbody tr td {
+  font-size: 12px;
+  padding: 10px 14px;
+  border-bottom: 0.5px solid #e6faf5;
+  vertical-align: middle;
+}
+
+body.hms-body--cashier-odoo .cs-table tbody tr:hover td {
+  background: #f6fffc;
+}
+
+body.hms-body--cashier-odoo .cs-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+body.hms-body--cashier-odoo .cs-filter {
+  padding: 10px 14px;
+  border-bottom: 0.5px solid var(--cs-border);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+body.hms-body--cashier-odoo .cs-select,
+body.hms-body--cashier-odoo .cs-input {
+  height: 32px;
+  border: 1px solid var(--cs-border);
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-family: inherit;
+  background: #fff;
+  color: #1a1a1a;
+  outline: none;
+}
+
+body.hms-body--cashier-odoo .cs-inner-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 0.5px solid var(--cs-border);
+  padding: 0 14px;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: thin;
+}
+
+body.hms-body--cashier-odoo .cs-inner-tab {
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #6b7280;
+  border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: inherit;
+}
+
+body.hms-body--cashier-odoo .cs-inner-tab:hover {
+  color: var(--cs-accent);
+}
+
+body.hms-body--cashier-odoo .cs-inner-tab.active {
+  color: var(--cs-primary);
+  border-bottom-color: var(--cs-accent);
+  font-weight: 700;
+}
+
+body.hms-body--cashier-odoo .cs-inner-tab .fa {
+  font-size: 14px;
+}
+
+body.hms-body--cashier-odoo .cs-page {
+  display: none;
+}
+
+body.hms-body--cashier-odoo .cs-page.active {
+  display: block;
+}
+
+body.hms-body--cashier-odoo .pos-shell {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 12px;
+  align-items: start;
+  font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
+  font-size: 13px;
+  color: #1a1a1a;
+  line-height: 1.4;
+}
+
+/* POS card titles — 17px / 600 */
+body.hms-body--cashier-odoo .pos-shell .cs-card-head {
+  font-size: 17px;
+  font-weight: 600;
+  min-height: 48px;
+}
+
+body.hms-body--cashier-odoo .pos-shell .cs-search {
+  height: 38px;
+  font-size: 14px;
+  padding: 0 12px 0 34px;
+}
+
+body.hms-body--cashier-odoo .pos-shell .cs-search-icon {
+  font-size: 16px;
+  left: 10px;
+}
+
+body.hms-body--cashier-odoo .pos-svc-search {
+  width: 200px;
+}
+
+/* Bootstrap / global HMS resets inside POS — match cashier-module.html */
+body.hms-body--cashier-odoo .pos-shell button,
+body.hms-body--cashier-odoo .pos-shell input,
+body.hms-body--cashier-odoo .pos-shell label {
+  font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
+  line-height: normal;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+body.hms-body--cashier-odoo .pos-shell .cs-btn {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+body.hms-body--cashier-odoo .pos-shell .cs-btn-sm {
+  font-size: 11px;
+}
+
+body.hms-body--cashier-odoo .pos-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.hms-body--cashier-odoo .pos-card-title-icon {
+  color: var(--cs-accent);
+  font-size: 18px;
+}
+
+body.hms-body--cashier-odoo .pos-patient-card-body {
+  padding: 10px 14px;
+}
+
+body.hms-body--cashier-odoo .pos-patient-row {
+  display: flex;
+  gap: 8px;
+}
+
+body.hms-body--cashier-odoo .pos-patient-card {
+  overflow: visible;
+  z-index: 20;
+}
+
+body.hms-body--cashier-odoo .pos-patient-card .cs-card-body {
+  overflow: visible;
+}
+
+body.hms-body--cashier-odoo .pos-patient-search {
+  flex: 1;
+  position: relative;
+  z-index: 25;
+}
+
+body.hms-body--cashier-odoo .pos-patient-search .cs-search {
+  width: 100%;
+}
+
+body.hms-body--cashier-odoo .pos-patient-selected {
+  margin-top: 10px;
+}
+
+body.hms-body--cashier-odoo .pos-patient-avatar {
+  background: var(--cs-light);
+  color: var(--cs-primary);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .pos-patient-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .pos-patient-meta {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+body.hms-body--cashier-odoo .pos-svc-name {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 5px;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+body.hms-body--cashier-odoo .pos-svc-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cs-primary);
+  flex-shrink: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.hms-body--cashier-odoo .pos-svc-cat {
+  font-size: 13px;
+  font-weight: 700;
+  color: #9ca3af;
+  margin-top: 3px;
+  flex-shrink: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.hms-body--cashier-odoo .pos-cart-count {
+  font-size: 13px;
+  color: #6b7280;
+  margin-left: 4px;
+  font-weight: 400;
+}
+
+body.hms-body--cashier-odoo .pos-cart-clear {
+  color: #dc2626;
+}
+
+body.hms-body--cashier-odoo .pos-cart-empty {
+  padding: 24px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+body.hms-body--cashier-odoo .pos-cart-empty-icon {
+  font-size: 28px;
+  display: block;
+  margin: 0 auto 6px;
+  opacity: 0.4;
+}
+
+body.hms-body--cashier-odoo .pos-cart-line-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .pos-cart-line-unit {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+body.hms-body--cashier-odoo .pos-cart-line-total {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cs-primary);
+  min-width: 80px;
+  text-align: right;
+}
+
+body.hms-body--cashier-odoo .pos-cart-summary {
+  padding: 10px 14px;
+  border-top: 0.5px solid var(--cs-border);
+}
+
+body.hms-body--cashier-odoo .pos-cart-summary-row {
+  font-size: 13px;
+  color: #9ca3af;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+body.hms-body--cashier-odoo .pos-cart-summary-row--discount {
+  color: var(--cs-accent);
+}
+
+body.hms-body--cashier-odoo .pos-cart-summary-total {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cs-primary);
+  display: flex;
+  justify-content: space-between;
+}
+
+body.hms-body--cashier-odoo .pos-total-label {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+body.hms-body--cashier-odoo .pos-change {
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+body.hms-body--cashier-odoo .pos-change--ok {
+  color: var(--cs-accent);
+}
+
+body.hms-body--cashier-odoo .pos-change--short {
+  color: #dc2626;
+}
+
+body.hms-body--cashier-odoo .pos-pay-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+body.hms-body--cashier-odoo .pos-pay-submethods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -6px 0 14px;
+}
+
+body.hms-body--cashier-odoo .pos-pay-submethods-empty {
+  margin: -6px 0 14px;
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .pos-shell .pay-submethod {
+  flex: 1 1 calc(50% - 6px);
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1.5px solid var(--cs-border);
+  background: #fff;
+  cursor: pointer;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  font-family: inherit;
+}
+
+body.hms-body--cashier-odoo .pos-shell .pay-submethod:hover {
+  border-color: var(--cs-accent);
+  color: var(--cs-accent);
+}
+
+body.hms-body--cashier-odoo .pos-shell .pay-submethod.selected {
+  background: var(--cs-light);
+  border-color: var(--cs-accent);
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .pos-card-form {
+  margin-bottom: 14px;
+}
+
+body.hms-body--cashier-odoo .pos-card-field {
+  display: block;
+  margin-bottom: 10px;
+}
+
+body.hms-body--cashier-odoo .pos-card-number-wrap {
+  position: relative;
+}
+
+body.hms-body--cashier-odoo .pos-card-input {
+  width: 100%;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+body.hms-body--cashier-odoo .pos-card-number-wrap .pos-card-input {
+  padding-right: 108px;
+}
+
+body.hms-body--cashier-odoo .pos-card-brand {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+body.hms-body--cashier-odoo .pos-card-brand--known {
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .pos-card-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+body.hms-body--cashier-odoo .pos-field {
+  margin-bottom: 12px;
+}
+
+body.hms-body--cashier-odoo .pos-field-label {
+  font-size: 13px;
+  color: #6b7280;
+  display: block;
+  margin-bottom: 5px;
+}
+
+body.hms-body--cashier-odoo .pos-cash-input {
+  font-size: 17px;
+  font-weight: 500;
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .pos-discount-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+body.hms-body--cashier-odoo .pos-discount-row label {
+  font-size: 13px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+body.hms-body--cashier-odoo .pos-discount-row label.pos-note-label {
+  margin-left: auto;
+}
+
+body.hms-body--cashier-odoo .pos-discount-input {
+  width: 80px;
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .pos-note-input {
+  flex: 1;
+}
+
+body.hms-body--cashier-odoo .pos-charge-btn {
+  width: 100%;
+  height: 44px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 10px;
+}
+
+body.hms-body--cashier-odoo .pos-save-bill-btn {
+  width: 100%;
+  margin-top: 8px;
+  height: 36px;
+  font-size: 12px;
+}
+
+body.hms-body--cashier-odoo .pos-payment-card .cs-card-head {
+  min-height: 52px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .pos-payment-card .cs-card-body {
+  padding: 18px;
+}
+
+body.hms-body--cashier-odoo .pos-payment-card {
+  position: sticky;
+  top: 0;
+}
+
+body.hms-body--cashier-odoo .pos-shell .cs-input:focus {
+  border-color: var(--cs-accent);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.12);
+}
+
+@media (max-width: 900px) {
+  body.hms-body--cashier-odoo .pos-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+body.hms-body--cashier-odoo .pos-shell .pay-method {
+  flex: 1 1 calc(20% - 8px);
+  min-width: 64px;
+  min-height: 76px;
+  padding: 14px 10px;
+  border-radius: 10px;
+  border: 1.5px solid var(--cs-border);
+  background: #fff;
+  cursor: pointer;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b7280;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+body.hms-body--cashier-odoo .pos-shell .pay-method:hover {
+  border-color: var(--cs-accent);
+  color: var(--cs-accent);
+}
+
+body.hms-body--cashier-odoo .pos-shell .pay-method.selected {
+  background: var(--cs-light);
+  border-color: var(--cs-accent);
+  color: var(--cs-primary);
+  font-weight: 700;
+}
+
+body.hms-body--cashier-odoo .pos-shell .pay-method i {
+  display: block;
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+/* Legacy pay-method fallback outside pos-shell */
+body.hms-body--cashier-odoo .pay-method {
+  flex: 1;
+  padding: 10px;
+  border-radius: 9px;
+  border: 1.5px solid var(--cs-border);
+  background: #fff;
+  cursor: pointer;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  font-family: inherit;
+}
+
+body.hms-body--cashier-odoo .pay-method:hover {
+  border-color: var(--cs-accent);
+  color: var(--cs-accent);
+}
+
+body.hms-body--cashier-odoo .pay-method.selected {
+  background: var(--cs-light);
+  border-color: var(--cs-accent);
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .pay-method i {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+body.hms-body--cashier-odoo .pos-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+body.hms-body--cashier-odoo .pos-key {
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--cs-border);
+  background: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cs-primary);
+  font-family: inherit;
+}
+
+body.hms-body--cashier-odoo .pos-key:hover {
+  background: var(--cs-light);
+  border-color: var(--cs-accent);
+}
+
+body.hms-body--cashier-odoo .pos-key.danger {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+body.hms-body--cashier-odoo .pos-svc-cats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+body.hms-body--cashier-odoo .pos-svc-cats .pos-svc-cat-btn {
+  height: 38px;
+  min-height: 38px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 9px;
+  border-width: 1.5px;
+}
+
+body.hms-body--cashier-odoo .pos-svc-cats .pos-svc-cat-btn.cs-btn-primary {
+  font-weight: 700;
+}
+
+body.hms-body--cashier-odoo .pos-svc-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+@media (max-width: 1400px) {
+  body.hms-body--cashier-odoo .pos-svc-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1200px) {
+  body.hms-body--cashier-odoo .pos-svc-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1000px) {
+  body.hms-body--cashier-odoo .pos-svc-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  body.hms-body--cashier-odoo .pos-svc-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  body.hms-body--cashier-odoo .pos-svc-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+body.hms-body--cashier-odoo .pos-svc-card {
+  box-sizing: border-box;
+  width: 100%;
+  height: 112px;
+  min-height: 112px;
+  max-height: 112px;
+  padding: 12px;
+  border-radius: 9px;
+  border: 0.5px solid;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+body.hms-body--cashier-odoo .pos-svc-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+body.hms-body--cashier-odoo .pos-svc-card--active {
+  box-shadow: 0 0 0 2px var(--cs-accent);
+}
+
+body.hms-body--cashier-odoo .pos-consult-picker {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--cs-accent);
+  background: var(--cs-lighter);
+}
+
+body.hms-body--cashier-odoo .pos-consult-picker__head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .pos-consult-picker__service {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-left: auto;
+}
+
+body.hms-body--cashier-odoo .pos-consult-field {
+  display: block;
+  margin-bottom: 10px;
+}
+
+body.hms-body--cashier-odoo .pos-consult-field__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 5px;
+}
+
+body.hms-body--cashier-odoo .pos-consult-select {
+  width: 100%;
+  height: 38px;
+  font-size: 14px;
+}
+
+body.hms-body--cashier-odoo .pos-consult-picker__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+body.hms-body--cashier-odoo .pos-cart-line-doctor {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cs-accent);
+  margin-top: 2px;
+}
+
+body.hms-body--cashier-odoo .pos-patient-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 8px;
+  background: var(--cs-lighter);
+  border: 0.5px solid var(--cs-border);
+}
+
+body.hms-body--cashier-odoo .pos-patient-results {
+  position: absolute;
+  z-index: 200;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #fff;
+  border: 0.5px solid var(--cs-border);
+  border-radius: 8px;
+  box-shadow: var(--cs-shadow-hover);
+}
+
+body.hms-body--cashier-odoo .pos-patient-results__empty {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .pos-patient-results button {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+body.hms-body--cashier-odoo .pos-patient-results__meta {
+  display: block;
+  margin-left: 0;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+body.hms-body--cashier-odoo .pos-patient-results button:hover {
+  background: var(--cs-lighter);
+}
+
+body.hms-body--cashier-odoo .pos-patient-results__name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .pos-cart-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border-bottom: 0.5px solid #e6faf5;
+}
+
+body.hms-body--cashier-odoo .pos-cart-qty {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+body.hms-body--cashier-odoo .pos-cart-qty-btn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  justify-content: center;
+}
+
+body.hms-body--cashier-odoo .pos-cart-qty span {
+  font-size: 12px;
+  font-weight: 500;
+  min-width: 16px;
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .pos-cart-remove {
+  color: #dc2626;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+}
+
+body.hms-body--cashier-odoo .pos-total-box {
+  background: var(--cs-lighter);
+  border-radius: 10px;
+  padding: 18px;
+  text-align: center;
+  margin-bottom: 14px;
+  border: 0.5px solid var(--cs-border);
+}
+
+body.hms-body--cashier-odoo .pos-total-amount {
+  font-size: 36px;
+  font-weight: 600;
+  color: var(--cs-primary);
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+body.hms-body--cashier-odoo .pos-payment-card .pos-cash-input {
+  height: 42px;
+  font-size: 18px;
+}
+
+body.hms-body--cashier-odoo .pos-payment-card .pos-key {
+  height: 50px;
+  font-size: 16px;
+}
+
+body.hms-body--cashier-odoo .pos-payment-card .pos-charge-btn {
+  height: 48px;
+  font-size: 16px;
+}
+
+body.hms-body--cashier-odoo .pos-payment-card .pos-save-bill-btn {
+  height: 40px;
+  font-size: 14px;
+}
+
+/* —— Patient bills tab —— */
+body.hms-body--cashier-odoo .bills-page {
+  animation: csFadeIn 0.25s ease-out;
+}
+
+body.hms-body--cashier-odoo .bills-stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+body.hms-body--cashier-odoo .bills-stat-card {
+  background: #fff;
+  border-radius: 10px;
+  border: 0.5px solid #d1fae5;
+  border-top-width: 3px;
+  border-top-style: solid;
+  box-shadow: 0 1px 4px rgba(15, 76, 92, 0.08);
+  padding: 11px 14px 13px;
+  min-width: 0;
+}
+
+body.hms-body--cashier-odoo .bills-stat-card__label {
+  font-size: 12px;
+  font-weight: 400;
+  color: #9ca3af;
+  line-height: 1.3;
+  margin-bottom: 5px;
+}
+
+body.hms-body--cashier-odoo .bills-stat-card__value {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hms-body--cashier-odoo .bills-stat-card--billed,
+body.hms-body--cashier-odoo .bills-stat-card--count {
+  border-top-color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .bills-stat-card--billed .bills-stat-card__value,
+body.hms-body--cashier-odoo .bills-stat-card--count .bills-stat-card__value {
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .bills-stat-card--collected {
+  border-top-color: #059669;
+}
+
+body.hms-body--cashier-odoo .bills-stat-card--collected .bills-stat-card__value {
+  color: #047857;
+}
+
+body.hms-body--cashier-odoo .bills-stat-card--outstanding {
+  border-top-color: #ef4444;
+}
+
+body.hms-body--cashier-odoo .bills-stat-card--outstanding .bills-stat-card__value {
+  color: #dc2626;
+}
+
+@media (max-width: 900px) {
+  body.hms-body--cashier-odoo .bills-stat-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  body.hms-body--cashier-odoo .bills-stat-row {
+    grid-template-columns: 1fr;
+  }
+
+  body.hms-body--cashier-odoo .bills-stat-card__value {
+    font-size: 22px;
+  }
+}
+
+body.hms-body--cashier-odoo .bills-card-head {
+  min-height: 52px;
+}
+
+body.hms-body--cashier-odoo .bills-card-icon {
+  color: var(--cs-accent);
+  font-size: 15px;
+}
+
+body.hms-body--cashier-odoo .bills-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--cs-border);
+  background: #fff;
+}
+
+body.hms-body--cashier-odoo .bills-search {
+  flex: 1 1 220px;
+  min-width: 180px;
+}
+
+body.hms-body--cashier-odoo .bills-filter-select {
+  width: auto;
+  min-width: 130px;
+  font-size: 13px;
+  padding: 8px 10px;
+}
+
+body.hms-body--cashier-odoo .bills-count-label {
+  margin-left: auto;
+  font-size: 12px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .bills-table .bills-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hms-body--cashier-odoo .bills-code {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .bills-code-link {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+body.hms-body--cashier-odoo .bills-code-link:hover {
+  text-decoration: underline;
+  color: #1d4ed8;
+}
+
+body.hms-body--cashier-odoo .bills-doc-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-start;
+}
+
+body.hms-body--cashier-odoo .bills-doc-view-btn,
+body.hms-body--cashier-odoo .bills-doc-print-btn {
+  font-size: 12px;
+  font-weight: 600;
+  gap: 5px;
+  padding: 6px 10px;
+}
+
+body.hms-body--cashier-odoo .bills-doc-print-wrap {
+  position: relative;
+}
+
+body.hms-body--cashier-odoo .bills-doc-print-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 30;
+  min-width: 11rem;
+  background: #fff;
+  border: 0.5px solid var(--cs-border);
+  border-radius: 10px;
+  box-shadow: var(--cs-shadow-hover);
+  padding: 4px;
+}
+
+body.hms-body--cashier-odoo .bills-doc-print-menu__item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+body.hms-body--cashier-odoo .bills-doc-print-menu__item:hover {
+  background: var(--cs-lighter);
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .bills-action-cell {
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .bills-patient-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 160px;
+}
+
+body.hms-body--cashier-odoo .bills-patient-avatar {
+  width: 34px;
+  height: 34px;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+body.hms-body--cashier-odoo .bills-patient-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
+
+body.hms-body--cashier-odoo .bills-patient-dept {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+body.hms-body--cashier-odoo .bills-balance--due {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+body.hms-body--cashier-odoo .bills-date {
+  font-size: 12px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .bills-pay-btn {
+  min-width: 56px;
+  justify-content: center;
+}
+
+body.hms-body--cashier-odoo .bills-check-col {
+  width: 36px;
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .bills-check {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--cs-accent);
+  cursor: pointer;
+}
+
+body.hms-body--cashier-odoo .bills-pager {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 12px 16px 14px;
+}
+
+body.hms-body--cashier-odoo .bills-pager-btn {
+  min-width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--cs-border);
+  background: #fff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+body.hms-body--cashier-odoo .bills-pager-btn.active {
+  background: var(--cs-accent);
+  border-color: var(--cs-accent);
+  color: #fff;
+}
+
+body.hms-body--cashier-odoo .bills-pager-btn:hover:not(.active) {
+  border-color: var(--cs-accent);
+  color: var(--cs-primary);
+}
+
+/* —— Patient bills workflow desk —— */
+body.hms-body--cashier-odoo .bills-lookup-card,
+body.hms-body--cashier-odoo .bills-workflow-card {
+  margin-bottom: 14px;
+}
+
+body.hms-body--cashier-odoo .bills-lookup-body {
+  padding: 12px 16px 14px;
+}
+
+body.hms-body--cashier-odoo .bills-lookup-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+body.hms-body--cashier-odoo .bills-lookup-search {
+  flex: 1 1 280px;
+  min-width: 200px;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-panel {
+  padding: 0;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-search {
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 100%;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-panel > .cs-search-wrap.bills-workflow-search,
+body.hms-body--cashier-odoo .bills-workflow-panel > .cs-filter,
+body.hms-body--cashier-odoo .bills-workflow-hist-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--cs-border);
+  background: #fafbfc;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-panel > .cs-search-wrap.bills-workflow-search .cs-search,
+body.hms-body--cashier-odoo .bills-workflow-hist-form .cs-search {
+  width: 100%;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-batch {
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--cs-border);
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-batch__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-batch__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cs-primary);
+  margin-right: 4px;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-format-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-date {
+  width: auto;
+  min-width: 140px;
+}
+
+body.hms-body--cashier-odoo .cs-table-wrap {
+  overflow-x: auto;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-table .bills-action-cell {
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-right: 6px;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-collect {
+  margin-left: 0;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-btn--ticket,
+body.hms-body--cashier-odoo .bills-workflow-btn--receipt,
+body.hms-body--cashier-odoo .bills-workflow-btn--detail {
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-btn--opd {
+  border-color: #bbf7d0;
+  color: #047857;
+  background: #ecfdf5;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-btn--refund {
+  border-color: #fecaca;
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-muted {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-status {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-status--error {
+  color: #dc2626;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-status--warn {
+  color: #d97706;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-badge {
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-row--selected td {
+  background: #ecfdf5 !important;
+}
+
+body.hms-body--cashier-odoo .bills-rx-codes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.hms-body--cashier-odoo .bills-rx-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+}
+
+body.hms-body--cashier-odoo .bills-rx-code__type {
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .bills-rx-code__val {
+  font-family: ui-monospace, monospace;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-panel--er {
+  padding: 0;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-er-block {
+  padding: 14px 16px;
+  border-bottom: 0.5px solid var(--cs-border);
+  background: #fffbeb;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-er-title,
+body.hms-body--cashier-odoo .bills-workflow-section-title {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .bills-workflow-er-hint,
+body.hms-body--cashier-odoo .bills-workflow-hint {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.45;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-panel--er .bills-workflow-section-title,
+body.hms-body--cashier-odoo .bills-workflow-panel--er .bills-workflow-er-hint {
+  padding: 0 16px;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-panel--er .bills-workflow-section-title {
+  padding-top: 14px;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-inline-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-wallet-link {
+  color: var(--cs-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-wallet-link:hover {
+  text-decoration: underline;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-section {
+  margin-top: 14px;
+}
+
+body.hms-body--cashier-odoo .bills-workflow-section .bills-lookup-card,
+body.hms-body--cashier-odoo .bills-workflow-section .bills-workflow-card {
+  margin-bottom: 14px;
+}
+
+body.hms-body--cashier-odoo .bills-register-heading {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cs-primary);
+  margin: 0 0 10px;
+  padding: 0 2px;
+}
+
+/* ── Invoices tab ── */
+body.hms-body--cashier-odoo .inv-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+body.hms-body--cashier-odoo .inv-card-head {
+  border-bottom: 0.5px solid var(--cs-border);
+}
+
+body.hms-body--cashier-odoo .inv-card-icon {
+  color: var(--cs-accent);
+  font-size: 15px;
+  margin-right: 6px;
+}
+
+body.hms-body--cashier-odoo .inv-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--cs-border);
+  background: #fafbfc;
+}
+
+body.hms-body--cashier-odoo .inv-search {
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 360px;
+}
+
+body.hms-body--cashier-odoo .inv-filter-select {
+  width: auto;
+  min-width: 140px;
+  font-size: 12px;
+}
+
+body.hms-body--cashier-odoo .inv-count-label {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .inv-table .inv-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .inv-code-cell .bills-code-link {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .inv-patient-cell {
+  font-weight: 600;
+  color: var(--cs-ink, #111827);
+}
+
+body.hms-body--cashier-odoo .inv-date {
+  font-size: 12px;
+  color: #4b5563;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .inv-due--overdue {
+  color: var(--cs-overdue-text, #dc2626);
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .inv-actions-col {
+  width: 88px;
+  text-align: right;
+}
+
+body.hms-body--cashier-odoo .inv-doc-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+body.hms-body--cashier-odoo .inv-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0.5px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #6b7280;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+body.hms-body--cashier-odoo .inv-icon-btn:hover {
+  border-color: var(--cs-accent);
+  color: var(--cs-primary);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+body.hms-body--cashier-odoo .inv-pager {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 12px 16px;
+  border-top: 0.5px solid var(--cs-border);
+}
+
+body.hms-body--cashier-odoo .inv-pager-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 0.5px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+body.hms-body--cashier-odoo .inv-pager-btn.active {
+  background: var(--cs-accent);
+  border-color: var(--cs-accent);
+  color: #fff;
+}
+
+body.hms-body--cashier-odoo .inv-pager-btn:hover:not(.active) {
+  border-color: var(--cs-accent);
+  color: var(--cs-primary);
+}
+
+/* —— Insurance tab —— */
+body.hms-body--cashier-odoo .ins-page {
+  animation: csFadeIn 0.25s ease-out;
+}
+
+body.hms-body--cashier-odoo .ins-kpi-row {
+  margin-bottom: 14px;
+}
+
+body.hms-body--cashier-odoo .ins-kpi .cs-kpi-value {
+  font-size: 26px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .ins-kpi--teal {
+  border-top-color: var(--cs-accent) !important;
+}
+
+body.hms-body--cashier-odoo .ins-kpi--ok {
+  border-top-color: #16a34a !important;
+}
+
+body.hms-body--cashier-odoo .ins-kpi--ok .cs-kpi-value {
+  color: #16a34a !important;
+}
+
+body.hms-body--cashier-odoo .ins-kpi-sub--ok {
+  color: #16a34a !important;
+}
+
+body.hms-body--cashier-odoo .ins-kpi--warn {
+  border-top-color: #d97706 !important;
+}
+
+body.hms-body--cashier-odoo .ins-kpi--danger {
+  border-top-color: #dc2626 !important;
+}
+
+body.hms-body--cashier-odoo .ins-card-head {
+  min-height: 52px;
+}
+
+body.hms-body--cashier-odoo .ins-card-icon {
+  color: var(--cs-accent);
+  font-size: 15px;
+  margin-right: 6px;
+}
+
+body.hms-body--cashier-odoo .ins-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--cs-border);
+  background: #fafbfc;
+}
+
+body.hms-body--cashier-odoo .ins-search {
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 360px;
+}
+
+body.hms-body--cashier-odoo .ins-filter-select {
+  width: auto;
+  min-width: 140px;
+  font-size: 12px;
+}
+
+body.hms-body--cashier-odoo .ins-count-label {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .ins-table .ins-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .ins-code,
+body.hms-body--cashier-odoo .ins-code-cell .bills-code-link {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .ins-code {
+  color: #2563eb;
+}
+
+body.hms-body--cashier-odoo .ins-patient-cell {
+  font-weight: 600;
+  color: var(--cs-ink, #111827);
+}
+
+body.hms-body--cashier-odoo .ins-policy {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+body.hms-body--cashier-odoo .ins-date {
+  font-size: 12px;
+  color: #4b5563;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .ins-check-col {
+  width: 40px;
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .ins-check {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--cs-accent);
+  cursor: pointer;
+}
+
+body.hms-body--cashier-odoo .ins-pager {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 12px 16px;
+  border-top: 0.5px solid var(--cs-border);
+}
+
+body.hms-body--cashier-odoo .ins-pager-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 0.5px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+body.hms-body--cashier-odoo .ins-pager-btn.active {
+  background: var(--cs-accent);
+  border-color: var(--cs-accent);
+  color: #fff;
+}
+
+body.hms-body--cashier-odoo .ins-pager-btn:hover:not(.active) {
+  border-color: var(--cs-accent);
+  color: var(--cs-primary);
+}
+
+/* —— Shift tab —— */
+body.hms-body--cashier-odoo .shift-page {
+  animation: csFadeIn 0.25s ease-out;
+}
+
+body.hms-body--cashier-odoo .shift-kpi-row {
+  margin-bottom: 14px;
+}
+
+body.hms-body--cashier-odoo .shift-kpi .cs-kpi-value {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .shift-kpi--teal {
+  border-top-color: var(--cs-accent) !important;
+}
+
+body.hms-body--cashier-odoo .shift-kpi--blue {
+  border-top-color: #1e40af !important;
+}
+
+body.hms-body--cashier-odoo .shift-kpi--purple {
+  border-top-color: #7c3aed !important;
+}
+
+body.hms-body--cashier-odoo .shift-kpi--teal-dark {
+  border-top-color: #0f766e !important;
+}
+
+body.hms-body--cashier-odoo .shift-main-row {
+  align-items: flex-start;
+}
+
+body.hms-body--cashier-odoo .shift-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.hms-body--cashier-odoo .shift-card-icon {
+  color: var(--cs-accent);
+  font-size: 15px;
+  margin-right: 6px;
+}
+
+body.hms-body--cashier-odoo .shift-table .shift-num {
+  width: 42px;
+  text-align: center;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+body.hms-body--cashier-odoo .shift-table .shift-amt {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .shift-patient {
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .shift-service {
+  color: #4b5563;
+  font-size: 12px;
+  max-width: 220px;
+}
+
+body.hms-body--cashier-odoo .shift-time,
+body.hms-body--cashier-odoo .shift-cashier {
+  font-size: 12px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .shift-method {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+body.hms-body--cashier-odoo .shift-method--insurance {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+body.hms-body--cashier-odoo .shift-method--pos,
+body.hms-body--cashier-odoo .shift-method--card {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+body.hms-body--cashier-odoo .shift-method--momo,
+body.hms-body--cashier-odoo .shift-method--om,
+body.hms-body--cashier-odoo .shift-method--betterpay {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+body.hms-body--cashier-odoo .shift-cash-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+body.hms-body--cashier-odoo .shift-cash-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+body.hms-body--cashier-odoo .shift-cash-line strong {
+  font-weight: 600;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .shift-cash-line--pos strong {
+  color: #16a34a;
+}
+
+body.hms-body--cashier-odoo .shift-cash-line--neg strong {
+  color: #dc2626;
+}
+
+body.hms-body--cashier-odoo .shift-cash-divider {
+  height: 1px;
+  background: var(--cs-border);
+  margin: 4px 0;
+}
+
+body.hms-body--cashier-odoo .shift-cash-line--total {
+  font-weight: 600;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .shift-cash-line--total strong {
+  font-size: 15px;
+}
+
+body.hms-body--cashier-odoo .shift-close-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+body.hms-body--cashier-odoo .shift-chart-body {
+  padding-top: 4px;
+  padding-bottom: 8px;
+}
+
+body.hms-body--cashier-odoo .shift-chart {
+  display: flex;
+  gap: 10px;
+  min-height: 220px;
+}
+
+body.hms-body--cashier-odoo .shift-chart__y {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #9ca3af;
+  padding: 0 0 24px;
+  min-width: 34px;
+  text-align: right;
+}
+
+body.hms-body--cashier-odoo .shift-chart__plot {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+
+body.hms-body--cashier-odoo .shift-chart__grid {
+  position: absolute;
+  inset: 0 0 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+body.hms-body--cashier-odoo .shift-chart__gridline {
+  border-top: 1px dashed #e5e7eb;
+}
+
+body.hms-body--cashier-odoo .shift-chart__bars {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: 12px;
+  height: 196px;
+  padding: 0 8px;
+}
+
+body.hms-body--cashier-odoo .shift-chart__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  height: 100%;
+}
+
+body.hms-body--cashier-odoo .shift-chart__bar-wrap {
+  flex: 1;
+  width: 100%;
+  max-width: 52px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+body.hms-body--cashier-odoo .shift-chart__bar {
+  width: 100%;
+  border-radius: 6px 6px 2px 2px;
+  min-height: 4px;
+  transition: height 0.2s ease;
+}
+
+body.hms-body--cashier-odoo .shift-chart__label {
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .shift-pager {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 12px 16px;
+  border-top: 0.5px solid var(--cs-border);
+}
+
+body.hms-body--cashier-odoo .shift-pager-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 0.5px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+body.hms-body--cashier-odoo .shift-pager-btn.active {
+  background: var(--cs-accent);
+  border-color: var(--cs-accent);
+  color: #fff;
+}
+
+body.hms-body--cashier-odoo .shift-pager-btn:hover:not(.active) {
+  border-color: var(--cs-accent);
+  color: var(--cs-primary);
+}
+
+/* —— Reports tab —— */
+body.hms-body--cashier-odoo .rpt-page {
+  animation: csFadeIn 0.25s ease-out;
+}
+
+body.hms-body--cashier-odoo .rpt-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+body.hms-body--cashier-odoo .rpt-toolbar__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .rpt-toolbar__icon {
+  color: var(--cs-accent);
+  font-size: 16px;
+}
+
+body.hms-body--cashier-odoo .rpt-live-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+body.hms-body--cashier-odoo .rpt-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+body.hms-body--cashier-odoo .rpt-period-select {
+  min-width: 140px;
+  font-size: 13px;
+}
+
+body.hms-body--cashier-odoo .rpt-export-btn,
+body.hms-body--cashier-odoo .rpt-print-btn {
+  background: #fff;
+}
+
+body.hms-body--cashier-odoo .rpt-kpi-row {
+  margin-bottom: 12px;
+}
+
+body.hms-body--cashier-odoo .rpt-kpi .cs-kpi-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .rpt-kpi .cs-kpi-sub {
+  margin-top: 4px;
+}
+
+body.hms-body--cashier-odoo .rpt-delta {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .rpt-delta--up {
+  color: #059669;
+}
+
+body.hms-body--cashier-odoo .rpt-delta--down {
+  color: #dc2626;
+}
+
+body.hms-body--cashier-odoo .rpt-inner-tabs {
+  margin-bottom: 14px;
+  padding: 0;
+  background: #fff;
+  border: 0.5px solid var(--cs-border);
+  border-radius: 12px 12px 0 0;
+  border-bottom: 0.5px solid var(--cs-border);
+}
+
+body.hms-body--cashier-odoo .rpt-charts-row {
+  margin-bottom: 12px;
+}
+
+body.hms-body--cashier-odoo .rpt-chart-card {
+  height: 100%;
+}
+
+body.hms-body--cashier-odoo .rpt-chart-card--wide {
+  margin-bottom: 0;
+}
+
+body.hms-body--cashier-odoo .rpt-line-body {
+  padding: 8px 12px 12px;
+  min-height: 260px;
+}
+
+body.hms-body--cashier-odoo .rpt-line-chart {
+  position: relative;
+  min-height: 240px;
+  padding-left: 42px;
+}
+
+body.hms-body--cashier-odoo .rpt-line-chart__svg {
+  width: 100%;
+  height: 220px;
+  display: block;
+}
+
+body.hms-body--cashier-odoo .rpt-line-chart__grid {
+  stroke: #e5e7eb;
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+body.hms-body--cashier-odoo .rpt-line-chart__line {
+  stroke: #10b981;
+  stroke-width: 2.5;
+}
+
+body.hms-body--cashier-odoo .rpt-line-chart__dot {
+  fill: #10b981;
+}
+
+body.hms-body--cashier-odoo .rpt-line-chart__y {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #9ca3af;
+  width: 38px;
+  text-align: right;
+}
+
+body.hms-body--cashier-odoo .rpt-line-chart__x {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 4px 0;
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+body.hms-body--cashier-odoo .rpt-donut {
+  width: 148px;
+  height: 148px;
+}
+
+body.hms-body--cashier-odoo .rpt-donut .cs-donut-hole {
+  width: 82px;
+  height: 82px;
+}
+
+body.hms-body--cashier-odoo .rpt-target-body {
+  padding: 12px 16px 16px;
+  min-height: 280px;
+}
+
+body.hms-body--cashier-odoo .rpt-target-chart {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 8px;
+  min-height: 250px;
+}
+
+body.hms-body--cashier-odoo .rpt-target-chart__y {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #9ca3af;
+  padding-bottom: 36px;
+  text-align: right;
+}
+
+body.hms-body--cashier-odoo .rpt-target-chart__plot {
+  position: relative;
+  min-height: 220px;
+}
+
+body.hms-body--cashier-odoo .rpt-target-chart__grid {
+  position: absolute;
+  inset: 0 0 28px;
+  pointer-events: none;
+}
+
+body.hms-body--cashier-odoo .rpt-target-chart__gridline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed #e5e7eb;
+}
+
+body.hms-body--cashier-odoo .rpt-target-chart__bars {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: 10px;
+  height: 196px;
+  padding: 0 6px;
+}
+
+body.hms-body--cashier-odoo .rpt-target-chart__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  height: 100%;
+}
+
+body.hms-body--cashier-odoo .rpt-target-chart__pair {
+  flex: 1;
+  width: 100%;
+  max-width: 72px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+}
+
+body.hms-body--cashier-odoo .rpt-target-chart__bar-wrap {
+  flex: 1;
+  width: 100%;
+  max-width: 28px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100%;
+}
+
+body.hms-body--cashier-odoo .rpt-target-chart__bar {
+  width: 100%;
+  border-radius: 6px 6px 2px 2px;
+  min-height: 4px;
+}
+
+body.hms-body--cashier-odoo .rpt-target-chart__bar--actual {
+  background: #0f766e;
+}
+
+body.hms-body--cashier-odoo .rpt-target-chart__bar--target {
+  background: #6ee7b7;
+}
+
+body.hms-body--cashier-odoo .rpt-target-chart__label {
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+body.hms-body--cashier-odoo .rpt-target-chart__legend {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+body.hms-body--cashier-odoo .rpt-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+body.hms-body--cashier-odoo .rpt-swatch--actual {
+  background: #0f766e;
+}
+
+body.hms-body--cashier-odoo .rpt-swatch--target {
+  background: #6ee7b7;
+}
+
+body.hms-body--cashier-odoo .rpt-method-body {
+  min-height: 260px;
+  padding-top: 8px;
+}
+
+body.hms-body--cashier-odoo .rpt-method-chart {
+  min-height: 240px;
+}
+
+body.hms-body--cashier-odoo .rpt-disb-total {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .rpt-muted {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+body.hms-body--cashier-odoo .rpt-loading {
+  margin-bottom: 12px;
+}
+
+/* —— Refunds tab —— */
+body.hms-body--cashier-odoo .rfd-page {
+  animation: csFadeIn 0.25s ease-out;
+}
+
+body.hms-body--cashier-odoo .rfd-notice {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  margin-bottom: 14px;
+  align-items: flex-start;
+}
+
+body.hms-body--cashier-odoo .rfd-notice-icon {
+  color: #1e3a8a;
+  font-size: 17px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+body.hms-body--cashier-odoo .rfd-notice-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e3a8a;
+}
+
+body.hms-body--cashier-odoo .rfd-notice-body {
+  font-size: 12px;
+  color: #1e40af;
+  margin-top: 2px;
+}
+
+body.hms-body--cashier-odoo .rfd-kpi-row {
+  margin-bottom: 14px;
+}
+
+body.hms-body--cashier-odoo .rfd-kpi .cs-kpi-value {
+  font-size: 26px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .rfd-kpi--teal {
+  border-top-color: var(--cs-accent) !important;
+}
+
+body.hms-body--cashier-odoo .rfd-kpi--warn {
+  border-top-color: #d97706 !important;
+}
+
+body.hms-body--cashier-odoo .rfd-kpi--danger {
+  border-top-color: #dc2626 !important;
+}
+
+body.hms-body--cashier-odoo .rfd-card-head {
+  min-height: 52px;
+}
+
+body.hms-body--cashier-odoo .rfd-card-icon {
+  color: var(--cs-accent);
+  font-size: 15px;
+  margin-right: 6px;
+}
+
+body.hms-body--cashier-odoo .rfd-table .rfd-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .rfd-ref,
+body.hms-body--cashier-odoo .rfd-bill {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .rfd-patient-link {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+body.hms-body--cashier-odoo .rfd-patient-link:hover {
+  text-decoration: underline;
+}
+
+body.hms-body--cashier-odoo .rfd-amount {
+  font-weight: 700;
+}
+
+body.hms-body--cashier-odoo .rfd-reason {
+  color: #4b5563;
+  font-size: 12px;
+  max-width: 180px;
+}
+
+body.hms-body--cashier-odoo .rfd-date {
+  font-size: 12px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .rfd-action-cell {
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .rfd-approve-btn {
+  min-width: 72px;
+}
+
+body.hms-body--cashier-odoo .rfd-check-col {
+  width: 40px;
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .rfd-check {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--cs-accent);
+  cursor: pointer;
+}
+
+body.hms-body--cashier-odoo .rfd-pager {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 12px 16px;
+  border-top: 0.5px solid var(--cs-border);
+}
+
+body.hms-body--cashier-odoo .rfd-pager-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 0.5px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+body.hms-body--cashier-odoo .rfd-pager-btn.active {
+  background: var(--cs-accent);
+  border-color: var(--cs-accent);
+  color: #fff;
+}
+
+body.hms-body--cashier-odoo .rfd-pager-btn:hover:not(.active) {
+  border-color: var(--cs-accent);
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .rfd-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+body.hms-body--cashier-odoo .rfd-modal {
+  width: 100%;
+  max-width: 440px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+  border: 0.5px solid var(--cs-border);
+}
+
+body.hms-body--cashier-odoo .rfd-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 0.5px solid var(--cs-darker);
+  background: var(--cs-primary);
+  color: #fff;
+}
+
+body.hms-body--cashier-odoo .rfd-modal-head h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+}
+
+body.hms-body--cashier-odoo .rfd-modal-close {
+  border: none;
+  background: rgba(8, 53, 68, 0.45);
+  color: #fff;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 999px;
+}
+
+body.hms-body--cashier-odoo .rfd-modal-close:hover {
+  background: rgba(8, 53, 68, 0.7);
+}
+
+body.hms-body--cashier-odoo .rfd-modal-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.hms-body--cashier-odoo .rfd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+body.hms-body--cashier-odoo .rfd-field-hint {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+body.hms-body--cashier-odoo .rfd-field-hint--warn {
+  color: #b45309;
+}
+
+body.hms-body--cashier-odoo .rfd-patient-search {
+  display: flex;
+  gap: 8px;
+}
+
+body.hms-body--cashier-odoo .rfd-bill-search {
+  display: flex;
+  gap: 8px;
+}
+
+body.hms-body--cashier-odoo .rfd-bill-search .cs-input,
+body.hms-body--cashier-odoo .rfd-patient-search .cs-input {
+  flex: 1;
+}
+
+body.hms-body--cashier-odoo .rfd-find-btn {
+  border: 0.5px solid var(--cs-border) !important;
+  color: var(--cs-primary) !important;
+  background: #fff !important;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .rfd-find-btn:hover:not(:disabled) {
+  border-color: var(--cs-accent) !important;
+  color: var(--cs-accent) !important;
+  background: #f0fdf4 !important;
+}
+
+body.hms-body--cashier-odoo .rfd-patient-picked {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .rfd-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+body.hms-body--cashier-odoo .cs-info-strip {
+  border-radius: 9px;
+  border: 0.5px solid;
+  padding: 10px 13px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+body.hms-body--cashier-odoo .cs-bar-track {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--cs-light);
+  overflow: hidden;
+}
+
+body.hms-body--cashier-odoo .cs-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--cs-accent);
+}
+
+body.hms-body--cashier-odoo .cs-pay-row {
+  margin-bottom: 10px;
+}
+
+body.hms-body--cashier-odoo .cs-pay-row__head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+body.hms-body--cashier-odoo .cs-search-wrap--dropdown {
+  position: relative;
+}
+
+body.hms-body--cashier-odoo .cs-search-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 1200;
+  background: #fff;
+  border: 0.5px solid var(--cs-border);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(15, 76, 92, 0.14);
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+body.hms-body--cashier-odoo .cs-search-dropdown__empty {
+  padding: 14px 16px;
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .cs-search-section__title {
+  padding: 6px 14px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+body.hms-body--cashier-odoo .cs-search-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+body.hms-body--cashier-odoo .cs-search-item:hover {
+  background: var(--cs-light);
+}
+
+body.hms-body--cashier-odoo .cs-search-item__icon {
+  color: var(--cs-accent);
+  font-size: 13px;
+  width: 16px;
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .cs-search-item__main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+body.hms-body--cashier-odoo .cs-search-item__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cs-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.hms-body--cashier-odoo .cs-search-item__sub {
+  font-size: 11px;
+  color: #9ca3af;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.hms-body--cashier-odoo .cs-donut-layout {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+body.hms-body--cashier-odoo .cs-donut {
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.hms-body--cashier-odoo .cs-donut-hole {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+body.hms-body--cashier-odoo .cs-donut-legend {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+body.hms-body--cashier-odoo .cs-donut-legend__row {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+}
+
+body.hms-body--cashier-odoo .cs-donut-legend__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+body.hms-body--cashier-odoo .cs-donut-legend__label {
+  color: #374151;
+}
+
+body.hms-body--cashier-odoo .cs-donut-legend__value {
+  font-weight: 500;
+  color: var(--cs-primary);
+  font-size: 11px;
+}
+
+body.hms-body--cashier-odoo .cs-pending-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border-bottom: 0.5px solid #e6faf5;
+}
+
+body.hms-body--cashier-odoo .cs-pending-item:last-child {
+  border-bottom: none;
+}
+
+body.hms-body--cashier-odoo .cs-empty {
+  padding: 24px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+body.hms-body--cashier-odoo .cs-flash-wrap {
+  margin-bottom: 12px;
+}
+
+body.hms-body--cashier-odoo .receipt-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+body.hms-body--cashier-odoo .receipt-row.total {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cs-primary);
+  border-top: 1px solid var(--cs-border);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+@keyframes csFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* New invoice modal (Odoo mockup) */
+body.hms-body--cashier-odoo .inv-new-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1250;
+  background: rgba(15, 23, 42, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+body.hms-body--cashier-odoo .inv-new-modal {
+  width: 100%;
+  max-width: 560px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(15, 76, 92, 0.18);
+  border: 0.5px solid rgba(16, 185, 129, 0.22);
+  animation: csFadeIn 0.18s ease-out;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 40px);
+}
+
+body.hms-body--cashier-odoo .inv-new-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 0.5px solid var(--cs-darker);
+  background: var(--cs-primary);
+  color: #fff;
+}
+
+body.hms-body--cashier-odoo .inv-new-head h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+body.hms-body--cashier-odoo .inv-new-close {
+  border: none;
+  background: rgba(8, 53, 68, 0.45);
+  color: #fff;
+  cursor: pointer;
+  padding: 6px 8px;
+  font-size: 16px;
+  line-height: 1;
+  border-radius: 999px;
+}
+
+body.hms-body--cashier-odoo .inv-new-close:hover {
+  background: rgba(8, 53, 68, 0.7);
+}
+
+body.hms-body--cashier-odoo .inv-new-body {
+  padding: 18px 22px 8px;
+  overflow-y: auto;
+}
+
+body.hms-body--cashier-odoo .inv-new-error {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fef2f2;
+  border: 0.5px solid #fecaca;
+  color: #b91c1c;
+  font-size: 12px;
+}
+
+body.hms-body--cashier-odoo .inv-new-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+}
+
+body.hms-body--cashier-odoo .inv-new-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #5b6b7a;
+}
+
+body.hms-body--cashier-odoo .inv-new-field--full {
+  grid-column: 1 / -1;
+}
+
+body.hms-body--cashier-odoo .inv-new-req {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+body.hms-body--cashier-odoo .inv-new-input,
+body.hms-body--cashier-odoo .inv-new-textarea {
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  border-radius: 8px !important;
+  font-size: 13px;
+}
+
+body.hms-body--cashier-odoo .inv-new-input:focus,
+body.hms-body--cashier-odoo .inv-new-textarea:focus {
+  border-color: var(--cs-accent) !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.12);
+}
+
+body.hms-body--cashier-odoo .inv-new-textarea {
+  min-height: 96px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+body.hms-body--cashier-odoo .inv-new-date {
+  color: #374151;
+}
+
+body.hms-body--cashier-odoo .inv-new-billto-wrap {
+  position: relative;
+}
+
+body.hms-body--cashier-odoo .inv-new-suggest {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  background: #fff;
+  border: 0.5px solid var(--cs-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+body.hms-body--cashier-odoo .inv-new-suggest button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 13px;
+  color: #1f2937;
+  cursor: pointer;
+}
+
+body.hms-body--cashier-odoo .inv-new-suggest button:hover {
+  background: #ecfdf5;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .inv-new-suggest-meta {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-left: 8px;
+}
+
+body.hms-body--cashier-odoo .inv-new-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 22px 18px;
+  border-top: 0.5px solid var(--cs-border);
+}
+
+body.hms-body--cashier-odoo .inv-new-btn-outline {
+  background: #fff !important;
+  border: 0.5px solid var(--cs-border) !important;
+  color: var(--cs-primary) !important;
+  font-weight: 500;
+}
+
+body.hms-body--cashier-odoo .inv-new-btn-outline:hover {
+  border-color: var(--cs-accent) !important;
+  color: var(--cs-accent) !important;
+  background: #f0fdf4 !important;
+}
+
+body.hms-body--cashier-odoo .inv-new-modal--wide {
+  max-width: 680px;
+}
+
+body.hms-body--cashier-odoo .inv-new-lines-wrap {
+  gap: 8px;
+}
+
+body.hms-body--cashier-odoo .inv-new-lines-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+body.hms-body--cashier-odoo .inv-new-add-line {
+  border: none;
+  background: transparent;
+  color: var(--cs-accent);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+}
+
+body.hms-body--cashier-odoo .inv-new-add-line:hover {
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .inv-new-lines-table-wrap {
+  border: 0.5px solid rgba(16, 185, 129, 0.28);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fafdfb;
+}
+
+body.hms-body--cashier-odoo .inv-new-lines-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+body.hms-body--cashier-odoo .inv-new-lines-table th {
+  text-align: left;
+  font-weight: 600;
+  color: #5b6b7a;
+  padding: 8px 10px;
+  background: #f0fdf4;
+  border-bottom: 0.5px solid rgba(16, 185, 129, 0.2);
+}
+
+body.hms-body--cashier-odoo .inv-new-lines-table td {
+  padding: 8px 10px;
+  vertical-align: middle;
+  border-bottom: 0.5px solid rgba(16, 185, 129, 0.12);
+}
+
+body.hms-body--cashier-odoo .inv-new-lines-table tr:last-child td {
+  border-bottom: none;
+}
+
+body.hms-body--cashier-odoo .inv-new-col-num {
+  width: 110px;
+}
+
+body.hms-body--cashier-odoo .inv-new-col-qty {
+  width: 72px;
+}
+
+body.hms-body--cashier-odoo .inv-new-col-act {
+  width: 36px;
+}
+
+body.hms-body--cashier-odoo .inv-new-line-select {
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+body.hms-body--cashier-odoo .inv-new-line-service,
+body.hms-body--cashier-odoo .inv-new-line-num,
+body.hms-body--cashier-odoo .inv-new-line-qty {
+  width: 100%;
+  min-width: 0;
+  font-size: 12px;
+}
+
+body.hms-body--cashier-odoo .inv-new-line-total {
+  font-weight: 600;
+  color: var(--cs-primary);
+  text-align: right;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .inv-new-line-act {
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .inv-new-line-remove {
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+body.hms-body--cashier-odoo .inv-new-line-remove:hover {
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+body.hms-body--cashier-odoo .inv-new-lines-subtotal {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding-top: 4px;
+  font-size: 12px;
+  color: #5b6b7a;
+}
+
+body.hms-body--cashier-odoo .inv-new-lines-subtotal strong {
+  font-size: 14px;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .inv-new-foot .cs-btn-primary {
+  min-width: 120px;
+  font-weight: 600;
+}
+
+/* Submit insurance claim modal */
+body.hms-body--cashier-odoo .ins-claim-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1250;
+  background: rgba(15, 23, 42, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+body.hms-body--cashier-odoo .ins-claim-modal {
+  width: 100%;
+  max-width: 560px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(15, 76, 92, 0.18);
+  border: 0.5px solid rgba(16, 185, 129, 0.22);
+  animation: csFadeIn 0.18s ease-out;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 40px);
+}
+
+body.hms-body--cashier-odoo .ins-claim-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 0.5px solid var(--cs-darker);
+  background: var(--cs-primary);
+  color: #fff;
+}
+
+body.hms-body--cashier-odoo .ins-claim-head h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+body.hms-body--cashier-odoo .ins-claim-close {
+  border: none;
+  background: rgba(8, 53, 68, 0.45);
+  color: #fff;
+  cursor: pointer;
+  padding: 6px 8px;
+  font-size: 16px;
+  line-height: 1;
+  border-radius: 999px;
+}
+
+body.hms-body--cashier-odoo .ins-claim-close:hover {
+  background: rgba(8, 53, 68, 0.7);
+}
+
+body.hms-body--cashier-odoo .ins-claim-body {
+  padding: 18px 22px 8px;
+  overflow-y: auto;
+}
+
+body.hms-body--cashier-odoo .ins-claim-error {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fef2f2;
+  border: 0.5px solid #fecaca;
+  color: #b91c1c;
+  font-size: 12px;
+}
+
+body.hms-body--cashier-odoo .ins-claim-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+}
+
+body.hms-body--cashier-odoo .ins-claim-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #5b6b7a;
+}
+
+body.hms-body--cashier-odoo .ins-claim-field--full {
+  grid-column: 1 / -1;
+}
+
+body.hms-body--cashier-odoo .ins-claim-req {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+body.hms-body--cashier-odoo .ins-claim-input,
+body.hms-body--cashier-odoo .ins-claim-select {
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  border-radius: 8px !important;
+  font-size: 13px;
+}
+
+body.hms-body--cashier-odoo .ins-claim-input:focus,
+body.hms-body--cashier-odoo .ins-claim-select:focus {
+  border-color: var(--cs-accent) !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.12);
+}
+
+body.hms-body--cashier-odoo .ins-claim-select {
+  appearance: auto;
+  cursor: pointer;
+}
+
+body.hms-body--cashier-odoo .ins-claim-patient-wrap {
+  position: relative;
+}
+
+body.hms-body--cashier-odoo .ins-claim-suggest {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  background: #fff;
+  border: 0.5px solid var(--cs-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+body.hms-body--cashier-odoo .ins-claim-suggest button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 13px;
+  color: #1f2937;
+  cursor: pointer;
+}
+
+body.hms-body--cashier-odoo .ins-claim-suggest button:hover {
+  background: #ecfdf5;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .ins-claim-suggest-meta {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-left: 8px;
+}
+
+body.hms-body--cashier-odoo .ins-claim-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 22px 18px;
+  border-top: 0.5px solid var(--cs-border);
+}
+
+body.hms-body--cashier-odoo .ins-claim-btn-outline {
+  background: #fff !important;
+  border: 0.5px solid var(--cs-border) !important;
+  color: var(--cs-primary) !important;
+  font-weight: 500;
+}
+
+body.hms-body--cashier-odoo .ins-claim-btn-outline:hover {
+  border-color: var(--cs-accent) !important;
+  color: var(--cs-accent) !important;
+  background: #f0fdf4 !important;
+}
+
+body.hms-body--cashier-odoo .ins-claim-foot .cs-btn-primary {
+  min-width: 120px;
+  font-weight: 600;
+}
+
+/* —— Typography readability (cashier module) —— */
+body.hms-body--cashier-odoo {
+  font-size: 15px;
+}
+
+body.hms-body--cashier-odoo .cs-nav-item {
+  font-size: 18px;
+}
+
+body.hms-body--cashier-odoo .cs-nav-item i,
+body.hms-body--cashier-odoo .cs-nav-item .cs-nav-icon {
+  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  min-width: 22px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .cs-nav-group {
+  font-size: 14px;
+}
+
+body.hms-body--cashier-odoo .cs-logo-name {
+  font-size: 18px;
+}
+
+body.hms-body--cashier-odoo .cs-logo-sub {
+  font-size: 14px;
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-name {
+  font-size: 16px;
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-role {
+  font-size: 14px;
+}
+
+body.hms-body--cashier-odoo .shift-bar {
+  font-size: 20px;
+}
+
+body.hms-body--cashier-odoo .shift-bar__meta {
+  font-size: 20px;
+}
+
+body.hms-body--cashier-odoo .shift-bar__close-btn {
+  font-size: 17px !important;
+  height: 40px !important;
+}
+
+body.hms-body--cashier-odoo .cs-topbar-title {
+  font-size: 21px;
+}
+
+body.hms-body--cashier-odoo .cs-search {
+  font-size: 17px;
+  height: 42px;
+}
+
+body.hms-body--cashier-odoo .cs-tab {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .cs-tab.active {
+  font-weight: 700;
+}
+
+body.hms-body--cashier-odoo .cs-tab-chip {
+  font-size: 14px;
+}
+
+body.hms-body--cashier-odoo .cs-table thead tr th {
+  font-size: 15px;
+  padding: 11px 14px;
+}
+
+body.hms-body--cashier-odoo .cs-table tbody tr td {
+  font-size: 17px;
+  padding: 12px 14px;
+}
+
+body.hms-body--cashier-odoo .cs-badge {
+  font-size: 14px;
+  line-height: 22px;
+  padding: 3px 12px;
+}
+
+body.hms-body--cashier-odoo .cs-kpi-label {
+  font-size: 15px;
+}
+
+body.hms-body--cashier-odoo .cs-kpi-value {
+  font-size: 30px;
+}
+
+body.hms-body--cashier-odoo .cs-kpi-sub {
+  font-size: 15px;
+}
+
+body.hms-body--cashier-odoo .cs-card-head {
+  font-size: 17px;
+}
+
+body.hms-body--cashier-odoo .cs-card-title {
+  font-size: 17px;
+}
+
+body.hms-body--cashier-odoo .cs-btn {
+  font-size: 17px;
+  height: 40px;
+}
+
+body.hms-body--cashier-odoo .cs-btn-sm {
+  font-size: 15px;
+  height: 34px;
+}
+
+body.hms-body--cashier-odoo .cs-input,
+body.hms-body--cashier-odoo .cs-select {
+  font-size: 16px;
+  height: 40px;
+}
+
+body.hms-body--cashier-odoo .cs-inner-tab {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .cs-inner-tab.active {
+  font-weight: 700;
+}
+
+body.hms-body--cashier-odoo .cs-empty {
+  font-size: 16px;
+}
+
+body.hms-body--cashier-odoo .cs-avatar {
+  font-size: 13px;
+}
+
+body.hms-body--cashier-odoo .rfd-notice-title {
+  font-size: 17px;
+}
+
+body.hms-body--cashier-odoo .rfd-notice-body {
+  font-size: 16px;
+}
+
+body.hms-body--cashier-odoo .rfd-kpi .cs-kpi-value {
+  font-size: 32px;
+}
+
+body.hms-body--cashier-odoo .rfd-ref,
+body.hms-body--cashier-odoo .rfd-bill,
+body.hms-body--cashier-odoo .rfd-reason,
+body.hms-body--cashier-odoo .rfd-date,
+body.hms-body--cashier-odoo .rfd-patient-link {
+  font-size: 14px;
+}
+
+body.hms-body--cashier-odoo .rfd-pager-btn {
+  font-size: 13px;
+}
+
+body.hms-body--cashier-odoo .rfd-modal-head h3 {
+  font-size: 17px;
+}
+
+body.hms-body--cashier-odoo .rfd-field {
+  font-size: 14px;
+}
+
+body.hms-body--cashier-odoo .rfd-field-hint {
+  font-size: 12px;
+}
+
+body.hms-body--cashier-odoo .rfd-patient-picked {
+  font-size: 14px;
+}
+
+body.hms-body--cashier-odoo .cs-search-section__title {
+  font-size: 11px;
+}
+
+body.hms-body--cashier-odoo .cs-search-item__label {
+  font-size: 14px;
+}
+
+body.hms-body--cashier-odoo .cs-search-item__sub {
+  font-size: 12px;
+}
+
+body.hms-body--cashier-odoo .cs-pending-item {
+  font-size: 14px;
+}
+
+body.hms-body--cashier-odoo .cs-profile-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+body.hms-body--cashier-odoo .cs-profile-modal {
+  width: min(100%, 440px);
+  max-height: min(92dvh, 860px);
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.2);
+  overflow: hidden;
+}
+
+body.hms-body--cashier-odoo .cs-profile-modal--full {
+  width: min(100%, 720px);
+}
+
+body.hms-body--cashier-odoo .cs-profile-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 0.5px solid var(--cs-darker);
+  background: var(--cs-primary);
+  color: #fff;
+}
+
+body.hms-body--cashier-odoo .cs-profile-modal__head-text {
+  min-width: 0;
+}
+
+body.hms-body--cashier-odoo .cs-profile-modal__head h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+
+body.hms-body--cashier-odoo .cs-profile-modal__subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #6ee7b7;
+}
+
+body.hms-body--cashier-odoo .cs-profile-modal__close {
+  border: none;
+  background: rgba(8, 53, 68, 0.45);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 999px;
+  line-height: 1;
+}
+
+body.hms-body--cashier-odoo .cs-profile-modal__close:hover {
+  background: rgba(8, 53, 68, 0.7);
+}
+
+body.hms-body--cashier-odoo .cs-profile-modal__error {
+  margin: 14px 20px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+body.hms-body--cashier-odoo .cs-profile-modal__form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+body.hms-body--cashier-odoo .cs-profile-modal__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+body.hms-body--cashier-odoo .cs-profile-section__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--cs-light);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .cs-profile-section__title .fa,
+body.hms-body--cashier-odoo .cs-profile-section__title svg {
+  color: #6ee7b7;
+}
+
+body.hms-body--cashier-odoo .cs-profile-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 640px) {
+  body.hms-body--cashier-odoo .cs-profile-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.hms-body--cashier-odoo .cs-profile-grid--single {
+    grid-template-columns: 1fr;
+  }
+}
+
+body.hms-body--cashier-odoo .cs-profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 0;
+}
+
+body.hms-body--cashier-odoo .cs-profile-field--full {
+  grid-column: 1 / -1;
+}
+
+body.hms-body--cashier-odoo .cs-profile-field__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cs-primary);
+  opacity: 0.72;
+}
+
+body.hms-body--cashier-odoo .cs-profile-field__req {
+  color: #ef4444;
+}
+
+body.hms-body--cashier-odoo .cs-profile-field__hint {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+body.hms-body--cashier-odoo .cs-profile-input {
+  width: 100%;
+  border-radius: 10px;
+}
+
+body.hms-body--cashier-odoo .cs-profile-input--readonly {
+  background: #f8fafc;
+  color: #64748b;
+}
+
+body.hms-body--cashier-odoo .cs-profile-textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+
+body.hms-body--cashier-odoo .cs-profile-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-top: 2px;
+}
+
+body.hms-body--cashier-odoo .cs-profile-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+}
+
+body.hms-body--cashier-odoo .cs-profile-input:focus {
+  outline: none;
+  border-color: var(--cs-accent);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+body.hms-body--cashier-odoo .cs-profile-radio--active,
+body.hms-body--cashier-odoo .cs-profile-radio:has(input:checked) {
+  color: var(--cs-primary);
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .cs-profile-modal__loading {
+  margin: 0;
+  color: #6b7280;
+  font-size: 15px;
+}
+
+body.hms-body--cashier-odoo .emp-profile-picker--compact {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--cs-border);
+  border-radius: 12px;
+  background: var(--cs-lighter);
+}
+
+body.hms-body--cashier-odoo .emp-profile-picker__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+body.hms-body--cashier-odoo .emp-profile-picker__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+body.hms-body--cashier-odoo .emp-profile-picker__hint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+body.hms-body--cashier-odoo .emp-profile-picker__preview--compact {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 2px solid #fff;
+  background: #fff;
+  font-size: 44px;
+  line-height: 1;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+body.hms-body--cashier-odoo .emp-profile-picker__emoji-grid--compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+body.hms-body--cashier-odoo .emp-profile-picker__emoji-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  background: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+body.hms-body--cashier-odoo .emp-profile-picker__emoji-btn--active {
+  border-color: var(--cs-accent);
+  background: var(--cs-light);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+body.hms-body--cashier-odoo .cs-profile-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+body.hms-body--cashier-odoo .rpt-hub-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+body.hms-body--cashier-odoo .rpt-hub-tabs--page {
+  margin-bottom: 16px;
+}
+
+body.hms-body--cashier-odoo .rpt-hub-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cs-border, #a7f3d0);
+  background: #fff;
+  color: var(--cs-primary, #0f4c5c);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+body.hms-body--cashier-odoo .rpt-hub-tab:hover {
+  background: var(--cs-light, #ecfdf5);
+}
+
+body.hms-body--cashier-odoo .rpt-hub-tab--active {
+  background: var(--cs-accent, #10b981);
+  border-color: var(--cs-accent, #10b981);
+  color: #fff;
+}
+
+body.hms-body--cashier-odoo .bills-report-section-card {
+  margin-bottom: 12px;
+}
+
+body.hms-body--cashier-odoo .bills-report-section-body {
+  padding: 12px 14px 14px;
+}
+
+body.hms-body--cashier-odoo .rpt-embed-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 70vh;
+}
+
+body.hms-body--cashier-odoo .rpt-embed-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+body.hms-body--cashier-odoo .rpt-embed-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cs-primary, #0f4c5c);
+}
+
+body.hms-body--cashier-odoo .rpt-embed-frame {
+  flex: 1;
+  width: 100%;
+  min-height: 62vh;
+  border: 1px solid var(--cs-border, #a7f3d0);
+  border-radius: 12px;
+  background: #fff;
+}
+
+body.hms-body--cashier-odoo .rpt-daily-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+body.hms-body--cashier-odoo .rpt-daily-filters,
+body.hms-body--cashier-odoo .rpt-daily-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+body.hms-body--cashier-odoo .rpt-daily-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+body.hms-body--cashier-odoo .rpt-daily-kpi-row {
+  margin-bottom: 12px;
+}
+
+body.hms-body--cashier-odoo .rpt-daily-card {
+  margin-bottom: 12px;
+}
+
+body.hms-body--cashier-odoo .rpt-daily-empty,
+body.hms-body--cashier-odoo .rpt-daily-error {
+  padding: 24px;
+  text-align: center;
+  color: #6b7280;
+}
+
+body.hms-body--cashier-odoo .rpt-daily-error {
+  color: #b91c1c;
+}
+
+body.hms-body--cashier-odoo .rpt-daily-flash {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--cs-light);
+  color: var(--cs-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .cs-card-sub {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+body.hms-body--cashier-odoo .cs-muted-xs {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+body.hms-body--cashier-odoo .cs-input--num {
+  max-width: 140px;
+  margin-left: auto;
+  text-align: right;
+}
+
+body.hms-body--cashier-odoo .cs-input--readonly {
+  background: var(--cs-lighter);
+  color: var(--cs-primary);
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .rpt-eod-form {
+  margin-bottom: 12px;
+}
+
+body.hms-body--cashier-odoo .rpt-eod-form-foot {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--cs-border);
+  background: var(--cs-lighter);
+}
+
+body.hms-body--cashier-odoo .rpt-eod-notes {
+  grid-column: 1 / -1;
+}
+
+body.hms-body--cashier-odoo .rpt-eod-variance-row {
+  background: #fffbeb;
+}
+
+body.hms-body--cashier-odoo .rpt-var-ok {
+  color: #059669;
+  font-weight: 700;
+}
+
+body.hms-body--cashier-odoo .rpt-var-over {
+  color: #2563eb;
+  font-weight: 700;
+}
+
+body.hms-body--cashier-odoo .rpt-var-under {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+body.hms-body--cashier-odoo .rpt-num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .cs-table thead tr th.rpt-num {
+  text-align: right;
+}
+
+/* Till register — aligned columns, icons, animations */
+body.hms-body--cashier-odoo .cs-ledger-panel {
+  animation: csFadeIn 0.3s ease-out;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-toolbar {
+  animation: csFadeIn 0.35s ease-out;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-filter-icon {
+  color: var(--cs-accent);
+  margin-right: 2px;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-apply--spin .fa-refresh {
+  animation: cs-ledger-spin 0.8s linear infinite;
+}
+
+@keyframes cs-ledger-spin {
+  to { transform: rotate(360deg); }
+}
+
+body.hms-body--cashier-odoo .cs-ledger-loading {
+  text-align: center;
+  padding: 20px 16px 8px;
+  color: #6b7280;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-loading__spin {
+  font-size: 22px;
+  color: var(--cs-accent);
+  animation: cs-ledger-spin 0.9s linear infinite;
+  margin-bottom: 8px;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-skeleton {
+  max-width: 960px;
+  margin: 16px auto 0;
+  text-align: left;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-skeleton__bar {
+  height: 10px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e6faf5 25%, #f0faf8 50%, #e6faf5 75%);
+  background-size: 200% 100%;
+  animation: cs-ledger-shimmer 1.2s ease-in-out infinite;
+  margin-bottom: 12px;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-skeleton__bar--short {
+  width: 40%;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-skeleton__card {
+  border: 0.5px solid var(--cs-border);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #fff;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-skeleton__row {
+  height: 36px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #f0faf8 25%, #e6faf5 50%, #f0faf8 75%);
+  background-size: 200% 100%;
+  animation: cs-ledger-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes cs-ledger-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+body.hms-body--cashier-odoo .cs-ledger-error .fa {
+  margin-right: 6px;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-content {
+  animation: csFadeIn 0.4s ease-out;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-card {
+  animation: csLedgerCardIn 0.45s ease-out both;
+  overflow: hidden;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-card--balances {
+  animation-delay: 0.05s;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-card--txns {
+  animation-delay: 0.12s;
+}
+
+@keyframes csLedgerCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+body.hms-body--cashier-odoo .cs-ledger-card-icon {
+  color: var(--cs-accent);
+  margin-right: 4px;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 7px;
+  margin-left: 4px;
+  border-radius: 999px;
+  background: var(--cs-light);
+  color: var(--cs-primary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-scroll {
+  overflow-x: auto;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-table {
+  width: 100%;
+  min-width: 720px;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-table--txns {
+  min-width: 980px;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-col--time { width: 11%; }
+body.hms-body--cashier-odoo .cs-ledger-col--code { width: 9%; }
+body.hms-body--cashier-odoo .cs-ledger-col--identity { width: 14%; }
+body.hms-body--cashier-odoo .cs-ledger-col--employee { width: 12%; }
+body.hms-body--cashier-odoo .cs-ledger-col--method { width: 14%; }
+body.hms-body--cashier-odoo .cs-ledger-col--type { width: 12%; }
+body.hms-body--cashier-odoo .cs-ledger-col--ref { width: 18%; }
+body.hms-body--cashier-odoo .cs-ledger-col--amount { width: 9%; }
+
+body.hms-body--cashier-odoo .cs-ledger-table thead tr th {
+  background: #f0faf8;
+  color: var(--cs-primary);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 0.5px solid var(--cs-border);
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-table thead tr th.cs-ledger-num {
+  text-align: right;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-th-icon {
+  display: inline-block;
+  margin-right: 5px;
+  color: var(--cs-accent);
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-table thead tr th.cs-ledger-num .cs-ledger-th-icon {
+  margin-right: 4px;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-table tbody tr td {
+  font-size: 12px;
+  padding: 11px 12px;
+  border-bottom: 0.5px solid #e6faf5;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-row {
+  animation: csLedgerRowIn 0.4s ease-out both;
+}
+
+@keyframes csLedgerRowIn {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+body.hms-body--cashier-odoo .cs-ledger-table tbody tr:hover td {
+  background: #f6fffc;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  font-family: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', monospace;
+  font-size: 11px;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-num--strong {
+  font-weight: 700;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .cs-ledger-num--debit {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-num--credit {
+  color: #059669;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-code {
+  font-family: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', monospace;
+  font-weight: 700;
+  color: var(--cs-primary);
+  font-size: 11px;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-time {
+  font-variant-numeric: tabular-nums;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-ref__code {
+  font-family: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .cs-ledger-method {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 0.5px solid var(--cs-border);
+  background: #fff;
+  max-width: 100%;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-method__icon {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-method--cash { color: #0d9488; background: #f0fdfa; border-color: #99f6e4; }
+body.hms-body--cashier-odoo .cs-ledger-method--momo { color: #7c3aed; background: #f5f3ff; border-color: #ddd6fe; }
+body.hms-body--cashier-odoo .cs-ledger-method--om { color: #ea580c; background: #fff7ed; border-color: #fed7aa; }
+body.hms-body--cashier-odoo .cs-ledger-method--wallet { color: #059669; background: #ecfdf5; border-color: #a7f3d0; }
+body.hms-body--cashier-odoo .cs-ledger-method--ussd { color: #2563eb; background: #eff6ff; border-color: #bfdbfe; }
+body.hms-body--cashier-odoo .cs-ledger-method--bank { color: #0369a1; background: #f0f9ff; border-color: #bae6fd; }
+body.hms-body--cashier-odoo .cs-ledger-method--pos { color: #1e40af; background: #eff6ff; border-color: #bfdbfe; }
+body.hms-body--cashier-odoo .cs-ledger-method--betterpay { color: #8b5cf6; background: #f5f3ff; border-color: #ddd6fe; }
+body.hms-body--cashier-odoo .cs-ledger-method--paystack { color: #6366f1; background: #eef2ff; border-color: #c7d2fe; }
+body.hms-body--cashier-odoo .cs-ledger-method--insurance { color: #0f766e; background: #f0fdfa; border-color: #99f6e4; }
+body.hms-body--cashier-odoo .cs-ledger-method--other { color: #64748b; background: #f8fafc; border-color: #e2e8f0; }
+
+body.hms-body--cashier-odoo .cs-ledger-method-inline {
+  margin-top: 6px;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-txn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-txn--receipt {
+  color: #047857;
+  background: #d1fae5;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-txn--refund {
+  color: #b45309;
+  background: #fef3c7;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-empty {
+  padding: 32px 16px !important;
+  text-align: center;
+  color: #9ca3af;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-empty-icon {
+  display: block;
+  font-size: 28px;
+  margin: 0 auto 10px;
+  color: var(--cs-border);
+}
+
+/* Shared HMS modal — cashier teal theme (auto-applied on cashier pages) */
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier {
+  border: 0.5px solid rgba(16, 185, 129, 0.22);
+  box-shadow: 0 24px 60px rgba(15, 76, 92, 0.18);
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal-header--cashier {
+  background: var(--cs-primary);
+  border-bottom: 0.5px solid var(--cs-darker);
+  color: #fff;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal-header--cashier h2 {
+  color: #fff;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal-body--cashier {
+  background: #fff;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal-footer--cashier {
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+  box-shadow: none;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-chrome-btn--cashier {
+  background: rgba(8, 53, 68, 0.45);
+  color: #fff;
+  border: none;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-chrome-btn--cashier:hover {
+  background: rgba(8, 53, 68, 0.7);
+  color: #fff;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .hms-btn-primary,
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .hms-btn-success,
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .hms-btn-action-save {
+  background: var(--cs-accent) !important;
+  border-color: var(--cs-accent) !important;
+  color: #fff !important;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .hms-btn-primary:hover,
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .hms-btn-success:hover,
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .hms-btn-action-save:hover {
+  background: var(--cs-accent-hover) !important;
+  border-color: var(--cs-accent-hover) !important;
+  color: #fff !important;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .hms-btn-secondary {
+  background: #fff !important;
+  border: 1px solid #d1fae5 !important;
+  color: var(--cs-primary) !important;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .hms-btn-secondary:hover {
+  border-color: var(--cs-accent) !important;
+  color: var(--cs-accent) !important;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .hms-input:focus,
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .hms-input:focus-visible,
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier textarea.hms-input:focus,
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier select.hms-input:focus {
+  outline: none;
+  border-color: var(--cs-accent);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier label,
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .hms-form-label {
+  color: var(--cs-primary);
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .bg-emerald-50 {
+  background: var(--cs-lighter) !important;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .border-emerald-200 {
+  border-color: var(--cs-border) !important;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .bg-emerald-100 {
+  background: var(--cs-light) !important;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .text-emerald-700,
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .text-emerald-800 {
+  color: var(--cs-primary) !important;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .hover\:bg-slate-50:hover {
+  background: var(--cs-lighter) !important;
+}
+
+body.hms-body--cashier-odoo #hms-modal-root .hms-modal--cashier .border-slate-200 {
+  border-color: var(--cs-border) !important;
+}
+
+/* ── Module typography scale-up ── */
+body.hms-body--cashier-odoo .cs-table thead tr th {
+  font-size: var(--cs-text-xs);
+}
+
+body.hms-body--cashier-odoo .cs-table tbody tr td {
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .cs-kpi-label {
+  font-size: var(--cs-text-xs);
+}
+
+body.hms-body--cashier-odoo .cs-kpi-value {
+  font-size: var(--cs-text-2xl);
+}
+
+body.hms-body--cashier-odoo .cs-kpi-sub {
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .cs-input,
+body.hms-body--cashier-odoo .cs-select {
+  height: 40px;
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .cs-btn {
+  height: 40px;
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .cs-btn-sm {
+  height: 34px;
+  font-size: var(--cs-text-xs);
+}
+
+body.hms-body--cashier-odoo .cs-card-title {
+  font-size: var(--cs-text-md);
+}
+
+body.hms-body--cashier-odoo .cs-card-sub {
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .cs-muted-xs {
+  font-size: var(--cs-text-xs);
+}
+
+body.hms-body--cashier-odoo .rpt-daily-filter {
+  font-size: var(--cs-text-xs);
+}
+
+body.hms-body--cashier-odoo .rpt-hub-tab {
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .cs-inner-tab {
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .cs-donut-legend__label,
+body.hms-body--cashier-odoo .cs-donut-legend__value {
+  font-size: var(--cs-text-sm);
+}
+
+/* ── Shared report panel revamp ── */
+body.hms-body--cashier-odoo .cs-rpt-panel,
+body.hms-body--cashier-odoo .cs-ledger-panel {
+  animation: csFadeIn 0.3s ease-out;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-kpi {
+  position: relative;
+  animation: csLedgerCardIn 0.45s ease-out both;
+  padding-top: 8px;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-kpi__icon {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cs-light);
+  color: var(--cs-accent);
+  font-size: 15px;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-kpi--accent .cs-rpt-kpi__icon {
+  background: #d1fae5;
+  color: #059669;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-kpi--primary .cs-rpt-kpi__icon {
+  background: #cffafe;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-odoo .cs-rpt-kpi--warn .cs-rpt-kpi__icon {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-kpi--danger .cs-rpt-kpi__icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--cs-text-sm);
+  font-weight: 500;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-cat__icon {
+  color: var(--cs-accent);
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-split {
+  gap: 12px 0;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-flash .fa {
+  margin-right: 6px;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-toolbar {
+  animation: csFadeIn 0.35s ease-out;
+  margin-bottom: 14px;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-chart-card {
+  animation: csLedgerCardIn 0.45s ease-out both;
+  margin-bottom: 12px;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-charts .cs-rpt-chart-card:nth-child(1) {
+  animation-delay: 0.06s;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-charts .cs-rpt-chart-card:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-analytics .cs-rpt-chart-card--wide {
+  animation-delay: 0.18s;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-input-num {
+  max-width: 100%;
+  margin-left: auto;
+}
+
+body.hms-body--cashier-odoo .cs-rpt-foot-row td {
+  font-weight: 700;
+  background: var(--cs-lighter);
+  border-top: 1px solid var(--cs-border);
+}
+
+body.hms-body--cashier-odoo .cs-ledger-col--amount-sm { width: 8%; }
+body.hms-body--cashier-odoo .cs-ledger-col--ref { width: 38%; }
+
+body.hms-body--cashier-odoo .cs-ledger-table thead tr th {
+  font-size: var(--cs-text-xs);
+  padding: 11px 12px;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-table tbody tr td {
+  font-size: var(--cs-text-sm);
+  padding: 12px;
+}
+
+body.hms-body--cashier-odoo .cs-ledger-num {
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .cs-ledger-method {
+  font-size: var(--cs-text-xs);
+}
+
+body.hms-body--cashier-odoo .cs-ledger-txn {
+  font-size: var(--cs-text-xs);
+}
+
+body.hms-body--cashier-odoo .cs-ledger-loading p {
+  font-size: var(--cs-text-md);
+}
+
+body.hms-body--cashier-odoo .rpt-toolbar__title {
+  font-size: var(--cs-text-lg);
+}
+
+body.hms-body--cashier-odoo .rpt-disb-total {
+  font-size: var(--cs-text-md);
+}
+
+/* ── Sidebar & shell typography ── */
+body.hms-body--cashier-odoo .cs-nav-group {
+  font-size: var(--cs-text-xs);
+}
+
+body.hms-body--cashier-odoo .cs-nav-item {
+  font-size: var(--cs-text-md);
+}
+
+body.hms-body--cashier-odoo .cs-nav-item i,
+body.hms-body--cashier-odoo .cs-nav-item .cs-nav-icon {
+  font-size: var(--cs-text-lg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  min-width: 22px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+body.hms-body--cashier-odoo .cs-nav-badge {
+  font-size: var(--cs-text-xs);
+}
+
+body.hms-body--cashier-odoo .cs-logo-name {
+  font-size: var(--cs-text-md);
+}
+
+body.hms-body--cashier-odoo .cs-logo-sub {
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-name {
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-role {
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .cs-sidebar-user-action {
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .shift-bar {
+  font-size: var(--cs-text-md);
+}
+
+body.hms-body--cashier-odoo .shift-bar__meta {
+  font-size: var(--cs-text-md);
+}
+
+body.hms-body--cashier-odoo .shift-bar__menu-item {
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .cs-tab {
+  font-size: var(--cs-text-base);
+}
+
+body.hms-body--cashier-odoo .cs-pending-item,
+body.hms-body--cashier-odoo .cs-pending-item .cs-btn-sm {
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .cs-donut-legend__row {
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .cs-donut-legend__value {
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .pos-shell .cs-btn {
+  font-size: var(--cs-text-sm);
+}
+
+body.hms-body--cashier-odoo .pos-shell .cs-btn-sm {
+  font-size: var(--cs-text-xs);
+}
+
+body.hms-body--cashier-odoo .pos-patient-name {
+  font-size: var(--cs-text-sm);
+}
+

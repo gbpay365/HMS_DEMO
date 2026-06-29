@@ -1,39 +1,51 @@
 <%
 var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
-var _hubStats = (typeof hubCatalog !== 'undefined' && hubCatalog && hubCatalog.stats) ? hubCatalog.stats : [];
-var _hubCards = (typeof hubCatalog !== 'undefined' && hubCatalog && hubCatalog.modules) ? hubCatalog.modules : [];
+var _statBands = (typeof hubStatBands !== 'undefined' && Array.isArray(hubStatBands)) ? hubStatBands : [];
+var _moduleBands = (typeof hubModuleBands !== 'undefined' && Array.isArray(hubModuleBands)) ? hubModuleBands : [];
+var _showOpd = uiVisible('hub.panel.opd_today');
 %>
-<section class="hms-stat-section">
- <h2 class="hms-stat-section__title"><%= _t('hub.live_stats', { ns: 'legacy', defaultValue: 'Live statistics' }) %></h2>
- <div class="hms-stat-grid">
- <% _hubStats.forEach(function(s){
-   if (!uiVisible(s.code)) return;
-   var raw = (stats||{})[s.statKey];
-   var val = s.format === 'money' ? Number(raw||0).toLocaleString('fr-FR') : (raw||0);
- %>
-  <%- include('hms-stat-link', { href: s.href, label: _t(s.i18nKey, { ns: 'legacy', defaultValue: s.fallback }), value: val, icon: s.icon, color: s.color }) %>
- <% }); %>
- </div>
-</section>
-
-<div class="row mb-4">
- <div class="col-lg-<%= uiVisible('hub.panel.opd_today') ? '8' : '12' %>">
-  <h2 class="hms-stat-section__title mb-3"><%= _t('hub.clinical_modules', { ns: 'legacy', defaultValue: 'Clinical modules' }) %></h2>
-  <div class="hms-hub-module-grid">
-   <% _hubCards.forEach(function(m){
-     if (!uiVisible(m.code)) return;
-   %>
-   <a href="<%=m.href%>" class="hms-surface-card hms-hub-module-tile" style="--hms-tile-accent: <%= m.color %>;">
-    <i class="fa <%=m.icon%> hms-hub-module-tile__ico" aria-hidden="true"></i>
-    <strong><%= _t(m.i18nKey, { ns: 'legacy', defaultValue: m.fallback }) %></strong>
-    <div class="small"><%= _t(m.descKey, { ns: 'legacy', defaultValue: m.descFallback }) %></div>
-   </a>
+<div class="hms-hub-layout<%= _showOpd ? ' hms-hub-layout--with-opd' : '' %>">
+ <div class="hms-hub-layout__main">
+  <% if (_statBands.length) { %>
+  <section class="hms-stat-section mb-4">
+   <% _statBands.forEach(function (band) { %>
+   <div class="mb-3">
+    <h2 class="hms-hub-section-title"><%= _t(band.i18nKey, { ns: 'legacy', defaultValue: band.fallback }) %></h2>
+    <div class="hms-stat-grid--band">
+     <% band.items.forEach(function (s) {
+       var raw = (stats||{})[s.statKey];
+       var val = s.format === 'money' ? Number(raw||0).toLocaleString('fr-FR') : (raw||0);
+     %>
+     <%- include('hms-stat-link', { href: s.href, label: _t(s.i18nKey, { ns: 'legacy', defaultValue: s.fallback }), value: val, icon: s.icon, color: s.color, compact: true }) %>
+     <% }); %>
+    </div>
+   </div>
    <% }); %>
-  </div>
+  </section>
+  <% } %>
+
+  <% if (_moduleBands.length) { %>
+  <section class="mb-2">
+   <% _moduleBands.forEach(function (band) { %>
+   <div class="mb-4">
+    <h2 class="hms-hub-section-title"><%= _t(band.i18nKey, { ns: 'legacy', defaultValue: band.fallback }) %></h2>
+    <div class="hms-hub-module-grid--grouped">
+     <% band.items.forEach(function (m) { %>
+     <a href="<%=m.href%>" class="hms-surface-card hms-hub-module-tile hms-hub-module-tile--compact" style="--hms-tile-accent: <%= m.color %>;">
+      <i class="fa <%=m.icon%> hms-hub-module-tile__ico" aria-hidden="true"></i>
+      <strong><%= _t(m.i18nKey, { ns: 'legacy', defaultValue: m.fallback }) %></strong>
+     </a>
+     <% }); %>
+    </div>
+   </div>
+   <% }); %>
+  </section>
+  <% } %>
  </div>
- <% if(uiVisible('hub.panel.opd_today')){ %>
- <div class="col-lg-4">
-  <h2 class="hms-stat-section__title mb-3"><%= _t('hub.today_opd', { ns: 'legacy', defaultValue: "Today's OPD" }) %></h2>
+
+ <% if (_showOpd) { %>
+ <div class="hms-hub-layout__opd">
+  <h2 class="hms-hub-section-title"><%= _t('hub.today_opd', { ns: 'legacy', defaultValue: "Today's OPD" }) %></h2>
   <div class="hms-surface-card">
    <ul class="list-group list-group-flush">
     <% if(!todayVisits || !todayVisits.length){ %><li class="list-group-item small text-muted"><%= _t('hub.no_visits_today', { ns: 'legacy', defaultValue: 'No visits today.' }) %></li><% } %>

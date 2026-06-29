@@ -1,0 +1,221 @@
+/**
+ * Cashier Odoo shell — sidebar layout, hide global HMS chrome
+ */
+body.hms-body--cashier-odoo #hms-sidebar,
+body.hms-body--cashier-odoo .hms-topbar {
+  display: none !important;
+}
+
+body.hms-body--cashier-odoo .main-wrapper {
+  margin-left: 0 !important;
+  min-height: 100vh;
+}
+
+body.hms-body--cashier-odoo .page-wrapper,
+body.hms-body--cashier-odoo .page-wrapper > .content {
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+}
+
+.cashier-odoo-app {
+  font-family: 'Inter', 'Roboto', 'Segoe UI', sans-serif;
+  color: #1a1a1a;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--cs-lighter, #f0faf8);
+}
+
+.cashier-odoo-app .o_web_navbar {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-bottom: 1px solid var(--cs-border, #a7f3d0);
+  height: 46px;
+  min-height: 46px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+}
+
+.cashier-odoo-app .o_nav_home {
+  width: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  border-right: 1px solid var(--cs-border, #a7f3d0);
+  text-decoration: none;
+}
+
+.cashier-odoo-app .o_nav_home:hover {
+  background: var(--cs-lighter);
+  color: var(--cs-primary);
+}
+
+.cs-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.cs-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--cs-lighter, #f0faf8);
+}
+
+.cashier-odoo-app .o_flash {
+  margin: 0;
+  border-radius: 0;
+}
+
+/* Sidebar rail */
+.cashier-odoo-app--sidebar .cs-rail {
+  width: 200px;
+  flex-shrink: 0;
+  background: var(--cs-primary, #0f4c5c);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 46px;
+  height: calc(100vh - 46px);
+  overflow-y: auto;
+}
+
+.cs-rail-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border-bottom: 0.5px solid var(--cs-darker, #083544);
+}
+
+.cs-rail-brand__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--cs-accent, #10b981);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+  font-size: 16px;
+}
+
+.cs-rail-brand__text strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.cs-rail-brand__text span {
+  font-size: 10px;
+  color: #6ee7b7;
+  margin-top: 2px;
+  display: block;
+}
+
+.cs-rail-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.cs-rail-group__title {
+  font-size: 10px;
+  color: #6ee7b7;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 10px 14px 4px;
+  font-weight: 600;
+}
+
+.cs-rail-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  color: var(--cs-rail-text, #a7f3d0);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cs-rail-link__ico {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.cs-rail-link:hover {
+  background: var(--cs-darker, #083544);
+  color: #fff;
+  text-decoration: none;
+}
+
+.cs-rail-link.active {
+  background: var(--cs-darker, #083544);
+  color: #fff;
+  border-left-color: var(--cs-accent, #10b981);
+  font-weight: 700;
+}
+
+.cs-rail-link.active .cs-rail-link__ico {
+  background: rgba(16, 185, 129, 0.24);
+  color: #d1fae5;
+}
+
+.cs-rail-badge {
+  margin-left: auto;
+  min-width: 1.2rem;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--cs-accent, #10b981);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.cs-rail-badge--pending {
+  background: var(--cs-pending-bg, #fef9c3);
+  color: var(--cs-pending-text, #854d0e);
+}
+
+.cs-rail-foot {
+  padding: 10px 14px;
+  border-top: 0.5px solid var(--cs-darker, #083544);
+}
+
+.cs-rail-foot a {
+  color: #6ee7b7;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.cs-rail-foot a:hover {
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .cashier-odoo-app--sidebar .cs-rail {
+    display: none;
+  }
+}

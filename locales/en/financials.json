@@ -128,7 +128,13 @@
     "memo_ph": "Memo",
     "add_line": "Add line",
     "save_draft": "Save draft",
-    "journal_code": "Journal code"
+    "journal_code": "Journal code",
+    "cancel": "Cancel",
+    "failed": "Could not post journal.",
+    "working": "Processing…",
+    "subaccounts_title": "GL sub-accounts required",
+    "subaccounts_body": "Can't Post on Main Account , Please Create Sub Account and then Post the Transaction",
+    "subaccounts_confirm": "Yes — create sub-accounts and post"
   },
   "settings": {
     "legal_name": "Legal name",

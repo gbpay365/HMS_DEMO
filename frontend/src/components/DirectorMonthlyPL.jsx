@@ -12,6 +12,7 @@ import {
   monthlyKpiLabel,
   monthlyPanelLabel} from '../lib/directorMonthlyPLCatalog';
 import { RPT, chartTooltipStyle } from '../lib/directorReportTheme';
+import { priceUnitLabel } from '../lib/hmsLocale';
 import {
   DirectorKpiCard,
   DirectorPanel,
@@ -563,7 +564,7 @@ function ManualCostsPanel({ month, costSources, onSaved, t }) {
                       style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12 }}
                     />
                     <input
-                      placeholder="XAF"
+                      placeholder={priceUnitLabel()}
                       value={line.amount_xaf}
                       onChange={(e) => updateLine(idx, { amount_xaf: e.target.value })}
                       style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12 }}
@@ -595,7 +596,7 @@ function ManualCostsPanel({ month, costSources, onSaved, t }) {
                       style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12 }}
                     />
                     <input
-                      placeholder="XAF"
+                      placeholder={priceUnitLabel()}
                       value={line.amount_xaf}
                       onChange={(e) => updateLine(idx, { amount_xaf: e.target.value })}
                       style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 12 }}

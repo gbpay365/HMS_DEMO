@@ -6,6 +6,7 @@ import { Modal } from '../components/Modal';
 import { ModalCancelButton, ModalSubmitButton } from '../components/ModalActions';
 import { filterDoctorsForCashierService } from '../lib/doctorClinicalFilter';
 import { resolveCashierPaymentMethods } from '../lib/cashierPaymentMethods';
+import { formatMoney } from '../lib/hmsLocale';
 import { notifyError } from '../lib/notifyBridge';
 
 const SERVICE_TYPE_IDS = ['consultation', 'laboratory', 'radiology', 'maternity', 'surgery', 'pharmacy', 'hospitalisation'];
@@ -17,11 +18,16 @@ const PAY_METHOD_KEYS = {
   'Mobile Money': 'momo',
   'Orange Money': 'om',
   'Bank Transfer': 'bank_transfer',
+  POS: 'pos',
+  Paystack: 'paystack',
+  USSD: 'ussd',
   Insurance: 'insurance',
   Wallet: 'wallet',
   BetterPay: 'betterpay',
   'QR Code': 'betterpay',
-  Bank: 'bank'};
+  Bank: 'bank',
+  CARD: 'pos',
+  Card: 'pos'};
 
 const PAYMENT_GATE_METHODS = new Set(['Wallet', 'BetterPay']);
 
@@ -290,8 +296,31 @@ export function CashierPrepayModal({
       }
       if (prepayDefaults.serviceType) setServiceType(prepayDefaults.serviceType);
       if (prepayDefaults.catalogId) setCatalogId(String(prepayDefaults.catalogId));
+      if (prepayDefaults.payMethod) setPayMethod(prepayDefaults.payMethod);
+      if (Array.isArray(prepayDefaults.lines) && prepayDefaults.lines.length) {
+        const hydrated = prepayDefaults.lines.map((row) => {
+          const st = row.prepay_service_type || 'consultation';
+          const catId = String(row.prepay_catalog_id || '');
+          const cat = findCatalogItem(st, catId);
+          const listPrice = Number(cat?.price || 0);
+          const quantity = Math.max(1, parseInt(row.prepay_quantity, 10) || 1);
+          return {
+            key: makeCartLineKey(st, catId),
+            prepay_service_type: st,
+            prepay_catalog_id: catId,
+            prepay_assigned_doctor_id: row.prepay_assigned_doctor_id,
+            prepay_specialist_spec: row.prepay_specialist_spec,
+            name: cat?.name || 'Service',
+            listPrice,
+            quantity,
+            comments: row.prepay_comments || '',
+            patientDue: computePatientDue(listPrice, quantity, 0),
+          };
+        });
+        setCartLines(hydrated);
+      }
     }
-  }, [open, resetPaymentUi, prepayDefaults]);
+  }, [open, resetPaymentUi, prepayDefaults, findCatalogItem]);
 
   useEffect(() => {
     setCartLines((lines) => lines.map((line) => ({
@@ -911,9 +940,7 @@ export function CashierPrepayModal({
               <option value="">{t('modals.cashierPrepay.select_service')}</option>
               {catalogForType.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {t('modals.cashierPrepay.price_fcfa', {
-                    name: c.name,
-                    price: Number(c.price || 0).toLocaleString()})}
+                  {`${c.name} — ${formatMoney(c.price)}`}
                 </option>
               ))}
             </select>
@@ -1035,13 +1062,13 @@ export function CashierPrepayModal({
                             <div className="truncate text-sm font-semibold text-slate-800">{line.name}</div>
                             {line.listPrice ? (
                               <div className="text-xs text-slate-500">
-                                {Number(line.listPrice || 0).toLocaleString('fr-FR')} FCFA × {line.quantity || 1}
+                                {formatMoney(line.listPrice)} × {line.quantity || 1}
                               </div>
                             ) : null}
                           </div>
                           <div className="flex shrink-0 items-center gap-2">
                             <span className="font-semibold tabular-nums text-slate-700">
-                              {Number(line.patientDue || 0).toLocaleString('fr-FR')} FCFA
+                              {formatMoney(line.patientDue || 0)}
                             </span>
                             <button
                               type="button"
@@ -1081,7 +1108,7 @@ export function CashierPrepayModal({
                   </ul>
                   <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 text-xs font-bold text-slate-600">
                     <span>{t('modals.cashierPrepay.subtotal')}</span>
-                    <span className="tabular-nums">{Number(group.subtotal || 0).toLocaleString('fr-FR')} FCFA</span>
+                    <span className="tabular-nums">{formatMoney(group.subtotal || 0)}</span>
                   </div>
                 </div>
               ))}
@@ -1089,7 +1116,7 @@ export function CashierPrepayModal({
             <div className="mt-3 flex items-center justify-between rounded-lg bg-emerald-50 px-3 py-2.5">
               <span className="text-sm font-bold text-emerald-900">{t('modals.cashierPrepay.grand_total')}</span>
               <span className="text-lg font-bold tabular-nums text-emerald-900">
-                {Number(grandTotal || 0).toLocaleString('fr-FR')} FCFA
+                {formatMoney(grandTotal || 0)}
               </span>
             </div>
             {coveragePct > 0 ? (
@@ -1110,7 +1137,7 @@ export function CashierPrepayModal({
               <div ref={qrHostRef} className="rounded-lg bg-white p-2 shadow-sm" />
               <div className="min-w-[180px] flex-1 text-sm">
                 <div className="font-bold text-slate-800">
-                  {Number(betterPay.amount || 0).toLocaleString('fr-FR')} FCFA
+                  {formatMoney(betterPay.amount || 0)}
                 </div>
                 <code className="mt-1 block break-all text-xs text-cyan-900">{betterPay.ref}</code>
                 <a
@@ -1156,14 +1183,14 @@ export function CashierPrepayModal({
               ) : walletStatus.balance < (grandTotal || computePatientDue(selectedCatalog?.price, draftQty, coveragePct)) ? (
                 <p className="text-xs font-semibold text-red-700">
                   {t('modals.cashierPrepay.wallet_insufficient', {
-                    balance: Number(walletStatus.balance || 0).toLocaleString('fr-FR'),
-                    required: Number(grandTotal || computePatientDue(selectedCatalog?.price, draftQty, coveragePct) || 0).toLocaleString('fr-FR'),
+                    balance: formatMoney(walletStatus.balance || 0),
+                    required: formatMoney(grandTotal || computePatientDue(selectedCatalog?.price, draftQty, coveragePct) || 0),
                   })}
                 </p>
               ) : (
                 <p className="text-xs font-semibold text-emerald-800">
                   {t('modals.cashierPrepay.wallet_balance_ok', {
-                    balance: Number(walletStatus.balance || 0).toLocaleString('fr-FR'),
+                    balance: formatMoney(walletStatus.balance || 0),
                   })}
                 </p>
               )

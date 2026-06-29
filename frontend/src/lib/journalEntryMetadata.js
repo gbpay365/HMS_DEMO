@@ -1,4 +1,5 @@
 import { mapJournalTypeToCode } from './journalCounterparts';
+import { currencyCode } from './hmsLocale';
 
 export const JOURNAL_TYPE_OPTIONS = [
   { code: 'JNL', label: 'Standard (JNL)' },
@@ -40,7 +41,7 @@ export function buildJournalEntryMetadata(body = {}) {
     fiscalYear: Number.isFinite(y) ? y : new Date().getFullYear(),
     fiscalPeriod: Number.isFinite(m) ? m : new Date().getMonth() + 1,
     reference,
-    currencyCode: String(body.currency_code || 'XAF').trim().toUpperCase() || 'XAF',
+    currencyCode: String(body.currency_code || currencyCode()).trim().toUpperCase() || currencyCode(),
     exchangeRate: body.exchange_rate != null && body.exchange_rate !== '' ? Number(body.exchange_rate) || 1 : 1,
     journalType,
     journalCode: String(body.journal_code || mapJournalTypeToCode(journalType) || 'OD'),

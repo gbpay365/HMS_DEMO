@@ -14,11 +14,12 @@ import {
   prettyCat,
   serviceSearchBlob,
   tabCat} from '../lib/catalogUi';
+import { formatMoney, priceUnitLabel } from '../lib/hmsLocale';
 import { DEFAULT_PAGE_SIZE } from '../lib/pagination';
 import { CatalogServiceModal } from '../modals/CatalogServiceModal';
 
-function formatXaf(n) {
-  return Number(n || 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 });
+function formatCatalogPrice(n) {
+  return formatMoney(n);
 }
 
 function tabFromHash() {
@@ -108,7 +109,11 @@ export function CatalogPageApp({ services = [], flash = null, error = null, cata
       <div className="content px-4 pb-10 pt-2 sm:px-6">
         <FlashMessages flash={flash} error={error} />
 
-        <SurfaceHero icon="book" title={t('catalog.title')} subtitle={t('catalog.subtitle')}>
+        <SurfaceHero
+          icon="book"
+          title={t('catalog.title')}
+          subtitle={t('catalog.subtitle', { currency: priceUnitLabel() })}
+        >
           {canWriteActive ? (
             <div className="hms-surface-hero-actions mt-4">
               <button type="button" className="hms-btn-primary text-xs" onClick={() => setAddOpen(true)}>
@@ -191,8 +196,7 @@ export function CatalogPageApp({ services = [], flash = null, error = null, cata
                             : service.department_name || t('catalog.general')}
                         </td>
                         <td className="px-4 py-3 text-right font-semibold text-ink">
-                          <span className="text-[10px] font-normal text-slate-400">XAF </span>
-                          {formatXaf(service.price)}
+                          {formatCatalogPrice(service.price)}
                         </td>
                         {canWriteActive ? (
                           <td className="px-4 py-3 text-right">

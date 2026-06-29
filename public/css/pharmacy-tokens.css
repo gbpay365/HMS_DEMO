@@ -1,0 +1,135 @@
+/**
+ * Pharmacy module ? canonical color tokens (hms_pharmacy_color_scheme)
+ * Primary #4B1528 ? Sidebar #6D1B3A ? Accent #D4537E ? Page bg #FFF0F5
+ */
+body.hms-body--pharmacy-odoo,
+body.hms-body--pharmacy-theme,
+body.hms-body--validate-entry-pharmacy,
+body.hms-body--validate-detail-pharmacy,
+body.hms-body--odoo.hms-body--validate-entry-pharmacy,
+body.hms-body--odoo.hms-body--validate-detail-pharmacy {
+  /* Brand identity */
+  --pha-primary: #4b1528;
+  --pha-sidebar: #6d1b3a;
+  --pha-sidebar-top: #5c1830;
+  --pha-accent: #d4537e;
+  --pha-accent-hover: #993556;
+  --pha-accent-dark: #6d1b3a;
+
+  /* Surfaces */
+  --pha-page-bg: #fff0f5;
+  --pha-card-bg: #ffffff;
+  --pha-card-border: #ed93b1;
+  --pha-soft-border: #f4c0d1;
+  --pha-rx-label-bg: #fce4ec;
+  --pha-rx-label-text: #4b1528;
+  --pha-note-bg: #fff0f5;
+
+  /* Universal status (traffic-light + expiry) */
+  --pha-stock-ok: #16a34a;
+  --pha-stock-low: #ff9800;
+  --pha-stock-out: #dc2626;
+  --pha-expiry-alert: #7c3aed;
+  --pha-expired: #374151;
+
+  /* HMS / Odoo aliases */
+  --hms-dept-pharmacy: var(--pha-accent);
+  --hms-brand: var(--pha-accent);
+  --hms-brand-hover: var(--pha-accent-hover);
+  --hms-brand-dark: var(--pha-accent-dark);
+  --hms-brand-light: var(--pha-rx-label-bg);
+  --hms-brand-soft: rgba(212, 83, 126, 0.12);
+  --hms-brand-glow: rgba(212, 83, 126, 0.32);
+  --o-brand: var(--pha-accent);
+  --o-brand-hover: var(--pha-accent-hover);
+  --o-brand-soft: var(--hms-brand-soft);
+  --o-bg: var(--pha-page-bg);
+  --o-surface: var(--pha-card-bg);
+  --hms-surface-mesh-a: rgba(212, 83, 126, 0.08);
+  --hms-surface-mesh-b: rgba(75, 21, 40, 0.05);
+}
+
+body.hms-body--pharmacy-odoo .main-wrapper,
+body.hms-body--pharmacy-theme .main-wrapper,
+body.hms-body--validate-entry-pharmacy .main-wrapper,
+body.hms-body--validate-detail-pharmacy .main-wrapper {
+  background: var(--pha-page-bg, #fff0f5) !important;
+}
+
+/* Validate entry ? inputs & buttons */
+body.hms-body--validate-entry-pharmacy .page-wrapper .hms-input:focus,
+body.hms-body--validate-detail-pharmacy .page-wrapper .hms-input:focus,
+body.hms-body--validate-entry-pharmacy .form-control.hms-input:focus,
+body.hms-body--validate-detail-pharmacy .form-control.hms-input:focus {
+  border-color: var(--pha-accent, #d4537e) !important;
+  box-shadow: 0 0 0 3px rgba(212, 83, 126, 0.18) !important;
+  outline: none;
+}
+
+body.hms-body--validate-entry-pharmacy .hms-btn-primary,
+body.hms-body--validate-detail-pharmacy .hms-btn-primary {
+  background: linear-gradient(135deg, var(--pha-accent, #d4537e) 0%, var(--pha-accent-hover, #993556) 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px var(--hms-brand-glow, rgba(212, 83, 126, 0.32)) !important;
+}
+
+body.hms-body--validate-entry-pharmacy .hms-btn-primary:hover,
+body.hms-body--validate-detail-pharmacy .hms-btn-primary:hover {
+  background: linear-gradient(135deg, var(--pha-accent-hover, #993556) 0%, var(--pha-accent-dark, #6d1b3a) 100%) !important;
+  color: #fff !important;
+}
+
+body.hms-body--validate-entry-pharmacy .hms-btn-secondary,
+body.hms-body--validate-detail-pharmacy .hms-btn-secondary {
+  background: #fff !important;
+  color: var(--pha-primary, #4b1528) !important;
+  border: 1.5px solid var(--pha-soft-border, #f4c0d1) !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+}
+
+body.hms-body--validate-entry-pharmacy .hms-btn-secondary:hover,
+body.hms-body--validate-detail-pharmacy .hms-btn-secondary:hover {
+  border-color: var(--pha-accent, #d4537e) !important;
+  color: var(--pha-accent, #d4537e) !important;
+  background: var(--hms-brand-soft) !important;
+}
+
+body.hms-body--validate-entry-pharmacy .page-wrapper.hms-surface-module,
+body.hms-body--validate-detail-pharmacy .page-wrapper.hms-surface-module {
+  background: var(--pha-page-bg, #fff0f5);
+}
+
+body.hms-body--pharmacy-theme.hms-body--clinical-dept-inbox .page-wrapper.hms-surface-module,
+body.hms-body--pharmacy-odoo.hms-body--clinical-dept-inbox .page-wrapper.hms-surface-module {
+  background: var(--pha-page-bg, #fff0f5);
+}
+
+body.hms-body--pharmacy-theme.hms-body--clinical-dept-inbox .hms-ui .hms-btn-primary,
+body.hms-body--pharmacy-odoo.hms-body--clinical-dept-inbox .hms-ui .hms-btn-primary {
+  background: linear-gradient(135deg, var(--pha-accent, #d4537e) 0%, var(--pha-accent-hover, #993556) 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px var(--hms-brand-glow, rgba(212, 83, 126, 0.32)) !important;
+}
+
+body.hms-body--pharmacy-theme.hms-body--clinical-dept-inbox .hms-ui .hms-btn-secondary,
+body.hms-body--pharmacy-odoo.hms-body--clinical-dept-inbox .hms-ui .hms-btn-secondary {
+  background: #fff !important;
+  color: var(--pha-primary, #4b1528) !important;
+  border: 1.5px solid var(--pha-soft-border, #f4c0d1) !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+}
+
+body.hms-body--pharmacy-theme.hms-body--clinical-dept-inbox .hms-ui .hms-btn-secondary:hover,
+body.hms-body--pharmacy-odoo.hms-body--clinical-dept-inbox .hms-ui .hms-btn-secondary:hover {
+  border-color: var(--pha-accent, #d4537e) !important;
+  color: var(--pha-accent, #d4537e) !important;
+  background: var(--hms-brand-soft) !important;
+}

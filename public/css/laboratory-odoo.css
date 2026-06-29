@@ -2,9 +2,9 @@
  * Laboratory — workflow content styles (nav: hms-dept-nav.css)
  */
 .laboratory-odoo-app {
-  --o-brand: var(--hms-dept-laboratory);
-  --o-brand-hover: #6d28d9;
-  --o-brand-soft: rgba(139, 92, 246, 0.12);
+  --o-brand: var(--hms-theme-accent, var(--hms-dept-laboratory));
+  --o-brand-hover: var(--hms-theme-primary, #173404);
+  --o-brand-soft: var(--hms-theme-accent-soft, rgba(99, 153, 34, 0.12));
 }
 
 .laboratory-odoo-app .o_nav_module--laboratory::before {

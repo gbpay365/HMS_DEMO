@@ -11,7 +11,7 @@ if (typeof _tl !== 'function') {
   };
 }
 %>
-<%- include('partials/pharmacy-odoo-start', { phaOdooMenu: 'config', phaOdooTitle: _tl('pharmacy_config_categories.title', 'Medicine categories'), nursingSupplyPending, flash, error }) %>
+<%- include('partials/pharmacy-odoo-start', { phaOdooMenu: 'config', phaOdooSub: 'medicine-categories', phaOdooTitle: _tl('pharmacy_config_categories.title', 'Medicine categories'), nursingSupplyPending, flash, error }) %>
 <div class="o_control_panel">
   <button type="button" class="o_cp_new" data-toggle="modal" data-target="#catModal"><i class="fa fa-plus"></i> <%= _tl('pharmacy_shared.new', 'New') %></button>
   <div class="o_cp_breadcrumb"><span><%= _tl('pharmacy_config_categories.title', 'Medicine categories') %></span></div>

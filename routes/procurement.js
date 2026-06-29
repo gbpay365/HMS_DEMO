@@ -11,7 +11,7 @@ const { insertPoAudit, loadPoAudit } = require('../lib/procurementPoAudit');
 const { PROCUREMENT_UNITS, normalizeProcurementUom } = require('../lib/procurementUnits');
 const { parseQtyWithUom } = require('../lib/procurementQty');
 const { suggestInventoryId, loadInventoryPickList } = require('../lib/procurementInventoryMatch');
-const { postPurchaseOrderToGl, purchaseOrderJournalSuffix } = require('../lib/finPurchaseOrderJournal');
+const { loadProcurementHubData, loadRecentPos, userCanProcureWrite } = require('../lib/procurementHub');
 
 const VENDOR_CLASSES = ['pharmaceutical', 'consumables', 'equipment', 'services', 'general'];
 
@@ -20,23 +20,23 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
   'procurement.read',
   'procurement.write',
   'inventory.read',
-  'inventory.write'
+  'inventory.write',
+  'pharmacy.read',
+  'pharmacy.write'
  );
- const procureWrite = requirePerm('procurement.write', 'inventory.write');
+ const procureWrite = requirePerm('procurement.write', 'inventory.write', 'pharmacy.write');
 
  function facilityId(req) {
   return Math.max(1, parseInt(req.session.facilityId, 10) || 1);
  }
 
- function userCanProcureWrite(req, res) {
-  const r = String(req.session.user?.role || '');
-  if (r === '1' || r === '99') return true;
-  const p = res.locals.userPerms || [];
-  return (
-   p.includes('*') ||
-   p.includes('procurement.write') ||
-   p.includes('inventory.write')
-  );
+ function pharmacyShellReturn(req, fallback) {
+  const ret = String(req.body?.return_to || '').trim();
+  return ret.startsWith('/pharmacy/') ? ret.replace(/\/+$/, '') : fallback;
+ }
+
+ function userCanProcureWriteReq(req, res) {
+  return userCanProcureWrite(res.locals.userPerms || [], req.session.user?.role);
  }
 
  function rfqBadgeClass(status) {
@@ -122,59 +122,17 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
   return rows || [];
  }
 
- async function loadRecentPos(pool, fid, limit = 10) {
-  if (!(await tableExists(pool, 'tbl_purchase_order'))) return [];
-  try {
-   const [rows] = await pool.query(
-    `SELECT id, facility_id, po_number, supplier_name, status, total_amount, created_at
-     FROM tbl_purchase_order WHERE facility_id = ? ORDER BY created_at DESC LIMIT ${Math.max(1, Math.min(50, limit))}`,
-    [fid]
-   );
-   return rows || [];
-  } catch (e) {
-   return [];
-  }
- }
-
  app.get('/procurement', requireAuth, procureRead, async (req, res) => {
   try {
    const fid = facilityId(req);
-   let stats = { vendors: 0, rfqs: 0 };
-   if (await tableExists(pool, 'tbl_procurement_vendor')) {
-    try {
-     const [[v]] = await pool.query(
-      'SELECT COUNT(*) AS c FROM tbl_procurement_vendor WHERE facility_id = ? AND is_active = 1',
-      [fid]
-     );
-     stats.vendors = parseInt(v?.c, 10) || 0;
-    } catch (e) {
-     /* ignore */
-    }
-   }
-   if (await tableExists(pool, 'tbl_procurement_rfq')) {
-    try {
-     const [[r]] = await pool.query(
-      "SELECT COUNT(*) AS c FROM tbl_procurement_rfq WHERE facility_id = ? AND status IN ('draft','issued')",
-      [fid]
-     );
-     stats.rfqs = parseInt(r?.c, 10) || 0;
-    } catch (e) {
-     /* ignore */
-    }
-   }
-   const allPosForStats = await loadRecentPos(pool, fid, 200);
-   const pos = allPosForStats.slice(0, 10);
-   const pendingReceipt = allPosForStats.filter((po) => {
-    const st = String(po.status || '').toLowerCase();
-    return st === 'approved' || st === 'issued';
-   }).length;
+   const hub = await loadProcurementHubData(pool, fid);
    res.render('procurement', {
     title: 'Procurement - ZAIZENS',
     flash: req.query.msg || null,
     error: req.query.err || null,
-    stats: { ...stats, pending_receipt: pendingReceipt, po_count: allPosForStats.length },
-    pos,
-    canWrite: userCanProcureWrite(req, res),
+    stats: hub.stats,
+    pos: hub.pos,
+    canWrite: userCanProcureWriteReq(req, res),
    });
   } catch (e) {
    res.status(500).render('error', { title: 'Error', message: e.message, status: 500 });
@@ -213,7 +171,7 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
     poStats,
     poFilter: status,
     poSearch: search,
-    canWrite: userCanProcureWrite(req, res),
+    canWrite: userCanProcureWriteReq(req, res),
    });
   } catch (e) {
    res.status(500).render('error', { title: 'Error', message: e.message, status: 500 });
@@ -234,7 +192,7 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
    }
    const audit = await loadPoAudit(pool, id, 30);
    const poSt = String(detail.po.status || '').toLowerCase();
-   const poEditable = userCanProcureWrite(req, res) && ['draft', 'approved', 'issued', 'received'].includes(poSt);
+   const poEditable = userCanProcureWriteReq(req, res) && ['draft', 'approved', 'issued', 'received'].includes(poSt);
    const wasSent = ['approved', 'issued', 'received'].includes(poSt);
    let vendors = [];
    let inventoryItems = [];
@@ -256,7 +214,7 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
     wasSent,
     poEditable,
     openEditModal: req.query.edit === '1',
-    canWrite: userCanProcureWrite(req, res),
+    canWrite: userCanProcureWriteReq(req, res),
     smtpReady: !!(String(process.env.HMS_SMTP_HOST || '').trim() && String(process.env.HMS_SMTP_FROM || '').trim())
    });
   } catch (e) {
@@ -461,7 +419,7 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
     vendors,
     vendorSearch: search,
     vendorClasses: VENDOR_CLASSES,
-    canWrite: userCanProcureWrite(req, res)
+    canWrite: userCanProcureWriteReq(req, res)
    });
   } catch (e) {
    res.status(500).render('error', { title: 'Error', message: e.message, status: 500 });
@@ -471,12 +429,12 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
  app.post('/procurement/vendors/add', requireAuth, procureWrite, async (req, res) => {
   const fid = facilityId(req);
   if (!(await tableExists(pool, 'tbl_procurement_vendor'))) {
-   return res.redirect('/procurement/vendors?err=' + encodeURIComponent('Vendor table not installed. Run procurement migrations (046).'));
+   return res.redirect(pharmacyShellReturn(req, '/procurement/vendors') + '?err=' + encodeURIComponent('Vendor table not installed. Run procurement migrations (046).'));
   }
   await ensureProcurementVendorSchema(pool).catch(() => {});
   const name = String(req.body.name || '').trim();
   if (!name) {
-   return res.redirect('/procurement/vendors?err=' + encodeURIComponent('Vendor name is required.'));
+   return res.redirect(pharmacyShellReturn(req, '/procurement/vendors') + '?err=' + encodeURIComponent('Vendor name is required.'));
   }
   let code = String(req.body.vendor_code || '').trim().slice(0, 32);
   if (!code) {
@@ -497,23 +455,23 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
      VALUES (?,?,?,?,?,?,?,?,NULL,1,?,?)`,
     [fid, code, name.slice(0, 255), contact_name, phone, email, address, tax_id, vendorClass, uid]
    );
-   return res.redirect('/procurement/vendors?msg=' + encodeURIComponent('Vendor registered.'));
+   return res.redirect(pharmacyShellReturn(req, '/procurement/vendors') + '?msg=' + encodeURIComponent('Vendor registered.'));
   } catch (e) {
    const msg = String(e.message || e);
    if (/Duplicate/i.test(msg)) {
-    return res.redirect('/procurement/vendors?err=' + encodeURIComponent('That vendor code already exists for this site.'));
+    return res.redirect(pharmacyShellReturn(req, '/procurement/vendors') + '?err=' + encodeURIComponent('That vendor code already exists for this site.'));
    }
-   return res.redirect('/procurement/vendors?err=' + encodeURIComponent(msg));
+   return res.redirect(pharmacyShellReturn(req, '/procurement/vendors') + '?err=' + encodeURIComponent(msg));
   }
  });
 
  app.post('/procurement/vendors/:id/update', requireAuth, procureWrite, async (req, res) => {
   const fid = facilityId(req);
   const vid = parseInt(req.params.id, 10) || 0;
-  if (vid < 1) return res.redirect('/procurement/vendors?err=' + encodeURIComponent('Invalid vendor.'));
+  if (vid < 1) return res.redirect(pharmacyShellReturn(req, '/procurement/vendors') + '?err=' + encodeURIComponent('Invalid vendor.'));
   await ensureProcurementVendorSchema(pool).catch(() => {});
   const name = String(req.body.name || '').trim();
-  if (!name) return res.redirect('/procurement/vendors?err=' + encodeURIComponent('Vendor name is required.'));
+  if (!name) return res.redirect(pharmacyShellReturn(req, '/procurement/vendors') + '?err=' + encodeURIComponent('Vendor name is required.'));
   let vendorClass = String(req.body.vendor_class || 'general').trim().toLowerCase();
   if (!VENDOR_CLASSES.includes(vendorClass)) vendorClass = 'general';
   try {
@@ -532,9 +490,9 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
      fid,
     ]
    );
-   return res.redirect('/procurement/vendors?msg=' + encodeURIComponent('Vendor updated.'));
+   return res.redirect(pharmacyShellReturn(req, '/procurement/vendors') + '?msg=' + encodeURIComponent('Vendor updated.'));
   } catch (e) {
-   return res.redirect('/procurement/vendors?err=' + encodeURIComponent(e.message || 'Update failed.'));
+   return res.redirect(pharmacyShellReturn(req, '/procurement/vendors') + '?err=' + encodeURIComponent(e.message || 'Update failed.'));
   }
  });
 
@@ -548,9 +506,9 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
     `UPDATE tbl_procurement_vendor SET is_active=0, suspended_at=NOW(), suspended_by=? WHERE id=? AND facility_id=? LIMIT 1`,
     [uid, vid, fid]
    );
-   return res.redirect('/procurement/vendors?msg=' + encodeURIComponent('Vendor suspended.'));
+   return res.redirect(pharmacyShellReturn(req, '/procurement/vendors') + '?msg=' + encodeURIComponent('Vendor suspended.'));
   } catch (e) {
-   return res.redirect('/procurement/vendors?err=' + encodeURIComponent(e.message || 'Suspend failed.'));
+   return res.redirect(pharmacyShellReturn(req, '/procurement/vendors') + '?err=' + encodeURIComponent(e.message || 'Suspend failed.'));
   }
  });
 
@@ -563,9 +521,9 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
     `UPDATE tbl_procurement_vendor SET is_active=1, suspended_at=NULL, suspended_by=NULL WHERE id=? AND facility_id=? LIMIT 1`,
     [vid, fid]
    );
-   return res.redirect('/procurement/vendors?msg=' + encodeURIComponent('Vendor reactivated.'));
+   return res.redirect(pharmacyShellReturn(req, '/procurement/vendors') + '?msg=' + encodeURIComponent('Vendor reactivated.'));
   } catch (e) {
-   return res.redirect('/procurement/vendors?err=' + encodeURIComponent(e.message || 'Activate failed.'));
+   return res.redirect(pharmacyShellReturn(req, '/procurement/vendors') + '?err=' + encodeURIComponent(e.message || 'Activate failed.'));
   }
  });
 
@@ -583,14 +541,15 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
    ).catch(() => [[null]]);
    if (poRef || qRef) {
     return res.redirect(
-     '/procurement/vendors?err=' +
+     pharmacyShellReturn(req, '/procurement/vendors') +
+     '?err=' +
       encodeURIComponent('Vendor has purchase orders or quotations — suspend instead of delete.')
     );
    }
    await pool.query('DELETE FROM tbl_procurement_vendor WHERE id = ? AND facility_id = ? LIMIT 1', [vid, fid]);
-   return res.redirect('/procurement/vendors?msg=' + encodeURIComponent('Vendor deleted.'));
+   return res.redirect(pharmacyShellReturn(req, '/procurement/vendors') + '?msg=' + encodeURIComponent('Vendor deleted.'));
   } catch (e) {
-   return res.redirect('/procurement/vendors?err=' + encodeURIComponent(e.message || 'Delete failed.'));
+   return res.redirect(pharmacyShellReturn(req, '/procurement/vendors') + '?err=' + encodeURIComponent(e.message || 'Delete failed.'));
   }
  });
 
@@ -871,7 +830,7 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
     rfqSearch,
     lines: [],
     quotes: [],
-    canWrite: userCanProcureWrite(req, res),
+    canWrite: userCanProcureWriteReq(req, res),
     badgeClass: rfqBadgeClass
    });
   } catch (e) {
@@ -906,7 +865,7 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
      rfqList: [],
      lines: [],
      quotes: [],
-     canWrite: userCanProcureWrite(req, res),
+     canWrite: userCanProcureWriteReq(req, res),
      badgeClass: rfqBadgeClass
     });
    }
@@ -926,7 +885,7 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
     quotes,
     vendors,
     inventoryItems,
-    canWrite: userCanProcureWrite(req, res),
+    canWrite: userCanProcureWriteReq(req, res),
     badgeClass: rfqBadgeClass
    });
   } catch (e) {
@@ -942,7 +901,7 @@ module.exports = function registerProcurement(app, pool, requireAuth, requirePer
 
  require('./procurementExtended')(app, pool, requireAuth, procureRead, procureWrite, {
   facilityId,
-  userCanProcureWrite,
+  userCanProcureWrite: userCanProcureWriteReq,
   loadActiveVendors,
  });
 };

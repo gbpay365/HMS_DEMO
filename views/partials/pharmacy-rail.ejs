@@ -1,0 +1,198 @@
+﻿<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _top = function (key, fallback, opts) {
+  return _t(key, Object.assign({ ns: 'ops', defaultValue: fallback }, opts || {}));
+};
+var _phaMenu = locals.phaOdooMenu || 'products';
+var _phaSub = locals.phaOdooSub || '';
+var _nursingBadge = parseInt(locals.nursingSupplyPending, 10) || 0;
+var _expiryBadge = parseInt(locals.expiryAlertCount, 10) || 0;
+var _brand = locals.brand || {};
+var _brandLogo = _brand.faviconPath || '/img/zaizens-favicon.svg';
+var _brandName = _brand.name || 'ZAIZENS';
+function _phaActive(m) { return _phaMenu === m ? ' active' : ''; }
+function _phaSubActive(s) { return _phaSub === s ? ' active' : ''; }
+function _phaGroupOpen(key) {
+  if (key === 'sales') {
+    return ['dispensing', 'prescriptions', 'nursing', 'sales'].indexOf(_phaMenu) >= 0;
+  }
+  if (key === 'inventory') {
+    return _phaMenu === 'expiry';
+  }
+  if (key === 'purchase') {
+    return _phaMenu === 'purchase' || ['po_new', 'procurement'].indexOf(_phaSub) >= 0;
+  }
+  if (key === 'reporting') {
+    return _phaMenu === 'reporting' || !!_phaSub;
+  }
+  if (key === 'config') {
+    return _phaMenu === 'config' || ['medicine-types', 'medicine-categories', 'validate', 'order-alerts', 'inventory'].indexOf(_phaSub) >= 0;
+  }
+  return false;
+}
+function _phaOpenAttr(key) { return _phaGroupOpen(key) ? ' open' : ''; }
+%>
+<aside class="pha-rail" role="navigation" aria-label="<%= _brandName %>">
+  <div class="pha-rail-brand">
+    <span class="pha-rail-brand__icon pha-rail-brand__logo" aria-hidden="true">
+      <img src="<%= _brandLogo %>" alt="" width="38" height="38" />
+    </span>
+    <div class="pha-rail-brand__text">
+      <strong><%= _brandName %></strong>
+    </div>
+  </div>
+
+  <a href="/pharmacy/validate" class="pha-rail-cta">
+    <i class="fa fa-check-circle" aria-hidden="true"></i>
+    <%= _top('pharmacy.link_validate', 'Validate & dispense') %>
+  </a>
+
+  <div class="pha-rail-scroll">
+    <nav class="pha-rail-nav">
+      <div class="pha-rail-block">
+        <a href="/pharmacy?view=overview" class="pha-rail-link<%= _phaActive('overview') %>">
+          <span class="pha-rail-link__ico"><i class="fa fa-tachometer" aria-hidden="true"></i></span>
+          <span class="pha-rail-link__label"><%= _top('pharmacy.tab_overview', 'Dashboard') %></span>
+        </a>
+        <a href="/pharmacy?view=products" class="pha-rail-link<%= _phaActive('products') %>">
+          <span class="pha-rail-link__ico"><i class="fa fa-cubes" aria-hidden="true"></i></span>
+          <span class="pha-rail-link__label"><%= _top('pharmacy.tab_products', 'Products') %></span>
+        </a>
+      </div>
+
+      <details class="pha-rail-group"<%= _phaOpenAttr('inventory') %>>
+        <summary class="pha-rail-group__toggle">
+          <span class="pha-rail-group__title"><%= _top('pharmacy_odoo.inventory', 'Inventory') %></span>
+          <i class="fa fa-chevron-down pha-rail-group__chev" aria-hidden="true"></i>
+        </summary>
+        <div class="pha-rail-group__body">
+          <a href="/pharmacy?view=expiry" class="pha-rail-link<%= _phaActive('expiry') %>">
+            <span class="pha-rail-link__ico"><i class="fa fa-clock-o" aria-hidden="true"></i></span>
+            <span class="pha-rail-link__label"><%= _top('pharmacy_odoo.expiry_tracking', 'Expiry tracking') %></span>
+            <% if (_expiryBadge > 0) { %><span class="pha-rail-badge pha-rail-badge--expiry"><%= _expiryBadge %></span><% } %>
+          </a>
+        </div>
+      </details>
+
+      <details class="pha-rail-group"<%= _phaOpenAttr('sales') %>>
+        <summary class="pha-rail-group__toggle">
+          <span class="pha-rail-group__title"><%= _top('pharmacy_odoo.sales', 'Sales') %></span>
+          <i class="fa fa-chevron-down pha-rail-group__chev" aria-hidden="true"></i>
+        </summary>
+        <div class="pha-rail-group__body">
+          <a href="/pharmacy?view=dispensing" class="pha-rail-link<%= _phaActive('dispensing') %>">
+            <span class="pha-rail-link__ico"><i class="fa fa-medkit" aria-hidden="true"></i></span>
+            <span class="pha-rail-link__label"><%= _top('pharmacy.link_dispensing', 'Dispensing queue') %></span>
+          </a>
+          <a href="/pharmacy?view=prescriptions" class="pha-rail-link<%= _phaActive('prescriptions') %>">
+            <span class="pha-rail-link__ico"><i class="fa fa-file-text-o" aria-hidden="true"></i></span>
+            <span class="pha-rail-link__label"><%= _top('pharmacy.tab_prescriptions', 'Prescriptions') %></span>
+          </a>
+          <a href="/pharmacy/nursing-requests" class="pha-rail-link<%= _phaActive('nursing') %>">
+            <span class="pha-rail-link__ico"><i class="fa fa-heartbeat" aria-hidden="true"></i></span>
+            <span class="pha-rail-link__label"><%= _top('pharmacy_odoo.nursing_requests', 'Nursing requests') %></span>
+            <% if (_nursingBadge > 0) { %><span class="pha-rail-badge"><%= _nursingBadge %></span><% } %>
+          </a>
+          <a href="/pharmacy?view=sales" class="pha-rail-link<%= _phaActive('sales') %>">
+            <span class="pha-rail-link__ico"><i class="fa fa-credit-card" aria-hidden="true"></i></span>
+            <span class="pha-rail-link__label"><%= _top('pharmacy_odoo.sales_billing', 'Sales & billing') %></span>
+          </a>
+        </div>
+      </details>
+
+      <details class="pha-rail-group"<%= _phaOpenAttr('purchase') %>>
+        <summary class="pha-rail-group__toggle">
+          <span class="pha-rail-group__title"><%= _top('pharmacy_odoo.purchase', 'Purchase') %></span>
+          <i class="fa fa-chevron-down pha-rail-group__chev" aria-hidden="true"></i>
+        </summary>
+        <div class="pha-rail-group__body">
+          <a href="/pharmacy?view=products" data-pha-open-receive="1" class="pha-rail-link">
+            <span class="pha-rail-link__ico"><i class="fa fa-download" aria-hidden="true"></i></span>
+            <span class="pha-rail-link__label"><%= _top('pharmacy_odoo.quick_receive', 'Quick receive stock') %></span>
+          </a>
+          <a href="/pharmacy/procurement" class="pha-rail-link<%= _phaSubActive('procurement') %>">
+            <span class="pha-rail-link__ico"><i class="fa fa-truck" aria-hidden="true"></i></span>
+            <span class="pha-rail-link__label"><%= _top('pharmacy_odoo.full_procurement', 'Procurement') %></span>
+          </a>
+        </div>
+      </details>
+
+      <details class="pha-rail-group"<%= _phaOpenAttr('reporting') %>>
+        <summary class="pha-rail-group__toggle">
+          <span class="pha-rail-group__title"><%= _top('pharmacy_odoo.reporting', 'Reporting') %></span>
+          <i class="fa fa-chevron-down pha-rail-group__chev" aria-hidden="true"></i>
+        </summary>
+        <div class="pha-rail-group__body">
+          <a href="/pharmacy/reporting" class="pha-rail-link<%= _phaActive('reporting') && !_phaSub ? ' active' : '' %>">
+            <span class="pha-rail-link__ico"><i class="fa fa-line-chart" aria-hidden="true"></i></span>
+            <span class="pha-rail-link__label"><%= _top('pharmacy_reports.hub', 'Intelligence Reports') %></span>
+          </a>
+          <p class="pha-rail-subhead"><%= _top('pharmacy_reports.ops', 'Operations') %></p>
+          <a href="/pharmacy/reporting/stock-movement" class="pha-rail-link pha-rail-link--sub<%= _phaSubActive('stock-movement') %>">
+            <span class="pha-rail-link__label"><%= _top('pharmacy_reports.stock_movement', 'Stock movement') %></span>
+          </a>
+          <a href="/pharmacy/reporting/dispensing" class="pha-rail-link pha-rail-link--sub<%= _phaSubActive('dispensing') %>">
+            <span class="pha-rail-link__label"><%= _top('pharmacy_reports.dispensing', 'Dispensing analysis') %></span>
+          </a>
+          <a href="/pharmacy/reporting/fast-moving" class="pha-rail-link pha-rail-link--sub<%= _phaSubActive('fast-moving') %>">
+            <span class="pha-rail-link__label"><%= _top('pharmacy_reports.fast_moving', 'Fast-moving') %></span>
+          </a>
+          <a href="/pharmacy/reporting/dormant" class="pha-rail-link pha-rail-link--sub<%= _phaSubActive('dormant') %>">
+            <span class="pha-rail-link__label"><%= _top('pharmacy_reports.dormant', 'Dormant products') %></span>
+          </a>
+          <p class="pha-rail-subhead"><%= _top('pharmacy_reports.inventory', 'Inventory') %></p>
+          <a href="/pharmacy/reporting/low-stock" class="pha-rail-link pha-rail-link--sub<%= _phaSubActive('low-stock') %>">
+            <span class="pha-rail-link__label"><%= _top('pharmacy_reports.low_stock', 'Low stock alert') %></span>
+          </a>
+          <a href="/pharmacy/reporting/stock-valuation" class="pha-rail-link pha-rail-link--sub<%= _phaSubActive('stock-valuation') %>">
+            <span class="pha-rail-link__label"><%= _top('pharmacy_reports.valuation', 'Inventory valuation') %></span>
+          </a>
+          <a href="/pharmacy/reporting/purchase-activity" class="pha-rail-link pha-rail-link--sub<%= _phaSubActive('purchase-activity') %>">
+            <span class="pha-rail-link__label"><%= _top('pharmacy_reports.purchase', 'Purchase activity') %></span>
+          </a>
+          <a href="/pharmacy/reporting/negative-stock" class="pha-rail-link pha-rail-link--sub<%= _phaSubActive('negative-stock') %>">
+            <span class="pha-rail-link__label"><%= _top('pharmacy_reports.negative', 'Negative stock') %></span>
+          </a>
+          <a href="/pharmacy/reporting/expiry" class="pha-rail-link pha-rail-link--sub<%= _phaSubActive('expiry') %>">
+            <span class="pha-rail-link__label"><%= _top('pharmacy_odoo.expiry_report', 'Expiry report') %></span>
+          </a>
+        </div>
+      </details>
+
+      <details class="pha-rail-group"<%= _phaOpenAttr('config') %>>
+        <summary class="pha-rail-group__toggle">
+          <span class="pha-rail-group__title"><%= _top('pharmacy_odoo.configuration', 'Configuration') %></span>
+          <i class="fa fa-chevron-down pha-rail-group__chev" aria-hidden="true"></i>
+        </summary>
+        <div class="pha-rail-group__body">
+          <p class="pha-rail-subhead"><%= _top('pharmacy_odoo.medicine_setup', 'Medicine setup') %></p>
+          <a href="/pharmacy/config/medicine-types" class="pha-rail-link pha-rail-link--sub<%= _phaSubActive('medicine-types') %>">
+            <span class="pha-rail-link__label"><%= _top('pharmacy_odoo.medicine_types', 'Medicine types') %></span>
+          </a>
+          <a href="/pharmacy/config/medicine-categories" class="pha-rail-link pha-rail-link--sub<%= _phaSubActive('medicine-categories') %>">
+            <span class="pha-rail-link__label"><%= _top('pharmacy_odoo.medicine_categories', 'Medicine categories') %></span>
+          </a>
+          <p class="pha-rail-subhead"><%= _top('pharmacy_odoo.operations', 'Operations') %></p>
+          <a href="/pharmacy/validate" class="pha-rail-link pha-rail-link--sub<%= _phaSubActive('validate') %>">
+            <span class="pha-rail-link__label"><%= _top('pharmacy_odoo.validate_pha', 'Validate PHA code') %></span>
+          </a>
+          <a href="/pharmacy/order-alerts" class="pha-rail-link pha-rail-link--sub<%= _phaSubActive('order-alerts') %>">
+            <span class="pha-rail-link__label"><%= _top('pharmacy_odoo.order_alerts', 'IPD/ER order alerts') %></span>
+          </a>
+          <a href="/inventory" class="pha-rail-link pha-rail-link--sub<%= _phaSubActive('inventory') %>">
+            <span class="pha-rail-link__label"><%= _top('pharmacy_odoo.product_categories', 'Product categories & SKUs') %></span>
+          </a>
+        </div>
+      </details>
+    </nav>
+  </div>
+
+  <div class="pha-rail-foot">
+    <a href="/pharmacy/reporting" class="pha-rail-foot-link">
+      <i class="fa fa-bar-chart" aria-hidden="true"></i>
+      <%= _top('pharmacy.link_reports', 'Reports hub') %>
+    </a>
+  </div>
+</aside>

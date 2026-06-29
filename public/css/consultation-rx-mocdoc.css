@@ -1,0 +1,1070 @@
+/* MocDoc-style consultation prescription panel */
+.rx-mocdoc,
+.consult-mocdoc {
+  --rx-teal: #1a9e9e;
+  --rx-teal-dark: #148585;
+  --rx-orange: #f97316;
+  --rx-orange-dark: #ea580c;
+  --rx-lavender: #ebe4f4;
+  --rx-border: #fdba74;
+  --rx-font-base: 14px;
+  --rx-font-label: 14px;
+  --rx-font-small: 12px;
+  --rx-font-header: 12px;
+  position: relative;
+}
+
+/* ── Shared consultation section shell ── */
+.consult-mocdoc-section {
+  margin-bottom: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.consult-mocdoc-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--rx-teal);
+  color: #fff;
+}
+
+.consult-mocdoc-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--rx-font-header);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+}
+
+.consult-mocdoc-section-title i {
+  font-size: 15px;
+  opacity: 0.95;
+}
+
+.consult-mocdoc-section-body {
+  padding: 14px 16px 16px;
+  background: var(--rx-lavender);
+}
+
+.consult-mocdoc-section-body--flush {
+  padding: 0;
+}
+
+/* ── Form fields (SOAP, referral, follow-up, admission) ── */
+.consult-mocdoc-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: var(--rx-font-label);
+  font-weight: 800;
+  color: #334155;
+}
+
+.consult-mocdoc-field,
+.consult-mocdoc textarea,
+.consult-mocdoc select {
+  width: 100%;
+  border: 1px solid var(--rx-border);
+  border-radius: 6px;
+  background: #fff;
+  font-size: var(--rx-font-base);
+  font-weight: 600;
+  color: #1e293b;
+  outline: none;
+  padding: 8px 10px;
+}
+
+.consult-mocdoc-field:focus,
+.consult-mocdoc textarea:focus,
+.consult-mocdoc select:focus {
+  border-color: var(--rx-teal);
+  box-shadow: 0 0 0 2px rgba(26, 158, 158, 0.15);
+}
+
+.consult-mocdoc-field--locked {
+  background: #f8fafc;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.consult-mocdoc-field-group {
+  margin-bottom: 14px;
+}
+
+.consult-mocdoc-field-group:last-child {
+  margin-bottom: 0;
+}
+
+.consult-mocdoc-hint {
+  margin-top: 4px;
+  font-size: var(--rx-font-small);
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.consult-mocdoc-checkbox {
+  accent-color: var(--rx-teal);
+}
+
+/* SOAP quick-pick strip */
+.consult-mocdoc-pick-box {
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--rx-border);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.consult-mocdoc-pick-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: var(--rx-font-header);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--rx-orange-dark);
+}
+
+.consult-mocdoc-pick-select {
+  width: 100%;
+  border: 1px solid var(--rx-border);
+  border-radius: 6px;
+  background: #fff;
+  padding: 8px 10px;
+  font-size: var(--rx-font-base);
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Plan / order line rows */
+.consult-mocdoc-lines {
+  border: 1px solid var(--rx-border);
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.consult-mocdoc-lines-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #fed7aa;
+  background: #fff7ed;
+}
+
+.consult-mocdoc-lines-head-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--rx-font-header);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--rx-orange-dark);
+}
+
+.consult-mocdoc-lines-head-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 6px;
+  background: var(--rx-teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.consult-mocdoc-lines-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 6px;
+  background: var(--rx-teal);
+  color: #fff;
+  font-size: var(--rx-font-small);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.consult-mocdoc-lines-add:hover {
+  background: var(--rx-teal-dark);
+}
+
+.consult-mocdoc-lines-body {
+  padding: 10px 12px;
+  background: var(--rx-lavender);
+}
+
+.consult-mocdoc-line-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--rx-border);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.consult-mocdoc-line-row:last-child {
+  margin-bottom: 0;
+}
+
+.consult-mocdoc-line-serial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--rx-teal);
+  color: #fff;
+  font-size: var(--rx-font-small);
+  font-weight: 800;
+}
+
+.consult-mocdoc-line-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--rx-border);
+  border-radius: 4px;
+  background: #fff;
+  padding: 6px 8px;
+  font-size: var(--rx-font-base);
+  font-weight: 600;
+  color: #1e293b;
+  outline: none;
+}
+
+.consult-mocdoc-line-input:focus {
+  border-color: var(--rx-teal);
+  box-shadow: 0 0 0 2px rgba(26, 158, 158, 0.15);
+}
+
+.consult-mocdoc-line-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background: #fff;
+  color: #64748b;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.consult-mocdoc-line-remove:hover {
+  color: #dc2626;
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.consult-mocdoc-lines-footer {
+  padding: 8px 12px;
+  border-top: 1px solid #fed7aa;
+  background: #fff7ed;
+  font-size: var(--rx-font-small);
+  color: #64748b;
+}
+
+/* Order picker shell (lab / radiology) */
+.consult-mocdoc-order {
+  margin-bottom: 14px;
+}
+
+.consult-mocdoc-order:last-child {
+  margin-bottom: 0;
+}
+
+.consult-mocdoc-custom-box {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px dashed var(--rx-border);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.consult-mocdoc-custom-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.consult-mocdoc-custom-title {
+  font-size: var(--rx-font-header);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--rx-orange-dark);
+}
+
+.consult-mocdoc-custom-add {
+  padding: 4px 10px;
+  border: 1px solid var(--rx-border);
+  border-radius: 6px;
+  background: #fff;
+  font-size: var(--rx-font-small);
+  font-weight: 700;
+  color: var(--rx-orange-dark);
+  cursor: pointer;
+}
+
+.consult-mocdoc-custom-add:hover {
+  background: #fff7ed;
+}
+
+/* Submit panel (sticky sidebar) */
+.consult-mocdoc-submit {
+  border: 1px solid var(--rx-border);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fff7ed 0%, #fff 40%);
+  padding: 16px;
+}
+
+.consult-mocdoc-submit-btn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--rx-teal);
+  color: #fff;
+  font-size: var(--rx-font-base);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.consult-mocdoc-submit-btn:hover:not(:disabled) {
+  background: var(--rx-teal-dark);
+}
+
+.consult-mocdoc-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.consult-mocdoc-cancel-btn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border: 1px solid var(--rx-border);
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  font-size: var(--rx-font-base);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.consult-mocdoc-cancel-btn:hover {
+  background: #fff7ed;
+  color: #1e293b;
+}
+
+.consult-mocdoc-submit-info {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  background: #fff;
+  font-size: var(--rx-font-small);
+  color: #64748b;
+}
+
+.consult-mocdoc-divider {
+  margin: 12px 0;
+  border: none;
+  border-top: 1px solid #fed7aa;
+}
+
+/* Dropdown suggestions in order picker */
+.consult-mocdoc-suggest {
+  position: absolute;
+  z-index: 30;
+  margin-top: 4px;
+  width: 100%;
+  max-height: 220px;
+  overflow: auto;
+  border: 1px solid var(--rx-border);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+.consult-mocdoc-suggest-item {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+  border: none;
+  border-bottom: 1px solid #f1f5f9;
+  background: #fff;
+  font-size: var(--rx-font-base);
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.consult-mocdoc-suggest-item:hover {
+  background: #ecfdf5;
+}
+
+.consult-mocdoc-suggest-item:last-child {
+  border-bottom: none;
+}
+
+.rx-mocdoc {
+  position: relative;
+}
+
+.rx-mocdoc-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+  gap: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  min-height: 0;
+}
+
+@media (max-width: 1024px) {
+  .rx-mocdoc-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rx-mocdoc-main {
+  display: flex;
+  min-width: 0;
+  border-right: 1px solid #e2e8f0;
+}
+
+@media (max-width: 1024px) {
+  .rx-mocdoc-main {
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+  }
+}
+
+.rx-mocdoc-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 42px;
+  flex-shrink: 0;
+  padding: 12px 6px;
+  background: #374151;
+}
+
+.rx-mocdoc-rail-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #9ca3af;
+  font-size: var(--rx-font-base);
+}
+
+.rx-mocdoc-rail-btn.is-active {
+  background: var(--rx-orange);
+  color: #fff;
+}
+
+.rx-mocdoc-form-wrap {
+  flex: 1;
+  min-width: 0;
+  background: var(--rx-lavender);
+  padding: 12px;
+}
+
+.rx-mocdoc-form-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.rx-mocdoc-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 6px;
+  background: var(--rx-teal);
+  color: #fff;
+  font-size: var(--rx-font-base);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.rx-mocdoc-add-btn:hover {
+  background: var(--rx-teal-dark);
+}
+
+.rx-mocdoc-table-scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+  margin: 0 -2px;
+  padding-bottom: 4px;
+}
+
+.rx-mocdoc-table {
+  width: 100%;
+  min-width: 1040px;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  font-size: var(--rx-font-base);
+}
+
+.rx-col-sno { width: 44px; }
+.rx-col-type { width: 110px; }
+.rx-col-name { width: 300px; }
+.rx-col-generic { width: 130px; }
+.rx-col-dose { width: 100px; }
+.rx-col-freq { width: 130px; }
+.rx-col-days { width: 88px; }
+.rx-col-inst { width: 120px; }
+.rx-col-action { width: 48px; }
+
+.rx-mocdoc-table thead th {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: var(--rx-font-header);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #fff;
+  background: var(--rx-teal);
+  white-space: nowrap;
+}
+
+.rx-mocdoc-table thead th:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.rx-mocdoc-table thead th:last-child {
+  border-radius: 0 6px 6px 0;
+}
+
+.rx-mocdoc-row td {
+  padding: 0;
+  vertical-align: top;
+  background: transparent;
+}
+
+.rx-mocdoc-row.is-active td .rx-mocdoc-cell {
+  background: #fffbeb;
+  border-color: var(--rx-orange);
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.35);
+}
+
+.rx-mocdoc-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 8px 10px;
+  background: #fff;
+  border: 1px solid var(--rx-border);
+  border-radius: 6px;
+}
+
+.rx-mocdoc-cell--name {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  min-height: 88px;
+  padding: 8px;
+}
+
+.rx-mocdoc-cell--name-selected {
+  min-height: 52px;
+  justify-content: center;
+}
+
+.rx-mocdoc-selected-drug {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.rx-mocdoc-selected-drug__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.rx-mocdoc-selected-drug__name {
+  display: block;
+  font-size: var(--rx-font-base);
+  font-weight: 700;
+  line-height: 1.35;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.rx-mocdoc-selected-drug__price {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--rx-font-small);
+  font-weight: 700;
+  color: #64748b;
+}
+
+.rx-mocdoc-selected-drug__clear {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.rx-drug-search-custom-pick {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  text-align: left;
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  background: #fffbeb;
+  color: #c2410c;
+  font-size: var(--rx-font-base);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.rx-drug-search-custom-pick:hover,
+.rx-drug-search-custom-pick:focus-visible {
+  background: #ffedd5;
+  outline: none;
+}
+
+.rx-mocdoc-selected-drug__badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: var(--rx-font-header);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #c2410c;
+  background: #ffedd5;
+}
+
+.rx-mocdoc-cell--days {
+  gap: 8px;
+}
+
+.rx-mocdoc-field {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background: #fff;
+  font-size: var(--rx-font-base);
+  font-weight: 600;
+  color: #1e293b;
+  outline: none;
+  padding: 8px 10px;
+}
+
+.rx-mocdoc-field:focus {
+  border-color: var(--rx-teal);
+  box-shadow: 0 0 0 2px rgba(26, 158, 158, 0.15);
+}
+
+.rx-mocdoc-field--custom {
+  font-size: var(--rx-font-base);
+  font-weight: 500;
+}
+
+.rx-mocdoc-field--days {
+  width: 3.5rem;
+  flex: 0 0 3.5rem;
+  text-align: center;
+  padding: 6px 4px;
+}
+
+.rx-mocdoc-days-suffix {
+  flex-shrink: 0;
+  font-size: var(--rx-font-header);
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.rx-mocdoc-price-tag {
+  font-size: var(--rx-font-header);
+  font-weight: 700;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+.rx-mocdoc-serial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--rx-teal);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  padding: 0;
+  font-size: var(--rx-font-small);
+}
+
+.rx-mocdoc-serial:hover {
+  background: var(--rx-orange-dark);
+}
+
+.rx-mocdoc-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background: #fff;
+  color: #64748b;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.rx-mocdoc-remove:hover {
+  color: #dc2626;
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+/* Right sidebar */
+.rx-mocdoc-side {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: linear-gradient(180deg, #fff7ed 0%, #fff 35%);
+}
+
+.rx-mocdoc-side-head {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid #fed7aa;
+  background: #fff7ed;
+}
+
+.rx-mocdoc-side-meta {
+  font-size: var(--rx-font-small);
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.rx-mocdoc-side-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--rx-orange-dark);
+  line-height: 1.15;
+}
+
+.rx-mocdoc-side-body {
+  padding: 14px 16px 16px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.rx-mocdoc-schedule-label {
+  font-size: var(--rx-font-header);
+  font-weight: 800;
+  color: #475569;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.rx-mocdoc-schedule-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.rx-mocdoc-schedule-grid label {
+  display: block;
+  text-align: center;
+  font-size: var(--rx-font-header);
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.rx-mocdoc-schedule-grid input {
+  width: 100%;
+  text-align: center;
+  border: 1px solid var(--rx-border);
+  border-radius: 6px;
+  padding: 8px 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  background: #fff;
+}
+
+.rx-mocdoc-or {
+  text-align: center;
+  font-size: var(--rx-font-small);
+  font-weight: 700;
+  color: #94a3b8;
+  margin: 4px 0 10px;
+}
+
+.rx-mocdoc-freq-select {
+  width: 100%;
+  border: 1px solid var(--rx-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: var(--rx-font-base);
+  font-weight: 600;
+  background: #fff;
+  margin-bottom: 14px;
+}
+
+.rx-mocdoc-meal-radios {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  margin-bottom: 14px;
+}
+
+.rx-mocdoc-meal-radios label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--rx-font-small);
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  line-height: 1.3;
+}
+
+.rx-mocdoc-meal-radios input {
+  accent-color: var(--rx-teal);
+  flex-shrink: 0;
+}
+
+.rx-mocdoc-meta-box {
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px 12px;
+  font-size: var(--rx-font-small);
+  color: #475569;
+}
+
+.rx-mocdoc-meta-box strong {
+  display: block;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.rx-mocdoc-meta-box input[type='date'] {
+  width: 100%;
+  margin-top: 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: var(--rx-font-small);
+}
+
+.rx-mocdoc-strip {
+  border-top: 1px solid #fed7aa;
+  padding: 10px 12px 12px;
+  background: #fff;
+  max-height: 88px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.rx-mocdoc-strip-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 8px 6px 0;
+  padding: 6px 10px;
+  border: 1px solid #fecaca;
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+  font-size: var(--rx-font-small);
+  font-weight: 700;
+  color: #dc2626;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.rx-mocdoc-strip-item:hover {
+  background: #fef2f2;
+}
+
+.rx-mocdoc-strip-item span:last-child {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.rx-mocdoc-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: #64748b;
+  font-size: var(--rx-font-base);
+}
+
+@media print {
+  .rx-mocdoc-rail,
+  .rx-mocdoc-add-btn,
+  .rx-mocdoc-strip,
+  .rx-mocdoc-remove {
+    display: none !important;
+  }
+  .rx-mocdoc-grid {
+    grid-template-columns: 1fr;
+  }
+  .rx-mocdoc-side {
+    display: none;
+  }
+}
+
+/* Portal drug search dropdown (medication name column) */
+.rx-drug-search-dropdown {
+  overflow: auto;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18), 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.rx-drug-search-hint,
+.rx-drug-search-empty {
+  padding: 14px 16px;
+  font-size: var(--rx-font-base);
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.rx-drug-search-group {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px 14px;
+  font-size: var(--rx-font-small);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--rx-teal);
+}
+
+.rx-drug-search-item {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  text-align: left;
+  border: none;
+  border-bottom: 1px solid #f1f5f9;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.rx-drug-search-item:last-child {
+  border-bottom: none;
+}
+
+.rx-drug-search-item:hover,
+.rx-drug-search-item:focus-visible {
+  background: #ecfdf5;
+  outline: none;
+}
+
+.rx-drug-search-item__name {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #0f172a;
+}
+
+.rx-drug-search-item__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.rx-drug-search-item__cat {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: var(--rx-font-header);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0f766e;
+  background: #ccfbf1;
+}
+
+.rx-drug-search-item__price {
+  font-size: var(--rx-font-base);
+  font-weight: 700;
+  color: #475569;
+}

@@ -4,8 +4,10 @@ var _t = locals.t || function (k, o) { return (o && o.defaultValue) || k; };
 var _odoo = !!locals.langSwitcherOdoo;
 var _back = encodeURIComponent((locals.hmsPath || '/') + (locals.hmsQuery || ''));
 %>
+<% if (locals.showsLanguageSwitcher) { %>
 <div class="hms-lang-form<%= _odoo ? ' hms-lang-form--odoo' : '' %> d-inline-flex align-items-center" style="gap:4px;">
   <span class="<%= _odoo ? 'o_nav_lang_label' : 'small text-muted d-none d-md-inline' %>"><%= _t('language.label', { ns: 'common', defaultValue: 'Language' }) %><%= _odoo ? '' : ':' %></span>
-  <a href="/set-lang?lang=en&amp;back=<%= _back %>" class="<%= _odoo ? 'o_nav_lang_btn' : 'btn btn-sm' %><%= _odoo ? (_lang === 'en' ? ' is-active' : '') : (' ' + (_lang === 'en' ? 'btn-primary' : 'btn-outline-secondary')) %>" style="<%= _odoo ? '' : 'font-size:.7rem;padding:2px 8px;border-radius:6px;' %>" title="<%= _t('language.english', { ns: 'common', defaultValue: 'English' }) %>">EN</a>
-  <a href="/set-lang?lang=fr&amp;back=<%= _back %>" class="<%= _odoo ? 'o_nav_lang_btn' : 'btn btn-sm' %><%= _odoo ? (_lang === 'fr' ? ' is-active' : '') : (' ' + (_lang === 'fr' ? 'btn-primary' : 'btn-outline-secondary')) %>" style="<%= _odoo ? '' : 'font-size:.7rem;padding:2px 8px;border-radius:6px;' %>" title="<%= _t('language.french', { ns: 'common', defaultValue: 'Français' }) %>">FR</a>
+  <a href="/set-lang?lang=en&amp;back=<%= _back %>" class="<%= _odoo ? 'o_nav_lang_btn' : 'btn btn-sm' %><%= _odoo ? (_lang === 'en' ? ' is-active' : '') : (' ' + (_lang === 'en' ? 'btn-primary' : 'btn-outline-secondary')) %>" style="<%= _odoo ? '' : 'font-size:.7rem;padding:2px 8px;border-radius:6px;' %>" title="<%= _t('language.english', { ns: 'common', defaultValue: 'English' }) %>"><%= _t('language.short_en', { ns: 'common', defaultValue: 'ENG' }) %></a>
+  <a href="/set-lang?lang=fr&amp;back=<%= _back %>" class="<%= _odoo ? 'o_nav_lang_btn' : 'btn btn-sm' %><%= _odoo ? (_lang === 'fr' ? ' is-active' : '') : (' ' + (_lang === 'fr' ? 'btn-primary' : 'btn-outline-secondary')) %>" style="<%= _odoo ? '' : 'font-size:.7rem;padding:2px 8px;border-radius:6px;' %>" title="<%= _t('language.french', { ns: 'common', defaultValue: 'Français' }) %>"><%= _t('language.short_fr', { ns: 'common', defaultValue: 'Fr' }) %></a>
 </div>
+<% } %>

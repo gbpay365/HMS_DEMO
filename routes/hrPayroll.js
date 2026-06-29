@@ -10,7 +10,8 @@ const {
   resolveRoleTitle,
 } = require('../lib/hmsEmployeeHr');
 const hmsFormatDate = require('../lib/hmsFormatDate');
-const { hmsPayrollCameroonCalculate, defaultBracketsJson } = require('../lib/hmsPayrollCameroon');
+const { hmsPayrollCalculate, defaultBracketsJson } = require('../lib/hmsPayrollCalculate');
+const hmsCountry = require('../lib/hmsCountry');
 const { loadPayrollDashboard } = require('../lib/hmsPayrollDashboard');
 const pagination = require('../lib/pagination');
 const {
@@ -278,11 +279,18 @@ module.exports = function registerHrPayrollRoutes(app, pool, requireAuth, deps) 
     (parseFloat(row.development_tax_deduction) || 0) +
     (parseFloat(row.cnhc_deduction) || 0) +
     (parseFloat(row.income_tax) || 0);
-   // CNPS employer: 4.2% pension + 7% family benefits = 11.2% (baseline, capped at 750K)
-   const cnpsBase = Math.min(gross, 750000);
-   const cnpsEmployer = Math.round(cnpsBase * 11.2) / 100;
-   // CFC employer: 1.5% of gross (Crédit Foncier du Cameroun)
-   const cimrEmployer = Math.round(gross * 1.5) / 100; // column kept as cimrEmployer for compat
+   // Employer statutory contributions (country-aware)
+   let cnpsEmployer = 0;
+   let cimrEmployer = 0;
+   let pensionEmployer = 0;
+   const emoluments = b + h + t;
+   if (hmsCountry.isNigeria) {
+    pensionEmployer = Math.round(emoluments * 0.1);
+   } else {
+    const cnpsBase = Math.min(gross, 750000);
+    cnpsEmployer = Math.round(cnpsBase * 11.2) / 100;
+    cimrEmployer = Math.round(gross * 1.5) / 100;
+   }
    const dept = String(row.primary_department || '').trim();
    const printed = hmsFormatDate.formatDisplayDate(new Date());
 
@@ -350,7 +358,10 @@ module.exports = function registerHrPayrollRoutes(app, pool, requireAuth, deps) 
     slipNo,
     b, h, t, o,
     gross, ded,
-    cnpsEmployer, cimrEmployer,
+    cnpsEmployer, cimrEmployer, pensionEmployer,
+    isNigeria: hmsCountry.isNigeria,
+    currencyCode: hmsCountry.currencyCode(),
+    currencySymbol: hmsCountry.currencySymbol(),
     dept, printed,
     allowanceLines, allowancesTotal,
     taxableAllowanceLines, taxFreeAllowanceLines,
@@ -476,7 +487,11 @@ module.exports = function registerHrPayrollRoutes(app, pool, requireAuth, deps) 
 
     // Gross used to compute statutory deductions excludes the tax-free allowances.
     const taxableGross = b + h + t + o + taxableAllowancesTotal;
-    const tax = await hmsPayrollCameroonCalculate(pool, fid, year, taxableGross);
+    const tax = await hmsPayrollCalculate(pool, fid, year, taxableGross, {
+     basicSalary: b,
+     housingAllowance: h,
+     transportAllowance: t,
+    });
     if (!tax) {
      errMsg = 'Configure payroll tax: add a row in tbl_hms_payroll_settings for this facility (or run app once to seed).';
      break;
@@ -824,6 +839,15 @@ module.exports = function registerHrPayrollRoutes(app, pool, requireAuth, deps) 
     return { basic: b, housing, transport, allow, gross };
    }
 
+   function payOptsForGross(grossVal) {
+    const br = breakdownFromBasic(solveBasicForGross(grossVal));
+    return {
+     basicSalary: br.basic,
+     housingAllowance: br.housing,
+     transportAllowance: br.transport,
+    };
+   }
+
    /** Solve basic so that gross ≈ targetGross. Newton's method. */
    function solveBasicForGross(targetGross) {
     if (targetGross <= 0) return 0;
@@ -844,7 +868,7 @@ module.exports = function registerHrPayrollRoutes(app, pool, requireAuth, deps) 
     let lo = targetNet, hi = targetNet * 3;
     let g  = targetNet * 1.3;
     for (let i = 0; i < 40; i++) {
-     const calc = await hmsPayrollCameroonCalculate(pool, fid, year, g);
+     const calc = await hmsPayrollCalculate(pool, fid, year, g, payOptsForGross(g));
      if (!calc) return targetNet;
      const net = calc.net_salary;
      if (Math.abs(net - targetNet) < 1) return Math.round(g);
@@ -857,7 +881,11 @@ module.exports = function registerHrPayrollRoutes(app, pool, requireAuth, deps) 
    const targetGross = mode === 'gross' ? amount : await solveGrossForNet(amount);
    const basic       = solveBasicForGross(targetGross);
    const final       = breakdownFromBasic(basic);
-   const taxCalc     = await hmsPayrollCameroonCalculate(pool, fid, year, final.gross);
+   const taxCalc     = await hmsPayrollCalculate(pool, fid, year, final.gross, {
+    basicSalary: final.basic,
+    housingAllowance: final.housing,
+    transportAllowance: final.transport,
+   });
 
    return res.json({
     ok:                       true,
@@ -1022,23 +1050,41 @@ module.exports = function registerHrPayrollRoutes(app, pool, requireAuth, deps) 
      [fid]
     )
     .catch(() => [[null]]);
-   const current = {
-    tax_year: cy,
-    employer_cnps_number: '',
-    employer_niu: '',
-    cnps_regime: 1,
-    employer_address: '',
-    employer_phone: '',
-    employer_email: '',
-    cnps_employee_rate: 4.2,   // CNPS Vieillesse employee 2025
-    cimr_employee_rate: 1.0,   // CFC (Crédit Foncier) employee 2025
-    crtv_rate: 0,              // CRTV: computed from fixed scale (not a %)
-    council_tax_rate: 0,       // Council tax: computed from fixed scale
-    development_tax_rate: 1.0, // FNE (Fonds National de l'Emploi) 2025
-    cnhc_rate: 0,              // CAC: 10 % of IRPP, computed automatically
-    tax_brackets: '',
-    default_sector: 'medical'
-   };
+   const current = hmsCountry.isNigeria
+    ? {
+       tax_year: cy,
+       employer_cnps_number: '',
+       employer_niu: '',
+       cnps_regime: 1,
+       employer_address: '',
+       employer_phone: '',
+       employer_email: '',
+       cnps_employee_rate: 8.0,
+       cimr_employee_rate: 2.5,
+       crtv_rate: 0,
+       council_tax_rate: 0,
+       development_tax_rate: 10.0,
+       cnhc_rate: 0,
+       tax_brackets: '',
+       default_sector: 'medical',
+      }
+    : {
+       tax_year: cy,
+       employer_cnps_number: '',
+       employer_niu: '',
+       cnps_regime: 1,
+       employer_address: '',
+       employer_phone: '',
+       employer_email: '',
+       cnps_employee_rate: 4.2,
+       cimr_employee_rate: 1.0,
+       crtv_rate: 0,
+       council_tax_rate: 0,
+       development_tax_rate: 1.0,
+       cnhc_rate: 0,
+       tax_brackets: '',
+       default_sector: 'medical',
+      };
    if (row && typeof row === 'object') Object.assign(current, row);
    let b = [];
    try {
@@ -1068,6 +1114,7 @@ module.exports = function registerHrPayrollRoutes(app, pool, requireAuth, deps) 
     current,
     brackets: b,
     canEdit,
+    isNigeria: hmsCountry.isNigeria,
     flash: req.query.msg || null,
     error: req.query.err || null,
     allowanceSettings,
@@ -1161,20 +1208,29 @@ module.exports = function registerHrPayrollRoutes(app, pool, requireAuth, deps) 
   const employer_address = String(req.body.employer_address || '').trim().slice(0, 500);
   const employer_phone = String(req.body.employer_phone || '').trim().slice(0, 64);
   const employer_email = String(req.body.employer_email || '').trim().slice(0, 128);
-  const cnps_emp = parseFloat(req.body.cnps_employee_rate) || 4.2;
-  const cimr_emp = parseFloat(req.body.cimr_employee_rate) || 1.0;   // CFC
-  const crtv     = parseFloat(req.body.crtv_rate)           || 0;    // fixed scale
-  const council  = parseFloat(req.body.council_tax_rate)    || 0;    // fixed scale
-  const dev      = parseFloat(req.body.development_tax_rate) || 1.0; // FNE
-  const cnhc     = parseFloat(req.body.cnhc_rate)           || 0;    // CAC auto
+  const cnps_emp = parseFloat(req.body.cnps_employee_rate) || (hmsCountry.isNigeria ? 8.0 : 4.2);
+  const cimr_emp = parseFloat(req.body.cimr_employee_rate) || (hmsCountry.isNigeria ? 2.5 : 1.0);
+  const crtv     = parseFloat(req.body.crtv_rate)           || 0;
+  const council  = parseFloat(req.body.council_tax_rate)    || 0;
+  const dev      = parseFloat(req.body.development_tax_rate) || (hmsCountry.isNigeria ? 10.0 : 1.0);
+  const cnhc     = parseFloat(req.body.cnhc_rate)           || 0;
   const defaultSector = String(req.body.default_sector || 'medical').trim().toLowerCase().slice(0, 40);
-  let brackets = JSON.stringify([
-   { min: 0,      max: 166666, rate: parseFloat(req.body.tax_rate_1) || 10 },
-   { min: 166667, max: 250000, rate: parseFloat(req.body.tax_rate_2) || 15 },
-   { min: 250001, max: 416666, rate: parseFloat(req.body.tax_rate_3) || 25 },
-   { min: 416667, max: 833333, rate: parseFloat(req.body.tax_rate_4) || 35 },
-   { min: 833334, max: null,   rate: parseFloat(req.body.tax_rate_5) || 35 }
-  ]);
+  let brackets = hmsCountry.isNigeria
+   ? JSON.stringify([
+      { min: 0, max: 800000, rate: parseFloat(req.body.tax_rate_1) ?? 0 },
+      { min: 800001, max: 3000000, rate: parseFloat(req.body.tax_rate_2) || 15 },
+      { min: 3000001, max: 12000000, rate: parseFloat(req.body.tax_rate_3) || 18 },
+      { min: 12000001, max: 25000000, rate: parseFloat(req.body.tax_rate_4) || 21 },
+      { min: 25000001, max: 50000000, rate: parseFloat(req.body.tax_rate_5) || 23 },
+      { min: 50000001, max: null, rate: parseFloat(req.body.tax_rate_6) || 25 },
+     ])
+   : JSON.stringify([
+      { min: 0,      max: 166666, rate: parseFloat(req.body.tax_rate_1) || 10 },
+      { min: 166667, max: 250000, rate: parseFloat(req.body.tax_rate_2) || 15 },
+      { min: 250001, max: 416666, rate: parseFloat(req.body.tax_rate_3) || 25 },
+      { min: 416667, max: 833333, rate: parseFloat(req.body.tax_rate_4) || 35 },
+      { min: 833334, max: null,   rate: parseFloat(req.body.tax_rate_5) || 35 }
+     ]);
   if (!brackets || brackets === 'null') brackets = defaultBracketsJson();
   try {
    await ensureHrPayrollSchema(pool);

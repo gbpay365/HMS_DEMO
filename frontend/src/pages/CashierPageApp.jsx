@@ -2,17 +2,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlashMessages } from '../components/FlashMessages';
-import { CashierPrintGroup, CashierPrintLink } from '../components/CashierPrintLinks';
-import { CashierInvoiceActions } from '../components/cashier/CashierInvoiceActions';
-import { FilterChip } from '../components/FilterChip';
-import { Pager } from '../components/Pager';
-import { SearchField } from '../components/SearchField';
-import { StatCard } from '../components/StatCard';
-import { SurfaceHero } from '../components/SurfaceHero';
-import { useClientPagination } from '../hooks/useClientPagination';
-import { formatDate, formatMoney } from '../lib/listUi';
+import { formatMoney } from '../lib/listUi';
 import { notifyError } from '../lib/notifyBridge';
-import { DEFAULT_PAGE_SIZE } from '../lib/pagination';
 import { CashierPrepayModal } from '../modals/CashierPrepayModal';
 import { IpdSettleModal } from '../modals/IpdSettleModal';
 import { ErSettleModal } from '../modals/ErSettleModal';
@@ -20,86 +11,39 @@ import { OpdOrdersBillModal } from '../modals/OpdOrdersBillModal';
 import { OpdRefundModal } from '../modals/OpdRefundModal';
 import { CashierBillingModal } from '../modals/CashierBillingModal';
 import { CashierDisbursementModal } from '../modals/CashierDisbursementModal';
+import {
+  CashierReferenceShell,
+  CashierPageSection,
+} from '../components/cashier/CashierReferenceShell';
+import { CashierPosPanel } from '../components/cashier/CashierPosPanel';
+import { CashierPatientBillsWorkspace } from '../components/cashier/CashierPatientBillsWorkspace';
+import { CashierInvoicesPanel } from '../components/cashier/CashierInvoicesPanel';
+import { CashierInsurancePanel } from '../components/cashier/CashierInsurancePanel';
+import { CashierShiftPanel } from '../components/cashier/CashierShiftPanel';
+import { CashierRefundsPanel } from '../components/cashier/CashierRefundsPanel';
+import { CashierNewInvoiceOdooModal } from '../components/cashier/CashierNewInvoiceOdooModal';
+import { CashierSubmitInsuranceClaimModal } from '../components/cashier/CashierSubmitInsuranceClaimModal';
+import { CashierOverviewPanel } from '../components/cashier/CashierOverviewPanel';
+import { CashierReportsPanel } from '../components/cashier/CashierReportsPanel';
+import { REPORT_HUB_TABS } from '../components/cashier/CashierReportHubBar';
+import { CashierProfileModal } from '../components/cashier/CashierProfileModal';
 import { openWalletTopup } from '../lib/walletModalBridge';
-import { FaIcon } from '../components/FaIcon';
 
-const RX_CODE_KEYS = {
-  laboratory: 'cashier.rx_lab',
-  radiology: 'cashier.rx_rad',
-  pharmacy: 'cashier.rx_pharm'};
+const CASHIER_PAGES = ['dashboard', 'pos', 'bills', 'invoices', 'insurance', 'shift', 'refunds', 'reports'];
+const TAB_TO_PAGE = {
+  pending: 'bills',
+  opd: 'bills',
+  ipd: 'bills',
+  codes: 'bills',
+  rx: 'bills',
+  emergency: 'bills',
+  lab_walkin: 'bills',
+  rad_walkin: 'bills',
+  history: 'bills',
+  billing: 'invoices',
+};
 
-function DoctorRxCodeBadges({ codes = {} }) {
-  const { t } = useTranslation('clinical');
-  const entries = [
-    { type: 'laboratory', code: codes.laboratory },
-    { type: 'radiology', code: codes.radiology },
-    { type: 'pharmacy', code: codes.pharmacy },
-  ].filter((e) => e.code);
-
-  if (!entries.length) return <span className="text-sm text-slate-400">—</span>;
-
-  const styles = {
-    laboratory: 'border-violet-300 bg-violet-100 text-violet-950',
-    radiology: 'border-sky-300 bg-sky-100 text-sky-950',
-    pharmacy: 'border-rose-300 bg-rose-100 text-rose-950'};
-
-  return (
-    <div className="flex min-w-[240px] flex-col gap-1.5 py-0.5">
-      {entries.map(({ type, code }) => (
-        <div
-          key={type}
-          className={`inline-flex w-fit max-w-full items-center gap-2 rounded-lg border-2 px-2.5 py-1.5 shadow-sm ${styles[type]}`}
-        >
-          <span className="shrink-0 rounded-md bg-white/90 px-1.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide">
-            {t(RX_CODE_KEYS[type])}
-          </span>
-          <span className="break-all font-mono text-sm font-extrabold leading-tight tracking-tight">{code}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function TabBtn({ active, onClick, icon, label, count }) {
-  return (
-    <FilterChip active={active} onClick={onClick} count={count}>
-      <FaIcon name={icon} className="text-sm" />
-      {label}
-    </FilterChip>
-  );
-}
-
-function ClientTable({ rows, search, columns, emptyLabel }) {
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter((r) => JSON.stringify(r).toLowerCase().includes(q));
-  }, [rows, search]);
-
-  const { pager, rows: pageRows, setPage } = useClientPagination(filtered, { pageSize: DEFAULT_PAGE_SIZE, resetKeys: [search] });
-
-  return (
-    <>
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-left text-sm">
-          <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-500">{columns.header}</thead>
-          <tbody className="divide-y divide-slate-100">
-            {pageRows.length === 0 ? (
-              <tr>
-                <td colSpan={columns.colSpan} className="px-4 py-12 text-center text-slate-500">
-                  {emptyLabel}
-                </td>
-              </tr>
-            ) : (
-              pageRows.map((row, i) => columns.renderRow(row, i))
-            )}
-          </tbody>
-        </table>
-      </div>
-      <Pager pager={pager} onPageChange={setPage} />
-    </>
-  );
-}
+const REPORT_HUB_IDS = new Set(REPORT_HUB_TABS.map((t) => t.id));
 
 export function CashierPageApp({
   pending = [],
@@ -114,9 +58,20 @@ export function CashierPageApp({
   billingInvoices = [],
   billingSummary = {},
   billingTotal = 0,
+  insuranceClaims = [],
+  insuranceSummary = {},
+  insuranceMonthLabel = '',
+  shiftSummary = {},
+  refundSummary = {},
+  cashierRefunds = [],
+  refundMonthLabel = '',
   serviceCatalogForInvoice = [],
   pharmacyCatalogForInvoice = [],
   kpi = {},
+  overviewKpi = {},
+  overviewRevenueChart = [],
+  reportsData = {},
+  todayTotals = {},
   consultCatalog = [],
   labCatalog = [],
   imagingCatalog = [],
@@ -128,10 +83,20 @@ export function CashierPageApp({
   paymentMethods = [],
   flash = null,
   error = null,
-  cashierIdentity = null}) {
+  cashierIdentity = null,
+  selfProfile = null,
+  profileDepartments = [],
+  cashierPage: initialPage = 'dashboard',
+  cashierTab: initialTab = 'pending',
+  cashierReport: initialReport = 'revenue',
+}) {
   const { t } = useTranslation('clinical');
   const { t: tIpd } = useTranslation('ipd');
-  const [tab, setTab] = useState('pending');
+  const { t: tOps } = useTranslation('ops');
+  const [page, setPage] = useState(CASHIER_PAGES.includes(initialPage) ? initialPage : 'dashboard');
+  const [workflowTab, setWorkflowTab] = useState(initialTab || 'pending');
+  const [posPatientSeed, setPosPatientSeed] = useState(null);
+  const [billsSearchSeed, setBillsSearchSeed] = useState('');
   const [prepayOpen, setPrepayOpen] = useState(false);
   const [opdBill, setOpdBill] = useState({ open: false, patientId: 0, patientName: '', consultationId: 0 });
   const [opdRefund, setOpdRefund] = useState({ open: false, consultationId: 0, patientName: '', doctorName: '' });
@@ -142,13 +107,26 @@ export function CashierPageApp({
   const [opdSearch, setOpdSearch] = useState('');
   const [ipdSearch, setIpdSearch] = useState('');
   const [codesSearch, setCodesSearch] = useState('');
+  const [labWalkinSearch, setLabWalkinSearch] = useState('');
+  const [labWalkins, setLabWalkins] = useState([]);
+  const [radWalkinSearch, setRadWalkinSearch] = useState('');
+  const [radWalkins, setRadWalkins] = useState([]);
   const [rxSearch, setRxSearch] = useState('');
   const [pendingRows, setPendingRows] = useState(pending);
   const [betterPayRetryRef, setBetterPayRetryRef] = useState(null);
   const [retryBusy, setRetryBusy] = useState(false);
   const [prepayDefaults, setPrepayDefaults] = useState(null);
   const [billingOpen, setBillingOpen] = useState(false);
+  const [newInvoiceOpen, setNewInvoiceOpen] = useState(false);
+  const [newClaimOpen, setNewClaimOpen] = useState(false);
+  const [invoicesRefreshToken, setInvoicesRefreshToken] = useState(0);
+  const [claimsRefreshToken, setClaimsRefreshToken] = useState(0);
+  const [billsRefreshToken, setBillsRefreshToken] = useState(0);
   const [disbursementOpen, setDisbursementOpen] = useState(false);
+  const [profileModal, setProfileModal] = useState(null);
+  const [reportHubTab, setReportHubTab] = useState(
+    REPORT_HUB_IDS.has(initialReport) ? initialReport : 'revenue',
+  );
   const [batchDate, setBatchDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [batchFormat, setBatchFormat] = useState('receipt');
   const [selectedReceiptCodes, setSelectedReceiptCodes] = useState(() => new Set());
@@ -157,6 +135,10 @@ export function CashierPageApp({
     () => history.filter((row) => String(row.status || '').toLowerCase() === 'paid'),
     [history]
   );
+
+  const clearReceiptSelection = useCallback(() => {
+    setSelectedReceiptCodes(new Set());
+  }, []);
 
   const toggleReceiptCode = useCallback((code) => {
     const c = String(code || '').trim();
@@ -231,11 +213,15 @@ export function CashierPageApp({
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const hadFlashParams = params.has('msg') || params.has('err');
+    params.delete('msg');
+    params.delete('err');
     const ref = params.get('retry_betterpay');
     if (ref) {
       setBetterPayRetryRef(ref);
       setPrepayOpen(true);
-      setTab('pending');
+      setPage('bills');
+      setWorkflowTab('pending');
       params.delete('retry_betterpay');
       const qs = params.toString();
       window.history.replaceState({}, '', qs ? `/cashier?${qs}` : '/cashier');
@@ -248,7 +234,8 @@ export function CashierPageApp({
         maternityPatientId: params.get('maternity_id') || '',
         maternityEvent: params.get('maternity_event') || ''});
       setPrepayOpen(true);
-      setTab('pending');
+      setPage('pos');
+      setWorkflowTab('pending');
       params.delete('prepay');
       params.delete('patient_id');
       params.delete('baby_patient_id');
@@ -266,13 +253,77 @@ export function CashierPageApp({
       const qs = params.toString();
       window.history.replaceState({}, '', qs ? `/cashier?${qs}` : '/cashier');
     }
+    const pageParam = params.get('page');
+    if (pageParam && CASHIER_PAGES.includes(pageParam)) {
+      setPage(pageParam);
+    }
+    const reportParam = params.get('report');
+    if (reportParam && REPORT_HUB_IDS.has(reportParam)) {
+      setReportHubTab(reportParam);
+      setPage('reports');
+    }
     const tabParam = params.get('tab');
     if (tabParam === 'billing') {
-      setBillingOpen(true);
-    } else if (tabParam && ['pending', 'history', 'opd', 'ipd', 'codes', 'rx', 'emergency'].includes(tabParam)) {
-      setTab(tabParam);
+      setPage('invoices');
+      setNewInvoiceOpen(true);
+    } else if (tabParam && TAB_TO_PAGE[tabParam]) {
+      setPage(TAB_TO_PAGE[tabParam]);
+      if (tabParam !== 'billing') setWorkflowTab(tabParam);
+    }
+    if (params.get('walkin_id')) {
+      setPage('bills');
+      if (tabParam === 'rad_walkin') setWorkflowTab('rad_walkin');
+      else setWorkflowTab('lab_walkin');
+    }
+    if (params.get('disbursement') === '1' || params.get('disbursement') === 'true') {
+      setDisbursementOpen(true);
+      params.delete('disbursement');
+      const qs = params.toString();
+      window.history.replaceState({}, '', qs ? `/cashier?${qs}` : '/cashier');
+    }
+    if (params.get('wallet_topup') === '1' || params.get('wallet_topup') === 'true') {
+      queueMicrotask(() => openWalletTopup());
+      params.delete('wallet_topup');
+      const qs = params.toString();
+      window.history.replaceState({}, '', qs ? `/cashier?${qs}` : '/cashier');
+    }
+    if (params.get('edit_profile') === '1' || params.get('edit_profile') === 'true') {
+      setProfileModal('profile');
+      params.delete('edit_profile');
+      const qs = params.toString();
+      window.history.replaceState({}, '', qs ? `/cashier?${qs}` : '/cashier');
+    }
+    if (hadFlashParams) {
+      const qs = params.toString();
+      window.history.replaceState({}, '', qs ? `/cashier?${qs}` : '/cashier');
     }
   }, []);
+
+  const refreshLabWalkins = useCallback(() => {
+    fetch('/api/cashier/lab-walkins', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data.walkins)) setLabWalkins(data.walkins);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    refreshLabWalkins();
+  }, [refreshLabWalkins]);
+
+  const refreshRadWalkins = useCallback(() => {
+    fetch('/api/cashier/rad-walkins', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data.walkins)) setRadWalkins(data.walkins);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    refreshRadWalkins();
+  }, [refreshRadWalkins]);
 
   const refreshPending = useCallback(() => {
     fetch('/api/cashier/pending-payments')
@@ -307,7 +358,6 @@ export function CashierPageApp({
     return c.startsWith('EMG-') || c.startsWith('EMG-SET-') || (t.emergency_visit_id != null && parseInt(t.emergency_visit_id, 10) > 0);
   });
 
-  const histQuery = histQ ? { hist_q: histQ } : {};
 
   const opdRows = useMemo(
     () =>
@@ -319,708 +369,272 @@ export function CashierPageApp({
     [opdPendingGroups]
   );
 
+  const labWalkinRows = useMemo(
+    () =>
+      (labWalkins || []).map((w) => ({
+        ...w,
+        patient_name: `${w.first_name || ''} ${w.last_name || ''}`.trim(),
+        _search: `${w.first_name || ''} ${w.last_name || ''} ${w.registration_no || ''} ${w.tests_summary || ''} ${w.mobile || ''}`.toLowerCase()})),
+    [labWalkins]
+  );
+
+  const radWalkinRows = useMemo(
+    () =>
+      (radWalkins || []).map((w) => ({
+        ...w,
+        patient_name: `${w.first_name || ''} ${w.last_name || ''}`.trim(),
+        _search: `${w.first_name || ''} ${w.last_name || ''} ${w.registration_no || ''} ${w.tests_summary || ''} ${w.mobile || ''}`.toLowerCase()})),
+    [radWalkins]
+  );
+
+
+  const switchPage = useCallback((nextPage) => {
+    setPage(nextPage);
+    const params = new URLSearchParams(window.location.search);
+    params.set('page', nextPage);
+    params.delete('tab');
+    window.history.replaceState({}, '', `/cashier?${params}`);
+  }, []);
+
+  const switchWorkflowTab = useCallback((nextTab) => {
+    setPage('bills');
+    setWorkflowTab(nextTab);
+    const params = new URLSearchParams(window.location.search);
+    params.set('page', 'bills');
+    params.set('tab', nextTab);
+    window.history.replaceState({}, '', `/cashier?${params}`);
+  }, []);
+
+  const timeLabel = useMemo(
+    () =>
+      new Date().toLocaleString(undefined, {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+    []
+  );
+
+  const handleSearchNavigate = useCallback((item) => {
+    if (!item?.type) return;
+    if (item.type === 'patient') {
+      setPosPatientSeed({ id: item.patient_id, name: item.label });
+      setPage('pos');
+      return;
+    }
+    if (item.type === 'bill') {
+      const st = String(item.status || '').toLowerCase();
+      if (st === 'pending' || (item.balance_due || 0) > 0.005) {
+        if (item.ticket_id) {
+          window.location.href = `/cashier/settle/${item.ticket_id}`;
+          return;
+        }
+      }
+      setBillsSearchSeed(item.ticket_code || item.label || '');
+      setPage('bills');
+      return;
+    }
+    if (item.type === 'receipt') {
+      if (item.ticket_id) {
+        window.open(`/cashier/print-receipt/${item.ticket_id}`, '_blank', 'noopener');
+        return;
+      }
+      if (item.billing_doc_id) {
+        window.open(`/cashier/print-receipt/${item.billing_doc_id}`, '_blank', 'noopener');
+        return;
+      }
+      setBillsSearchSeed(item.label || '');
+      setPage('bills');
+    }
+  }, []);
+
+  const handleOverviewPayBill = useCallback((row) => {
+    if (row?.ticket_id) {
+      window.location.href = `/cashier/settle/${row.ticket_id}`;
+    }
+  }, []);
+
+  const userInitials = useMemo(() => {
+    const name = cashierIdentity?.identity || '';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return 'ZA';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }, [cashierIdentity]);
+
   return (
-    <div className="page-wrapper hms-surface-module">
-      <div className="content px-4 pb-8 pt-2 sm:px-6">
-        <FlashMessages flash={flash} error={error} />
-
-        <SurfaceHero icon="money-bill-wave" title={t('cashier.title')} subtitle={t('cashier.subtitle')}>
-          {cashierIdentity?.code ? (
-            <div className="mt-3 inline-flex flex-wrap items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-4 py-2 text-sm text-ink">
-              <FaIcon name="id-badge" className="text-brand" />
-              <span className="font-semibold text-slate-600">{t('cashier.identity_label')}</span>
-              <span className="font-mono font-bold text-brand">{cashierIdentity.code}</span>
-              <span className="text-slate-400">·</span>
-              <span className="font-semibold">{cashierIdentity.identity}</span>
-            </div>
-          ) : null}
-          <div className="hms-surface-hero-actions mt-4 flex flex-wrap gap-3">
-            <button type="button" className="hms-btn-primary px-6 py-3 text-base" onClick={() => setPrepayOpen(true)}>
-              <FaIcon name="ticket" /> {t('cashier.issue_payment')}
-            </button>
-            <button type="button" className="hms-btn-secondary px-6 py-3 text-base" onClick={() => setBillingOpen(true)}>
-              <FaIcon name="file-text-o" /> {t('cashier.tab_billing')}
-              {(billingSummary.pending_count ?? 0) > 0 ? (
-                <span className="ml-1.5 rounded-full bg-brand/15 px-2 py-0.5 text-xs font-bold text-brand">
-                  {billingSummary.pending_count}
-                </span>
-              ) : null}
-            </button>
-            <a href="/cashier/daily-summary" className="hms-btn-secondary inline-flex items-center gap-2 px-6 py-3 text-base no-underline">
-              <FaIcon name="bar-chart" /> {t('cashier.daily_summary_link')}
-            </a>
-            <a href="/cashier/eod-reconciliation" className="hms-btn-secondary inline-flex items-center gap-2 px-6 py-3 text-base no-underline">
-              <FaIcon name="balance-scale" /> {t('cashier.eod_reconciliation_link')}
-            </a>
-            <a href="/cashier/ledger" className="hms-btn-secondary inline-flex items-center gap-2 px-6 py-3 text-base no-underline">
-              <FaIcon name="book" /> {t('cashier.ledger_link')}
-            </a>
-            <button type="button" className="hms-btn-secondary px-6 py-3 text-base" onClick={() => setDisbursementOpen(true)}>
-              <FaIcon name="money" /> {t('cashier.disbursement_link')}
-            </button>
-            <button
-              type="button"
-              className="hms-btn-secondary px-6 py-3 text-base"
-              onClick={() => openWalletTopup()}
-            >
-              <FaIcon name="upload" /> {t('cashier.cash_topup_link')}
-            </button>
-          </div>
-        </SurfaceHero>
-
-        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            label={t('cashier.kpi_revenue')}
-            value={formatMoney(kpi.today_revenue || 0)}
-            hint={t('cashier.kpi_revenue_sub', { count: kpi.today_count || 0 })}
-            tone="brand"
-            icon="chart-line"
-          />
-          <StatCard
-            label={t('cashier.kpi_pending')}
-            value={kpi.pending_count ?? pending.length}
-            hint={t('cashier.kpi_pending_sub')}
-            tone="warning"
-            icon="clock"
-          />
-          <StatCard
-            label={t('cashier.kpi_wallet')}
-            value={formatMoney(kpi.today_wallet || 0)}
-            hint={t('cashier.kpi_wallet_sub')}
-            tone="brand"
-            icon="wallet"
-          />
-          <StatCard
-            label={t('cashier.kpi_quick')}
-            value={t('cashier.kpi_wallet_hub')}
-            hint={
-              <a href="/wallet" className="font-semibold text-brand hover:underline">
-                {t('cashier.kpi_wallet_link')}
-              </a>
-            }
-            tone="brand"
-            icon="link"
-          />
+    <>
+      <CashierReferenceShell
+        page={page}
+        onPageChange={switchPage}
+        onSearchNavigate={handleSearchNavigate}
+        onNewBill={() => setPrepayOpen(true)}
+        pendingCount={pendingRows.length}
+        billingPendingCount={billingSummary.pending_count ?? 0}
+        insurancePendingCount={insuranceSummary.pending_count ?? 0}
+        userInitials={userInitials}
+        cashierName={cashierIdentity?.identity || ''}
+        cashierCode={cashierIdentity?.code || ''}
+        dateTimeLabel={timeLabel}
+        balanceLabel={formatMoney(todayTotals?.balance?.value ?? 0)}
+        tOps={tOps}
+        onEditProfile={() => setProfileModal('profile')}
+        onChangePassword={() => setProfileModal('password')}
+      >
+        <div className="cs-flash-wrap">
+          <FlashMessages flash={flash} error={error} />
         </div>
 
-        <div className="mb-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-ink">
-            <FaIcon name="search" className="text-brand" />
-            {t('cashier.lookup_title')}
-          </h2>
-          <form action="/cashier/lookup" method="POST" className="flex gap-2">
-            <div className="relative flex-1">
-              <FaIcon name="search" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                name="code"
-                value={lookupCode}
-                onChange={(e) => setLookupCode(e.target.value)}
-                required
-                className="hms-input w-full pl-9"
-                placeholder={t('cashier.lookup_ph')}
-              />
-            </div>
-            <button type="submit" className="hms-btn-primary shrink-0">
-              {t('cashier.find')}
-            </button>
-          </form>
-        </div>
+        <CashierPageSection page={page} id="dashboard">
+          <CashierOverviewPanel
+            initialKpi={overviewKpi}
+            initialRevenueChart={overviewRevenueChart}
+            onPayBill={handleOverviewPayBill}
+          />
+        </CashierPageSection>
 
-        <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card">
-          <div
-            className="flex flex-wrap gap-2 border-b border-slate-100 bg-slate-50/50 p-3"
-            role="tablist"
-            aria-label={t('cashier.sections_aria')}
-          >
-            <TabBtn active={tab === 'pending'} onClick={() => setTab('pending')} icon="clock-o" label={t('cashier.tab_pending')} count={pendingRows.length} />
-            <TabBtn active={tab === 'history'} onClick={() => setTab('history')} icon="history" label={t('cashier.tab_history')} count={historyPager?.total ?? history.length} />
-            <TabBtn active={tab === 'opd'} onClick={() => setTab('opd')} icon="stethoscope" label={t('cashier.tab_opd')} count={opdCount} />
-            <TabBtn active={tab === 'ipd'} onClick={() => setTab('ipd')} icon="hospital-o" label={t('cashier.tab_ipd')} count={ipdPending.length} />
-            <TabBtn active={tab === 'codes'} onClick={() => setTab('codes')} icon="clipboard" label={t('cashier.tab_codes')} count={codesStatus.length} />
-            <TabBtn active={tab === 'rx'} onClick={() => setTab('rx')} icon="medkit" label={t('cashier.tab_rx')} count={doctorPrescriptions.length} />
-            <TabBtn active={tab === 'emergency'} onClick={() => setTab('emergency')} icon="ambulance" label={t('cashier.tab_emergency')} count={emgSettle.length + erPending.length} />
-          </div>
+        <CashierPageSection page={page} id="pos">
+          <CashierPosPanel
+            consultCatalog={consultCatalog}
+            labCatalog={labCatalog}
+            imagingCatalog={imagingCatalog}
+            pharmacyCatalog={pharmacyCatalogForInvoice}
+            maternityCatalog={maternityCatalog}
+            surgeryCatalog={surgeryCatalog}
+            svcCatalog={svcCatalog}
+            doctors={doctors}
+            specialistSpecialisations={specialistSpecialisations}
+            paymentMethods={paymentMethods}
+            patientSeed={posPatientSeed}
+            onSaveAsBill={() => setBillingOpen(true)}
+            onNeedsPrepayModal={(defaults) => {
+              setPrepayDefaults(defaults);
+              setPrepayOpen(true);
+            }}
+          />
+        </CashierPageSection>
 
-          <div className="p-0">
-            {tab === 'pending' ? (
-              <div className="p-4">
-                <div className="mb-3">
-                  <SearchField
-                    value={pendingSearch}
-                    onChange={(e) => setPendingSearch(e.target.value)}
-                    placeholder={t('cashier.filter_pending')}
-                  />
-                </div>
-                <ClientTable
-                  rows={pendingRows}
-                  search={pendingSearch}
-                  emptyLabel={t('cashier.empty_pending')}
-                  columns={{
-                    colSpan: 6,
-                    header: (
-                      <tr>
-                        <th className="px-4 py-3">{t('cashier.col_ticket')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_patient')}</th>
-                        <th className="px-4 py-3 text-right">{t('cashier.col_amount')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_status')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_issued')}</th>
-                        <th className="px-4 py-3 text-right">{t('cashier.col_action')}</th>
-                      </tr>
-                    ),
-                    renderRow: (tRow) => {
-                      const tc = String(tRow.ticket_code || '');
-                      const isEmg = tc.startsWith('EMG-') || tc.startsWith('EMG-SET-') || (tRow.emergency_visit_id != null && parseInt(tRow.emergency_visit_id, 10) > 0);
-                      const bpSt = String(tRow.betterpay_status || '').toLowerCase();
-                      const isBetterPayFail = bpSt === 'timeout' || bpSt === 'failed';
-                      const isBetterPayPending = String(tRow.payment_method || '') === 'BetterPay' && (!bpSt || bpSt === 'pending');
-                      const statusLabel = bpSt === 'timeout'
-                        ? t('cashier.betterpay_status_timeout')
-                        : bpSt === 'failed'
-                          ? t('cashier.betterpay_status_failed')
-                          : isBetterPayPending
-                            ? t('modals.cashierPrepay.waiting_payment')
-                            : '—';
-                      return (
-                        <tr key={tRow.id} className="hover:bg-slate-50/80">
-                          <td className="px-4 py-3 font-mono text-xs font-bold text-blue-700">
-                            {tRow.ticket_code}
-                            {isEmg ? <span className="ml-1 rounded bg-red-100 px-1 text-[10px] text-red-800">{t('cashier.ae_badge')}</span> : null}
-                            {String(tRow.payment_method || '') === 'BetterPay' ? (
-                              <span className="ml-1 rounded bg-cyan-100 px-1 text-[10px] text-cyan-900">{t('cashier.betterpay_pending_badge')}</span>
-                            ) : null}
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="font-semibold">
-                              {tRow.first_name} {tRow.last_name}
-                            </div>
-                            <div className="text-xs text-slate-500">#P-{tRow.patient_id}</div>
-                          </td>
-                          <td className="px-4 py-3 text-right font-bold text-blue-800">{formatMoney(tRow.total_amount)}</td>
-                          <td className="px-4 py-3 text-xs font-semibold">
-                            {isBetterPayFail ? (
-                              <span className="text-red-700">{statusLabel}</span>
-                            ) : isBetterPayPending ? (
-                              <span className="text-amber-700">{statusLabel}</span>
-                            ) : (
-                              <span className="text-slate-500">{statusLabel}</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-slate-500">{formatDate(tRow.created_at)}</td>
-                          <td className="px-4 py-3 text-right whitespace-nowrap">
-                            {isBetterPayFail ? (
-                              <button
-                                type="button"
-                                disabled={retryBusy}
-                                className="inline-flex rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-800 disabled:opacity-50"
-                                onClick={() => handleBetterPayRetry(tc)}
-                              >
-                                {t('cashier.retry_payment')}
-                              </button>
-                            ) : isBetterPayPending ? (
-                              <button
-                                type="button"
-                                className="inline-flex rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-800"
-                                onClick={() => {
-                                  setBetterPayRetryRef(tc);
-                                  setPrepayOpen(true);
-                                }}
-                              >
-                                {t('cashier.continue_payment')}
-                              </button>
-                            ) : (
-                              <>
-                                <CashierPrintGroup ticketCode={tRow.ticket_code} status={tRow.status || 'pending'} />
-                                <a href={`/cashier/settle/${tRow.id}`} className="ml-1 inline-flex rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-800">
-                                  {t('cashier.collect')}
-                                </a>
-                              </>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    }}}
-                />
-              </div>
-            ) : null}
+        <CashierPageSection page={page} id="bills">
+          <CashierPatientBillsWorkspace
+            workflowTab={workflowTab}
+            onWorkflowTabChange={switchWorkflowTab}
+            lookupCode={lookupCode}
+            onLookupCodeChange={setLookupCode}
+            kpi={kpi}
+            todayTotals={todayTotals}
+            pendingRows={pendingRows}
+            pendingSearch={pendingSearch}
+            onPendingSearchChange={setPendingSearch}
+            history={history}
+            histQ={histQ}
+            historyPager={historyPager}
+            opdRows={opdRows}
+            opdCount={opdCount}
+            opdSearch={opdSearch}
+            onOpdSearchChange={setOpdSearch}
+            ipdPending={ipdPending}
+            ipdSearch={ipdSearch}
+            onIpdSearchChange={setIpdSearch}
+            codesStatus={codesStatus}
+            codesSearch={codesSearch}
+            onCodesSearchChange={setCodesSearch}
+            doctorPrescriptions={doctorPrescriptions}
+            rxSearch={rxSearch}
+            onRxSearchChange={setRxSearch}
+            erPending={erPending}
+            emgSettle={emgSettle}
+            labWalkinRows={labWalkinRows}
+            labWalkinSearch={labWalkinSearch}
+            onLabWalkinSearchChange={setLabWalkinSearch}
+            radWalkinRows={radWalkinRows}
+            radWalkinSearch={radWalkinSearch}
+            onRadWalkinSearchChange={setRadWalkinSearch}
+            selectedReceiptCodes={selectedReceiptCodes}
+            toggleReceiptCode={toggleReceiptCode}
+            toggleAllPaidOnPage={toggleAllPaidOnPage}
+            clearReceiptSelection={clearReceiptSelection}
+            allPaidSelected={allPaidSelected}
+            selectPatientReceipts={selectPatientReceipts}
+            batchDate={batchDate}
+            setBatchDate={setBatchDate}
+            batchFormat={batchFormat}
+            setBatchFormat={setBatchFormat}
+            openBatchPrint={openBatchPrint}
+            printSelectedReceipts={printSelectedReceipts}
+            retryBusy={retryBusy}
+            onBetterPayRetry={handleBetterPayRetry}
+            onBetterPayContinue={(ref) => {
+              setBetterPayRetryRef(ref);
+              setPrepayOpen(true);
+            }}
+            onOpdBill={(payload) => setOpdBill({ open: true, ...payload })}
+            onOpdRefund={(payload) => setOpdRefund({ open: true, ...payload })}
+            onIpdSettle={setIpdAdm}
+            onErSettle={setErVisit}
+            billingInvoices={billingInvoices}
+            billingSummary={billingSummary}
+            billingTotal={billingTotal}
+            billsRefreshToken={billsRefreshToken}
+            billsSearchSeed={billsSearchSeed}
+            onNewBill={() => setPage('pos')}
+          />
+        </CashierPageSection>
 
-            {tab === 'history' ? (
-              <div className="p-4">
-                <div className="mb-3 space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-bold uppercase text-slate-500">{t('cashier.batch_print')}</span>
-                    <span className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5" role="group" aria-label={t('cashier.batch_format_aria')}>
-                      <button
-                        type="button"
-                        className={`rounded-md px-2.5 py-1 text-[11px] font-bold uppercase ${batchFormat === 'slip' ? 'bg-brand text-white' : 'text-slate-500'}`}
-                        onClick={() => setBatchFormat('slip')}
-                      >
-                        {t('cashier.batch_format_slips')}
-                      </button>
-                      <button
-                        type="button"
-                        className={`rounded-md px-2.5 py-1 text-[11px] font-bold uppercase ${batchFormat === 'receipt' ? 'bg-brand text-white' : 'text-slate-500'}`}
-                        onClick={() => setBatchFormat('receipt')}
-                      >
-                        {t('cashier.batch_format_receipts')}
-                      </button>
-                    </span>
-                    <input type="date" value={batchDate} onChange={(e) => setBatchDate(e.target.value)} className="hms-input text-sm" />
-                    <button type="button" className="hms-btn-secondary text-xs" onClick={() => openBatchPrint('day')}>
-                      {batchFormat === 'receipt'
-                        ? t('cashier.batch_today_receipts')
-                        : t('cashier.batch_today')}
-                    </button>
-                    <button type="button" className="hms-btn-secondary text-xs" onClick={() => openBatchPrint('week')}>
-                      {batchFormat === 'receipt'
-                        ? t('cashier.batch_week_receipts')
-                        : t('cashier.batch_week')}
-                    </button>
-                    <button type="button" className="hms-btn-secondary text-xs" onClick={() => openBatchPrint('month')}>
-                      {batchFormat === 'receipt'
-                        ? t('cashier.batch_month_receipts')
-                        : t('cashier.batch_month')}
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3">
-                    <span className="text-xs text-slate-500">
-                      {t('cashier.batch_selected_count', { count: selectedReceiptCodes.size })}
-                    </span>
-                    <button
-                      type="button"
-                      className="hms-btn-primary text-xs"
-                      disabled={selectedReceiptCodes.size === 0}
-                      onClick={printSelectedReceipts}
-                    >
-                      <i className="fa fa-print mr-1" aria-hidden="true" />
-                      {t('cashier.batch_print_selected')}
-                    </button>
-                    {selectedReceiptCodes.size > 0 ? (
-                      <button type="button" className="hms-btn-secondary text-xs" onClick={() => setSelectedReceiptCodes(new Set())}>
-                        {t('cashier.batch_clear_selection')}
-                      </button>
-                    ) : null}
-                  </div>
-                </div>
-                <form method="get" action="/cashier" className="mb-3 flex flex-wrap items-center gap-2">
-                  <input type="hidden" name="page" value="1" />
-                  <div className="relative max-w-xs flex-1">
-                    <FaIcon name="search" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      name="hist_q"
-                      defaultValue={histQ}
-                      className="hms-input pl-9"
-                      placeholder={t('cashier.hist_ph')}
-                    />
-                  </div>
-                  <button type="submit" className="hms-btn-primary shrink-0">
-                    {t('common:actions.search')}
-                  </button>
-                  {histQ ? (
-                    <a href="/cashier" className="hms-btn-secondary">
-                      {t('cashier.clear')}
-                    </a>
-                  ) : null}
-                </form>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-left text-sm">
-                    <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-500">
-                      <tr>
-                        <th className="w-10 px-2 py-3">
-                          <input
-                            type="checkbox"
-                            className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
-                            checked={allPaidSelected}
-                            onChange={toggleAllPaidOnPage}
-                            aria-label={t('cashier.batch_select_all')}
-                          />
-                        </th>
-                        <th className="px-4 py-3">{t('cashier.col_code')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_patient')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_service')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_amount')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_status')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_date')}</th>
-                        <th className="px-4 py-3 text-right">{t('cashier.col_print')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {history.length === 0 ? (
-                        <tr>
-                          <td colSpan={8} className="px-4 py-12 text-center text-slate-500">
-                            {t('cashier.empty_history')}
-                          </td>
-                        </tr>
-                      ) : (
-                        history.map((row) => {
-                          let lines = [];
-                          try {
-                            lines = JSON.parse(row.lines_json || '[]');
-                          } catch {
-                            lines = [];
-                          }
-                          const svcName = lines.length ? lines[0].description || '—' : '—';
-                          const st = String(row.status || '').toLowerCase();
-                          const isPaid = st === 'paid';
-                          const checked = selectedReceiptCodes.has(row.ticket_code);
-                          return (
-                            <tr key={row.id} className={`hover:bg-slate-50/80 ${checked ? 'bg-brand/[0.04]' : ''}`}>
-                              <td className="px-2 py-3 text-center">
-                                {isPaid ? (
-                                  <input
-                                    type="checkbox"
-                                    className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
-                                    checked={checked}
-                                    onChange={() => toggleReceiptCode(row.ticket_code)}
-                                    aria-label={t('cashier.batch_select_row')}
-                                  />
-                                ) : null}
-                              </td>
-                              <td className="px-4 py-3 font-bold">{row.ticket_code}</td>
-                              <td className="px-4 py-3">
-                                <button
-                                  type="button"
-                                  className="text-left font-medium text-ink hover:text-brand hover:underline"
-                                  title={t('cashier.batch_select_patient')}
-                                  onClick={() => isPaid && selectPatientReceipts(row)}
-                                >
-                                  {row.first_name} {row.last_name}
-                                </button>
-                              </td>
-                              <td className="px-4 py-3 text-xs text-slate-500">{svcName}</td>
-                              <td className="px-4 py-3 font-bold">{formatMoney(row.total_amount)}</td>
-                              <td className="px-4 py-3 text-xs uppercase">{st}</td>
-                              <td className="px-4 py-3 text-xs text-slate-500">{formatDate(row.created_at)}</td>
-                              <td className="px-4 py-3 text-right text-xs whitespace-nowrap">
-                                {isPaid ? <CashierInvoiceActions ticketCode={row.ticket_code} /> : null}
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                <Pager pager={historyPager} basePath="/cashier" query={histQuery} pageParam="page" />
-              </div>
-            ) : null}
+        <CashierPageSection page={page} id="invoices">
+          <CashierInvoicesPanel
+            initialInvoices={billingInvoices}
+            initialTotal={billingTotal}
+            refreshToken={invoicesRefreshToken}
+            onNewInvoice={() => setNewInvoiceOpen(true)}
+          />
+        </CashierPageSection>
 
-            {tab === 'opd' ? (
-              <div className="p-4">
-                <div className="mb-3">
-                  <SearchField
-                    value={opdSearch}
-                    onChange={(e) => setOpdSearch(e.target.value)}
-                    placeholder={t('cashier.filter_opd')}
-                  />
-                </div>
-                <ClientTable
-                  rows={opdRows}
-                  search={opdSearch}
-                  emptyLabel={t('cashier.empty_opd')}
-                  columns={{
-                    colSpan: 5,
-                    header: (
-                      <tr>
-                        <th className="px-4 py-3">{t('cashier.col_patient')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_consult')}</th>
-                        <th className="px-4 py-3 text-right">{t('cashier.col_items')}</th>
-                        <th className="px-4 py-3 text-right">{t('cashier.col_total')}</th>
-                        <th className="px-4 py-3 text-right">{t('cashier.col_action')}</th>
-                      </tr>
-                    ),
-                    renderRow: (g) => (
-                      <tr key={g.consultation_id || g.patient_id} className="hover:bg-slate-50/80">
-                        <td className="px-4 py-3 font-semibold">{g.patient_name || '—'}</td>
-                        <td className="px-4 py-3 text-xs">#{g.consultation_id || '—'}</td>
-                        <td className="px-4 py-3 text-right">{g.pending_count || 0}</td>
-                        <td className="px-4 py-3 text-right font-bold">{formatMoney(g.pending_total || 0)}</td>
-                        <td className="px-4 py-3 text-right whitespace-nowrap">
-                          {g.consultation_id ? (
-                            <CashierPrintLink
-                              href={`/cashier/prescriptions/${g.consultation_id}/print`}
-                              label={t('print:link_rx', { ns: 'print' })}
-                              variant="rx"
-                              title={t('cashier.print_rx_title')}
-                            />
-                          ) : null}
-                          <button
-                            type="button"
-                            className="ml-1 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-800 hover:bg-blue-100"
-                            onClick={() =>
-                              setOpdBill({
-                                open: true,
-                                patientId: g.patient_id,
-                                patientName: g.patient_name,
-                                consultationId: g.consultation_id || 0})
-                            }
-                          >
-                            {t('cashier.view_bill')}
-                          </button>
-                        </td>
-                      </tr>
-                    )}}
-                />
-              </div>
-            ) : null}
+        <CashierPageSection page={page} id="insurance">
+          <CashierInsurancePanel
+            initialClaims={insuranceClaims}
+            initialSummary={insuranceSummary}
+            initialMonthLabel={insuranceMonthLabel}
+            refreshToken={claimsRefreshToken}
+            onNewClaim={() => setNewClaimOpen(true)}
+          />
+        </CashierPageSection>
 
-            {tab === 'ipd' ? (
-              <div className="p-4">
-                <div className="mb-3">
-                  <SearchField
-                    value={ipdSearch}
-                    onChange={(e) => setIpdSearch(e.target.value)}
-                    placeholder={tIpd('cashier.filter_ph')}
-                  />
-                </div>
-                <ClientTable
-                  rows={ipdPending}
-                  search={ipdSearch}
-                  emptyLabel={tIpd('cashier.empty')}
-                  columns={{
-                    colSpan: 7,
-                    header: (
-                      <tr>
-                        <th className="px-4 py-3">{tIpd('cashier.col_patient')}</th>
-                        <th className="px-4 py-3">{tIpd('cashier.col_ward_bed')}</th>
-                        <th className="px-4 py-3">{tIpd('cashier.col_dept')}</th>
-                        <th className="px-4 py-3 text-right">{tIpd('cashier.col_charges')}</th>
-                        <th className="px-4 py-3 text-right">{tIpd('cashier.col_deposit')}</th>
-                        <th className="px-4 py-3 text-right text-red-700">{tIpd('cashier.col_balance')}</th>
-                        <th className="px-4 py-3 text-right">{tIpd('cashier.col_action')}</th>
-                      </tr>
-                    ),
-                    renderRow: (r) => (
-                      <tr key={r.admission_id} className="hover:bg-slate-50/80">
-                        <td className="px-4 py-3 font-semibold">
-                          {r.first_name} {r.last_name}
-                        </td>
-                        <td className="px-4 py-3 text-xs">
-                          {[r.ward_name, r.bed_label].filter(Boolean).join(' · ') || '—'}
-                        </td>
-                        <td className="px-4 py-3 text-xs">{r.admitting_department || '—'}</td>
-                        <td className="px-4 py-3 text-right">{formatMoney(r.total_charges || 0)}</td>
-                        <td className="px-4 py-3 text-right">{formatMoney(r.deposit_amount || 0)}</td>
-                        <td className="px-4 py-3 text-right font-bold text-red-700">
-                          {r.refund > 0 ? `-${formatMoney(r.refund)}` : formatMoney(r.balance || 0)}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          {r.refund > 0 ? (
-                            <span className="text-xs font-bold text-amber-800">{tIpd('cashier.refund')}</span>
-                          ) : r.balance === 0 ? (
-                            <button type="button" className="text-xs font-bold text-emerald-700" onClick={() => setIpdAdm(r)}>
-                              {tIpd('cashier.zero_confirm')}
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white"
-                              onClick={() => setIpdAdm(r)}
-                            >
-                              {tIpd('cashier.settle_bill')}
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    )}}
-                />
-              </div>
-            ) : null}
+        <CashierPageSection page={page} id="shift">
+          <CashierShiftPanel initialSummary={shiftSummary} />
+        </CashierPageSection>
 
-            {tab === 'codes' ? (
-              <div className="p-4">
-                <div className="mb-3">
-                  <SearchField
-                    value={codesSearch}
-                    onChange={(e) => setCodesSearch(e.target.value)}
-                    placeholder={t('cashier.filter_codes')}
-                  />
-                </div>
-                <ClientTable
-                  rows={codesStatus}
-                  search={codesSearch}
-                  emptyLabel={t('cashier.empty_codes')}
-                  columns={{
-                    colSpan: 6,
-                    header: (
-                      <tr>
-                        <th className="px-4 py-3">{t('cashier.col_code')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_type')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_patient')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_service')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_status')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_generated')}</th>
-                      </tr>
-                    ),
-                    renderRow: (c, i) => (
-                      <tr key={`${c.code_value}-${i}`} className="hover:bg-slate-50/80">
-                        <td className="px-4 py-3 font-mono text-xs font-bold">{c.code_value}</td>
-                        <td className="px-4 py-3 text-xs">{c.code_type}</td>
-                        <td className="px-4 py-3 text-xs">
-                          {c.first_name} {c.last_name}
-                        </td>
-                        <td className="px-4 py-3 text-xs text-slate-500">{c.service_label || '—'}</td>
-                        <td className="px-4 py-3 text-xs">{c.code_status || c.active_yes_no || '—'}</td>
-                        <td className="px-4 py-3 text-xs text-slate-500">{formatDate(c.date_generated)}</td>
-                      </tr>
-                    )}}
-                />
-              </div>
-            ) : null}
+        <CashierPageSection page={page} id="refunds">
+          <CashierRefundsPanel
+            initialRefunds={cashierRefunds}
+            initialSummary={refundSummary}
+            initialMonthLabel={refundMonthLabel}
+            onBillsChanged={() => {
+              setBillsRefreshToken((n) => n + 1);
+              setInvoicesRefreshToken((n) => n + 1);
+            }}
+          />
+        </CashierPageSection>
 
-            {tab === 'rx' ? (
-              <div className="p-4">
-                <div className="mb-3">
-                  <SearchField
-                    value={rxSearch}
-                    onChange={(e) => setRxSearch(e.target.value)}
-                    placeholder={t('cashier.filter_rx')}
-                  />
-                </div>
-                <ClientTable
-                  rows={doctorPrescriptions}
-                  search={rxSearch}
-                  emptyLabel={t('cashier.empty_rx')}
-                  columns={{
-                    colSpan: 7,
-                    header: (
-                      <tr>
-                        <th className="px-4 py-3">{t('cashier.col_patient')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_doctor')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_date')}</th>
-                        <th className="min-w-[260px] px-4 py-3">{t('cashier.col_codes')}</th>
-                        <th className="px-4 py-3 text-right">{t('cashier.col_items')}</th>
-                        <th className="px-4 py-3 text-right">{t('cashier.col_total')}</th>
-                        <th className="px-4 py-3 text-right">{t('cashier.col_action')}</th>
-                      </tr>
-                    ),
-                    renderRow: (rx) => {
-                      const items = (rx.counts?.laboratory || 0) + (rx.counts?.radiology || 0) + (rx.counts?.pharmacy || 0);
-                      return (
-                        <tr key={rx.consultation_id} className="hover:bg-slate-50/80">
-                          <td className="px-4 py-3 font-semibold">{rx.patient_name}</td>
-                          <td className="px-4 py-3 text-xs">{rx.doctor_name}</td>
-                          <td className="px-4 py-3 text-xs text-slate-500">{formatDate(rx.consult_at)}</td>
-                          <td className="px-4 py-3 align-top">
-                            <DoctorRxCodeBadges codes={rx.codes} />
-                          </td>
-                          <td className="px-4 py-3 text-right">{items}</td>
-                          <td className="px-4 py-3 text-right font-bold">{formatMoney(rx.total_amount)}</td>
-                          <td className="px-4 py-3 text-right text-xs whitespace-nowrap">
-                            <button
-                              type="button"
-                              className="mr-2 inline-flex rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 font-bold text-red-800 hover:bg-red-100"
-                              onClick={() =>
-                                setOpdRefund({
-                                  open: true,
-                                  consultationId: rx.consultation_id,
-                                  patientName: rx.patient_name,
-                                  doctorName: rx.doctor_name})
-                              }
-                            >
-                              {t('cashier.refund')}
-                            </button>
-                            <CashierPrintLink
-                              href={`/cashier/prescriptions/${rx.consultation_id}/print`}
-                              label={t('cashier.print')}
-                              variant="rx"
-                            />
-                          </td>
-                        </tr>
-                      );
-                    }}}
-                />
-              </div>
-            ) : null}
+        <CashierPageSection page={page} id="reports">
+          <CashierReportsPanel initialData={reportsData} initialHubTab={reportHubTab} />
+        </CashierPageSection>
+      </CashierReferenceShell>
 
-            {tab === 'emergency' ? (
-              <div className="border-l-4 border-red-500 p-4">
-                <h3 className="mb-2 text-sm font-extrabold text-red-900">{t('erDischarge.cashier_final_title')}</h3>
-                <p className="mb-3 text-xs text-slate-600">{t('erDischarge.cashier_final_hint')}</p>
-                <div className="mb-6 overflow-x-auto rounded-xl border border-red-200 bg-red-50/40">
-                  <table className="min-w-full text-sm">
-                    <thead className="bg-red-100/80 text-xs font-semibold uppercase text-red-900">
-                      <tr>
-                        <th className="px-4 py-3 text-left">{t('cashier.col_patient')}</th>
-                        <th className="px-4 py-3 text-left">{t('erDischarge.ticket')}</th>
-                        <th className="px-4 py-3 text-right">{t('erDischarge.balance_due')}</th>
-                        <th className="px-4 py-3 text-right">{t('cashier.col_action')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-red-100">
-                      {erPending.length === 0 ? (
-                        <tr>
-                          <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
-                            {t('erDischarge.cashier_none')}
-                          </td>
-                        </tr>
-                      ) : (
-                        erPending.map((v) => (
-                          <tr key={v.visit_id}>
-                            <td className="px-4 py-3 font-semibold">
-                              {v.first_name} {v.last_name}
-                            </td>
-                            <td className="px-4 py-3 font-mono text-xs">{v.ticket_number || `#${v.visit_id}`}</td>
-                            <td className="px-4 py-3 text-right font-bold">{formatMoney(v.balance_due)}</td>
-                            <td className="px-4 py-3 text-right">
-                              <button
-                                type="button"
-                                className="rounded-lg bg-red-700 px-3 py-1.5 text-xs font-bold text-white"
-                                onClick={() => setErVisit(v)}
-                              >
-                                {t('erDischarge.settle_btn')}
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                <h3 className="mb-2 text-sm font-extrabold text-slate-800">{t('cashier.tab_emergency')}</h3>
-                <p className="mb-3 text-xs text-slate-600">{t('cashier.emg_hint')}</p>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-500">
-                      <tr>
-                        <th className="px-4 py-3">{t('cashier.col_ticket')}</th>
-                        <th className="px-4 py-3">{t('cashier.col_patient')}</th>
-                        <th className="px-4 py-3 text-right">{t('cashier.col_amount')}</th>
-                        <th className="px-4 py-3 text-right">{t('cashier.col_action')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {emgSettle.length === 0 ? (
-                        <tr>
-                          <td colSpan={4} className="px-4 py-12 text-center text-slate-500">
-                            {t('cashier.empty_emg')}
-                          </td>
-                        </tr>
-                      ) : (
-                        emgSettle.map((tRow) => (
-                          <tr key={tRow.id}>
-                            <td className="px-4 py-3 font-mono text-xs font-bold">{tRow.ticket_code}</td>
-                            <td className="px-4 py-3 font-semibold">
-                              {tRow.first_name} {tRow.last_name}
-                            </td>
-                            <td className="px-4 py-3 text-right font-bold">{formatMoney(tRow.total_amount)}</td>
-                            <td className="px-4 py-3 text-right whitespace-nowrap">
-                              <CashierPrintGroup ticketCode={tRow.ticket_code} status={tRow.status || 'pending'} />
-                              <a href={`/cashier/settle/${tRow.id}`} className="ml-1 inline-flex rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white">
-                                {t('cashier.collect')}
-                              </a>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ) : null}
-          </div>
-        </div>
-      </div>
-
+      <CashierSubmitInsuranceClaimModal
+        open={newClaimOpen}
+        onClose={() => setNewClaimOpen(false)}
+        onCreated={() => setClaimsRefreshToken((n) => n + 1)}
+      />
+      <CashierNewInvoiceOdooModal
+        open={newInvoiceOpen}
+        onClose={() => setNewInvoiceOpen(false)}
+        onCreated={() => setInvoicesRefreshToken((n) => n + 1)}
+        serviceCatalog={serviceCatalogForInvoice}
+        pharmacyCatalog={pharmacyCatalogForInvoice}
+      />
       <CashierBillingModal
         open={billingOpen}
         onClose={() => setBillingOpen(false)}
@@ -1036,7 +650,15 @@ export function CashierPageApp({
         surgeryCatalog={surgeryCatalog}
         svcCatalog={svcCatalog}
       />
-      <CashierDisbursementModal open={disbursementOpen} onClose={() => setDisbursementOpen(false)} paymentMethods={paymentMethods} />
+      <CashierDisbursementModal open={disbursementOpen} onClose={() => setDisbursementOpen(false)} />
+      <CashierProfileModal
+        open={profileModal != null}
+        mode={profileModal || 'profile'}
+        initialProfile={selfProfile}
+        initialDepartments={profileDepartments}
+        onClose={() => setProfileModal(null)}
+        tOps={tOps}
+      />
       <CashierPrepayModal
         open={prepayOpen}
         onClose={() => {
@@ -1074,6 +696,6 @@ export function CashierPageApp({
       />
       <IpdSettleModal open={!!ipdAdm} onClose={() => setIpdAdm(null)} admission={ipdAdm} />
       <ErSettleModal open={!!erVisit} onClose={() => setErVisit(null)} visit={erVisit} />
-    </div>
+    </>
   );
 }

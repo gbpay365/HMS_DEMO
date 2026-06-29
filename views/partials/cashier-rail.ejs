@@ -1,0 +1,91 @@
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+var _top = function (key, fallback, opts) {
+  return _t(key, Object.assign({ ns: 'ops', defaultValue: fallback }, opts || {}));
+};
+var _page = locals.cashierPage || 'dashboard';
+var _pendingBadge = parseInt(locals.pendingCount, 10) || 0;
+var _billingBadge = parseInt(locals.billingPendingCount, 10) || 0;
+var _brand = locals.brand || {};
+var _brandName = _brand.name || 'ZAIZENS';
+var _logoLetter = String(_brandName).trim().charAt(0).toUpperCase() || 'Z';
+var _userName = locals.userDisplayName || (locals.user && locals.user.name) || 'Cashier';
+var _userRole = locals.cashierUserRole || _top('cashier_odoo.module', 'Cashier');
+var _initials = locals.cashierUserInitials || 'ZA';
+function _navActive(p) { return _page === p ? ' active' : ''; }
+%>
+<nav class="cs-sidebar" role="navigation" aria-label="<%= _top('cashier_odoo.module', 'Cashier') %>">
+  <div class="cs-logo">
+    <div class="cs-logo-icon cs-logo-icon--zaizens" aria-hidden="true">
+      <span class="cs-logo-letter"><%= _logoLetter %></span>
+    </div>
+    <div>
+      <div class="cs-logo-name"><%= _brandName %></div>
+      <div class="cs-logo-sub"><%= _top('cashier_odoo.module', 'Cashier') %></div>
+    </div>
+  </div>
+  <div class="cs-nav">
+    <div class="cs-nav-group"><%= _top('cashier_odoo.nav_billing', 'Billing') %></div>
+    <a href="/cashier?page=dashboard" class="cs-nav-item<%= _navActive('dashboard') %>">
+      <i class="fa fa-th-large" aria-hidden="true"></i> <%= _top('cashier_odoo.dashboard', 'Dashboard') %>
+    </a>
+    <a href="/cashier?page=pos" class="cs-nav-item<%= _navActive('pos') %>">
+      <i class="fa fa-credit-card" aria-hidden="true"></i> <%= _top('cashier_odoo.point_of_sale', 'Point of Sale') %>
+      <span class="cs-nav-badge" style="background:var(--cs-accent);color:#fff;">POS</span>
+    </a>
+    <a href="/cashier?page=bills" class="cs-nav-item<%= _navActive('bills') %>">
+      <i class="fa fa-file-text-o" aria-hidden="true"></i> <%= _top('cashier_odoo.patient_bills', 'Patient bills') %>
+      <% if (_pendingBadge > 0) { %><span class="cs-nav-badge" style="background:#FEF9C3;color:#854D0E;"><%= _pendingBadge %></span><% } %>
+    </a>
+    <a href="/cashier?page=invoices" class="cs-nav-item<%= _navActive('invoices') %>">
+      <i class="fa fa-file-text" aria-hidden="true"></i> <%= _top('cashier_odoo.invoices', 'Invoices') %>
+      <% if (_billingBadge > 0) { %><span class="cs-nav-badge" style="background:#EDE9FE;color:#5B21B6;"><%= _billingBadge %></span><% } %>
+    </a>
+    <a href="/cashier?page=insurance" class="cs-nav-item<%= _navActive('insurance') %>">
+      <i class="fa fa-shield" aria-hidden="true"></i> <%= _top('cashier_odoo.insurance', 'Insurance claims') %>
+    </a>
+    <a href="/nurse-roster?from=cashier" class="cs-nav-item<%= _navActive('nurse-roster') %>">
+      <i class="fa fa-calendar-o cs-nav-icon" aria-hidden="true"></i><%= _top('cashier_odoo.nurse_roster', 'Nurse roster') %>
+    </a>
+    <a href="/doctor-roster?from=cashier" class="cs-nav-item<%= _navActive('doctor-roster') %>">
+      <i class="fa fa-stethoscope cs-nav-icon" aria-hidden="true"></i><%= _top('cashier_odoo.doctor_roster', 'Doctor roster') %>
+    </a>
+
+    <div class="cs-nav-group"><%= _top('cashier_odoo.nav_cash_mgmt', 'Cash Mgmt') %></div>
+    <a href="/cashier?page=shift" class="cs-nav-item<%= _navActive('shift') %>">
+      <i class="fa fa-clock-o" aria-hidden="true"></i> <%= _top('cashier_odoo.shift_summary', 'Shift summary') %>
+    </a>
+    <a href="/cashier?disbursement=1" class="cs-nav-item">
+      <i class="fa fa-money" aria-hidden="true"></i> <%= _top('cashier_odoo.petty_cash', 'Petty Cash') %>
+    </a>
+    <a href="/cashier?wallet_topup=1" class="cs-nav-item">
+      <i class="fa fa-credit-card" aria-hidden="true"></i> <%= _top('cashier_odoo.wallet_topup', 'Wallet Top-up') %>
+    </a>
+    <a href="/cashier?page=refunds" class="cs-nav-item<%= _navActive('refunds') %>">
+      <i class="fa fa-undo" aria-hidden="true"></i> <%= _top('cashier_odoo.refunds', 'Refunds') %>
+    </a>
+    <a href="/cashier?page=reports" class="cs-nav-item<%= _navActive('reports') %>">
+      <i class="fa fa-bar-chart" aria-hidden="true"></i> <%= _top('cashier_odoo.reports', 'Reports') %>
+    </a>
+  </div>
+  <details class="cs-sidebar-user-menu">
+    <summary class="cs-sidebar-user-trigger">
+      <div class="cs-avatar" style="background:var(--cs-accent);color:#fff;"><%= _initials %></div>
+      <div class="cs-sidebar-user-text">
+        <div class="cs-sidebar-user-name"><%= _userName %></div>
+        <div class="cs-sidebar-user-role"><%= _userRole %></div>
+      </div>
+      <i class="fa fa-caret-up cs-sidebar-user-caret" aria-hidden="true"></i>
+    </summary>
+    <div class="cs-sidebar-user-dropdown" role="menu">
+      <a href="/cashier?edit_profile=1" class="cs-sidebar-user-action" role="menuitem">
+        <i class="fa fa-user" aria-hidden="true"></i> <%= _top('cashier_odoo.edit_profile', 'Edit profile') %>
+      </a>
+      <a href="/logout" class="cs-sidebar-user-action cs-sidebar-user-action--logout" role="menuitem">
+        <i class="fa fa-sign-out" aria-hidden="true"></i> <%= _top('cashier_odoo.logout', 'Logout') %>
+      </a>
+    </div>
+  </details>
+</nav>

@@ -1,0 +1,166 @@
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+  var _pl = locals.procLinks || {};
+  function _procUrl(key, fallback) { return _pl[key] || fallback; }
+%>
+<div class="hms-surface-hero mb-4">
+  <div class="hms-surface-hero-icon"><i class="fa fa-truck"></i></div>
+  <h1 class="hms-surface-hero-title"><%= _t('procurement_page.title', { ns: 'legacy', defaultValue: 'Procurement Hub' }) %></h1>
+  <p><%= _t('procurement_page.subtitle', { ns: 'legacy', defaultValue: 'Manage suppliers, purchase orders, and supply chain logistics.' }) %></p>
+</div>
+<div class="d-flex flex-wrap mb-4 hms-proc-hub-actions">
+  <a href="<%= _procUrl('rfq', '/procurement/rfq') %>" class="hms-btn hms-btn-primary mr-2 mb-2">
+    <i class="fa fa-file-text-o mr-1"></i><%= _t('procurement_page.create_rfq', { ns: 'legacy', defaultValue: 'RFQ' }) %>
+  </a>
+  <a href="<%= _procUrl('purchaseRequests', '/procurement/purchase-requests') %>" class="hms-btn hms-btn-primary mr-2 mb-2">
+    <i class="fa fa-file-text mr-1"></i><%= _t('procurement_page.purchase_request', { ns: 'legacy', defaultValue: 'Purchase Request' }) %>
+  </a>
+  <a href="<%= _procUrl('purchaseOrdersNew', '/procurement/purchase-orders/new') %>" class="hms-btn hms-btn-primary mr-2 mb-2">
+    <i class="fa fa-shopping-cart mr-1"></i><%= _t('procurement_page.issue_po', { ns: 'legacy', defaultValue: 'Issue PO' }) %>
+  </a>
+  <a href="<%= _procUrl('vendors', '/procurement/vendors') %>" class="hms-btn hms-btn-primary mb-2">
+    <i class="fa fa-truck mr-1"></i><%= _t('procurement_page.add_vendor', { ns: 'legacy', defaultValue: 'Add Vendor' }) %>
+  </a>
+</div>
+
+<section class="hms-stat-section mb-4">
+  <h2 class="hms-stat-section__title"><%= _t('procurement_page.overview', { ns: 'legacy', defaultValue: 'Overview' }) %></h2>
+  <div class="hms-stat-grid">
+    <%- include('hms-stat-link', { href: _procUrl('vendors', '/procurement/vendors'), label: _t('procurement_page.kpi_active_vendors', { ns: 'legacy', defaultValue: 'Active Vendors' }), value: stats.vendors, icon: 'fa-truck', color: '#6366f1', hint: _t('procurement_page.kpi_certified', { ns: 'legacy', defaultValue: 'Certified Suppliers' }) }) %>
+    <%- include('hms-stat-link', { href: _procUrl('rfq', '/procurement/rfq'), label: _t('procurement_page.kpi_open_rfqs', { ns: 'legacy', defaultValue: 'Open RFQs' }), value: stats.rfqs, icon: 'fa-file-text-o', color: '#f59e0b', hint: _t('procurement_page.kpi_awaiting', { ns: 'legacy', defaultValue: 'Awaiting Quotations' }) }) %>
+    <%- include('hms-stat-link', { href: _procUrl('purchaseOrders', '/procurement/purchase-orders'), label: _t('procurement_page.kpi_issued_pos', { ns: 'legacy', defaultValue: 'Issued POs' }), value: stats.po_count != null ? stats.po_count : pos.length, icon: 'fa-shopping-cart', color: '#10b981', hint: _t('procurement_page.kpi_last_30', { ns: 'legacy', defaultValue: 'Last 30 Days' }) }) %>
+    <%- include('hms-stat-link', { href: _procUrl('goodsReceipt', '/procurement/goods-receipt'), label: _t('procurement_page.kpi_pending_receipt', { ns: 'legacy', defaultValue: 'Pending Receipt' }), value: stats.pending_receipt || 0, icon: 'fa-download', color: '#0ea5e9', hint: _t('procurement_page.kpi_in_transit', { ns: 'legacy', defaultValue: 'Orders in transit' }) }) %>
+  </div>
+</section>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm rounded-xl overflow-hidden bg-white hms-surface-card">
+      <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 font-weight-bold text-dark"><%= _t('procurement_page.recent_pos', { ns: 'legacy', defaultValue: 'Recent Purchase Orders' }) %></h5>
+        <a href="<%= _procUrl('purchaseOrders', '/procurement/purchase-orders') %>" class="small font-weight-bold"><%= _t('procurement_page.view_all', { ns: 'legacy', defaultValue: 'View All' }) %> <i class="fa fa-chevron-right ml-1"></i></a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 hms-table-v3">
+          <thead class="bg-light">
+            <tr>
+              <th><%= _t('procurement_page.col_po', { ns: 'legacy', defaultValue: 'PO #' }) %></th>
+              <th><%= _t('procurement_page.col_supplier', { ns: 'legacy', defaultValue: 'Supplier' }) %></th>
+              <th><%= _t('procurement_page.col_amount', { ns: 'legacy', defaultValue: 'Amount' }) %></th>
+              <th><%= _t('procurement_page.col_status', { ns: 'legacy', defaultValue: 'Status' }) %></th>
+              <th class="text-right"><%= _t('procurement_page.col_action', { ns: 'legacy', defaultValue: 'Action' }) %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% (pos || []).forEach(function(po) { %>
+            <tr>
+              <td><span class="font-weight-bold text-dark"><%= po.po_number %></span></td>
+              <td><%= po.supplier_name || _t('procurement_page.generic_vendor', { ns: 'legacy', defaultValue: 'Generic Vendor' }) %></td>
+              <td class="font-weight-bold"><%= Number(po.total_amount).toLocaleString() %> <small>XAF</small></td>
+              <td>
+                <span class="badge badge-<%= po.status == 'approved' ? 'success' : (po.status == 'draft' ? 'warning' : 'info') %>-light px-2 py-1 text-uppercase small">
+                  <%= po.status %>
+                </span>
+              </td>
+              <td class="text-right">
+                <% var poSt = String(po.status || '').toLowerCase(); %>
+                <% var poViewUrl = _pl.purchaseOrderDetail ? (_pl.purchaseOrderDetail + po.id) : (String(po.po_number || '').indexOf('PHA-PO-') === 0 ? '/pharmacy/purchase-orders/' + po.id : '/procurement/purchase-orders/' + po.id); %>
+                <% var poEditUrl = (_pl.purchaseOrderDetail ? (_pl.purchaseOrderDetail + po.id) : '/procurement/purchase-orders/' + po.id) + '?edit=1'; %>
+                <% var poEditable = locals.canWrite && ['draft', 'approved', 'issued', 'received'].includes(poSt); %>
+                <div class="btn-group btn-group-sm">
+                  <a href="<%= poViewUrl %>" class="btn btn-outline-primary rounded-pill px-3" title="<%= _t('procurement_page.view_po', { ns: 'legacy', defaultValue: 'View purchase order' }) %>">
+                    <i class="fa fa-eye mr-1"></i><%= _t('procurement_page.view', { ns: 'legacy', defaultValue: 'View' }) %>
+                  </a>
+                  <% if (poEditable && !String(po.po_number || '').startsWith('PHA-PO-')) { %>
+                  <a href="<%= poEditUrl %>" class="btn btn-outline-warning rounded-pill px-3" title="<%= _t('procurement_page.edit_po', { ns: 'legacy', defaultValue: 'Edit purchase order' }) %>">
+                    <i class="fa fa-pencil mr-1"></i><%= _t('procurement_page.edit', { ns: 'legacy', defaultValue: 'Edit' }) %>
+                  </a>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+            <% if (!pos || pos.length === 0) { %>
+            <tr>
+              <td colspan="5" class="text-center py-5 text-muted"><%= _t('procurement_page.empty_pos', { ns: 'legacy', defaultValue: 'No recent orders found.' }) %></td>
+            </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm rounded-xl p-4 bg-white mb-4 hms-surface-card">
+      <h6 class="font-weight-bold text-dark mb-4"><%= _t('procurement_page.quick_links', { ns: 'legacy', defaultValue: 'Quick Links' }) %></h6>
+      <ul class="list-unstyled mb-0">
+        <li class="mb-3">
+          <a href="<%= _procUrl('vendors', '/procurement/vendors') %>" class="d-flex align-items-center text-dark text-decoration-none hms-hover-link">
+            <div class="hms-icon-box-sm bg-light-blue text-primary mr-3"><i class="fa fa-truck"></i></div>
+            <div>
+              <div class="font-weight-bold"><%= _t('procurement_page.vendor_directory', { ns: 'legacy', defaultValue: 'Vendor Directory' }) %></div>
+              <div class="extra-small text-muted"><%= _t('procurement_page.vendor_directory_desc', { ns: 'legacy', defaultValue: 'Manage suppliers & contracts' }) %></div>
+            </div>
+          </a>
+        </li>
+        <li class="mb-3">
+          <a href="<%= _procUrl('purchaseRequests', '/procurement/purchase-requests') %>" class="d-flex align-items-center text-dark text-decoration-none hms-hover-link">
+            <div class="hms-icon-box-sm bg-light-purple text-indigo mr-3"><i class="fa fa-file-text"></i></div>
+            <div>
+              <div class="font-weight-bold">Purchase requests</div>
+              <div class="extra-small text-muted">PR → vendor → draft PO → approve & send</div>
+            </div>
+          </a>
+        </li>
+        <li class="mb-3">
+          <a href="<%= _procUrl('rfq', '/procurement/rfq') %>" class="d-flex align-items-center text-dark text-decoration-none hms-hover-link">
+            <div class="hms-icon-box-sm bg-light text-primary mr-3"><i class="fa fa-file-text-o"></i></div>
+            <div>
+              <div class="font-weight-bold"><%= _t('procurement_page.rfqs', { ns: 'legacy', defaultValue: 'RFQs' }) %></div>
+              <div class="extra-small text-muted"><%= _t('procurement_page.rfqs_desc', { ns: 'legacy', defaultValue: 'Requests for quotation' }) %></div>
+            </div>
+          </a>
+        </li>
+        <li class="mb-3">
+          <a href="<%= _procUrl('goodsReceipt', '/procurement/goods-receipt') %>" class="d-flex align-items-center text-dark text-decoration-none hms-hover-link">
+            <div class="hms-icon-box-sm bg-light-green text-success mr-3"><i class="fa fa-download"></i></div>
+            <div>
+              <div class="font-weight-bold"><%= _t('procurement_page.receive_goods', { ns: 'legacy', defaultValue: 'Receive Goods' }) %></div>
+              <div class="extra-small text-muted"><%= _t('procurement_page.receive_goods_desc', { ns: 'legacy', defaultValue: 'Record incoming stock (GRN)' }) %></div>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a href="<%= _procUrl('products', '/pharmacy?view=products') %>" class="d-flex align-items-center text-dark text-decoration-none hms-hover-link">
+            <div class="hms-icon-box-sm bg-light-orange text-warning mr-3"><i class="fa fa-medkit"></i></div>
+            <div>
+              <div class="font-weight-bold"><%= _t('pharmacy.tab_products', { ns: 'ops', defaultValue: 'Products' }) %></div>
+              <div class="extra-small text-muted"><%= _t('procurement_page.stock_desc', { ns: 'legacy', defaultValue: 'Check current inventory levels' }) %></div>
+            </div>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-xl p-4 bg-indigo text-white hms-match-card">
+      <h6 class="font-weight-bold mb-3"><i class="fa fa-check-circle mr-2"></i> <%= _t('procurement_page.match_title', { ns: 'legacy', defaultValue: '3-Way Matching' }) %></h6>
+      <p class="small opacity-75"><%= _t('procurement_page.match_desc', { ns: 'legacy', defaultValue: 'Ensuring fiscal compliance by matching PO vs GRN vs Vendor Invoice automatically.' }) %></p>
+      <div class="mt-3">
+        <div class="progress hms-progress-white" style="height: 6px;">
+          <div class="progress-bar bg-white" style="width: 100%"></div>
+        </div>
+        <div class="small mt-2 font-weight-bold"><%= _t('procurement_page.system_protected', { ns: 'legacy', defaultValue: 'System Protected' }) %></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .hms-icon-box-sm { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+  .hms-match-card { background: #4338ca; position: relative; overflow: hidden; }
+  .hms-match-card::after { content: '\f0d6'; font-family: FontAwesome; position: absolute; bottom: -10px; right: -10px; font-size: 5rem; opacity: 0.1; }
+  .hms-progress-white { background: rgba(255,255,255,0.2); }
+  .hms-hover-link { transition: all 0.2s; }
+  .hms-hover-link:hover { transform: translateX(5px); }
+  .extra-small { font-size: 0.65rem; }
+</style>

@@ -19,7 +19,7 @@ var _activeCategory = (typeof activeCategory !== 'undefined' && activeCategory) 
 var _activePreset = (typeof activePreset !== 'undefined' && activePreset) || (locals && locals.activePreset) || 'last30';
 var _reportRange = (typeof reportRange !== 'undefined' && reportRange) || (locals && locals.reportRange) || { label: 'Last 30 days', preset: 'last30' };
 %>
-<link rel="stylesheet" href="/css/pharmacy-reports.css?v=4">
+<link rel="stylesheet" href="/css/pharmacy-reports.css?v=5">
 <%- include('partials/pharmacy-odoo-start', { phaOdooMenu: 'reporting', phaOdooTitle: _tl('pharmacy_reports.hub_title', 'Pharmacy Intelligence Reports'), nursingSupplyPending, flash, error }) %>
 
 <div class="o_content p-3 pha-report-screen hms-surface-module">

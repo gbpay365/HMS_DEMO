@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { FlashMessages } from '../components/FlashMessages';
-import { IpdWorkflowBanner } from '../components/ipd/IpdWorkflowBanner';
 import { StatCard } from '../components/StatCard';
 import { SurfaceHero } from '../components/SurfaceHero';
 import { formatDate } from '../lib/listUi';
@@ -27,8 +26,6 @@ export function IpdCensusPageApp({ admissions = [], stats = {}, flash = null, er
             </a>
           </div>
         </SurfaceHero>
-
-        <IpdWorkflowBanner />
 
         <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label={t('census.kpi_total')} value={stats.total || 0} tone="brand" icon="list" />
@@ -92,7 +89,7 @@ export function IpdCensusPageApp({ admissions = [], stats = {}, flash = null, er
                           {a.doc_fn ? `Dr. ${a.doc_fn} ${a.doc_ln || ''}` : '—'}
                         </td>
                         <td className="px-3 py-3 text-right text-xs font-bold text-red-600">
-                          {formatFcfa(a.running_bill)} {t('shared.fcfa')}
+                          {formatFcfa(a.running_bill)}
                         </td>
                         <td className="px-3 py-3">
                           <span className={pill.className}>{pill.label}</span>

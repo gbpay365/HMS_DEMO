@@ -2,9 +2,9 @@
  * Maternity — dept shell accent (nav: hms-dept-nav.css)
  */
 .maternity-odoo-app {
-  --o-brand: var(--hms-dept-maternity);
-  --o-brand-hover: #db2777;
-  --o-brand-soft: rgba(236, 72, 153, 0.12);
+  --o-brand: var(--hms-theme-accent, var(--hms-dept-maternity));
+  --o-brand-hover: var(--hms-theme-sidebar, #be185d);
+  --o-brand-soft: var(--hms-theme-accent-soft, rgba(236, 72, 153, 0.12));
 }
 
 .maternity-odoo-app .o_nav_module--maternity::before {

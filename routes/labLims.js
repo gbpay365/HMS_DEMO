@@ -253,15 +253,18 @@ module.exports = function labLimsRoutes(app, pool, requireAuth, requirePerm) {
     const containerNo = (req.body.container_no || '').trim();
     const lineId = parseInt(req.body.request_line_id, 10) || null;
     const mark = req.body.mark || 'collected';
+    const { nextBarcode } = require('../lib/labLimsOps');
+    const barcode = nextBarcode('SMP');
     try {
       await pool.query(
-        `INSERT INTO tbl_lab_sample (request_id, request_line_id, sample_type_id, container_no, status, collected_at, collected_by)
-         VALUES (?,?,?,?,?,NOW(),?)`,
+        `INSERT INTO tbl_lab_sample (request_id, request_line_id, sample_type_id, container_no, barcode_no, status, collected_at, collected_by)
+         VALUES (?,?,?,?,?,?,NOW(),?)`,
         [
           requestId,
           lineId,
           parseInt(req.body.sample_type_id, 10) || null,
           containerNo || null,
+          barcode,
           mark === 'examined' ? 'examined' : 'collected',
           uid,
         ]
@@ -274,9 +277,13 @@ module.exports = function labLimsRoutes(app, pool, requireAuth, requirePerm) {
         const [[ln]] = await pool.query('SELECT lab_result_id FROM tbl_lab_request_line WHERE id=?', [lineId]);
         if (ln && ln.lab_result_id) {
           await pool.query(`UPDATE tbl_lab_result SET status='in_progress' WHERE id=?`, [ln.lab_result_id]);
+          await pool.query(
+            `UPDATE tbl_lab_result SET barcode_no=COALESCE(barcode_no, ?) WHERE id=?`,
+            [barcode, ln.lab_result_id]
+          ).catch(() => {});
         }
       }
-      res.redirect(`/lims/request/${requestId}?tab=samples&msg=Sample+recorded`);
+      res.redirect(`/lims/request/${requestId}?tab=samples&msg=Sample+recorded+(${encodeURIComponent(barcode)})`);
     } catch (e) {
       res.redirect(`/lims/request/${requestId}?err=${encodeURIComponent(e.message)}`);
     }

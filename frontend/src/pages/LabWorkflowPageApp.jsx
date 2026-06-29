@@ -7,7 +7,7 @@ import { StatusBadge } from '../components/StatusBadge';
 const THEMES = {
   laboratory: { color: '#7c3aed', icon: '🧪', prefix: 'LAB', deptKey: 'dept_laboratory' },
   radiology: { color: '#0891b2', icon: '🩻', prefix: 'RAD', deptKey: 'dept_radiology' },
-  pharmacy: { color: '#16a34a', icon: '💊', prefix: 'PHA', deptKey: 'dept_pharmacy' }};
+  pharmacy: { color: '#d4537e', icon: '💊', prefix: 'PHA', deptKey: 'dept_pharmacy' }};
 
 function deptLabel(t, kind) {
   const theme = THEMES[kind] || THEMES.laboratory;
@@ -20,7 +20,7 @@ function ValidateEntryView({ kind = 'laboratory', code = '', error = null, flash
   const dept = deptLabel(t, kind);
   const base = kind === 'laboratory' ? '/laboratory' : kind === 'radiology' ? '/radiology' : '/pharmacy';
   return (
-    <div className="page-wrapper hms-surface-module">
+    <div className="page-wrapper hms-surface-module hms-ui">
       <div className="content mx-auto max-w-lg px-4 pb-10 pt-2">
         <FlashMessages flash={flash} error={error} />
         <SurfaceHero icon={deptIcon(kind)} badge={theme.icon} title={t('labWorkflow.validate_title', { dept })} subtitle={t('labWorkflow.validate_subtitle')}>
@@ -30,7 +30,7 @@ function ValidateEntryView({ kind = 'laboratory', code = '', error = null, flash
             </a>
           </div>
         </SurfaceHero>
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
+        <div className="overflow-hidden rounded-2xl border border-[#f4c0d1] bg-white shadow-card">
           <form method="GET" action={`${base}/validate`} className="p-6">
             <input
               name="code"
@@ -69,7 +69,7 @@ function ValidateDetailShell({ kind, code, patient, doctor, flash, error, childr
   const base = deptBase(kind);
 
   return (
-    <div className="page-wrapper hms-surface-module">
+    <div className="page-wrapper hms-surface-module hms-ui">
       <div className="content mx-auto max-w-4xl px-4 pb-10 pt-2">
         <FlashMessages flash={flash} error={error} />
         <a href={`${base}/validate`} className="mb-4 inline-block text-sm font-bold text-slate-600">
@@ -472,9 +472,10 @@ function OrderAlertsView({ dept = 'laboratory', deptLabel: deptLabelProp = '', u
   const label = deptLabelProp || deptLabel(t, dept);
   const blurb = dept === 'pharmacy' ? t('labWorkflow.blurb_pharmacy') : t('labWorkflow.blurb_orders');
   const theme = THEMES[dept] || THEMES.laboratory;
+  const isPharmacy = dept === 'pharmacy';
 
   return (
-    <div className="page-wrapper hms-surface-module">
+    <div className={`page-wrapper hms-surface-module${isPharmacy ? ' hms-ui' : ''}`}>
       <div className="content px-4 pb-10 pt-2 sm:px-6">
         <FlashMessages flash={flash} error={error} />
 
@@ -492,13 +493,13 @@ function OrderAlertsView({ dept = 'laboratory', deptLabel: deptLabelProp = '', u
         </SurfaceHero>
 
         <div className="mb-6 grid gap-3 sm:grid-cols-2">
-          <StatCard label={t('labWorkflow.needs_attention')} value={unacked.length} tone="warning" icon="bell" />
+          <StatCard label={t('labWorkflow.needs_attention')} value={unacked.length} tone={isPharmacy ? 'default' : 'warning'} icon="bell" accentColor={isPharmacy ? '#d4537e' : undefined} />
           <StatCard label={t('labWorkflow.recent')} value={recent.length} tone="default" icon="history" />
         </div>
 
         <h2 className="mb-3 font-bold text-ink">{t('labWorkflow.needs_attention')}</h2>
       {!unacked.length ? (
-        <p className="mb-6 rounded-xl border bg-slate-50 p-6 text-center text-slate-500">{t('labWorkflow.no_new_alerts')}</p>
+        <p className={`mb-6 rounded-xl border p-6 text-center text-slate-500${isPharmacy ? ' border-[#f4c0d1] bg-[#fff0f5]' : ' bg-slate-50'}`}>{t('labWorkflow.no_new_alerts')}</p>
       ) : (
         unacked.map((a) => (
           <AlertCard key={a.id} alert={a} dept={dept} inboxPath={inboxPath} />
@@ -510,7 +511,7 @@ function OrderAlertsView({ dept = 'laboratory', deptLabel: deptLabelProp = '', u
         <p className="text-sm text-slate-400">{t('labWorkflow.no_history')}</p>
       ) : (
         recent.map((a) => (
-          <div key={a.id} className="mb-2 rounded-xl border bg-white p-4 text-sm">
+          <div key={a.id} className={`mb-2 rounded-xl border bg-white p-4 text-sm${isPharmacy ? ' border-[#f4c0d1]' : ''}`}>
             <div className="text-xs text-slate-500">{a.created_at ? new Date(a.created_at).toLocaleString() : ''}</div>
             <div className="font-bold">{a.test_display || t('labWorkflow.order')}</div>
             <div className="text-slate-500">
@@ -540,11 +541,12 @@ function AlertCard({ alert: a, dept, inboxPath }) {
     a.opd_order_item_id &&
     String(a.oi_item_type || '') === 'laboratory' &&
     String(a.oi_service_code || '').toUpperCase().startsWith('LAB-');
+  const isPharmacy = dept === 'pharmacy';
 
   return (
-    <div className="mb-3 rounded-xl border border-l-4 border-l-amber-400 bg-white p-4 shadow-sm">
+    <div className={`mb-3 rounded-xl border border-l-4 bg-white p-4 shadow-sm${isPharmacy ? ' border-[#f4c0d1] border-l-[#d4537e]' : ' border-l-amber-400'}`}>
       <div className="mb-2 flex justify-between text-xs">
-        <span className="rounded bg-amber-100 px-2 py-0.5 font-bold uppercase text-amber-800">{ctxLabel}</span>
+        <span className={`rounded px-2 py-0.5 font-bold uppercase${isPharmacy ? ' bg-[#fce4ec] text-[#4b1528]' : ' bg-amber-100 text-amber-800'}`}>{ctxLabel}</span>
         <span className="text-slate-500">{a.created_at ? new Date(a.created_at).toLocaleString() : ''}</span>
       </div>
       <div className="font-bold">{a.test_display || t('labWorkflow.order')}</div>

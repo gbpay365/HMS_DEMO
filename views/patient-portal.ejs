@@ -64,7 +64,7 @@
    <div class="card border-0 shadow-sm rounded-xl mb-4 text-center">
     <div class="card-body p-4">
      <h6 class="text-uppercase text-muted font-weight-bold mb-2 small" style="letter-spacing:.06em;"><%= _tl('patient_portal.wallet_title', 'Pre-Paid Wallet') %> <span class="badge badge-success ml-1"><%= _tl('patient_portal.wallet_active', 'Active') %></span></h6>
-     <div class="h2 font-weight-bold text-success mb-1"><%= Number(wallet.balance||0).toLocaleString('fr-FR') %> <small class="small text-muted"><%= _tl('patient_portal.currency_fcfa', 'FCFA') %></small></div>
+     <div class="h2 font-weight-bold text-success mb-1"><%= fmtMoney(wallet.balance||0) %></div>
      <p class="small text-muted mb-3"><%= _tl('patient_portal.wallet_topup', 'Top-up via Hospital Cashier or GBPAY USSD') %></p>
      <% if (wallet.qr_token) { %>
      <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=<%= encodeURIComponent(wallet.qr_token) %>" alt="<%= _tl('patient_portal.wallet_qr_alt', 'Wallet QR') %>" class="border p-2 bg-white rounded shadow-sm">

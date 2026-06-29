@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { FlashMessages } from '../components/FlashMessages';
 import { StatCard } from '../components/StatCard';
 import { SurfaceHero } from '../components/SurfaceHero';
+import { formatMoney } from '../lib/hmsLocale';
 
 const SERVICE_OPTIONS = [
   { value: 'consultation', icon: 'fa-stethoscope', color: '#0c8b8b' },
@@ -284,7 +285,7 @@ export function HmsCommissionPageApp({
                             <td className="px-4 py-3 text-right font-extrabold text-ink">
                               {r.rate_type === 'percent'
                                 ? `${r.rate_value}%`
-                                : `${Number(r.rate_value || 0).toLocaleString('fr-FR')} XAF`}
+                                : formatMoney(r.rate_value || 0)}
                             </td>
                           </tr>
                         );

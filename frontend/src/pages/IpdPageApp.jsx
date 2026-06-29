@@ -8,12 +8,12 @@ import { IpdDrugChartView } from '../components/ipd/IpdDrugChartView';
 import { IpdHandoverBoardView } from '../components/ipd/IpdHandoverBoardView';
 import { IpdShiftReportView } from '../components/ipd/IpdShiftReportView';
 import { IpdTreatmentView } from '../components/ipd/IpdTreatmentView';
-import { formatDate } from '../lib/listUi';
+import { formatDate, formatMoney } from '../lib/listUi';
 import { ipdStatusPillLocalized } from '../lib/wardUi';
 import { openAddChargeModal } from '../lib/addChargeBridge';
 
 function fmt(n) {
-  return Math.round(parseFloat(n || 0)).toLocaleString('fr-FR');
+  return formatMoney(n);
 }
 
 function RunningBillView({ admission = {}, charges = [], notes = [], forecast = null }) {
@@ -29,7 +29,7 @@ function RunningBillView({ admission = {}, charges = [], notes = [], forecast = 
         <div className="hms-surface-hero-chips mt-3">
           <span className="hms-icon-chip">{t('pages.running_bill')}</span>
           <span className="hms-icon-chip">
-            {fmt(admission.running_bill)} {t('shared.fcfa')}
+            {fmt(admission.running_bill)}
           </span>
         </div>
         <p className="mt-2 text-sm opacity-90">{t('pages.payable_hint')}</p>
@@ -836,13 +836,13 @@ export function IpdPageApp(props) {
               <div className="flex justify-between">
                 <span>{t('pages.running_bill_label')}</span>
                 <span className="font-bold">
-                  {fmt(props.forecast.running_bill)} {t('shared.fcfa')}
+                  {fmt(props.forecast.running_bill)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>{t('pages.balance_due')}</span>
                 <span className="font-bold text-red-600">
-                  {fmt(props.forecast.balance_due)} {t('shared.fcfa')}
+                  {fmt(props.forecast.balance_due)}
                 </span>
               </div>
             </div>
@@ -876,13 +876,13 @@ export function IpdPageApp(props) {
               <div className="flex justify-between">
                 <span>{t('pages.total_charges')}</span>
                 <span>
-                  {fmt(props.totals.charges)} {t('shared.fcfa')}
+                  {fmt(props.totals.charges)}
                 </span>
               </div>
               <div className="flex justify-between font-bold">
                 <span>{t('pages.balance')}</span>
                 <span>
-                  {fmt(props.totals.balance)} {t('shared.fcfa')}
+                  {fmt(props.totals.balance)}
                 </span>
               </div>
             </div>

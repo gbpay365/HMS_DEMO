@@ -1,0 +1,761 @@
+/**
+ * Nurse / doctor roster — cashier module skin (matches Insurance / Bills layout).
+ */
+html:has(body.hms-body--cashier-roster),
+body.hms-body--cashier-roster {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body.hms-body--cashier-roster #hms-sidebar,
+body.hms-body--cashier-roster .hms-topbar,
+body.hms-body--cashier-roster .hms-odoo-app > .o_web_navbar {
+  display: none !important;
+}
+
+body.hms-body--cashier-roster .hms-odoo-app {
+  margin-left: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body.hms-body--cashier-roster .main-wrapper,
+body.hms-body--cashier-roster #mainWrapper {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+body.hms-body--cashier-roster .cs-shell {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+}
+
+body.hms-body--cashier-roster .cs-main {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+body.hms-body--cashier-roster .cs-tabs .cs-tab {
+  text-decoration: none;
+}
+
+body.hms-body--cashier-roster .cs-content {
+  padding: 12px 16px 16px;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--cs-lighter);
+  box-sizing: border-box;
+}
+
+body.hms-body--cashier-roster .cs-page.active {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+/* Page shell — mirrors .ins-page */
+body.hms-body--cashier-roster .cs-roster-page {
+  animation: csFadeIn 0.25s ease-out;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+body.hms-body--cashier-roster .cs-roster-card {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+body.hms-body--cashier-roster .cs-roster-body {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+body.hms-body--cashier-roster .cs-roster-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 12px;
+  margin: 0 0 14px !important;
+}
+
+body.hms-body--cashier-roster .cs-roster-kpi-row > [class*='col-'] {
+  width: 100%;
+  max-width: none;
+  padding: 0 !important;
+  margin: 0 !important;
+  flex: none;
+}
+
+body.hms-body--cashier-roster .cs-roster-kpi {
+  height: 100%;
+  margin: 0;
+}
+
+body.hms-body--cashier-roster .cs-roster-kpi .cs-kpi-value {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-roster .cs-roster-kpi--day,
+body.hms-body--cashier-roster .cs-roster-kpi--teal {
+  border-top-color: var(--cs-accent) !important;
+}
+
+body.hms-body--cashier-roster .cs-roster-kpi--relay,
+body.hms-body--cashier-roster .cs-roster-kpi--warn {
+  border-top-color: #d97706 !important;
+}
+
+body.hms-body--cashier-roster .cs-roster-kpi--night,
+body.hms-body--cashier-roster .cs-roster-kpi--partial {
+  border-top-color: #6366f1 !important;
+}
+
+body.hms-body--cashier-roster .cs-roster-kpi--off {
+  border-top-color: #94a3b8 !important;
+}
+
+body.hms-body--cashier-roster .cs-roster-kpi--on,
+body.hms-body--cashier-roster .cs-roster-kpi--ok {
+  border-top-color: #16a34a !important;
+}
+
+body.hms-body--cashier-roster .cs-roster-kpi--on .cs-kpi-value,
+body.hms-body--cashier-roster .cs-roster-kpi--ok .cs-kpi-value {
+  color: #16a34a !important;
+}
+
+/* Main card */
+body.hms-body--cashier-roster .cs-roster-card {
+  margin-bottom: 0;
+}
+
+body.hms-body--cashier-roster .cs-roster-card .cs-card-head {
+  min-height: 52px;
+  font-size: 14px;
+}
+
+body.hms-body--cashier-roster .cs-roster-card .cs-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-roster .cs-roster-card .cs-card-title .fa {
+  color: var(--cs-accent);
+  font-size: 15px;
+  margin-right: 6px;
+}
+
+/* Toolbar — same as insurance */
+body.hms-body--cashier-roster .cs-roster-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--cs-border);
+  background: #fafbfc;
+}
+
+body.hms-body--cashier-roster .cs-roster-view-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-bottom: none;
+  padding: 0;
+  background: transparent;
+}
+
+body.hms-body--cashier-roster .cs-roster-view-tabs .cs-inner-tab {
+  text-decoration: none;
+  font-size: 13px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 0.5px solid var(--cs-border);
+  background: #fff;
+  color: #6b7280;
+}
+
+body.hms-body--cashier-roster .cs-roster-view-tabs .cs-inner-tab.active {
+  background: var(--cs-primary);
+  border-color: var(--cs-primary);
+  color: #fff;
+}
+
+body.hms-body--cashier-roster .cs-roster-view-tabs .cs-inner-tab:hover:not(.active) {
+  border-color: var(--cs-accent);
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-roster .cs-roster-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+body.hms-body--cashier-roster .cs-roster-date-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+body.hms-body--cashier-roster .cs-roster-date-input {
+  width: auto;
+  min-width: 148px;
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+body.hms-body--cashier-roster .cs-roster-period-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cs-primary);
+  padding: 0 4px;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-roster .cs-roster-count {
+  margin-left: auto;
+}
+
+body.hms-body--cashier-roster .cs-roster-nav-btn {
+  min-width: 34px;
+  padding: 0 8px;
+  justify-content: center;
+}
+
+body.hms-body--cashier-roster .cs-roster-today-btn {
+  color: var(--cs-primary);
+  border-color: var(--cs-border);
+  background: #fff;
+}
+
+/* Card body */
+body.hms-body--cashier-roster .cs-roster-body {
+  padding: 14px 16px 16px;
+}
+
+body.hms-body--cashier-roster .cs-roster-staff-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 168px), 1fr));
+  gap: 12px;
+  margin: 0 !important;
+  width: 100%;
+}
+
+body.hms-body--cashier-roster .cs-roster-staff-grid > [class*='col-'] {
+  width: 100% !important;
+  max-width: none !important;
+  flex: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Staff cards — cashier teal theme */
+body.hms-body--cashier-roster .cs-roster-staff-card {
+  background: #fff;
+  border: 0.5px solid var(--cs-border);
+  border-radius: 12px;
+  box-shadow: var(--cs-shadow-card);
+  padding: 12px 10px;
+  height: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+body.hms-body--cashier-roster .cs-roster-staff-card::before {
+  display: none !important;
+}
+
+body.hms-body--cashier-roster .cs-roster-staff-card.shift-day,
+body.hms-body--cashier-roster .cs-roster-staff-card.is-day {
+  border-top: 3px solid #f59e0b;
+  background: #fff;
+}
+
+body.hms-body--cashier-roster .cs-roster-staff-card.shift-relay,
+body.hms-body--cashier-roster .cs-roster-staff-card.is-relay {
+  border-top: 3px solid #ea580c;
+  background: #fff;
+}
+
+body.hms-body--cashier-roster .cs-roster-staff-card.shift-night,
+body.hms-body--cashier-roster .cs-roster-staff-card.is-night {
+  border-top: 3px solid #6366f1;
+  background: #fff;
+}
+
+body.hms-body--cashier-roster .cs-roster-staff-card.shift-off,
+body.hms-body--cashier-roster .cs-roster-staff-card.is-off,
+body.hms-body--cashier-roster .cs-roster-staff-card.is-on_duty {
+  border-top: 3px solid var(--cs-accent);
+  background: #fff;
+}
+
+body.hms-body--cashier-roster .cs-roster-staff-card.is-on_duty {
+  border-top-color: #16a34a;
+}
+
+body.hms-body--cashier-roster .cs-roster-staff-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cs-primary);
+  text-align: center;
+  margin: 0 0 2px;
+  line-height: 1.3;
+}
+
+body.hms-body--cashier-roster .cs-roster-staff-dept {
+  font-size: 11px;
+  color: #6b7280;
+  text-align: center;
+  margin: 0 0 8px;
+}
+
+body.hms-body--cashier-roster .cs-roster-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 auto 8px;
+  background: var(--cs-light);
+  color: var(--cs-primary);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(15, 76, 92, 0.12);
+}
+
+body.hms-body--cashier-roster .shift-day .cs-roster-avatar,
+body.hms-body--cashier-roster .is-day .cs-roster-avatar {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+body.hms-body--cashier-roster .shift-relay .cs-roster-avatar,
+body.hms-body--cashier-roster .is-relay .cs-roster-avatar {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+body.hms-body--cashier-roster .shift-night .cs-roster-avatar,
+body.hms-body--cashier-roster .is-night .cs-roster-avatar {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+body.hms-body--cashier-roster .shift-off .cs-roster-avatar,
+body.hms-body--cashier-roster .is-off .cs-roster-avatar {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+body.hms-body--cashier-roster .is-on_duty .cs-roster-avatar {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Shift pickers */
+body.hms-body--cashier-roster .cs-roster-shift-lanes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  background: #f8fafc;
+  border: 0.5px solid var(--cs-border);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+body.hms-body--cashier-roster .cs-roster-shift-lanes label {
+  margin: 0;
+  text-align: center;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 5px 2px;
+  border-radius: 6px;
+  color: #6b7280;
+}
+
+body.hms-body--cashier-roster .cs-roster-shift-lanes label span {
+  display: block;
+  line-height: 1.2;
+}
+
+body.hms-body--cashier-roster .cs-roster-shift-lanes label span i {
+  display: block;
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+body.hms-body--cashier-roster .cs-roster-shift-lanes input {
+  display: none;
+}
+
+body.hms-body--cashier-roster .cs-roster-shift-lanes input:checked + span {
+  background: var(--cs-primary);
+  color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(15, 76, 92, 0.2);
+}
+
+body.hms-body--cashier-roster .cs-roster-shift-toggle {
+  display: flex;
+  gap: 4px;
+  background: #f8fafc;
+  border: 0.5px solid var(--cs-border);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+body.hms-body--cashier-roster .cs-roster-shift-toggle label {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+body.hms-body--cashier-roster .cs-roster-shift-toggle input {
+  display: none;
+}
+
+body.hms-body--cashier-roster .cs-roster-shift-toggle input:checked + span {
+  display: block;
+  background: var(--cs-primary);
+  color: #fff;
+  border-radius: 6px;
+  padding: 5px 4px;
+}
+
+body.hms-body--cashier-roster .cs-roster-shift-toggle label span {
+  display: block;
+  padding: 5px 4px;
+  border-radius: 6px;
+}
+
+body.hms-body--cashier-roster .cs-roster-time-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 0.5px dashed var(--cs-border);
+}
+
+body.hms-body--cashier-roster .cs-roster-time-row.is-hidden,
+body.hms-body--cashier-roster .cs-roster-time-row.d-none {
+  display: none;
+}
+
+body.hms-body--cashier-roster .cs-roster-time-row label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+
+body.hms-body--cashier-roster .cs-roster-time-row .cs-input,
+body.hms-body--cashier-roster .cs-roster-time-row input[type='time'],
+body.hms-body--cashier-roster .cs-roster-time-row select {
+  width: 100%;
+  font-size: 12px;
+  padding: 5px 8px;
+}
+
+body.hms-body--cashier-roster .cs-roster-field {
+  margin-top: 8px;
+}
+
+body.hms-body--cashier-roster .cs-roster-field label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+
+/* View-only badge */
+body.hms-body--cashier-roster .cs-roster-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--cs-light);
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-roster .cs-roster-status-badge.is-day {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+body.hms-body--cashier-roster .cs-roster-status-badge.is-relay {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+body.hms-body--cashier-roster .cs-roster-status-badge.is-night {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+body.hms-body--cashier-roster .cs-roster-status-badge.is-off {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+body.hms-body--cashier-roster .cs-roster-status-badge.is-on_duty {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+body.hms-body--cashier-roster .cs-roster-save-bar {
+  display: flex;
+  justify-content: center;
+  padding-top: 12px;
+  margin-top: 4px;
+  border-top: 0.5px solid var(--cs-border);
+}
+
+body.hms-body--cashier-roster .cs-roster-footnote {
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+  margin: 12px 0 0;
+}
+
+/* Week table */
+body.hms-body--cashier-roster .cs-roster-week-wrap {
+  width: 100%;
+  max-width: none;
+  border: 0.5px solid var(--cs-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+body.hms-body--cashier-roster .cs-roster-week-wrap .cs-table thead th {
+  background: #f8fafc;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--cs-primary);
+  border-color: var(--cs-border);
+}
+
+body.hms-body--cashier-roster .cs-roster-week-wrap .cs-table td {
+  vertical-align: middle;
+  border-color: var(--cs-border);
+}
+
+body.hms-body--cashier-roster .cs-roster-week-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cs-primary);
+  text-align: left;
+  padding-left: 12px !important;
+}
+
+body.hms-body--cashier-roster .cs-roster-week-cell {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+body.hms-body--cashier-roster .cs-roster-week-cell.day {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+body.hms-body--cashier-roster .cs-roster-week-cell.relay {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+body.hms-body--cashier-roster .cs-roster-week-cell.night {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+body.hms-body--cashier-roster .cs-roster-week-cell.off {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+body.hms-body--cashier-roster .cs-roster-week-cell.on_duty {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+body.hms-body--cashier-roster .cs-roster-week-wrap th.is-today {
+  background: var(--cs-light) !important;
+}
+
+/* Month grid */
+body.hms-body--cashier-roster .cs-roster-month-dow-row,
+body.hms-body--cashier-roster .cs-roster-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+body.hms-body--cashier-roster .cs-roster-month-dow {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #6b7280;
+  padding: 4px 0;
+}
+
+body.hms-body--cashier-roster .cs-roster-month-cell {
+  min-height: 72px;
+  border: 0.5px solid var(--cs-border);
+  border-radius: 8px;
+  background: #fff;
+  padding: 4px 5px;
+  font-size: 10px;
+  overflow: hidden;
+}
+
+body.hms-body--cashier-roster .cs-roster-month-cell.outside {
+  opacity: 0.45;
+  background: #fafbfc;
+}
+
+body.hms-body--cashier-roster .cs-roster-month-cell.today {
+  border-color: var(--cs-accent);
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.25);
+}
+
+body.hms-body--cashier-roster .cs-roster-month-cell .day-num {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cs-primary);
+}
+
+body.hms-body--cashier-roster .cs-roster-month-chip {
+  display: block;
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-roster .cs-roster-month-chip.day-shift,
+body.hms-body--cashier-roster .cs-roster-month-chip.day {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+body.hms-body--cashier-roster .cs-roster-month-chip.relay-shift,
+body.hms-body--cashier-roster .cs-roster-month-chip.relay {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+body.hms-body--cashier-roster .cs-roster-month-chip.night-shift,
+body.hms-body--cashier-roster .cs-roster-month-chip.night {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+body.hms-body--cashier-roster .cs-roster-month-chip.on_duty {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+body.hms-body--cashier-roster .cs-roster-legend {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 10px;
+}
+
+body.hms-body--cashier-roster .hms-flash {
+  margin-bottom: 12px;
+  border-radius: 10px;
+}
+
+body.hms-body--cashier-roster #copyRosterModal .modal-header {
+  background: linear-gradient(135deg, var(--cs-darker), var(--cs-primary));
+  color: #fff;
+}
+
+body.hms-body--cashier-roster #copyRosterModal .modal-title {
+  color: #fff;
+}
+
+body.hms-body--cashier-roster #copyRosterModal .nr-copy-submit-btn,
+body.hms-body--cashier-roster #copyRosterModal .hms-btn-primary {
+  background: var(--cs-accent) !important;
+  border-color: var(--cs-accent-hover) !important;
+  color: #fff !important;
+}
+
+@media (max-width: 767px) {
+  body.hms-body--cashier-roster .cs-roster-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.hms-body--cashier-roster .cs-roster-count {
+    margin-left: 0;
+  }
+
+  body.hms-body--cashier-roster .cs-roster-nav {
+    justify-content: center;
+  }
+}

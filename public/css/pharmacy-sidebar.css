@@ -1,0 +1,396 @@
+/**
+ * Pharmacy module — revamped vertical sidebar
+ */
+.pharmacy-odoo-app--sidebar {
+  --pha-rail-w: 252px;
+  --pha-rail-bg: linear-gradient(180deg, var(--pha-sidebar-top, #5c1830) 0%, var(--pha-sidebar, #6d1b3a) 42%, var(--pha-primary, #4b1528) 100%);
+  --pha-rail-surface: rgba(255, 255, 255, 0.06);
+  --pha-rail-text: rgba(255, 255, 255, 0.92);
+  --pha-rail-muted: rgba(255, 255, 255, 0.48);
+  --pha-rail-active: rgba(255, 255, 255, 0.16);
+  --pha-rail-border: rgba(255, 255, 255, 0.1);
+  --pha-rail-accent: var(--pha-accent, #d4537e);
+  --pha-brand: var(--pha-accent, #d4537e);
+  --pha-brand-dark: var(--pha-accent-hover, #993556);
+  --pha-topbar-h: 46px;
+}
+
+/* Slim top bar */
+.pharmacy-odoo-app--sidebar .o_web_navbar--slim {
+  height: var(--pha-topbar-h);
+  min-height: var(--pha-topbar-h);
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--pha-rail-border);
+  background: var(--pha-sidebar-top, #5c1830);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+}
+
+.pharmacy-odoo-app--sidebar .o_web_navbar--slim .o_nav_home,
+.pharmacy-odoo-app--sidebar .o_web_navbar--slim .o_nav_right {
+  height: var(--pha-topbar-h);
+  min-height: var(--pha-topbar-h);
+}
+
+.pharmacy-odoo-app--sidebar .o_web_navbar--slim .o_nav_home {
+  width: var(--pha-topbar-h);
+  color: #fff;
+}
+
+.pharmacy-odoo-app--sidebar .o_web_navbar--slim .o_nav_home:hover {
+  background: var(--pha-rail-active);
+}
+
+.pharmacy-odoo-app--sidebar .o_web_navbar--slim .o_nav_module {
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.pharmacy-odoo-app--sidebar .o_nav_module--pharmacy::before {
+  display: none;
+}
+
+.pharmacy-odoo-app--sidebar .o_nav_right {
+  margin-left: auto;
+  color: #fff;
+}
+
+.pharmacy-odoo-app--sidebar .o_nav_right_link,
+.pharmacy-odoo-app--sidebar .o_nav_user,
+.pharmacy-odoo-app--sidebar .o_nav_logout {
+  color: var(--pha-rail-text);
+}
+
+.pharmacy-odoo-app--sidebar .o_nav_menu {
+  display: none !important;
+}
+
+/* Layout */
+.pharmacy-odoo-app--sidebar .pha-layout {
+  display: flex;
+  align-items: stretch;
+  min-height: calc(100vh - var(--pha-topbar-h));
+}
+
+.pharmacy-odoo-app--sidebar .pha-main {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  background: var(--pha-page-bg, #fff0f5);
+}
+
+.pharmacy-odoo-app--sidebar .o_action_manager {
+  min-height: calc(100vh - var(--pha-topbar-h));
+  padding: 0;
+}
+
+/* Sidebar shell */
+.pharmacy-odoo-app--sidebar .pha-rail {
+  width: var(--pha-rail-w);
+  flex-shrink: 0;
+  background: var(--pha-rail-bg);
+  color: var(--pha-rail-text);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--pha-rail-border);
+  position: sticky;
+  top: var(--pha-topbar-h);
+  max-height: calc(100vh - var(--pha-topbar-h));
+  box-shadow: 2px 0 16px rgba(15, 23, 42, 0.08);
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 14px 12px;
+  border-bottom: 1px solid var(--pha-rail-border);
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-brand__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1rem;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-brand__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-brand__text strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-brand__text small {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--pha-rail-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+}
+
+/* Primary CTA */
+.pharmacy-odoo-app--sidebar .pha-rail-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 12px 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--pha-brand), var(--pha-brand-dark));
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(212, 83, 126, 0.35);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-cta:hover {
+  color: #fff;
+  text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(212, 83, 126, 0.42);
+}
+
+/* Scrollable nav area */
+.pharmacy-odoo-app--sidebar .pha-rail-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 0 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-block {
+  padding: 4px 8px 8px;
+}
+
+/* Collapsible groups */
+.pharmacy-odoo-app--sidebar .pha-rail-group {
+  margin: 0 8px 4px;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-group__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  list-style: none;
+  border-radius: 8px;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-group__toggle::-webkit-details-marker {
+  display: none;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-group__toggle:hover {
+  background: var(--pha-rail-surface);
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-group__title {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--pha-rail-muted);
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-group__chev {
+  font-size: 0.65rem;
+  color: var(--pha-rail-muted);
+  transition: transform 0.2s ease;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-group[open] .pha-rail-group__chev {
+  transform: rotate(180deg);
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-group[open] .pha-rail-group__toggle {
+  background: var(--pha-rail-surface);
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-group__body {
+  padding: 2px 0 6px;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-subhead {
+  margin: 6px 10px 2px 14px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pha-rail-muted);
+}
+
+/* Links */
+.pharmacy-odoo-app--sidebar .pha-rail-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 1px 4px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--pha-rail-text);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  border-left: 3px solid transparent;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-link--sub {
+  padding-left: 18px;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-link__ico {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-link__label {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-link:hover {
+  background: var(--pha-rail-active);
+  color: #fff;
+  text-decoration: none;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-link.active {
+  background: var(--pha-rail-active);
+  color: #fff;
+  border-left-color: var(--pha-rail-accent);
+  font-weight: 700;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-link.active .pha-rail-link__ico {
+  background: rgba(212, 83, 126, 0.24);
+  color: #fce7f0;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-badge {
+  margin-left: auto;
+  min-width: 1.2rem;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-badge--expiry {
+  background: var(--pha-expiry-alert, #7c3aed);
+}
+
+/* Footer */
+.pharmacy-odoo-app--sidebar .pha-rail-foot {
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--pha-rail-border);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-foot-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  transition: background 0.15s;
+}
+
+.pharmacy-odoo-app--sidebar .pha-rail-foot-link:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Main content spacing */
+.pharmacy-odoo-app--sidebar .pha-main .page-wrapper,
+.pharmacy-odoo-app--sidebar .pha-main .pha-dash,
+.pharmacy-odoo-app--sidebar .pha-main .o_control_panel {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.pharmacy-odoo-app--sidebar .pha-main .page-wrapper {
+  padding-top: 12px;
+}
+
+@media (max-width: 991px) {
+  .pharmacy-odoo-app--sidebar .pha-layout {
+    flex-direction: column;
+  }
+
+  .pharmacy-odoo-app--sidebar .pha-rail {
+    width: 100%;
+    max-height: none;
+    position: relative;
+    top: 0;
+  }
+
+  .pharmacy-odoo-app--sidebar .pha-rail-scroll {
+    max-height: 320px;
+  }
+}

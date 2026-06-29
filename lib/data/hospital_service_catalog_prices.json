@@ -1,10 +1,10 @@
 {
   "source": "C:\\HMS_JS",
-  "generated_at": "2026-06-26T07:12:50.943Z",
-  "currency": "XAF",
+  "generated_at": "2026-06-28T16:49:51.643Z",
+  "currency": "NGN",
   "by_account_code": {
-    "701601": {
-      "account_code": "701601",
+    "510101": {
+      "account_code": "510101",
       "label": "Revenue — Consultation — General Consultation",
       "hms_category": "consultation",
       "hms_subcategory": "General Consultation",
@@ -13,26 +13,17 @@
           "key": "C001",
           "name": "General Consultation",
           "price": 2000
-        }
-      ],
-      "default_price": 2000
-    },
-    "701602": {
-      "account_code": "701602",
-      "label": "Revenue — Consultation — Specialist Consultation",
-      "hms_category": "consultation",
-      "hms_subcategory": "Specialist Consultation",
-      "services": [
+        },
         {
           "key": "C010",
           "name": "Specialist Consultation",
           "price": 5000
         }
       ],
-      "default_price": 5000
+      "default_price": 2000
     },
-    "702601": {
-      "account_code": "702601",
+    "510102": {
+      "account_code": "510102",
       "label": "Revenue — Laboratory — Haematology",
       "hms_category": "laboratory",
       "hms_subcategory": "Haematology",
@@ -121,16 +112,7 @@
           "key": "WBC_DIFF",
           "name": "WBC differential",
           "price": 1500
-        }
-      ],
-      "default_price": 3000
-    },
-    "702602": {
-      "account_code": "702602",
-      "label": "Revenue — Laboratory — Clinical Chemistry",
-      "hms_category": "laboratory",
-      "hms_subcategory": "Clinical Chemistry",
-      "services": [
+        },
         {
           "key": "AFP",
           "name": "AFP",
@@ -330,16 +312,7 @@
           "key": "RENAL_FULL",
           "name": "Urea + Creatinine + calcium, uric acid, albumin, glucose, CO2 (Renal Panel)",
           "price": 15000
-        }
-      ],
-      "default_price": 10000
-    },
-    "702603": {
-      "account_code": "702603",
-      "label": "Revenue — Laboratory — Microbiology & Serology",
-      "hms_category": "laboratory",
-      "hms_subcategory": "Microbiology & Serology",
-      "services": [
+        },
         {
           "key": "AFB",
           "name": "AFB Smear (TB/Tuberculosis)",
@@ -494,16 +467,7 @@
           "key": "WIDAL",
           "name": "Widal Test (Typhoid)",
           "price": 3000
-        }
-      ],
-      "default_price": 5000
-    },
-    "702604": {
-      "account_code": "702604",
-      "label": "Revenue — Laboratory — Urinalysis",
-      "hms_category": "laboratory",
-      "hms_subcategory": "Urinalysis",
-      "services": [
+        },
         {
           "key": "UR_PROT24",
           "name": "24-hour Urine Protein",
@@ -523,16 +487,7 @@
           "key": "UR_HCG",
           "name": "Urine Pregnancy Test (Qualitative)",
           "price": 1500
-        }
-      ],
-      "default_price": 3000
-    },
-    "702605": {
-      "account_code": "702605",
-      "label": "Revenue — Laboratory — Parasitology / Stool",
-      "hms_category": "laboratory",
-      "hms_subcategory": "Parasitology / Stool",
-      "services": [
+        },
         {
           "key": "FILARIA",
           "name": "Filaria",
@@ -567,16 +522,7 @@
           "key": "VS",
           "name": "V/S",
           "price": 2000
-        }
-      ],
-      "default_price": 2000
-    },
-    "702606": {
-      "account_code": "702606",
-      "label": "Revenue — Laboratory — Others",
-      "hms_category": "laboratory",
-      "hms_subcategory": "Others",
-      "services": [
+        },
         {
           "key": "BLOOD_SCR",
           "name": "Blood Screening",
@@ -643,10 +589,1754 @@
           "price": 2500
         }
       ],
-      "default_price": 15000
+      "default_price": 3000
     },
-    "703601": {
-      "account_code": "703601",
+    "510104": {
+      "account_code": "510104",
+      "label": "Revenue — Pharmacy — Analgesics & Anti-inflammatory",
+      "hms_category": "pharmacy",
+      "hms_subcategory": "Analgesics & Anti-inflammatory",
+      "services": [
+        {
+          "key": "Analgin Injection",
+          "name": "Analgin Injection",
+          "price": 1000
+        },
+        {
+          "key": "Artifenac Forte (Diclofenac Sodium)",
+          "name": "Artifenac Forte (Diclofenac Sodium)",
+          "price": 100
+        },
+        {
+          "key": "Aspirin 300mg",
+          "name": "Aspirin 300mg",
+          "price": 20
+        },
+        {
+          "key": "Carbamazepine 200mg",
+          "name": "Carbamazepine 200mg",
+          "price": 150
+        },
+        {
+          "key": "Diclofenac 100mg",
+          "name": "Diclofenac 100mg",
+          "price": 1500
+        },
+        {
+          "key": "Diclofenac 50mg Tablets",
+          "name": "Diclofenac 50mg Tablets",
+          "price": 20
+        },
+        {
+          "key": "Diclofenac 75mg Injection",
+          "name": "Diclofenac 75mg Injection",
+          "price": 500
+        },
+        {
+          "key": "Diclofenac Gastro-resistant",
+          "name": "Diclofenac Gastro-resistant",
+          "price": 25
+        },
+        {
+          "key": "Diclofenac Potassium 50mg",
+          "name": "Diclofenac Potassium 50mg",
+          "price": 2000
+        },
+        {
+          "key": "Efferalgan Codeine 500mg",
+          "name": "Efferalgan Codeine 500mg",
+          "price": 150
+        },
+        {
+          "key": "Ibuprofen",
+          "name": "Ibuprofen",
+          "price": 25
+        },
+        {
+          "key": "Ibuprofen + Paracetamol 200/325mg",
+          "name": "Ibuprofen + Paracetamol 200/325mg",
+          "price": 100
+        },
+        {
+          "key": "Ibuprofen 400mg",
+          "name": "Ibuprofen 400mg",
+          "price": 100
+        },
+        {
+          "key": "Misoprostol",
+          "name": "Misoprostol",
+          "price": 250
+        },
+        {
+          "key": "Paracetamol 500mg",
+          "name": "Paracetamol 500mg",
+          "price": 25
+        },
+        {
+          "key": "Paracetamol 500mg + Caffeine 30mg + Codeine 8mg",
+          "name": "Paracetamol 500mg + Caffeine 30mg + Codeine 8mg",
+          "price": 100
+        },
+        {
+          "key": "Paracetamol Syrup 120mg/5ml",
+          "name": "Paracetamol Syrup 120mg/5ml",
+          "price": 1000
+        },
+        {
+          "key": "Phenobarbital 100mg Tablet (Gardenal)",
+          "name": "Phenobarbital 100mg Tablet (Gardenal)",
+          "price": 100
+        },
+        {
+          "key": "Phenobarbital 200mg/ml Injection (Gardenal)",
+          "name": "Phenobarbital 200mg/ml Injection (Gardenal)",
+          "price": 500
+        },
+        {
+          "key": "Voltarene Gel",
+          "name": "Voltarene Gel",
+          "price": 2500
+        },
+        {
+          "key": "Acyclovir 400mg Tablets",
+          "name": "Acyclovir 400mg Tablets",
+          "price": 250
+        },
+        {
+          "key": "Acyclovir Ointment",
+          "name": "Acyclovir Ointment",
+          "price": 3500
+        },
+        {
+          "key": "Albendazole",
+          "name": "Albendazole",
+          "price": 150
+        },
+        {
+          "key": "Ampicillin Sodium 1g Injection",
+          "name": "Ampicillin Sodium 1g Injection",
+          "price": 2500
+        },
+        {
+          "key": "Artemether + Lumefantrine 20/120 mg",
+          "name": "Artemether + Lumefantrine 20/120 mg",
+          "price": 2500
+        },
+        {
+          "key": "Artemether + Lumefantrine 40/120 mg",
+          "name": "Artemether + Lumefantrine 40/120 mg",
+          "price": 2000
+        },
+        {
+          "key": "Artemether Injection 80mg",
+          "name": "Artemether Injection 80mg",
+          "price": 1000
+        },
+        {
+          "key": "Benzathine Penicillin 2.4 MIU (Bicillin)",
+          "name": "Benzathine Penicillin 2.4 MIU (Bicillin)",
+          "price": 3500
+        },
+        {
+          "key": "Cefixime Syrup",
+          "name": "Cefixime Syrup",
+          "price": 2000
+        },
+        {
+          "key": "Ceftriaxone 1g Inj + Water for Inj",
+          "name": "Ceftriaxone 1g Inj + Water for Inj",
+          "price": 1500
+        },
+        {
+          "key": "Clarithromycin 500mg",
+          "name": "Clarithromycin 500mg",
+          "price": 300
+        },
+        {
+          "key": "Co-trimoxazole 240mg/5ml Syrup",
+          "name": "Co-trimoxazole 240mg/5ml Syrup",
+          "price": 1000
+        },
+        {
+          "key": "Co-trimoxazole 480mg (Bactrim)",
+          "name": "Co-trimoxazole 480mg (Bactrim)",
+          "price": 2000
+        },
+        {
+          "key": "Coartem 20/120mg (Artemether)",
+          "name": "Coartem 20/120mg (Artemether)",
+          "price": 1500
+        },
+        {
+          "key": "Coartem Dispersible Adult",
+          "name": "Coartem Dispersible Adult",
+          "price": 1500
+        },
+        {
+          "key": "Crystalline Penicillin G 1M Units",
+          "name": "Crystalline Penicillin G 1M Units",
+          "price": 2500
+        },
+        {
+          "key": "Fansidar 500mg",
+          "name": "Fansidar 500mg",
+          "price": 500
+        },
+        {
+          "key": "Levofloxacin 500mg",
+          "name": "Levofloxacin 500mg",
+          "price": 150
+        },
+        {
+          "key": "Levofloxacin Perfusion Syrup",
+          "name": "Levofloxacin Perfusion Syrup",
+          "price": 2000
+        },
+        {
+          "key": "Metronidazole 500mg",
+          "name": "Metronidazole 500mg",
+          "price": 75
+        },
+        {
+          "key": "Penicillin V 250mg",
+          "name": "Penicillin V 250mg",
+          "price": 100
+        },
+        {
+          "key": "Fluconazole 200mg Capsule",
+          "name": "Fluconazole 200mg Capsule",
+          "price": 1000
+        },
+        {
+          "key": "Fluconazole Suspension 50mg",
+          "name": "Fluconazole Suspension 50mg",
+          "price": 1500
+        },
+        {
+          "key": "Griseofulvin 500mg",
+          "name": "Griseofulvin 500mg",
+          "price": 100
+        },
+        {
+          "key": "Miconazole Nitrate Cream 2% 15g",
+          "name": "Miconazole Nitrate Cream 2% 15g",
+          "price": 1500
+        },
+        {
+          "key": "Nystatin Capsule 500,000 IU",
+          "name": "Nystatin Capsule 500,000 IU",
+          "price": 6000
+        },
+        {
+          "key": "Nystatin Oral Suspension 100,000 Units/ml",
+          "name": "Nystatin Oral Suspension 100,000 Units/ml",
+          "price": 1000
+        },
+        {
+          "key": "Nystatin Vaginal",
+          "name": "Nystatin Vaginal",
+          "price": 200
+        },
+        {
+          "key": "Aldactone 25mg (Spironolactone)",
+          "name": "Aldactone 25mg (Spironolactone)",
+          "price": 75
+        },
+        {
+          "key": "Amlodipine 10mg",
+          "name": "Amlodipine 10mg",
+          "price": 100
+        },
+        {
+          "key": "Atorvastatin 20mg",
+          "name": "Atorvastatin 20mg",
+          "price": 175
+        },
+        {
+          "key": "Bisoprolol 5mg",
+          "name": "Bisoprolol 5mg",
+          "price": 150
+        },
+        {
+          "key": "Captopril 25mg",
+          "name": "Captopril 25mg",
+          "price": 50
+        },
+        {
+          "key": "Digoxin 0.25mg",
+          "name": "Digoxin 0.25mg",
+          "price": 50
+        },
+        {
+          "key": "Frusemide 20mg/2ml Injection",
+          "name": "Frusemide 20mg/2ml Injection",
+          "price": 500
+        },
+        {
+          "key": "HCTZ 25mg",
+          "name": "HCTZ 25mg",
+          "price": 50
+        },
+        {
+          "key": "HCTZ 50mg",
+          "name": "HCTZ 50mg",
+          "price": 50
+        },
+        {
+          "key": "Hydralazine 50mg",
+          "name": "Hydralazine 50mg",
+          "price": 100
+        },
+        {
+          "key": "Lasix 40mg (Furosemide)",
+          "name": "Lasix 40mg (Furosemide)",
+          "price": 50
+        },
+        {
+          "key": "Lisinopril 10mg",
+          "name": "Lisinopril 10mg",
+          "price": 100
+        },
+        {
+          "key": "Losartan 50mg",
+          "name": "Losartan 50mg",
+          "price": 100
+        },
+        {
+          "key": "Nifedipine 20mg",
+          "name": "Nifedipine 20mg",
+          "price": 25
+        },
+        {
+          "key": "Nifedipine Retard 20mg",
+          "name": "Nifedipine Retard 20mg",
+          "price": 75
+        },
+        {
+          "key": "Propranolol 40mg",
+          "name": "Propranolol 40mg",
+          "price": 50
+        },
+        {
+          "key": "Telmisartan 40mg",
+          "name": "Telmisartan 40mg",
+          "price": 75
+        },
+        {
+          "key": "Torsemide 20mg",
+          "name": "Torsemide 20mg",
+          "price": 200
+        },
+        {
+          "key": "Bisacodyl 5mg",
+          "name": "Bisacodyl 5mg",
+          "price": 2000
+        },
+        {
+          "key": "Cimetidine 200mg Injection",
+          "name": "Cimetidine 200mg Injection",
+          "price": 2
+        },
+        {
+          "key": "Gestid Tablet",
+          "name": "Gestid Tablet",
+          "price": 6000
+        },
+        {
+          "key": "Loperamide 2mg",
+          "name": "Loperamide 2mg",
+          "price": 25
+        },
+        {
+          "key": "Maalox Tablet",
+          "name": "Maalox Tablet",
+          "price": 2500
+        },
+        {
+          "key": "Omeprazole 20mg",
+          "name": "Omeprazole 20mg",
+          "price": 75
+        },
+        {
+          "key": "ORS + Zinc",
+          "name": "ORS + Zinc",
+          "price": 500
+        },
+        {
+          "key": "Pantoprazole 40mg",
+          "name": "Pantoprazole 40mg",
+          "price": 200
+        },
+        {
+          "key": "Chlorpheniramine Maleate 4mg",
+          "name": "Chlorpheniramine Maleate 4mg",
+          "price": 10
+        },
+        {
+          "key": "Salbutamol Inhaler",
+          "name": "Salbutamol Inhaler",
+          "price": 2500
+        },
+        {
+          "key": "Salbutamol Nebules",
+          "name": "Salbutamol Nebules",
+          "price": 1000
+        },
+        {
+          "key": "Aptamil (Baby Milk Supplement)",
+          "name": "Aptamil (Baby Milk Supplement)",
+          "price": 5500
+        },
+        {
+          "key": "Aptamil 400g",
+          "name": "Aptamil 400g",
+          "price": 1000
+        },
+        {
+          "key": "Diabetic Test Sugar Strips",
+          "name": "Diabetic Test Sugar Strips",
+          "price": 3500
+        },
+        {
+          "key": "Folic Acid 5mg",
+          "name": "Folic Acid 5mg",
+          "price": 20
+        },
+        {
+          "key": "Glibenclamide 500mg (Daonil)",
+          "name": "Glibenclamide 500mg (Daonil)",
+          "price": 25
+        },
+        {
+          "key": "Metformin 500mg",
+          "name": "Metformin 500mg",
+          "price": 100
+        },
+        {
+          "key": "Multivitamin Baby Drops",
+          "name": "Multivitamin Baby Drops",
+          "price": 1200
+        },
+        {
+          "key": "Multivitamin Syrup 200ml",
+          "name": "Multivitamin Syrup 200ml",
+          "price": 1500
+        },
+        {
+          "key": "Revitalose or Equiv",
+          "name": "Revitalose or Equiv",
+          "price": 4500
+        },
+        {
+          "key": "Vitamin B Complex",
+          "name": "Vitamin B Complex",
+          "price": 50
+        },
+        {
+          "key": "Vitamin B12 1000mcg",
+          "name": "Vitamin B12 1000mcg",
+          "price": 100
+        },
+        {
+          "key": "Phenobarbital 100mg Injection",
+          "name": "Phenobarbital 100mg Injection",
+          "price": 1000
+        },
+        {
+          "key": "Oxytocin 10IU/ml Injection",
+          "name": "Oxytocin 10IU/ml Injection",
+          "price": 1500
+        },
+        {
+          "key": "Adrenaline Injection",
+          "name": "Adrenaline Injection",
+          "price": 500
+        },
+        {
+          "key": "Dexamethasone 4mg Injection",
+          "name": "Dexamethasone 4mg Injection",
+          "price": 500
+        },
+        {
+          "key": "Hydrocortisone Injection",
+          "name": "Hydrocortisone Injection",
+          "price": 2100
+        },
+        {
+          "key": "Lidocaine + Adrenaline Injection",
+          "name": "Lidocaine + Adrenaline Injection",
+          "price": 1000
+        },
+        {
+          "key": "Lidocaine 2% 50ml Injection",
+          "name": "Lidocaine 2% 50ml Injection",
+          "price": 1500
+        },
+        {
+          "key": "Potassium Chloride Injection",
+          "name": "Potassium Chloride Injection",
+          "price": 1000
+        },
+        {
+          "key": "Sodium Bicarbonate 250g",
+          "name": "Sodium Bicarbonate 250g",
+          "price": 500
+        },
+        {
+          "key": "Sodium Bicarbonate Powder 100g",
+          "name": "Sodium Bicarbonate Powder 100g",
+          "price": 500
+        },
+        {
+          "key": "Chloride de Sodium 0.9% 500ml (Normal Saline)",
+          "name": "Chloride de Sodium 0.9% 500ml (Normal Saline)",
+          "price": 1000
+        },
+        {
+          "key": "Darro's Solution 500ml",
+          "name": "Darro's Solution 500ml",
+          "price": 4000
+        },
+        {
+          "key": "Distilled Water for Preparation 1.5ml",
+          "name": "Distilled Water for Preparation 1.5ml",
+          "price": 100
+        },
+        {
+          "key": "Glucose 10% 500ml",
+          "name": "Glucose 10% 500ml",
+          "price": 1500
+        },
+        {
+          "key": "Glucose 5% + NaCl 0.9% 500ml",
+          "name": "Glucose 5% + NaCl 0.9% 500ml",
+          "price": 1500
+        },
+        {
+          "key": "Glucose 5% 500ml",
+          "name": "Glucose 5% 500ml",
+          "price": 1500
+        },
+        {
+          "key": "Glucose 50% 100ml",
+          "name": "Glucose 50% 100ml",
+          "price": 2000
+        },
+        {
+          "key": "NS 0.9% 500ml",
+          "name": "NS 0.9% 500ml",
+          "price": 1000
+        },
+        {
+          "key": "Ringer Lactate 500ml",
+          "name": "Ringer Lactate 500ml",
+          "price": 1500
+        },
+        {
+          "key": "Water for Inj Injection 10ml",
+          "name": "Water for Inj Injection 10ml",
+          "price": 100
+        },
+        {
+          "key": "Alcohol 70%",
+          "name": "Alcohol 70%",
+          "price": 3000
+        },
+        {
+          "key": "Atropine Paper",
+          "name": "Atropine Paper",
+          "price": 50
+        },
+        {
+          "key": "Betadine",
+          "name": "Betadine",
+          "price": 1500
+        },
+        {
+          "key": "Cannula G18",
+          "name": "Cannula G18",
+          "price": 500
+        },
+        {
+          "key": "Cannula G20",
+          "name": "Cannula G20",
+          "price": 500
+        },
+        {
+          "key": "Cannula G22",
+          "name": "Cannula G22",
+          "price": 500
+        },
+        {
+          "key": "Cannula G24",
+          "name": "Cannula G24",
+          "price": 500
+        },
+        {
+          "key": "Drip Set",
+          "name": "Drip Set",
+          "price": 500
+        },
+        {
+          "key": "Gastric tube or NG tube",
+          "name": "Gastric tube or NG tube",
+          "price": 500
+        },
+        {
+          "key": "Haemoglobin Test Strips",
+          "name": "Haemoglobin Test Strips",
+          "price": 500
+        },
+        {
+          "key": "Large Urine Bags",
+          "name": "Large Urine Bags",
+          "price": 100
+        },
+        {
+          "key": "Lysol 100ml",
+          "name": "Lysol 100ml",
+          "price": 1500
+        },
+        {
+          "key": "Methylated Spirit",
+          "name": "Methylated Spirit",
+          "price": 4000
+        },
+        {
+          "key": "Nasogastric Tube No. 14",
+          "name": "Nasogastric Tube No. 14",
+          "price": 1500
+        },
+        {
+          "key": "Nasogastric Tube No. 16",
+          "name": "Nasogastric Tube No. 16",
+          "price": 1500
+        },
+        {
+          "key": "Needle (Hypodermic G21)",
+          "name": "Needle (Hypodermic G21)",
+          "price": 500
+        },
+        {
+          "key": "Perforated Plaster",
+          "name": "Perforated Plaster",
+          "price": 3500
+        },
+        {
+          "key": "Sterile Gloves No. 8",
+          "name": "Sterile Gloves No. 8",
+          "price": 1000
+        },
+        {
+          "key": "Surgical Blade",
+          "name": "Surgical Blade",
+          "price": 500
+        },
+        {
+          "key": "Surgical Gloves Latex 7.5",
+          "name": "Surgical Gloves Latex 7.5",
+          "price": 1500
+        },
+        {
+          "key": "Syringe 10ml",
+          "name": "Syringe 10ml",
+          "price": 100
+        },
+        {
+          "key": "Syringe 20ml",
+          "name": "Syringe 20ml",
+          "price": 100
+        },
+        {
+          "key": "Syringe 2ml",
+          "name": "Syringe 2ml",
+          "price": 100
+        },
+        {
+          "key": "Syringe 50ml",
+          "name": "Syringe 50ml",
+          "price": 100
+        },
+        {
+          "key": "Syringe 5ml (Auto)",
+          "name": "Syringe 5ml (Auto)",
+          "price": 100
+        },
+        {
+          "key": "Tongue Depressor",
+          "name": "Tongue Depressor",
+          "price": 500
+        },
+        {
+          "key": "Tranexamic Acid 500mg",
+          "name": "Tranexamic Acid 500mg",
+          "price": 2500
+        },
+        {
+          "key": "Urinary Bag (Paediatric/Adult)",
+          "name": "Urinary Bag (Paediatric/Adult)",
+          "price": 1000
+        },
+        {
+          "key": "Urinary Catheter No. 14",
+          "name": "Urinary Catheter No. 14",
+          "price": 1500
+        },
+        {
+          "key": "Urinary Catheter No. 16",
+          "name": "Urinary Catheter No. 16",
+          "price": 1000
+        },
+        {
+          "key": "Vitamin K1 10mg Injection",
+          "name": "Vitamin K1 10mg Injection",
+          "price": 3000
+        },
+        {
+          "key": "DB743",
+          "name": "Aiguille Epicranienne G23",
+          "price": 500
+        },
+        {
+          "key": "DB639",
+          "name": "Albendazole 400mg tab",
+          "price": 150
+        },
+        {
+          "key": "DB751",
+          "name": "Alcohol 96%",
+          "price": 3000
+        },
+        {
+          "key": "DB128",
+          "name": "Aldactone 25mg (Spironolactone)tab",
+          "price": 75
+        },
+        {
+          "key": "DB618",
+          "name": "Algofene 20mg/ml susp F/15ML",
+          "price": 2500
+        },
+        {
+          "key": "DB118",
+          "name": "Amlodipine 10mg tab",
+          "price": 100
+        },
+        {
+          "key": "DB630",
+          "name": "Ampicillin Sodium Inj 1g b/1",
+          "price": 500
+        },
+        {
+          "key": "DB683",
+          "name": "Amzval 10/160/25 mg tabs b/30",
+          "price": 11500
+        },
+        {
+          "key": "DB610",
+          "name": "Antalgex-T 37.5mg/325mg capsule",
+          "price": 150
+        },
+        {
+          "key": "DB712",
+          "name": "Apfer 100ml",
+          "price": 1000
+        },
+        {
+          "key": "DB711",
+          "name": "Apfer 200ml (Iron Supplement)",
+          "price": 1500
+        },
+        {
+          "key": "DB644",
+          "name": "Artefan 80/480mg cp B/6",
+          "price": 3000
+        },
+        {
+          "key": "DB109",
+          "name": "Artemether + Lumefantrine 40/120mg tab",
+          "price": 3000
+        },
+        {
+          "key": "DB643",
+          "name": "Artemether + Lumefantrine 80/480mg tab",
+          "price": 2500
+        },
+        {
+          "key": "DB651",
+          "name": "Artesunate 120mg inj B/1",
+          "price": 1500
+        },
+        {
+          "key": "DB650",
+          "name": "Artesunate 60mg inj B/1",
+          "price": 1000
+        },
+        {
+          "key": "DB604",
+          "name": "Aspirin 81mg",
+          "price": 35
+        },
+        {
+          "key": "DB645",
+          "name": "Astaph 250mg/5ml susp f/100ml",
+          "price": 4500
+        },
+        {
+          "key": "DB646",
+          "name": "Astaph 500mg caps b/12",
+          "price": 3500
+        },
+        {
+          "key": "DB732",
+          "name": "Atropine injection",
+          "price": 2000
+        },
+        {
+          "key": "DB647",
+          "name": "Azicure 200mg susp f/100ml",
+          "price": 4000
+        },
+        {
+          "key": "DB648",
+          "name": "Azicure 250mg tabs B/6",
+          "price": 4500
+        },
+        {
+          "key": "DB631",
+          "name": "Benzathine Penicillin Inj 2.4M b/1",
+          "price": 500
+        },
+        {
+          "key": "DB677",
+          "name": "Betaderm NM cream t/10g",
+          "price": 1500
+        },
+        {
+          "key": "DB662",
+          "name": "Betaderm NM creme T/10g",
+          "price": 1500
+        },
+        {
+          "key": "DB785",
+          "name": "Betadine rouge fl/125ml",
+          "price": 1500
+        },
+        {
+          "key": "DB784",
+          "name": "Betadine verte fl/125ml",
+          "price": 1600
+        },
+        {
+          "key": "DB679",
+          "name": "Bisoprolol 10mg",
+          "price": 150
+        },
+        {
+          "key": "DB780",
+          "name": "Butterfly",
+          "price": 500
+        },
+        {
+          "key": "DB718",
+          "name": "Calcium tabs",
+          "price": 100
+        },
+        {
+          "key": "DB121",
+          "name": "Captopril 25mg tab",
+          "price": 50
+        },
+        {
+          "key": "DB703",
+          "name": "Carbocisteine 2% f/100ml",
+          "price": 1000
+        },
+        {
+          "key": "DB702",
+          "name": "Carbocisteine 5% f/100ml",
+          "price": 1000
+        },
+        {
+          "key": "DB715",
+          "name": "Cartilamine Glucosamine B/30",
+          "price": 4550
+        },
+        {
+          "key": "DB739",
+          "name": "Catheter Yellow B×50 24G",
+          "price": 500
+        },
+        {
+          "key": "DB660",
+          "name": "Cefuroxime 750mg inj b/1",
+          "price": 1500
+        },
+        {
+          "key": "DB623",
+          "name": "Celecoxib 100mg B/10 tabs",
+          "price": 1000
+        },
+        {
+          "key": "DB624",
+          "name": "Celecoxib 200mg B/10 tabs",
+          "price": 1500
+        },
+        {
+          "key": "DB146",
+          "name": "Chlorpheniramine Maleate 4mg tab",
+          "price": 50
+        },
+        {
+          "key": "DB734",
+          "name": "Chlorure de Sodium 0.9% 500ml (Normal Saline)",
+          "price": 1000
+        },
+        {
+          "key": "DB657",
+          "name": "Ciprofloxacine 500mg tab",
+          "price": 100
+        },
+        {
+          "key": "DB706",
+          "name": "Clomifene 50mg tab",
+          "price": 700
+        },
+        {
+          "key": "DB690",
+          "name": "Clopidogrel 75mg B/10",
+          "price": 2600
+        },
+        {
+          "key": "DB641",
+          "name": "Coartem 20/120mg Paediatric syrup",
+          "price": 1500
+        },
+        {
+          "key": "DB642",
+          "name": "Coartem 80/480mg Adult tabs",
+          "price": 1500
+        },
+        {
+          "key": "DB682",
+          "name": "Colchicine 1mg b/20",
+          "price": 6500
+        },
+        {
+          "key": "DB699",
+          "name": "Cotipred 20mg cp efferv",
+          "price": 3500
+        },
+        {
+          "key": "DB636",
+          "name": "Cotrimoxazole 240mg/5ml Syrup",
+          "price": 1000
+        },
+        {
+          "key": "DB637",
+          "name": "Cotrimoxazole 480mg tabs",
+          "price": 100
+        },
+        {
+          "key": "DB632",
+          "name": "Crystaline Penicillin Inj 5M-20ml",
+          "price": 500
+        },
+        {
+          "key": "DB736",
+          "name": "Dakin Solution 500ml",
+          "price": 4000
+        },
+        {
+          "key": "DB704",
+          "name": "Dexamethasone 0.5mg bl/10",
+          "price": 500
+        },
+        {
+          "key": "DB722",
+          "name": "Diazepam injection 10mg/2ml",
+          "price": 1500
+        },
+        {
+          "key": "DB80",
+          "name": "Diclofenac 50mg Tablet",
+          "price": 100
+        },
+        {
+          "key": "DB612",
+          "name": "Diclofenac Pomade 30g 1%",
+          "price": 2000
+        },
+        {
+          "key": "DB738",
+          "name": "Distilled Water for Preparation 10ml",
+          "price": 100
+        },
+        {
+          "key": "DB607",
+          "name": "Doliprane 1000mg",
+          "price": 1500
+        },
+        {
+          "key": "DB666",
+          "name": "Doxycycline 100 mg tab",
+          "price": 100
+        },
+        {
+          "key": "DB665",
+          "name": "Doxycycline 200mg tabs b/1",
+          "price": 100
+        },
+        {
+          "key": "DB649",
+          "name": "Doxynor 100mg tabs b/20",
+          "price": 3500
+        },
+        {
+          "key": "DB727",
+          "name": "Dubix tabs 500/250mg b10",
+          "price": 4000
+        },
+        {
+          "key": "DB608",
+          "name": "Efferalgan 500mg",
+          "price": 100
+        },
+        {
+          "key": "DB609",
+          "name": "Efferalgan Codeine 530mg",
+          "price": 150
+        },
+        {
+          "key": "DB766",
+          "name": "Endotracheal tube 3.0",
+          "price": 2000
+        },
+        {
+          "key": "DB767",
+          "name": "Endotracheal tube 3.5",
+          "price": 2000
+        },
+        {
+          "key": "DB764",
+          "name": "Endotracheal tube 4.0",
+          "price": 2000
+        },
+        {
+          "key": "DB765",
+          "name": "Endotracheal tube 4.5",
+          "price": 2000
+        },
+        {
+          "key": "DB763",
+          "name": "Endotracheal tube 5.0",
+          "price": 2000
+        },
+        {
+          "key": "DB761",
+          "name": "Endotracheal tube 6.0",
+          "price": 2000
+        },
+        {
+          "key": "DB762",
+          "name": "Endotracheal tube 6.5",
+          "price": 2000
+        },
+        {
+          "key": "DB760",
+          "name": "Endotracheal tube 7.0",
+          "price": 2000
+        },
+        {
+          "key": "DB759",
+          "name": "Endotracheal tube 7.5",
+          "price": 2000
+        },
+        {
+          "key": "DB758",
+          "name": "Endotracheal tube 8.0",
+          "price": 2000
+        },
+        {
+          "key": "DB656",
+          "name": "Erythromycine 500mg tabs B/10",
+          "price": 1000
+        },
+        {
+          "key": "DB695",
+          "name": "Esomed 40mg cp b/30",
+          "price": 6500
+        },
+        {
+          "key": "DB640",
+          "name": "Fansidar 525mg",
+          "price": 500
+        },
+        {
+          "key": "DB733",
+          "name": "Fentanyl injection",
+          "price": 3500
+        },
+        {
+          "key": "DB713",
+          "name": "Fercefol 100ml",
+          "price": 2000
+        },
+        {
+          "key": "DB701",
+          "name": "Fervex sach B/8",
+          "price": 2500
+        },
+        {
+          "key": "DB671",
+          "name": "Fluconazole 200mg Capsule B/10",
+          "price": 1000
+        },
+        {
+          "key": "DB670",
+          "name": "Fluconazole Suspension 60ml",
+          "price": 1500
+        },
+        {
+          "key": "DB150",
+          "name": "Folic Acid 5mg tab",
+          "price": 25
+        },
+        {
+          "key": "DB680",
+          "name": "Furosemide 20mg/2ml Injection f/1",
+          "price": 500
+        },
+        {
+          "key": "DB616",
+          "name": "Gabapentine 300mg tab",
+          "price": 150
+        },
+        {
+          "key": "DB627",
+          "name": "Gagnerve P b/30",
+          "price": 9500
+        },
+        {
+          "key": "DB692",
+          "name": "Gastrokit Tablets",
+          "price": 6000
+        },
+        {
+          "key": "DB659",
+          "name": "Gentamicine inj b/1",
+          "price": 500
+        },
+        {
+          "key": "DB117",
+          "name": "Griseofulvin 500mg tab",
+          "price": 100
+        },
+        {
+          "key": "DB130",
+          "name": "HCTZ 25mg tab",
+          "price": 50
+        },
+        {
+          "key": "DB131",
+          "name": "HCTZ 50mg tab",
+          "price": 50
+        },
+        {
+          "key": "DB783",
+          "name": "Hexomedine 0.1% sol appli local f/250ml",
+          "price": 3500
+        },
+        {
+          "key": "DB611",
+          "name": "Ibuprofen + Paracetamol 100/125mg",
+          "price": 100
+        },
+        {
+          "key": "DB723",
+          "name": "Inoclim tab",
+          "price": 500
+        },
+        {
+          "key": "DB782",
+          "name": "Jersey 10cm x 1m",
+          "price": 1000
+        },
+        {
+          "key": "DB724",
+          "name": "Jesper 50mg tabs",
+          "price": 500
+        },
+        {
+          "key": "DB675",
+          "name": "Ketoconazole 2% cream",
+          "price": 1000
+        },
+        {
+          "key": "DB628",
+          "name": "Ketoprofene tab B/10",
+          "price": 1000
+        },
+        {
+          "key": "DB750",
+          "name": "Large Drug Bags",
+          "price": 100
+        },
+        {
+          "key": "DB132",
+          "name": "Lasix 40mg (Furosemide) tab",
+          "price": 50
+        },
+        {
+          "key": "DB753",
+          "name": "Lavril 100ml",
+          "price": 1500
+        },
+        {
+          "key": "DB705",
+          "name": "Lavril syrup F/100ml",
+          "price": 1500
+        },
+        {
+          "key": "DB655",
+          "name": "Levobact 750mg b/10",
+          "price": 5000
+        },
+        {
+          "key": "DB663",
+          "name": "Levofloxacine 500mg inj b/1",
+          "price": 2000
+        },
+        {
+          "key": "DB634",
+          "name": "Levofloxacine 500mg tab",
+          "price": 150
+        },
+        {
+          "key": "DB635",
+          "name": "Levofloxacine Perfusion 500mg",
+          "price": 2000
+        },
+        {
+          "key": "DB729",
+          "name": "Lidocaïne + Adrenaline Injection",
+          "price": 1600
+        },
+        {
+          "key": "DB728",
+          "name": "Lidocaïne 2% 50ml Injection",
+          "price": 1500
+        },
+        {
+          "key": "DB122",
+          "name": "Lisinopril 10mg tab",
+          "price": 100
+        },
+        {
+          "key": "DB693",
+          "name": "Litacold Syrup",
+          "price": 2000
+        },
+        {
+          "key": "DB652",
+          "name": "Longamycine 200mg b/8",
+          "price": 1550
+        },
+        {
+          "key": "DB141",
+          "name": "Loperamide 2mg tab",
+          "price": 25
+        },
+        {
+          "key": "DB698",
+          "name": "Loratadine 10mg",
+          "price": 50
+        },
+        {
+          "key": "DB689",
+          "name": "Loxen 10mg/10ml inj b/1",
+          "price": 1600
+        },
+        {
+          "key": "DB139",
+          "name": "Maalox Sachet",
+          "price": 250
+        },
+        {
+          "key": "DB617",
+          "name": "Melex 1mg tab",
+          "price": 250
+        },
+        {
+          "key": "DB149",
+          "name": "Metformin 500mg tab",
+          "price": 100
+        },
+        {
+          "key": "DB720",
+          "name": "Metformin LP 1000mg bl/10",
+          "price": 2000
+        },
+        {
+          "key": "DB691",
+          "name": "Metformin LP 1000mg tabs bl/10",
+          "price": 1000
+        },
+        {
+          "key": "DB661",
+          "name": "Metronidazole 500mg inj b/1",
+          "price": 1000
+        },
+        {
+          "key": "DB101",
+          "name": "Metronidazole 500mg tab",
+          "price": 50
+        },
+        {
+          "key": "DB672",
+          "name": "Miconazole Nitrate Cream 2% 30g",
+          "price": 1500
+        },
+        {
+          "key": "DB749",
+          "name": "Minigrip Papers",
+          "price": 50
+        },
+        {
+          "key": "DB709",
+          "name": "Multivitamin Syrup 100ml",
+          "price": 1000
+        },
+        {
+          "key": "DB735",
+          "name": "N/S 0.09% 500ml",
+          "price": 1000
+        },
+        {
+          "key": "DB779",
+          "name": "Nasal cannula adult",
+          "price": 2600
+        },
+        {
+          "key": "DB778",
+          "name": "Nasal cannula infant",
+          "price": 2600
+        },
+        {
+          "key": "DB777",
+          "name": "Nasal cannula neonatal",
+          "price": 2600
+        },
+        {
+          "key": "DB755",
+          "name": "Nasogastric N°6",
+          "price": 1000
+        },
+        {
+          "key": "DB757",
+          "name": "Nasogastric tube N°10",
+          "price": 1000
+        },
+        {
+          "key": "DB756",
+          "name": "Nasogastric tube N°8",
+          "price": 1000
+        },
+        {
+          "key": "DB745",
+          "name": "Nasogastric Tube No. 18",
+          "price": 1500
+        },
+        {
+          "key": "DB716",
+          "name": "Natecal Vit D 600/400UI b/60",
+          "price": 3500
+        },
+        {
+          "key": "DB684",
+          "name": "Natrixam 1.5/10mg tabs b/30",
+          "price": 9500
+        },
+        {
+          "key": "DB621",
+          "name": "Nealgyl 80mg cp disp b/10",
+          "price": 2000
+        },
+        {
+          "key": "DB687",
+          "name": "Nebilong 5mg tabs b/30mg",
+          "price": 250
+        },
+        {
+          "key": "DB626",
+          "name": "Nefopam inj B/1",
+          "price": 500
+        },
+        {
+          "key": "DB664",
+          "name": "Nidazol (metronidazole) ovules B/10",
+          "price": 2500
+        },
+        {
+          "key": "DB726",
+          "name": "Nidazol 500mg ovules b/10",
+          "price": 2500
+        },
+        {
+          "key": "DB119",
+          "name": "Nifedipine 20mg tab",
+          "price": 25
+        },
+        {
+          "key": "DB120",
+          "name": "Nifedipine Retard 20mg tab",
+          "price": 75
+        },
+        {
+          "key": "DB619",
+          "name": "Niflugel gel t/60g",
+          "price": 2000
+        },
+        {
+          "key": "DB638",
+          "name": "Nitrofurantoin 100mg",
+          "price": 75
+        },
+        {
+          "key": "DB707",
+          "name": "Nucleo CMP forte tab",
+          "price": 2000
+        },
+        {
+          "key": "DB776",
+          "name": "Nylon needle",
+          "price": 1000
+        },
+        {
+          "key": "DB673",
+          "name": "Nystatine Capsule 500,000 IU",
+          "price": 6500
+        },
+        {
+          "key": "DB674",
+          "name": "Nystatine Vaginal tab",
+          "price": 200
+        },
+        {
+          "key": "DB668",
+          "name": "Ofloxacine 200mg tab B/10",
+          "price": 1000
+        },
+        {
+          "key": "DB669",
+          "name": "Ofloxacine 400mg tab B/10",
+          "price": 1500
+        },
+        {
+          "key": "DB136",
+          "name": "Omeprazole 20mg tab",
+          "price": 75
+        },
+        {
+          "key": "DB694",
+          "name": "Omeprazole 40mg b/1 inj",
+          "price": 1000
+        },
+        {
+          "key": "DB159",
+          "name": "Oxytocin 10IU/ml (B/1)",
+          "price": 150
+        },
+        {
+          "key": "DB137",
+          "name": "Pantoprazole 40mg tab",
+          "price": 200
+        },
+        {
+          "key": "DB625",
+          "name": "Paracetamol 300mg/2ml inj b/1",
+          "price": 500
+        },
+        {
+          "key": "DB605",
+          "name": "Paracetamol 500mg + Diclofenac 50mg",
+          "price": 100
+        },
+        {
+          "key": "DB606",
+          "name": "Paracetamol Syrup 250mg/5ml",
+          "price": 1500
+        },
+        {
+          "key": "DB775",
+          "name": "Paraffin gauze B/1",
+          "price": 500
+        },
+        {
+          "key": "DB633",
+          "name": "Penicillin V 500mg tab",
+          "price": 100
+        },
+        {
+          "key": "DB747",
+          "name": "Perforated Plaster roll",
+          "price": 3500
+        },
+        {
+          "key": "DB725",
+          "name": "Pevagine 150mg b/3 ovules",
+          "price": 3500
+        },
+        {
+          "key": "DB676",
+          "name": "Pevagine 150mg ovule B/3",
+          "price": 3500
+        },
+        {
+          "key": "DB615",
+          "name": "Phloroglucinol 40mg/4ml Injection (Spasfon)",
+          "price": 500
+        },
+        {
+          "key": "DB614",
+          "name": "Phloroglucinol 80mg Tablet (Spasfon)",
+          "price": 100
+        },
+        {
+          "key": "DB696",
+          "name": "Polygel Antiacide tabs b/10",
+          "price": 500
+        },
+        {
+          "key": "DB667",
+          "name": "Polygynax ovules B/12",
+          "price": 4650
+        },
+        {
+          "key": "DB752",
+          "name": "Positon 30g Cream",
+          "price": 4000
+        },
+        {
+          "key": "DB654",
+          "name": "Positon cream t/30g",
+          "price": 4000
+        },
+        {
+          "key": "DB731",
+          "name": "Potassium Chloride 1g Injection",
+          "price": 1000
+        },
+        {
+          "key": "DB721",
+          "name": "Potassium Chloride 600mg tab",
+          "price": 100
+        },
+        {
+          "key": "DB700",
+          "name": "Prednsiolone 5mg",
+          "price": 50
+        },
+        {
+          "key": "DB688",
+          "name": "Ramithiazide 10/25 mg tabs b/30",
+          "price": 7000
+        },
+        {
+          "key": "DB710",
+          "name": "Revitalose A+B Drinkable",
+          "price": 5500
+        },
+        {
+          "key": "DB730",
+          "name": "Sodium Bicarbonate Powder 500g",
+          "price": 500
+        },
+        {
+          "key": "DB786",
+          "name": "Sofban 10cm",
+          "price": 1000
+        },
+        {
+          "key": "DB737",
+          "name": "Sterile Water for Injection 10ml",
+          "price": 100
+        },
+        {
+          "key": "DB746",
+          "name": "Surgical Gloves Laura T7.5",
+          "price": 1000
+        },
+        {
+          "key": "DB653",
+          "name": "Synriam 150/750 mg tabs b/3",
+          "price": 3000
+        },
+        {
+          "key": "DB740",
+          "name": "Syringe 1ml",
+          "price": 100
+        },
+        {
+          "key": "DB741",
+          "name": "Syringe 1ml Insulin",
+          "price": 100
+        },
+        {
+          "key": "DB185",
+          "name": "Syringe 5ml",
+          "price": 100
+        },
+        {
+          "key": "DB742",
+          "name": "Syringes 10ml",
+          "price": 100
+        },
+        {
+          "key": "DB622",
+          "name": "T-Dol rapid",
+          "price": 2600
+        },
+        {
+          "key": "DB678",
+          "name": "Telmisartan 80mg",
+          "price": 150
+        },
+        {
+          "key": "DB685",
+          "name": "Tensoplus 10/2.5/10mg tabs b/30",
+          "price": 20500
+        },
+        {
+          "key": "DB658",
+          "name": "Tinidazole 500mg tab",
+          "price": 100
+        },
+        {
+          "key": "DB748",
+          "name": "Tongue Depressors",
+          "price": 100
+        },
+        {
+          "key": "DB681",
+          "name": "Torasemide 20mg",
+          "price": 200
+        },
+        {
+          "key": "DB714",
+          "name": "Tot’hema amp buv",
+          "price": 4500
+        },
+        {
+          "key": "DB620",
+          "name": "Trabar 50mg caps b/10",
+          "price": 3000
+        },
+        {
+          "key": "DB208",
+          "name": "Tranexamic acid 500mg inj",
+          "price": 2000
+        },
+        {
+          "key": "DB781",
+          "name": "Transfuseur",
+          "price": 1000
+        },
+        {
+          "key": "DB719",
+          "name": "Tres Orix f/100ml",
+          "price": 2500
+        },
+        {
+          "key": "DB629",
+          "name": "Triam Denk 40mg inj B/1",
+          "price": 1000
+        },
+        {
+          "key": "DB686",
+          "name": "Triplixam 10/2.5/10mg tabs b/30",
+          "price": 21000
+        },
+        {
+          "key": "DB697",
+          "name": "Ulceride caps b/30",
+          "price": 5000
+        },
+        {
+          "key": "DB717",
+          "name": "Upsa C B/10",
+          "price": 1000
+        },
+        {
+          "key": "DB190",
+          "name": "Urinary Bag (Poche à Urine)",
+          "price": 500
+        },
+        {
+          "key": "DB744",
+          "name": "Urinary Catheter No. 18",
+          "price": 1000
+        },
+        {
+          "key": "DB770",
+          "name": "Vicryl cutting needle 1",
+          "price": 1000
+        },
+        {
+          "key": "DB769",
+          "name": "Vicryl cutting needle 2",
+          "price": 1000
+        },
+        {
+          "key": "DB768",
+          "name": "Vicryl cutting needle 2/0",
+          "price": 1000
+        },
+        {
+          "key": "DB774",
+          "name": "Vicryl round needle 1",
+          "price": 1000
+        },
+        {
+          "key": "DB771",
+          "name": "Vicryl round needle 2",
+          "price": 1000
+        },
+        {
+          "key": "DB772",
+          "name": "Vicryl round needle 2/0",
+          "price": 1000
+        },
+        {
+          "key": "DB773",
+          "name": "Vicryl round needle 3/0",
+          "price": 1000
+        },
+        {
+          "key": "DB151",
+          "name": "Vitamin B Complex tab",
+          "price": 50
+        },
+        {
+          "key": "DB708",
+          "name": "Vitamin E 400IU capsule",
+          "price": 100
+        },
+        {
+          "key": "DB754",
+          "name": "Vitamin K1 B/10 Injection",
+          "price": 500
+        },
+        {
+          "key": "DB613",
+          "name": "Voltareine Gel",
+          "price": 2500
+        }
+      ],
+      "default_price": 1000
+    },
+    "510105": {
+      "account_code": "510105",
       "label": "Revenue — Scans & Imaging — Ultrasound Scans",
       "hms_category": "scans_&_imaging",
       "hms_subcategory": "Ultrasound Scans",
@@ -765,16 +2455,7 @@
           "key": "US_THY",
           "name": "Thyroid Ultrasound",
           "price": 15000
-        }
-      ],
-      "default_price": 7000
-    },
-    "703602": {
-      "account_code": "703602",
-      "label": "Revenue — Scans & Imaging — Electrocardiography",
-      "hms_category": "scans_&_imaging",
-      "hms_subcategory": "Electrocardiography",
-      "services": [
+        },
         {
           "key": "ECG",
           "name": "ECG (12-lead)",
@@ -784,16 +2465,7 @@
           "key": "ECG_CTL",
           "name": "ECG Control (Follow-up)",
           "price": 7000
-        }
-      ],
-      "default_price": 10000
-    },
-    "703603": {
-      "account_code": "703603",
-      "label": "Revenue — Scans & Imaging — Special Radiological Procedures",
-      "hms_category": "scans_&_imaging",
-      "hms_subcategory": "Special Radiological Procedures",
-      "services": [
+        },
         {
           "key": "SP_HIP",
           "name": "Bone: Hip",
@@ -848,16 +2520,7 @@
           "key": "SP_URETHRO",
           "name": "Urethrography",
           "price": 55000
-        }
-      ],
-      "default_price": 7000
-    },
-    "703604": {
-      "account_code": "703604",
-      "label": "Revenue — Scans & Imaging — X-Ray Examinations",
-      "hms_category": "scans_&_imaging",
-      "hms_subcategory": "X-Ray Examinations",
-      "services": [
+        },
         {
           "key": "XR_ANKLE",
           "name": "Ankle X-Ray",
@@ -1017,16 +2680,7 @@
           "key": "XR_WRIST",
           "name": "Wrist X-Ray",
           "price": 10000
-        }
-      ],
-      "default_price": 10000
-    },
-    "703605": {
-      "account_code": "703605",
-      "label": "Revenue — Scans & Imaging — CT Scan (Computed Tomography)",
-      "hms_category": "scans_&_imaging",
-      "hms_subcategory": "CT Scan (Computed Tomography)",
-      "services": [
+        },
         {
           "key": "Abdomen — Plain",
           "name": "Abdomen — Plain",
@@ -1156,25 +2810,6 @@
           "key": "Whole Spine",
           "name": "Whole Spine",
           "price": 80000
-        }
-      ],
-      "default_price": 40000
-    },
-    "703606": {
-      "account_code": "703606",
-      "label": "Revenue — Scans & Imaging — MRI (Magnetic Resonance Imaging)",
-      "hms_category": "scans_&_imaging",
-      "hms_subcategory": "MRI (Magnetic Resonance Imaging)",
-      "services": [
-        {
-          "key": "Abdomen — Plain",
-          "name": "Abdomen — Plain",
-          "price": 75000
-        },
-        {
-          "key": "Abdomen — With Contrast",
-          "name": "Abdomen — With Contrast",
-          "price": 100000
         },
         {
           "key": "Ankle & Foot",
@@ -1247,24 +2882,9 @@
           "price": 80000
         },
         {
-          "key": "Pelvis — Plain",
-          "name": "Pelvis — Plain",
-          "price": 70000
-        },
-        {
-          "key": "Pelvis — With Contrast",
-          "name": "Pelvis — With Contrast",
-          "price": 95000
-        },
-        {
           "key": "Shoulder",
           "name": "Shoulder",
           "price": 85000
-        },
-        {
-          "key": "Spine (Cervical) — Plain",
-          "name": "Spine (Cervical) — Plain",
-          "price": 65000
         },
         {
           "key": "Spine (Cervical) — With Contrast",
@@ -1272,19 +2892,9 @@
           "price": 90000
         },
         {
-          "key": "Spine (Lumbar) — Plain",
-          "name": "Spine (Lumbar) — Plain",
-          "price": 65000
-        },
-        {
           "key": "Spine (Lumbar) — With Contrast",
           "name": "Spine (Lumbar) — With Contrast",
           "price": 90000
-        },
-        {
-          "key": "Spine (Thoracic) — Plain",
-          "name": "Spine (Thoracic) — Plain",
-          "price": 65000
         },
         {
           "key": "Whole Body MRI",
@@ -1292,24 +2902,10 @@
           "price": 200000
         },
         {
-          "key": "Whole Spine",
-          "name": "Whole Spine",
-          "price": 150000
-        },
-        {
           "key": "Wrist & Hand",
           "name": "Wrist & Hand",
           "price": 85000
-        }
-      ],
-      "default_price": 75000
-    },
-    "703607": {
-      "account_code": "703607",
-      "label": "Revenue — Scans & Imaging — Nuclear Medicine / Scintigraphy",
-      "hms_category": "scans_&_imaging",
-      "hms_subcategory": "Nuclear Medicine / Scintigraphy",
-      "services": [
+        },
         {
           "key": "Bone Scan (Scintigraphy)",
           "name": "Bone Scan (Scintigraphy)",
@@ -1344,16 +2940,7 @@
           "key": "Thyroid Scan",
           "name": "Thyroid Scan",
           "price": 60000
-        }
-      ],
-      "default_price": 80000
-    },
-    "703608": {
-      "account_code": "703608",
-      "label": "Revenue — Scans & Imaging — Fluoroscopy & Special Studies",
-      "hms_category": "scans_&_imaging",
-      "hms_subcategory": "Fluoroscopy & Special Studies",
-      "services": [
+        },
         {
           "key": "Barium Enema",
           "name": "Barium Enema",
@@ -1393,819 +2980,7 @@
           "key": "Sinogram / Fistulogram",
           "name": "Sinogram / Fistulogram",
           "price": 45000
-        }
-      ],
-      "default_price": 55000
-    },
-    "704601": {
-      "account_code": "704601",
-      "label": "Revenue — Pharmacy — Analgesics & Anti-inflammatory",
-      "hms_category": "pharmacy",
-      "hms_subcategory": "Analgesics & Anti-inflammatory",
-      "services": [
-        {
-          "key": "Analgin Injection",
-          "name": "Analgin Injection",
-          "price": 1000
         },
-        {
-          "key": "Artifenac Forte (Diclofenac Sodium)",
-          "name": "Artifenac Forte (Diclofenac Sodium)",
-          "price": 100
-        },
-        {
-          "key": "Aspirin 300mg",
-          "name": "Aspirin 300mg",
-          "price": 20
-        },
-        {
-          "key": "Carbamazepine 200mg",
-          "name": "Carbamazepine 200mg",
-          "price": 150
-        },
-        {
-          "key": "Diclofenac 100mg",
-          "name": "Diclofenac 100mg",
-          "price": 1500
-        },
-        {
-          "key": "Diclofenac 50mg Tablets",
-          "name": "Diclofenac 50mg Tablets",
-          "price": 20
-        },
-        {
-          "key": "Diclofenac 75mg Injection",
-          "name": "Diclofenac 75mg Injection",
-          "price": 500
-        },
-        {
-          "key": "Diclofenac Gastro-resistant",
-          "name": "Diclofenac Gastro-resistant",
-          "price": 20
-        },
-        {
-          "key": "Diclofenac Potassium 50mg",
-          "name": "Diclofenac Potassium 50mg",
-          "price": 2000
-        },
-        {
-          "key": "Efferalgan Codeine 500mg",
-          "name": "Efferalgan Codeine 500mg",
-          "price": 150
-        },
-        {
-          "key": "Ibuprofen",
-          "name": "Ibuprofen",
-          "price": 20
-        },
-        {
-          "key": "Ibuprofen + Paracetamol 200/325mg",
-          "name": "Ibuprofen + Paracetamol 200/325mg",
-          "price": 100
-        },
-        {
-          "key": "Ibuprofen 400mg",
-          "name": "Ibuprofen 400mg",
-          "price": 100
-        },
-        {
-          "key": "Misoprostol",
-          "name": "Misoprostol",
-          "price": 250
-        },
-        {
-          "key": "Paracetamol 500mg",
-          "name": "Paracetamol 500mg",
-          "price": 20
-        },
-        {
-          "key": "Paracetamol 500mg + Caffeine 30mg + Codeine 8mg",
-          "name": "Paracetamol 500mg + Caffeine 30mg + Codeine 8mg",
-          "price": 100
-        },
-        {
-          "key": "Paracetamol Syrup 120mg/5ml",
-          "name": "Paracetamol Syrup 120mg/5ml",
-          "price": 1000
-        },
-        {
-          "key": "Phenobarbital 100mg Tablet (Gardenal)",
-          "name": "Phenobarbital 100mg Tablet (Gardenal)",
-          "price": 100
-        },
-        {
-          "key": "Phenobarbital 200mg/ml Injection (Gardenal)",
-          "name": "Phenobarbital 200mg/ml Injection (Gardenal)",
-          "price": 500
-        },
-        {
-          "key": "Voltarene Gel",
-          "name": "Voltarene Gel",
-          "price": 2500
-        }
-      ],
-      "default_price": 1000
-    },
-    "704602": {
-      "account_code": "704602",
-      "label": "Revenue — Pharmacy — Antibiotics & Antiparasitics",
-      "hms_category": "pharmacy",
-      "hms_subcategory": "Antibiotics & Antiparasitics",
-      "services": [
-        {
-          "key": "Acyclovir 400mg Tablets",
-          "name": "Acyclovir 400mg Tablets",
-          "price": 250
-        },
-        {
-          "key": "Acyclovir Ointment",
-          "name": "Acyclovir Ointment",
-          "price": 3500
-        },
-        {
-          "key": "Albendazole",
-          "name": "Albendazole",
-          "price": 150
-        },
-        {
-          "key": "Ampicillin Sodium 1g Injection",
-          "name": "Ampicillin Sodium 1g Injection",
-          "price": 2500
-        },
-        {
-          "key": "Artemether + Lumefantrine 20/120 mg",
-          "name": "Artemether + Lumefantrine 20/120 mg",
-          "price": 2500
-        },
-        {
-          "key": "Artemether + Lumefantrine 40/120 mg",
-          "name": "Artemether + Lumefantrine 40/120 mg",
-          "price": 2000
-        },
-        {
-          "key": "Artemether Injection 80mg",
-          "name": "Artemether Injection 80mg",
-          "price": 1000
-        },
-        {
-          "key": "Benzathine Penicillin 2.4 MIU (Bicillin)",
-          "name": "Benzathine Penicillin 2.4 MIU (Bicillin)",
-          "price": 3500
-        },
-        {
-          "key": "Cefixime Syrup",
-          "name": "Cefixime Syrup",
-          "price": 2000
-        },
-        {
-          "key": "Ceftriaxone 1g Inj + Water for Inj",
-          "name": "Ceftriaxone 1g Inj + Water for Inj",
-          "price": 1000
-        },
-        {
-          "key": "Clarithromycin 500mg",
-          "name": "Clarithromycin 500mg",
-          "price": 500
-        },
-        {
-          "key": "Co-trimoxazole 240mg/5ml Syrup",
-          "name": "Co-trimoxazole 240mg/5ml Syrup",
-          "price": 1000
-        },
-        {
-          "key": "Co-trimoxazole 480mg (Bactrim)",
-          "name": "Co-trimoxazole 480mg (Bactrim)",
-          "price": 2000
-        },
-        {
-          "key": "Coartem 20/120mg (Artemether)",
-          "name": "Coartem 20/120mg (Artemether)",
-          "price": 1500
-        },
-        {
-          "key": "Coartem Dispersible Adult",
-          "name": "Coartem Dispersible Adult",
-          "price": 1500
-        },
-        {
-          "key": "Crystalline Penicillin G 1M Units",
-          "name": "Crystalline Penicillin G 1M Units",
-          "price": 2500
-        },
-        {
-          "key": "Fansidar 500mg",
-          "name": "Fansidar 500mg",
-          "price": 500
-        },
-        {
-          "key": "Levofloxacin 500mg",
-          "name": "Levofloxacin 500mg",
-          "price": 150
-        },
-        {
-          "key": "Levofloxacin Perfusion Syrup",
-          "name": "Levofloxacin Perfusion Syrup",
-          "price": 2000
-        },
-        {
-          "key": "Metronidazole 500mg",
-          "name": "Metronidazole 500mg",
-          "price": 75
-        },
-        {
-          "key": "Penicillin V 250mg",
-          "name": "Penicillin V 250mg",
-          "price": 100
-        }
-      ],
-      "default_price": 250
-    },
-    "704603": {
-      "account_code": "704603",
-      "label": "Revenue — Pharmacy — Antifungals",
-      "hms_category": "pharmacy",
-      "hms_subcategory": "Antifungals",
-      "services": [
-        {
-          "key": "Fluconazole 200mg Capsule",
-          "name": "Fluconazole 200mg Capsule",
-          "price": 1000
-        },
-        {
-          "key": "Fluconazole Suspension 50mg",
-          "name": "Fluconazole Suspension 50mg",
-          "price": 1500
-        },
-        {
-          "key": "Griseofulvin 500mg",
-          "name": "Griseofulvin 500mg",
-          "price": 100
-        },
-        {
-          "key": "Miconazole Nitrate Cream 2% 15g",
-          "name": "Miconazole Nitrate Cream 2% 15g",
-          "price": 1500
-        },
-        {
-          "key": "Nystatin Capsule 500,000 IU",
-          "name": "Nystatin Capsule 500,000 IU",
-          "price": 6000
-        },
-        {
-          "key": "Nystatin Oral Suspension 100,000 Units/ml",
-          "name": "Nystatin Oral Suspension 100,000 Units/ml",
-          "price": 1000
-        },
-        {
-          "key": "Nystatin Vaginal",
-          "name": "Nystatin Vaginal",
-          "price": 200
-        }
-      ],
-      "default_price": 1000
-    },
-    "704604": {
-      "account_code": "704604",
-      "label": "Revenue — Pharmacy — Cardiovascular",
-      "hms_category": "pharmacy",
-      "hms_subcategory": "Cardiovascular",
-      "services": [
-        {
-          "key": "Aldactone 25mg (Spironolactone)",
-          "name": "Aldactone 25mg (Spironolactone)",
-          "price": 75
-        },
-        {
-          "key": "Amlodipine 10mg",
-          "name": "Amlodipine 10mg",
-          "price": 100
-        },
-        {
-          "key": "Atorvastatin 20mg",
-          "name": "Atorvastatin 20mg",
-          "price": 175
-        },
-        {
-          "key": "Bisoprolol 5mg",
-          "name": "Bisoprolol 5mg",
-          "price": 100
-        },
-        {
-          "key": "Captopril 25mg",
-          "name": "Captopril 25mg",
-          "price": 50
-        },
-        {
-          "key": "Digoxin 0.25mg",
-          "name": "Digoxin 0.25mg",
-          "price": 50
-        },
-        {
-          "key": "Frusemide 20mg/2ml Injection",
-          "name": "Frusemide 20mg/2ml Injection",
-          "price": 500
-        },
-        {
-          "key": "HCTZ 25mg",
-          "name": "HCTZ 25mg",
-          "price": 50
-        },
-        {
-          "key": "HCTZ 50mg",
-          "name": "HCTZ 50mg",
-          "price": 50
-        },
-        {
-          "key": "Hydralazine 50mg",
-          "name": "Hydralazine 50mg",
-          "price": 100
-        },
-        {
-          "key": "Lasix 40mg (Furosemide)",
-          "name": "Lasix 40mg (Furosemide)",
-          "price": 50
-        },
-        {
-          "key": "Lisinopril 10mg",
-          "name": "Lisinopril 10mg",
-          "price": 100
-        },
-        {
-          "key": "Losartan 50mg",
-          "name": "Losartan 50mg",
-          "price": 100
-        },
-        {
-          "key": "Nifedipine 20mg",
-          "name": "Nifedipine 20mg",
-          "price": 25
-        },
-        {
-          "key": "Nifedipine Retard 20mg",
-          "name": "Nifedipine Retard 20mg",
-          "price": 75
-        },
-        {
-          "key": "Propranolol 40mg",
-          "name": "Propranolol 40mg",
-          "price": 50
-        },
-        {
-          "key": "Telmisartan 40mg",
-          "name": "Telmisartan 40mg",
-          "price": 150
-        },
-        {
-          "key": "Torsemide 20mg",
-          "name": "Torsemide 20mg",
-          "price": 200
-        }
-      ],
-      "default_price": 75
-    },
-    "704605": {
-      "account_code": "704605",
-      "label": "Revenue — Pharmacy — Gastrointestinal",
-      "hms_category": "pharmacy",
-      "hms_subcategory": "Gastrointestinal",
-      "services": [
-        {
-          "key": "Bisacodyl 5mg",
-          "name": "Bisacodyl 5mg",
-          "price": 2000
-        },
-        {
-          "key": "Cimetidine 200mg Injection",
-          "name": "Cimetidine 200mg Injection",
-          "price": 1500
-        },
-        {
-          "key": "Gestid Tablet",
-          "name": "Gestid Tablet",
-          "price": 6000
-        },
-        {
-          "key": "Loperamide 2mg",
-          "name": "Loperamide 2mg",
-          "price": 25
-        },
-        {
-          "key": "Maalox Tablet",
-          "name": "Maalox Tablet",
-          "price": 2500
-        },
-        {
-          "key": "Omeprazole 20mg",
-          "name": "Omeprazole 20mg",
-          "price": 75
-        },
-        {
-          "key": "ORS + Zinc",
-          "name": "ORS + Zinc",
-          "price": 100
-        },
-        {
-          "key": "Pantoprazole 40mg",
-          "name": "Pantoprazole 40mg",
-          "price": 200
-        }
-      ],
-      "default_price": 2000
-    },
-    "704606": {
-      "account_code": "704606",
-      "label": "Revenue — Pharmacy — Respiratory",
-      "hms_category": "pharmacy",
-      "hms_subcategory": "Respiratory",
-      "services": [
-        {
-          "key": "Chlorpheniramine Maleate 4mg",
-          "name": "Chlorpheniramine Maleate 4mg",
-          "price": 10
-        },
-        {
-          "key": "Salbutamol Inhaler",
-          "name": "Salbutamol Inhaler",
-          "price": 2500
-        },
-        {
-          "key": "Salbutamol Nebules",
-          "name": "Salbutamol Nebules",
-          "price": 1000
-        }
-      ],
-      "default_price": 10
-    },
-    "704607": {
-      "account_code": "704607",
-      "label": "Revenue — Pharmacy — Endocrine & Metabolic",
-      "hms_category": "pharmacy",
-      "hms_subcategory": "Endocrine & Metabolic",
-      "services": [
-        {
-          "key": "Aptamil (Baby Milk Supplement)",
-          "name": "Aptamil (Baby Milk Supplement)",
-          "price": 5500
-        },
-        {
-          "key": "Aptamil 400g",
-          "name": "Aptamil 400g",
-          "price": 1000
-        },
-        {
-          "key": "Diabetic Test Sugar Strips",
-          "name": "Diabetic Test Sugar Strips",
-          "price": 3500
-        },
-        {
-          "key": "Folic Acid 5mg",
-          "name": "Folic Acid 5mg",
-          "price": 20
-        },
-        {
-          "key": "Glibenclamide 500mg (Daonil)",
-          "name": "Glibenclamide 500mg (Daonil)",
-          "price": 20
-        },
-        {
-          "key": "Metformin 500mg",
-          "name": "Metformin 500mg",
-          "price": 100
-        },
-        {
-          "key": "Multivitamin Baby Drops",
-          "name": "Multivitamin Baby Drops",
-          "price": 1200
-        },
-        {
-          "key": "Multivitamin Syrup 200ml",
-          "name": "Multivitamin Syrup 200ml",
-          "price": 1500
-        },
-        {
-          "key": "Revitalose or Equiv",
-          "name": "Revitalose or Equiv",
-          "price": 4500
-        },
-        {
-          "key": "Vitamin B Complex",
-          "name": "Vitamin B Complex",
-          "price": 50
-        },
-        {
-          "key": "Vitamin B12 1000mcg",
-          "name": "Vitamin B12 1000mcg",
-          "price": 100
-        }
-      ],
-      "default_price": 5500
-    },
-    "704608": {
-      "account_code": "704608",
-      "label": "Revenue — Pharmacy — Neurology",
-      "hms_category": "pharmacy",
-      "hms_subcategory": "Neurology",
-      "services": [
-        {
-          "key": "Phenobarbital 100mg Injection",
-          "name": "Phenobarbital 100mg Injection",
-          "price": 1000
-        }
-      ],
-      "default_price": 1000
-    },
-    "704609": {
-      "account_code": "704609",
-      "label": "Revenue — Pharmacy — Obstetrics",
-      "hms_category": "pharmacy",
-      "hms_subcategory": "Obstetrics",
-      "services": [
-        {
-          "key": "Oxytocin 10IU/ml Injection",
-          "name": "Oxytocin 10IU/ml Injection",
-          "price": 1500
-        }
-      ],
-      "default_price": 1500
-    },
-    "704610": {
-      "account_code": "704610",
-      "label": "Revenue — Pharmacy — Anaesthetics & Emergency",
-      "hms_category": "pharmacy",
-      "hms_subcategory": "Anaesthetics & Emergency",
-      "services": [
-        {
-          "key": "Adrenaline Injection",
-          "name": "Adrenaline Injection",
-          "price": 500
-        },
-        {
-          "key": "Dexamethasone 4mg Injection",
-          "name": "Dexamethasone 4mg Injection",
-          "price": 1000
-        },
-        {
-          "key": "Hydrocortisone Injection",
-          "name": "Hydrocortisone Injection",
-          "price": 1500
-        },
-        {
-          "key": "Lidocaine + Adrenaline Injection",
-          "name": "Lidocaine + Adrenaline Injection",
-          "price": 1000
-        },
-        {
-          "key": "Lidocaine 2% 50ml Injection",
-          "name": "Lidocaine 2% 50ml Injection",
-          "price": 1500
-        },
-        {
-          "key": "Potassium Chloride Injection",
-          "name": "Potassium Chloride Injection",
-          "price": 1000
-        },
-        {
-          "key": "Sodium Bicarbonate 250g",
-          "name": "Sodium Bicarbonate 250g",
-          "price": 500
-        },
-        {
-          "key": "Sodium Bicarbonate Powder 100g",
-          "name": "Sodium Bicarbonate Powder 100g",
-          "price": 500
-        }
-      ],
-      "default_price": 500
-    },
-    "704611": {
-      "account_code": "704611",
-      "label": "Revenue — Pharmacy — Intravenous Fluids",
-      "hms_category": "pharmacy",
-      "hms_subcategory": "Intravenous Fluids",
-      "services": [
-        {
-          "key": "Chloride de Sodium 0.9% 500ml (Normal Saline)",
-          "name": "Chloride de Sodium 0.9% 500ml (Normal Saline)",
-          "price": 1000
-        },
-        {
-          "key": "Darro's Solution 500ml",
-          "name": "Darro's Solution 500ml",
-          "price": 4000
-        },
-        {
-          "key": "Distilled Water for Preparation 1.5ml",
-          "name": "Distilled Water for Preparation 1.5ml",
-          "price": 100
-        },
-        {
-          "key": "Glucose 10% 500ml",
-          "name": "Glucose 10% 500ml",
-          "price": 1500
-        },
-        {
-          "key": "Glucose 5% + NaCl 0.9% 500ml",
-          "name": "Glucose 5% + NaCl 0.9% 500ml",
-          "price": 1500
-        },
-        {
-          "key": "Glucose 5% 500ml",
-          "name": "Glucose 5% 500ml",
-          "price": 1000
-        },
-        {
-          "key": "Glucose 50% 100ml",
-          "name": "Glucose 50% 100ml",
-          "price": 2000
-        },
-        {
-          "key": "NS 0.9% 500ml",
-          "name": "NS 0.9% 500ml",
-          "price": 1000
-        },
-        {
-          "key": "Ringer Lactate 500ml",
-          "name": "Ringer Lactate 500ml",
-          "price": 1500
-        },
-        {
-          "key": "Water for Inj Injection 10ml",
-          "name": "Water for Inj Injection 10ml",
-          "price": 100
-        }
-      ],
-      "default_price": 1000
-    },
-    "704612": {
-      "account_code": "704612",
-      "label": "Revenue — Pharmacy — Consumables & Surgical Materials",
-      "hms_category": "pharmacy",
-      "hms_subcategory": "Consumables & Surgical Materials",
-      "services": [
-        {
-          "key": "Alcohol 70%",
-          "name": "Alcohol 70%",
-          "price": 3000
-        },
-        {
-          "key": "Atropine Paper",
-          "name": "Atropine Paper",
-          "price": 50
-        },
-        {
-          "key": "Betadine",
-          "name": "Betadine",
-          "price": 1500
-        },
-        {
-          "key": "Cannula G18",
-          "name": "Cannula G18",
-          "price": 500
-        },
-        {
-          "key": "Cannula G20",
-          "name": "Cannula G20",
-          "price": 500
-        },
-        {
-          "key": "Cannula G22",
-          "name": "Cannula G22",
-          "price": 500
-        },
-        {
-          "key": "Cannula G24",
-          "name": "Cannula G24",
-          "price": 500
-        },
-        {
-          "key": "Drip Set",
-          "name": "Drip Set",
-          "price": 500
-        },
-        {
-          "key": "Gastric tube or NG tube",
-          "name": "Gastric tube or NG tube",
-          "price": 500
-        },
-        {
-          "key": "Haemoglobin Test Strips",
-          "name": "Haemoglobin Test Strips",
-          "price": 3500
-        },
-        {
-          "key": "Large Urine Bags",
-          "name": "Large Urine Bags",
-          "price": 100
-        },
-        {
-          "key": "Lysol 100ml",
-          "name": "Lysol 100ml",
-          "price": 1500
-        },
-        {
-          "key": "Methylated Spirit",
-          "name": "Methylated Spirit",
-          "price": 4000
-        },
-        {
-          "key": "Nasogastric Tube No. 14",
-          "name": "Nasogastric Tube No. 14",
-          "price": 1500
-        },
-        {
-          "key": "Nasogastric Tube No. 16",
-          "name": "Nasogastric Tube No. 16",
-          "price": 1500
-        },
-        {
-          "key": "Needle (Hypodermic G21)",
-          "name": "Needle (Hypodermic G21)",
-          "price": 500
-        },
-        {
-          "key": "Perforated Plaster",
-          "name": "Perforated Plaster",
-          "price": 3500
-        },
-        {
-          "key": "Sterile Gloves No. 8",
-          "name": "Sterile Gloves No. 8",
-          "price": 1500
-        },
-        {
-          "key": "Surgical Blade",
-          "name": "Surgical Blade",
-          "price": 500
-        },
-        {
-          "key": "Surgical Gloves Latex 7.5",
-          "name": "Surgical Gloves Latex 7.5",
-          "price": 1500
-        },
-        {
-          "key": "Syringe 10ml",
-          "name": "Syringe 10ml",
-          "price": 100
-        },
-        {
-          "key": "Syringe 20ml",
-          "name": "Syringe 20ml",
-          "price": 100
-        },
-        {
-          "key": "Syringe 2ml",
-          "name": "Syringe 2ml",
-          "price": 100
-        },
-        {
-          "key": "Syringe 50ml",
-          "name": "Syringe 50ml",
-          "price": 100
-        },
-        {
-          "key": "Syringe 5ml (Auto)",
-          "name": "Syringe 5ml (Auto)",
-          "price": 100
-        },
-        {
-          "key": "Tongue Depressor",
-          "name": "Tongue Depressor",
-          "price": 500
-        },
-        {
-          "key": "Tranexamic Acid 500mg",
-          "name": "Tranexamic Acid 500mg",
-          "price": 2500
-        },
-        {
-          "key": "Urinary Bag (Paediatric/Adult)",
-          "name": "Urinary Bag (Paediatric/Adult)",
-          "price": 1000
-        },
-        {
-          "key": "Urinary Catheter No. 14",
-          "name": "Urinary Catheter No. 14",
-          "price": 1500
-        },
-        {
-          "key": "Urinary Catheter No. 16",
-          "name": "Urinary Catheter No. 16",
-          "price": 1500
-        },
-        {
-          "key": "Vitamin K1 10mg Injection",
-          "name": "Vitamin K1 10mg Injection",
-          "price": 3000
-        }
-      ],
-      "default_price": 3000
-    },
-    "706611": {
-      "account_code": "706611",
-      "label": "Revenue — Maternity — Antenatal Care (ANC)",
-      "hms_category": "maternity",
-      "hms_subcategory": "Antenatal Care (ANC)",
-      "services": [
         {
           "key": "ANC Booking / Registration",
           "name": "ANC Booking / Registration",
@@ -2335,16 +3110,7 @@
           "key": "Weight & Fundal Height Measurement",
           "name": "Weight & Fundal Height Measurement",
           "price": 500
-        }
-      ],
-      "default_price": 2000
-    },
-    "706612": {
-      "account_code": "706612",
-      "label": "Revenue — Maternity — Labour & Delivery",
-      "hms_category": "maternity",
-      "hms_subcategory": "Labour & Delivery",
-      "services": [
+        },
         {
           "key": "After-Hours Delivery Surcharge",
           "name": "After-Hours Delivery Surcharge",
@@ -2464,16 +3230,7 @@
           "key": "Vacuum Extraction",
           "name": "Vacuum Extraction",
           "price": 50000
-        }
-      ],
-      "default_price": 10000
-    },
-    "706613": {
-      "account_code": "706613",
-      "label": "Revenue — Maternity — Postnatal Care (PNC)",
-      "hms_category": "maternity",
-      "hms_subcategory": "Postnatal Care (PNC)",
-      "services": [
+        },
         {
           "key": "Breastfeeding Counselling",
           "name": "Breastfeeding Counselling",
@@ -2553,16 +3310,7 @@
           "key": "Wound Dressing (CS Wound)",
           "name": "Wound Dressing (CS Wound)",
           "price": 1500
-        }
-      ],
-      "default_price": 1000
-    },
-    "706614": {
-      "account_code": "706614",
-      "label": "Revenue — Maternity — Neonatal / Newborn Care",
-      "hms_category": "maternity",
-      "hms_subcategory": "Neonatal / Newborn Care",
-      "services": [
+        },
         {
           "key": "BCG Vaccination",
           "name": "BCG Vaccination",
@@ -2662,16 +3410,7 @@
           "key": "Vitamin K Injection (Newborn)",
           "name": "Vitamin K Injection (Newborn)",
           "price": 1500
-        }
-      ],
-      "default_price": 1000
-    },
-    "706615": {
-      "account_code": "706615",
-      "label": "Revenue — Maternity — Obstetric Complications & Emergency",
-      "hms_category": "maternity",
-      "hms_subcategory": "Obstetric Complications & Emergency",
-      "services": [
+        },
         {
           "key": "B-Lynch Suture",
           "name": "B-Lynch Suture",
@@ -2731,16 +3470,7 @@
           "key": "Repair of Vesico-Vaginal Fistula (VVF)",
           "name": "Repair of Vesico-Vaginal Fistula (VVF)",
           "price": 350000
-        }
-      ],
-      "default_price": 30000
-    },
-    "706621": {
-      "account_code": "706621",
-      "label": "Revenue — Surgery — General Surgery",
-      "hms_category": "surgery",
-      "hms_subcategory": "General Surgery",
-      "services": [
+        },
         {
           "key": "SURG002",
           "name": "Appendectomy (Laparoscopic)",
@@ -2905,16 +3635,7 @@
           "key": "SURG029",
           "name": "Wound Debridement (Major)",
           "price": 100000
-        }
-      ],
-      "default_price": 200000
-    },
-    "706622": {
-      "account_code": "706622",
-      "label": "Revenue — Surgery — Obstetrics & Gynecology",
-      "hms_category": "surgery",
-      "hms_subcategory": "Obstetrics & Gynecology",
-      "services": [
+        },
         {
           "key": "SURG064",
           "name": "Bartholin Cyst/Abscess Excision",
@@ -3074,16 +3795,7 @@
           "key": "SURG065",
           "name": "Vulvar Biopsy / Perineoplasty",
           "price": 120000
-        }
-      ],
-      "default_price": 85000
-    },
-    "706623": {
-      "account_code": "706623",
-      "label": "Revenue — Surgery — Orthopedics & Trauma",
-      "hms_category": "surgery",
-      "hms_subcategory": "Orthopedics & Trauma",
-      "services": [
+        },
         {
           "key": "SURG076",
           "name": "ACL Reconstruction",
@@ -3193,16 +3905,7 @@
           "key": "SURG082",
           "name": "Tendon Repair",
           "price": 150000
-        }
-      ],
-      "default_price": 340000
-    },
-    "706624": {
-      "account_code": "706624",
-      "label": "Revenue — Surgery — Urology",
-      "hms_category": "surgery",
-      "hms_subcategory": "Urology",
-      "services": [
+        },
         {
           "key": "SURG088",
           "name": "Circumcision (Adult)",
@@ -3292,16 +3995,7 @@
           "key": "SURG091",
           "name": "Varicocelectomy",
           "price": 145000
-        }
-      ],
-      "default_price": 85000
-    },
-    "706625": {
-      "account_code": "706625",
-      "label": "Revenue — Surgery — ENT",
-      "hms_category": "surgery",
-      "hms_subcategory": "ENT",
-      "services": [
+        },
         {
           "key": "SURG117",
           "name": "Direct Laryngoscopy",
@@ -3361,16 +4055,7 @@
           "key": "SURG107",
           "name": "Tonsillectomy + Adenoidectomy",
           "price": 170000
-        }
-      ],
-      "default_price": 160000
-    },
-    "706626": {
-      "account_code": "706626",
-      "label": "Revenue — Surgery — Ophthalmology",
-      "hms_category": "surgery",
-      "hms_subcategory": "Ophthalmology",
-      "services": [
+        },
         {
           "key": "SURG118",
           "name": "Cataract Surgery (Phaco)",
@@ -3420,16 +4105,7 @@
           "key": "SURG120",
           "name": "Trabeculectomy (Glaucoma)",
           "price": 215000
-        }
-      ],
-      "default_price": 220000
-    },
-    "706631": {
-      "account_code": "706631",
-      "label": "Revenue — Nursing & Ward — Nursing & Ward Services",
-      "hms_category": "nursing_&_ward",
-      "hms_subcategory": "Nursing & Ward Services",
-      "services": [
+        },
         {
           "key": "NW_ALC_MAJ",
           "name": "Alcohol Dressing (Major)",
@@ -3544,107 +4220,44 @@
           "key": "NW_UTIL",
           "name": "Utilities",
           "price": 2500
-        }
-      ],
-      "default_price": 2000
-    },
-    "706641": {
-      "account_code": "706641",
-      "label": "Revenue — Vaccination — Vaccination — Routine EPI dose",
-      "hms_category": "vaccination",
-      "hms_subcategory": "Vaccination — Routine EPI dose",
-      "services": [
+        },
         {
           "key": "Vaccination — Routine EPI dose",
           "name": "Vaccination — Routine EPI dose",
           "price": 1000
-        }
-      ],
-      "default_price": 1000
-    },
-    "706642": {
-      "account_code": "706642",
-      "label": "Revenue — Vaccination — Vaccination — Travel vaccine",
-      "hms_category": "vaccination",
-      "hms_subcategory": "Vaccination — Travel vaccine",
-      "services": [
+        },
         {
           "key": "Vaccination — Travel vaccine",
           "name": "Vaccination — Travel vaccine",
           "price": 15000
-        }
-      ],
-      "default_price": 15000
-    },
-    "706643": {
-      "account_code": "706643",
-      "label": "Revenue — Vaccination — Vaccination — Occupational / Hep B series",
-      "hms_category": "vaccination",
-      "hms_subcategory": "Vaccination — Occupational / Hep B series",
-      "services": [
+        },
         {
           "key": "Vaccination — Occupational / Hep B series",
           "name": "Vaccination — Occupational / Hep B series",
           "price": 5000
-        }
-      ],
-      "default_price": 5000
-    },
-    "706644": {
-      "account_code": "706644",
-      "label": "Revenue — Vaccination — Vaccination — Influenza",
-      "hms_category": "vaccination",
-      "hms_subcategory": "Vaccination — Influenza",
-      "services": [
+        },
         {
           "key": "Vaccination — Influenza",
           "name": "Vaccination — Influenza",
           "price": 8000
-        }
-      ],
-      "default_price": 8000
-    },
-    "706645": {
-      "account_code": "706645",
-      "label": "Revenue — Vaccination — Vaccination — COVID-19",
-      "hms_category": "vaccination",
-      "hms_subcategory": "Vaccination — COVID-19",
-      "services": [
+        },
         {
           "key": "Vaccination — COVID-19",
           "name": "Vaccination — COVID-19",
           "price": 0
-        }
-      ],
-      "default_price": 0
-    },
-    "706646": {
-      "account_code": "706646",
-      "label": "Revenue — Vaccination — Immunization card / certificate",
-      "hms_category": "vaccination",
-      "hms_subcategory": "Immunization card / certificate",
-      "services": [
+        },
         {
           "key": "Immunization card / certificate",
           "name": "Immunization card / certificate",
           "price": 500
-        }
-      ],
-      "default_price": 500
-    },
-    "706647": {
-      "account_code": "706647",
-      "label": "Revenue — Vaccination — Vaccination counselling session",
-      "hms_category": "vaccination",
-      "hms_subcategory": "Vaccination counselling session",
-      "services": [
+        },
         {
           "key": "Vaccination counselling session",
           "name": "Vaccination counselling session",
           "price": 1000
         }
       ],
-      "default_price": 1000
+      "default_price": 7000
     }
   }
 }

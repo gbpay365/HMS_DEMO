@@ -17,7 +17,7 @@
     "no_records": "No records.",
     "day_n": "Day {{n}}",
     "beds": "{{count}} beds",
-    "fcfa": "FCFA"
+    "fcfa": "NGN"
   },
   "status": {
     "admitted": "Admitted",
@@ -381,7 +381,7 @@
     "desc_required_title": "Description required",
     "desc_required_text": "Enter a short description for this miscellaneous charge.",
     "invalid_amount_title": "Invalid amount",
-    "invalid_amount_text": "Enter a positive amount in FCFA.",
+    "invalid_amount_text": "Enter a positive amount.",
     "drug_tablet": "Tablet / Capsule",
     "drug_injection": "Injection",
     "drug_drip": "IV Drip / Infusion",
@@ -427,7 +427,7 @@
     "pay_later": "Pay Later",
     "pay_later_hint": "Waive payment validation now — collect hospitalisation fee at Cashier before discharge.",
     "patient_code_mismatch": "This payment code belongs to a different patient.",
-    "assign_payment_ok": "Hospitalisation fee validated · deposit {{amount}} FCFA",
+    "assign_payment_ok": "Hospitalisation fee validated · deposit {{amount}}",
     "pay_later_select_patient": "Search and select the patient to admit — hospitalisation fee can be collected at Cashier later.",
     "enter_code": "Please enter a payment code.",
     "validating": "Validating…",
@@ -481,7 +481,10 @@
       "qr_code": "BetterPay",
       "momo": "MOMO",
       "om": "OM",
-      "bank": "Bank"
+      "bank": "Bank",
+      "pos": "POS",
+      "paystack": "Paystack",
+      "ussd": "USSD"
     }
   },
   "detail": {

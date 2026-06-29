@@ -1,99 +1,81 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { StatCard } from './StatCard';
+import { SurfaceHero } from './SurfaceHero';
 import {
   formatStaffMoney,
   kpisForTab,
   kpiValue,
   panelsForTab,
-  staffDashboardMeta} from '../lib/staffDashboardCatalog';
+  staffDashboardMeta,
+} from '../lib/staffDashboardCatalog';
 
-const LIGHT = {
-  bg: '#f8fafc',
-  surface: '#ffffff',
-  border: '#e2e8f0',
-  text: '#0f172a',
-  textMid: '#64748b',
-  blue: '#1d6fe8',
-  green: '#059669',
-  amber: '#b45309',
-  red: '#dc2626',
-  purple: '#6d28d9'};
+const KPI_ICON_FALLBACK = {
+  totalReceived: 'calculator',
+  totalDisbursement: 'arrow-circle-o-up',
+  balance: 'balance-scale',
+  receivedCash: 'money',
+  receivedMomo: 'mobile',
+  receivedOm: 'mobile',
+  receivedBetterpay: 'qrcode',
+  receivedWallet: 'credit-card',
+};
 
-const DARK = {
-  bg: '#0F1117',
-  surface: '#181C27',
-  border: 'rgba(255,255,255,0.08)',
-  text: '#E8EBF4',
-  textMid: '#7A82A0',
-  blue: '#4E8CF5',
-  green: '#36C98E',
-  amber: '#F5A623',
-  red: '#F05050',
-  purple: '#A78BFA'};
-
-function KpiCard({ kpi, data, t, theme }) {
-  const val = kpiValue(data, kpi.dataKey);
-  const display =
-    typeof val === 'number' && kpi.dataKey?.includes('revenue')
-      ? formatStaffMoney(val)
-      : String(val);
-  return (
-    <div
-      style={{
-        background: theme.surface,
-        border: `1px solid ${theme.border}`,
-        borderRadius: 12,
-        padding: '14px 16px',
-        minWidth: 140}}
-    >
-      <div style={{ fontSize: 11, color: theme.textMid, marginBottom: 6 }}>{kpi.label}</div>
-      <div style={{ fontSize: 22, fontWeight: 800, color: kpi.color || theme.text }}>{display}</div>
-      {data?.kpi?.[kpi.dataKey]?.sub ? (
-        <div style={{ fontSize: 11, color: theme.textMid, marginTop: 4 }}>{data.kpi[kpi.dataKey].sub}</div>
-      ) : null}
-    </div>
-  );
+function normalizeIcon(icon) {
+  const raw = String(icon || '').trim();
+  if (!raw) return null;
+  return raw.replace(/^fa-/, '');
 }
 
-function PanelBox({ title, children, theme }) {
+function resolveKpiIcon(kpi) {
+  return normalizeIcon(kpi.icon) || KPI_ICON_FALLBACK[kpi.dataKey] || 'bar-chart';
+}
+
+function kpiTone(kpi) {
+  if (kpi.dataKey === 'totalDisbursement') return 'danger';
+  if (kpi.dataKey === 'balance') return 'success';
+  if (kpi.dataKey === 'totalReceived') return 'brand';
+  if (String(kpi.dataKey || '').includes('revenue')) return 'brand';
+  if (String(kpi.dataKey || '').includes('pending')) return 'warning';
+  return 'default';
+}
+
+function formatKpiValue(kpi, data) {
+  const val = kpiValue(data, kpi.dataKey);
+  if (val === '—') return '—';
+  if (kpi.format === 'money' || (typeof val === 'number' && String(kpi.dataKey || '').includes('revenue'))) {
+    return formatStaffMoney(val);
+  }
+  if (typeof val === 'number') return val.toLocaleString('fr-FR');
+  return String(val);
+}
+
+function PanelCard({ title, children }) {
   return (
-    <div
-      style={{
-        background: theme.surface,
-        border: `1px solid ${theme.border}`,
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16}}
-    >
-      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: theme.text }}>{title}</div>
+    <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-card">
+      <h3 className="mb-3 text-sm font-bold text-ink">{title}</h3>
       {children}
     </div>
   );
 }
 
-function renderPanel(panel, data, t, theme) {
+function renderPanel(panel, data, t) {
   const panels = data?.panels || {};
   const rows = panels[panel.dataKey];
 
   if (panel.id === 'quick_actions' && Array.isArray(rows)) {
     return (
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+      <div className="flex flex-wrap gap-2">
         {rows.map((a) => (
           <a
             key={a.code}
             href={a.url}
+            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold no-underline"
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 14px',
-              borderRadius: 10,
               background: `${a.color}18`,
               color: a.color,
-              fontWeight: 600,
-              fontSize: 13,
-              textDecoration: 'none',
-              border: `1px solid ${a.color}44`}}
+              border: `1px solid ${a.color}44`,
+            }}
           >
             {a.label}
           </a>
@@ -104,9 +86,9 @@ function renderPanel(panel, data, t, theme) {
 
   if (panel.id === 'management_reports' && Array.isArray(rows)) {
     return (
-      <div style={{ display: 'grid', gap: 8 }}>
+      <div className="grid gap-2">
         {rows.map((r) => (
-          <a key={r.url} href={r.url} style={{ color: theme.blue, fontSize: 13, textDecoration: 'none' }}>
+          <a key={r.url} href={r.url} className="text-sm font-medium text-brand no-underline hover:underline">
             → {r.label}
           </a>
         ))}
@@ -116,11 +98,11 @@ function renderPanel(panel, data, t, theme) {
 
   if (panel.id === 'hospital_pulse' && Array.isArray(rows)) {
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 10 }}>
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {rows.map((r) => (
-          <div key={r.label} style={{ padding: 10, borderRadius: 8, background: `${theme.blue}10` }}>
-            <div style={{ fontSize: 11, color: theme.textMid }}>{r.label}</div>
-            <div style={{ fontSize: 20, fontWeight: 700 }}>{r.value}</div>
+          <div key={r.label} className="rounded-lg bg-slate-50 px-3 py-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{r.label}</div>
+            <div className="mt-0.5 text-lg font-bold text-ink">{r.value}</div>
           </div>
         ))}
       </div>
@@ -128,39 +110,47 @@ function renderPanel(panel, data, t, theme) {
   }
 
   if (!Array.isArray(rows) || !rows.length) {
-    return <div style={{ fontSize: 13, color: theme.textMid }}>{t('staffDashboard.no_data')}</div>;
+    return <div className="text-sm text-slate-500">{t('staffDashboard.no_data')}</div>;
   }
 
   return (
-    <div style={{ display: 'grid', gap: 8 }}>
+    <div className="divide-y divide-slate-100">
       {rows.slice(0, 10).map((row, idx) => (
-        <div
-          key={row.id || idx}
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            gap: 12,
-            fontSize: 13,
-            padding: '8px 0',
-            borderBottom: `1px solid ${theme.border}`}}
-        >
-          <span style={{ color: theme.text }}>
+        <div key={row.id || idx} className="flex items-center justify-between gap-3 py-2 text-sm">
+          <span className="font-medium text-ink">
             {row.patient || row.title || row.name || row.drug || row.code || row.patient_name || '—'}
           </span>
-          <span style={{ color: theme.textMid }}>
-            {row.status || row.time || row.department || row.ticket || row.validateUrl ? (
-              row.validateUrl ? (
-                <a href={row.validateUrl} style={{ color: theme.green }}>
-                  {t('staffDashboard.validate')}
-                </a>
-              ) : (
-                row.status || row.time || row.department || row.ticket
-              )
+          <span className="shrink-0 text-slate-500">
+            {row.validateUrl ? (
+              <a href={row.validateUrl} className="font-semibold text-emerald-600 no-underline hover:underline">
+                {t('staffDashboard.validate')}
+              </a>
             ) : (
-              '—'
+              row.status || row.time || row.department || row.ticket || '—'
             )}
           </span>
         </div>
+      ))}
+    </div>
+  );
+}
+
+function KpiGrid({ kpis, data }) {
+  if (!kpis.length) return null;
+  return (
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-8">
+      {kpis.map((kpi, idx) => (
+        <StatCard
+          key={kpi.id}
+          label={kpi.label}
+          value={formatKpiValue(kpi, data)}
+          tone={kpiTone(kpi)}
+          icon={resolveKpiIcon(kpi)}
+          accentColor={kpi.color || null}
+          size="compact"
+          animated
+          animationDelay={idx * 60}
+        />
       ))}
     </div>
   );
@@ -170,10 +160,10 @@ export function StaffOperationalDashboard({
   profile = 'front_desk',
   dashboardTabs = [],
   dashboardKpis = [],
-  dashboardPanels = []}) {
+  dashboardPanels = [],
+}) {
   const { t } = useTranslation('clinical');
   const meta = staffDashboardMeta(profile);
-  const theme = meta.theme === 'dark' ? DARK : LIGHT;
   const tabs = dashboardTabs.length ? dashboardTabs : [{ id: 'today', label: t('staffDashboard.tab_today') }];
   const [tab, setTab] = useState(tabs[0]?.id || 'today');
   const [data, setData] = useState(null);
@@ -203,90 +193,75 @@ export function StaffOperationalDashboard({
   const tabKpis = kpisForTab(dashboardKpis, tab);
   const tabPanels = panelsForTab(dashboardPanels, tab);
 
+  const profileIcon = {
+    cashier: 'money',
+    front_desk: 'hand-o-right',
+    secretary: 'briefcase',
+    assistant_director: 'line-chart',
+  }[profile] || 'bar-chart';
+
   return (
-    <div style={{ background: theme.bg, minHeight: '60vh', fontFamily: 'Inter, system-ui, sans-serif', color: theme.text }}>
-      <div
-        style={{
-          background: theme.surface,
-          borderBottom: `1px solid ${theme.border}`,
-          padding: '14px 24px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 12}}
-      >
-        <div>
-          <div style={{ fontSize: 16, fontWeight: 700 }}>{t(meta.titleKey)}</div>
-          <div style={{ fontSize: 12, color: theme.textMid }}>{t(meta.subtitleKey)}</div>
+    <div className="hms-staff-operational-dashboard">
+      <SurfaceHero icon={profileIcon} title={t(meta.titleKey)} subtitle={t(meta.subtitleKey)}>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {tabs.length > 1
+            ? tabs.map((tb) => (
+                <button
+                  key={tb.id}
+                  type="button"
+                  onClick={() => setTab(tb.id)}
+                  className={`rounded-full px-3 py-1 text-xs font-bold transition ${
+                    tab === tb.id
+                      ? 'bg-brand text-white shadow-sm'
+                      : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  {tb.label}
+                </button>
+              ))
+            : null}
+          <button
+            type="button"
+            onClick={load}
+            disabled={loading}
+            className="ml-auto inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-60"
+          >
+            <i className={`fa fa-refresh${loading ? ' fa-spin' : ''}`} aria-hidden="true" />
+            {t('staffDashboard.refresh')}
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={load}
-          style={{
-            padding: '6px 12px',
-            borderRadius: 8,
-            border: `1px solid ${theme.border}`,
-            background: theme.surface,
-            cursor: 'pointer',
-            fontSize: 12}}
-        >
-          ↻ {t('staffDashboard.refresh')}
-        </button>
-      </div>
+      </SurfaceHero>
 
-      <div style={{ padding: '20px 24px', maxWidth: 1200, margin: '0 auto' }}>
-        {error ? (
-          <div style={{ padding: 12, background: `${theme.red}18`, color: theme.red, borderRadius: 8, marginBottom: 16 }}>
-            {error}
-          </div>
-        ) : null}
+      {error ? (
+        <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+      ) : null}
 
-        {tabs.length > 1 ? (
-          <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-            {tabs.map((tb) => (
-              <button
-                key={tb.id}
-                type="button"
-                onClick={() => setTab(tb.id)}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: 20,
-                  border: `1px solid ${tab === tb.id ? theme.blue : theme.border}`,
-                  background: tab === tb.id ? `${theme.blue}18` : theme.surface,
-                  color: tab === tb.id ? theme.blue : theme.textMid,
-                  fontWeight: tab === tb.id ? 700 : 400,
-                  cursor: 'pointer',
-                  fontSize: 12}}
-              >
-                {tb.label}
-              </button>
-            ))}
-          </div>
-        ) : null}
+      {loading ? <div className="mb-4 text-sm text-slate-500">{t('staffDashboard.loading')}</div> : null}
 
-        {loading ? <div style={{ color: theme.textMid }}>{t('staffDashboard.loading')}</div> : null}
+      {!loading && data ? (
+        <>
+          {tabKpis.length > 0 ? (
+            <div className="mb-5">
+              <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+                {t('staffDashboard.summary_heading')}
+              </h2>
+              <KpiGrid kpis={tabKpis} data={data} />
+            </div>
+          ) : (
+            <div className="mb-4 text-sm text-slate-500">{t('staffDashboard.no_data')}</div>
+          )}
 
-        {!loading && data ? (
-          <>
-            {tabKpis.length > 0 ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 12, marginBottom: 20 }}>
-                {tabKpis.map((kpi) => (
-                  <KpiCard key={kpi.id} kpi={kpi} data={data} t={t} theme={theme} />
-                ))}
-              </div>
-            ) : null}
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 16 }}>
+          {tabPanels.length > 0 ? (
+            <div className="grid gap-3 lg:grid-cols-2">
               {tabPanels.map((panel) => (
-                <PanelBox key={panel.id} title={panel.label} theme={theme}>
-                  {renderPanel(panel, data, t, theme)}
-                </PanelBox>
+                <PanelCard key={panel.id} title={panel.label}>
+                  {renderPanel(panel, data, t)}
+                </PanelCard>
               ))}
             </div>
-          </>
-        ) : null}
-      </div>
+          ) : null}
+        </>
+      ) : null}
     </div>
   );
 }

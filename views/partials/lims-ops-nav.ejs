@@ -1,0 +1,16 @@
+<%
+var _opsMenu = locals.limsOpsMenu || '';
+function _opsActive(key) { return _opsMenu === key ? ' active' : ''; }
+%>
+<div class="hms-chip-row mb-3 flex-wrap">
+ <span class="small text-muted font-weight-bold mr-2 align-self-center">LIMS ops</span>
+ <a href="/lims/ops/investigation" class="hms-chip<%= _opsActive('investigation') %>">Investigation status</a>
+ <a href="/lims/ops/status" class="hms-chip<%= _opsActive('status') %>">Order board</a>
+ <a href="/lims/ops/priority" class="hms-chip<%= _opsActive('priority') %>">Priority queue</a>
+ <a href="/lims/ops/dispatch" class="hms-chip<%= _opsActive('dispatch') %>">Dispatch</a>
+ <a href="/lims/ops/dept-matrix" class="hms-chip<%= _opsActive('dept') %>">Dept matrix</a>
+ <a href="/lims/ops/test-status" class="hms-chip<%= _opsActive('test') %>">Test analytics</a>
+ <a href="/lims/ops/referrers" class="hms-chip<%= _opsActive('referrers') %>">Referrers</a>
+ <a href="/lims/ops/walk-in" class="hms-chip<%= _opsActive('walkin') %>">Walk-in</a>
+ <a href="/lims/ops/mis" class="hms-chip<%= _opsActive('mis') %>">MIS hub</a>
+</div>

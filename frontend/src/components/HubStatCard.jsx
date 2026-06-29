@@ -11,13 +11,35 @@ function normalizeIcon(icon) {
   return cls.startsWith('fa-') ? cls : `fa-${cls}`;
 }
 
-export function HubStatCard({ label, value, icon = 'fa-bar-chart', color = '#475569' }) {
+export function HubStatCard({ label, value, icon = 'fa-bar-chart', color = '#475569', compact = false }) {
   const rgb = hexToRgb(color);
   const iconCls = normalizeIcon(icon);
   const bgGradient = rgb
-    ? `linear-gradient(135deg, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.16) 0%, rgba(255,255,255,0.95) 55%, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.06) 100%)`
+    ? `linear-gradient(135deg, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.14) 0%, rgba(255,255,255,0.98) 60%, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.05) 100%)`
     : 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)';
-  const borderColor = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.28)` : '#e2e8f0';
+  const borderColor = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.24)` : '#e2e8f0';
+
+  if (compact) {
+    return (
+      <div
+        className="hms-hub-stat-compact group relative overflow-hidden rounded-xl border p-3 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
+        style={{ background: bgGradient, borderColor }}
+      >
+        <div className="flex items-center gap-3">
+          <span
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base text-white shadow-sm"
+            style={{ background: `linear-gradient(135deg, ${color}, ${color}cc)` }}
+          >
+            <i className={`fa ${iconCls}`} aria-hidden="true" />
+          </span>
+          <div className="min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500 leading-tight">{label}</div>
+            <div className="text-xl font-extrabold leading-tight tabular-nums" style={{ color }}>{value}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

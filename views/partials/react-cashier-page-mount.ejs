@@ -1,0 +1,20 @@
+<%
+  var _page = locals.reactPage || 'cashier';
+  var _loadingLabel = locals.reactLoadingLabel || (typeof t === 'function' ? t('loading_pages.cashier', { ns: 'common' }) : 'Loading…');
+  var _cashierPage = locals.cashierPage || 'dashboard';
+%>
+<%- include('cashier-odoo-start', {
+  cashierPage: _cashierPage,
+  pendingCount: locals.pendingCount,
+  billingPendingCount: locals.billingPendingCount,
+  userDisplayName: locals.userDisplayName,
+  cashierUserInitials: locals.cashierUserInitials,
+  cashierUserRole: locals.cashierUserRole,
+  flash: locals.flash,
+  error: locals.error
+}) %>
+<%- include('react-page-mount', {
+  reactPage: _page,
+  reactLoadingLabel: _loadingLabel
+}) %>
+<%- include('cashier-odoo-end') %>

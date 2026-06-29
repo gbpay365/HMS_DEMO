@@ -1,0 +1,14 @@
+<% if (locals.user) { %>
+<div class="o_nav_extras" id="hmsNavTopExtras">
+  <span class="o_nav_datetime" id="hmsNavDateTime" aria-live="polite"></span>
+  <a href="/dashboard" class="o_nav_icon_btn" id="hmsNavNotifyBtn" title="<%= typeof _t === 'function' ? _t('notifications', { ns: 'nav', defaultValue: 'Notifications' }) : 'Notifications' %>" aria-label="<%= typeof _t === 'function' ? _t('notifications', { ns: 'nav', defaultValue: 'Notifications' }) : 'Notifications' %>">
+    <i class="fa fa-bell" aria-hidden="true"></i>
+    <span class="o_nav_badge o_nav_badge--blue" id="hmsNavNotifyCount" hidden>0</span>
+  </a>
+  <a href="/ipd/inbox" class="o_nav_icon_btn" id="hmsNavMsgBtn" title="<%= typeof _t === 'function' ? _t('messages', { ns: 'nav', defaultValue: 'Messages' }) : 'Messages' %>" aria-label="<%= typeof _t === 'function' ? _t('messages', { ns: 'nav', defaultValue: 'Messages' }) : 'Messages' %>">
+    <i class="fa fa-envelope" aria-hidden="true"></i>
+    <span class="o_nav_badge o_nav_badge--amber" id="hmsNavMsgCount" hidden>0</span>
+  </a>
+  <span class="o_nav_status_pill" title="System online">ON</span>
+</div>
+<% } %>

@@ -36,7 +36,10 @@
   {h:'/lims/results',i:'fa-file-text-o',tKey:'menu_results',def:'Test results'},
   {h:'/laboratory/validate',i:'fa-qrcode',tKey:'menu_validate',def:'Validate code'},
   {h:'/lab/templates',i:'fa-list-alt',tKey:'menu_templates',def:'Templates'},
-  {h:'/lims/config',i:'fa-cog',tKey:'menu_config',def:'Configuration'}
+  {h:'/lims/config',i:'fa-cog',tKey:'menu_config',def:'Configuration'},
+  {h:'/lims/ops/investigation',i:'fa-tasks',tKey:'menu_ops',def:'LIMS operations'},
+  {h:'/lims/ops/walk-in',i:'fa-user-plus',tKey:'menu_walk_in',def:'Walk-in register'},
+  {h:'/lims/ops/mis',i:'fa-bar-chart',tKey:'menu_mis',def:'MIS hub'}
  ].forEach(function(m){ %>
  <a href="<%= m.h %>" class="hms-surface-card hms-menu-tile"<% if (m.gate) { %> data-hms-lims-new-request<% } %>>
   <i class="fa <%= m.i %> hms-menu-tile__ico" aria-hidden="true"></i><strong><%= _t('lims_hub_page.' + m.tKey, { ns: 'legacy', defaultValue: m.def }) %></strong>

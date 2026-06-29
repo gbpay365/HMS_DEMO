@@ -1,3 +1,4 @@
+<% locals.hmsSurfaceBodyClass = ' hms-body--billing'; %>
 <%- include('partials/header') %>
 <% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
 <div class="page-wrapper"><div class="content">
@@ -89,7 +90,7 @@
      <td><%= cl.first_name ? cl.first_name+' '+cl.last_name : '#P-'+cl.patient_id %></td>
      <td><%= cl.insurer_name||'—' %></td>
      <td class="text-muted"><%= cl.diagnosis||'—' %></td>
-     <td class="text-right font-weight-bold"><%= parseFloat(cl.billed_amount||0).toLocaleString('fr-FR') %> FCFA</td>
+     <td class="text-right font-weight-bold"><%= parseFloat(cl.billed_amount||0).toLocaleString('fr-FR') %></td>
      <td><span class="badge <%= badgeClass %> px-2 py-1"><%= statusLabel %></span></td>
      <td>
       <button class="btn btn-sm btn-outline-info" title="<%= _t('insurance_claims.action_review', { ns: 'legacy', defaultValue: 'Review' }) %>"><i class="fa fa-eye"></i></button>

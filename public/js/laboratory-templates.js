@@ -17,10 +17,70 @@
   }
   function flagBadge(kind) {
     var cls =
-      kind === 'low' ? 'badge-primary' : kind === 'high' ? 'badge-warning text-dark' : 'badge-success';
+      kind === 'low' ? 'badge-primary' : kind === 'high' ? 'badge-warning text-dark' : kind === 'critical' ? 'badge-danger' : 'badge-success';
     var label =
-      kind === 'low' ? L('flag_low', 'LOW') : kind === 'high' ? L('flag_high', 'HIGH') : L('flag_ok', 'OK');
+      kind === 'low'
+        ? L('flag_low', 'LOW')
+        : kind === 'high'
+          ? L('flag_high', 'HIGH')
+          : kind === 'critical'
+            ? L('flag_critical', 'CRITICAL')
+            : L('flag_ok', 'OK');
     return '<span class="badge ' + cls + '">' + escapeHtml(label) + '</span>';
+  }
+
+  var deltaTimers = {};
+
+  function parsePatientNumericId(raw) {
+    var s = String(raw || '').trim();
+    var m = s.match(/(\d+)/);
+    return m ? parseInt(m[1], 10) : 0;
+  }
+
+  function deltaBadgeHtml(delta) {
+    if (!delta || !delta.hasDelta) return '';
+    return (
+      '<span class="badge badge-info text-white ml-1" title="' +
+      escapeHtml(L('delta_hint', 'Large change vs prior result')) +
+      '">' +
+      escapeHtml(Lfmt('delta_pct', 'Δ {{pct}}%', { pct: delta.deltaPct })) +
+      '</span>'
+    );
+  }
+
+  function scheduleDeltaCheck(key, field, val) {
+    if (deltaTimers[key]) clearTimeout(deltaTimers[key]);
+    deltaTimers[key] = setTimeout(function () {
+      checkFieldDelta(key, field, val);
+    }, 400);
+  }
+
+  function checkFieldDelta(key, field, val) {
+    var slot = document.getElementById('delta_' + key);
+    if (!slot) return;
+    slot.innerHTML = '';
+    if (Number.isNaN(val) || !currentTest) return;
+    var patientId = parsePatientNumericId(document.getElementById('pid') && document.getElementById('pid').value);
+    if (patientId < 1) return;
+    var qs = new URLSearchParams({
+      patientId: String(patientId),
+      testId: currentTest.id,
+      fieldKey: key,
+      value: String(val),
+    });
+    if (window.__LAB_ORDER.labResultId) qs.set('labResultId', String(window.__LAB_ORDER.labResultId));
+    fetch('/api/lab/field-delta?' + qs.toString(), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (j) {
+        if (j.success && j.data && j.data.hasDelta) {
+          slot.innerHTML = deltaBadgeHtml(j.data);
+        }
+      })
+      .catch(function () {
+        /* optional */
+      });
   }
 
   let LAB_TEST_TEMPLATES = {};
@@ -525,10 +585,14 @@
         const flag = document.createElement('div');
         flag.className = 'labtpl-flag-slot';
         flag.id = 'flag_' + field.key;
+        const delta = document.createElement('div');
+        delta.className = 'labtpl-delta-slot small';
+        delta.id = 'delta_' + field.key;
         card.appendChild(label);
         card.appendChild(inputEl);
         card.appendChild(ref);
         card.appendChild(flag);
+        card.appendChild(delta);
       } else if (field.type === 'textarea') {
         inputEl = document.createElement('textarea');
         inputEl.className = 'hms-input w-full text-sm';
@@ -598,7 +662,12 @@
       } else {
         el.classList.add('flag-ok');
       }
+      var span = field.normalMax - field.normalMin || 1;
+      if (val < field.normalMin - span * 0.5 || val > field.normalMax + span * 0.5) {
+        if (badge) badge.innerHTML = flagBadge('critical');
+      }
     }
+    scheduleDeltaCheck(key, field, val);
   }
 
   function buildReportPrintOpts() {
@@ -729,7 +798,8 @@
       patientInfo: report.patientInfo,
       testId: report.testId,
       values: report.values,
-      conclusion: report.conclusion
+      conclusion: report.conclusion,
+      criticalManual: !!(document.getElementById('labCriticalManual') && document.getElementById('labCriticalManual').checked),
     };
     if (window.__LAB_ORDER.serviceCode) {
       persistBody.serviceCode = window.__LAB_ORDER.serviceCode;
@@ -854,6 +924,16 @@
     document.getElementById('searchInput').addEventListener('input', function () {
       buildSidebar(this.value.toLowerCase().trim());
     });
+
+    var concWrap = document.querySelector('.labtpl-conclusion');
+    if (concWrap && !document.getElementById('labCriticalManual')) {
+      var critLbl = document.createElement('label');
+      critLbl.className = 'small d-flex align-items-center mt-2 mb-0';
+      critLbl.innerHTML =
+        '<input type="checkbox" id="labCriticalManual" class="mr-2"> ' +
+        escapeHtml(L('critical_manual', 'Mark as critical result'));
+      concWrap.appendChild(critLbl);
+    }
 
     var ocrInput = document.getElementById('labTplOcrInput');
     if (ocrInput) {

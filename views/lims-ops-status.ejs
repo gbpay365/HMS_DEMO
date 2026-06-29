@@ -1,0 +1,44 @@
+<%- include('partials/header') %>
+<%- include('partials/laboratory-odoo-start', {
+  labOdooMenu: 'operations',
+  labOdooTitle: 'Order status board'
+}) %>
+<div class="o_content">
+<%- include('partials/lims-ops-nav', { limsOpsMenu: 'status' }) %>
+<form method="get" class="form-inline mb-3">
+ <input type="date" name="date" value="<%= date %>" class="form-control form-control-sm mr-2">
+ <select name="status" class="form-control form-control-sm mr-2">
+  <option value="all"<%= status === 'all' ? ' selected' : '' %>>All</option>
+  <option value="bill_paid"<%= status === 'bill_paid' ? ' selected' : '' %>>Bill paid only</option>
+ </select>
+ <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+</form>
+<div class="hms-surface-card">
+ <div class="table-responsive">
+  <table class="table table-sm table-hover mb-0">
+   <thead class="thead-light">
+    <tr><th>ID</th><th>Patient</th><th>Test</th><th>Visit</th><th>Referred by</th><th>Provider</th><th>Status</th><th></th></tr>
+   </thead>
+   <tbody>
+   <% if (!rows || !rows.length) { %>
+   <tr><td colspan="8" class="text-muted text-center py-4">No orders.</td></tr>
+   <% } %>
+   <% (rows || []).forEach(function(r){ %>
+   <tr>
+    <td>#<%= r.id %></td>
+    <td><%= r.first_name %> <%= r.last_name %><br><span class="small text-muted"><%= r.phone %></span></td>
+    <td><%= r.test_name %></td>
+    <td><%= r.visit_type %></td>
+    <td class="small"><%= r.referred_by %></td>
+    <td class="small"><%= r.provider_name || '—' %></td>
+    <td><span class="badge badge-light border"><%= r.status %></span></td>
+    <td><a href="/lab/templates?lab_result_id=<%= r.id %>" class="btn btn-xs btn-outline-primary btn-sm">Workbench</a></td>
+   </tr>
+   <% }); %>
+   </tbody>
+  </table>
+ </div>
+</div>
+</div>
+<%- include('partials/laboratory-odoo-end') %>
+<%- include('partials/footer') %>

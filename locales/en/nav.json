@@ -15,7 +15,7 @@
   "all_applications": "All applications",
   "menu": "Menu",
   "exit_preview": "Exit preview",
-  "hms_hub": "Medical Center",
+  "hms_hub": "Clinical hub",
   "hospital_dashboard": "Dashboard",
   "settings": "Settings",
   "navigation": "Navigation",
@@ -25,15 +25,15 @@
   "leave_self_service": "Leave self-service",
   "hr_self_service": "HR self-service",
   "codes": {
-    "sb_hms_hub": "Medical Center",
-    "sb_patients": "Patient Directory",
+    "sb_hms_hub": "Clinical hub",
+    "sb_patients": "Patients",
     "sb_appointments": "Appointments",
     "sb_vaccination": "Vaccination",
     "sb_death_registry": "Death registry",
     "sb_prescriptions": "Prescriptions",
-    "topnav_clinical": "Clinical",
-    "topnav_operations": "Operations",
-    "topnav_hr": "HR",
+    "topnav_clinical": "Clinical care",
+    "topnav_operations": "Hospital operations",
+    "topnav_hr": "Human resources",
     "topnav_configuration": "Settings",
     "topnav_clinical_hms": "Medical Center",
     "topnav_clinical_opd": "OPD visits",
@@ -125,7 +125,22 @@
     "cashier_tile_hr_attend": "My attendance",
     "cashier_tile_hr_bal": "My leave balance"
   },
+  "sidebar": {
+    "section": {
+      "overview": "Overview",
+      "quick_access": "Quick access",
+      "clinical": "Clinical care",
+      "operations": "Hospital operations",
+      "people": "People & HR",
+      "admin": "Administration",
+      "workspaces": "Staff workspaces",
+      "alerts": "Order alerts",
+      "tools": "Admin tools",
+      "advanced": "Advanced"
+    }
+  },
   "sidebar_extras": {
+    "advanced_menu": "Workspaces & tools",
     "portals_section": "Portals",
     "staff_portals": "Staff Portals",
     "front_desk": "Front Desk",

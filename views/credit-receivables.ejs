@@ -59,7 +59,7 @@
       </span>
      </td>
      <td class="text-right font-weight-bold <%= parseFloat(a.outstanding_balance||0)>0?'text-danger':'text-muted' %>">
-      <%= parseFloat(a.outstanding_balance||0).toLocaleString('fr-FR') %> FCFA
+      <%= parseFloat(a.outstanding_balance||0).toLocaleString('fr-FR') %>
      </td>
      <td>
       <span class="<%= parseInt(a.aging_days)>=60?'text-danger font-weight-bold':'text-muted' %>">

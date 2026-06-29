@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { priceSuffixLabel } from '../lib/hmsLocale';
 
 function itemHaystack(item) {
   return [item.id, item.name].filter(Boolean).join(' ').toLowerCase();
@@ -15,7 +16,7 @@ export function CatalogMultiPicker({
   initialIds = [],
   placeholder = 'Search…',
   emptyMessage = 'No matching items',
-  priceLabel = 'FCFA',
+  priceLabel = priceSuffixLabel(),
   inputClassName = 'hms-input'}) {
   const initialSet = useMemo(
     () => new Set((initialIds || []).map((id) => String(id))),

@@ -12,19 +12,28 @@ locals.isFinanceStaff = isFinanceStaff;
 var hrSelfServiceOnly = String(locals.paySelfServiceOnly || '').toLowerCase();
 var isHrSelfService = hrSelfServiceOnly === 'leave' || hrSelfServiceOnly === 'payslips';
 var pharmacyOdooApp = !!locals.pharmacyOdooApp;
+var isPharmacyTheme = pharmacyOdooApp || (locals.hmsSurfaceBodyClass && String(locals.hmsSurfaceBodyClass).indexOf('pharmacy') >= 0);
 var radiologyOdooApp = !!locals.radiologyOdooApp;
 var laboratoryOdooApp = !!locals.laboratoryOdooApp;
 var maternityOdooApp = !!locals.maternityOdooApp;
 var vaccinationOdooApp = !!locals.vaccinationOdooApp;
-var deptOdooApp = pharmacyOdooApp || radiologyOdooApp || laboratoryOdooApp || maternityOdooApp || vaccinationOdooApp;
+var cashierOdooApp = !!locals.cashierOdooApp;
+var deptOdooApp = pharmacyOdooApp || radiologyOdooApp || laboratoryOdooApp || maternityOdooApp || vaccinationOdooApp || cashierOdooApp;
 var hmsOdooModule = String(locals.hmsOdooModule || '').toLowerCase();
 var isModuleOdoo = !!hmsOdooModule && !!locals.user;
 locals.hmsOdooModule = hmsOdooModule;
 locals.isModuleOdoo = isModuleOdoo;
 var useFinanceSidebar = isFinanceStaff && !isModuleOdoo;
 var useHrSelfSidebar = isHrSelfService && !isModuleOdoo;
-var useOdooShell = !!locals.user && !pharmacyOdooApp && !radiologyOdooApp && !laboratoryOdooApp && !maternityOdooApp && !vaccinationOdooApp && !isModuleOdoo;
+var useOdooShell = !!locals.user && !deptOdooApp && !isModuleOdoo;
 locals.useOdooShell = useOdooShell;
+var useGlobalSidebar = !!locals.user && !deptOdooApp && !isModuleOdoo;
+if (useFinanceSidebar || useHrSelfSidebar) useGlobalSidebar = true;
+var useGlobalTopbar = !!locals.user && !deptOdooApp;
+locals.useGlobalSidebar = useGlobalSidebar;
+locals.useGlobalTopbar = useGlobalTopbar;
+var hasSectionTheme = !!(locals.hmsSurfaceBodyClass && String(locals.hmsSurfaceBodyClass).trim());
+locals.hasSectionTheme = hasSectionTheme;
 %><%- include('hms-perm-helpers') %>
 <%
 if (typeof _t !== 'function') {
@@ -53,16 +62,51 @@ if (typeof _tl !== 'function') {
 <link rel="stylesheet" href="/css/font-awesome.min.css">
 <link rel="preload" href="/fonts/fontawesome-webfont.woff2?v=4.7.0" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/css/style.css">
-<link rel="stylesheet" href="/css/hms-tokens.css?v=1">
+<link rel="stylesheet" href="/css/hms-tokens.css?v=3">
 <% if (deptOdooApp) { %><link rel="stylesheet" href="/css/hms-dept-nav.css?v=1"><% } %>
 <link rel="stylesheet" href="/css/hms-components.css?v=1">
-<link rel="stylesheet" href="/css/hms-app-surface.css?v=7">
+<link rel="stylesheet" href="/css/hms-app-surface.css?v=14">
+<link rel="stylesheet" href="/css/hms-hub-dashboard.css?v=1">
+<link rel="stylesheet" href="/css/hms-dashboard-hero.css?v=10">
+<link rel="stylesheet" href="/css/hms-dashboard-premium.css?v=4">
 <link rel="stylesheet" href="/css/hms-command-center.css?v=2">
 <link rel="stylesheet" href="/css/hms-director-reports.css?v=2">
 <link rel="stylesheet" href="/css/hms-premium-v3.css?v=2">
 <link rel="stylesheet" href="/css/hms-fonts-local.css">
-<% if (useOdooShell || isModuleOdoo) { %><link rel="stylesheet" href="/css/hms-odoo.css?v=10"><% } %>
+<% if (useOdooShell || isModuleOdoo) { %><link rel="stylesheet" href="/css/hms-odoo.css?v=11"><% } %>
 <% if (radiologyOdooApp) { %><link rel="stylesheet" href="/css/radiology-odoo.css?v=1"><% } %>
+<% if (isPharmacyTheme) { %>
+<link rel="stylesheet" href="/css/pharmacy-tokens.css?v=3">
+<link rel="stylesheet" href="/css/pharmacy-ui-revamp.css?v=12">
+<% } %>
+<% if (pharmacyOdooApp) { %>
+<style>
+body.hms-body--pharmacy-odoo .main-wrapper{margin-left:0!important;max-width:none!important;background:#fff0f5!important}
+body.hms-body--pharmacy-odoo .main-wrapper>.page-wrapper{margin:0!important;padding:0!important;max-width:none!important}
+</style>
+<% } %>
+<% if (cashierOdooApp) { %>
+<style>
+body.hms-body--cashier-odoo .main-wrapper{margin-left:0!important;max-width:none!important;width:100%!important;background:#f0faf8!important}
+body.hms-body--cashier-odoo .hms-odoo-app,
+body.hms-body--cashier-roster .hms-odoo-app{margin-left:0!important;width:100%!important;max-width:none!important}
+body.hms-body--cashier-odoo .hms-odoo-app>.o_web_navbar,
+body.hms-body--cashier-roster .hms-odoo-app>.o_web_navbar{display:none!important}
+body.hms-body--cashier-odoo .main-wrapper>.page-wrapper{margin:0!important;padding:0!important;max-width:none!important}
+body.hms-body--cashier-odoo .hms-page-nav-bar{display:none!important}
+body.hms-body--cashier-roster .main-wrapper,
+body.hms-body--cashier-roster #mainWrapper{margin-left:0!important;padding-left:0!important;max-width:none!important;width:100%!important}
+body.hms-body--cashier-roster #hms-sidebar{display:none!important}
+</style>
+<% } else if (locals.hmsSurfaceBodyClass && String(locals.hmsSurfaceBodyClass).indexOf('cashier-odoo') >= 0) { %>
+<style>
+body.hms-body--cashier-odoo .main-wrapper,
+body.hms-body--cashier-roster .main-wrapper,
+body.hms-body--cashier-roster #mainWrapper{margin-left:0!important;padding-left:0!important;max-width:none!important;width:100%!important}
+body.hms-body--cashier-odoo #hms-sidebar,
+body.hms-body--cashier-roster #hms-sidebar{display:none!important}
+</style>
+<% } %>
 <% if (laboratoryOdooApp) { %><link rel="stylesheet" href="/css/laboratory-odoo.css?v=1"><% } %>
 <% if (maternityOdooApp) { %><link rel="stylesheet" href="/css/maternity-odoo.css?v=1"><% } %>
 <% if (vaccinationOdooApp) { %><link rel="stylesheet" href="/css/vaccination-odoo.css?v=1"><% } %>
@@ -95,9 +139,9 @@ html.dark{
 
 /* ?? SIDEBAR ?? */
 #hms-sidebar{
-  position:fixed;top:0;left:0;width:var(--sb-width);height:100vh;
-  background:var(--sb-bg);border-right:1px solid var(--sb-border);
-  display:flex;flex-direction:column;z-index:1050;
+  position:fixed;top:0;left:0;width:var(--sb-width);min-width:var(--sb-width);max-width:var(--sb-width);
+  height:100vh;background:var(--sb-bg);border-right:1px solid var(--sb-border);
+  display:flex;flex-direction:column;z-index:1050;box-sizing:border-box;overflow-x:hidden;
   transition:background .3s,border-color .3s;
 }
 
@@ -169,7 +213,7 @@ html.dark .sb-logo-mark{background:#fff;border-color:#1e293b;}
   color:var(--sb-text);font-size:.93rem;font-weight:500;
   text-decoration:none;cursor:pointer;
   transition:background .18s,color .18s;
-  position:relative;
+  position:relative;min-width:0;max-width:calc(100% - 16px);box-sizing:border-box;
 }
 .sb-item:hover{background:var(--sb-hover-bg);text-decoration:none;color:var(--sb-text);}
 .sb-item.active{
@@ -181,7 +225,7 @@ html.dark .sb-logo-mark{background:#fff;border-color:#1e293b;}
 }
 .sb-item-icon{font-size:.95rem;width:22px;text-align:center;flex-shrink:0;}
 .sb-item.active .sb-item-icon{color:var(--sb-active-text);}
-.sb-item-label{flex:1;}
+.sb-item-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sb-badge{
   display:inline-flex;align-items:center;justify-content:center;
   min-width:22px;height:22px;border-radius:11px;padding:0 7px;
@@ -201,7 +245,24 @@ html.dark .sb-badge.gray{background:#334155;color:#cbd5e1;}
 
 /* Submenu */
 .sb-sub-wrap{overflow:hidden;max-height:0;transition:max-height .3s ease;}
-.sb-sub-wrap.open{max-height:500px;}
+.sb-sub-wrap.open{max-height:min(70vh,720px);overflow-y:auto;}
+.sb-sub-section{
+  padding:10px 14px 4px 22px;font-size:.65rem;font-weight:800;
+  color:var(--sb-label);text-transform:uppercase;letter-spacing:.08em;
+}
+.sb-item--nested{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px 8px 22px;margin:0;border-radius:0;
+  font-size:.85rem;color:var(--sb-text);
+}
+.sb-item--nested:hover{background:var(--sb-hover-bg);}
+.sb-sub-wrap--nested{max-height:0;}
+.sb-sub-wrap--nested.open{max-height:420px;overflow-y:auto;}
+.hms-user-avatar--initials{
+  background:linear-gradient(135deg,#ecfdf5,#d1fae5);
+  color:#047857;font-size:.72rem;font-weight:800;
+  letter-spacing:.02em;
+}
 .sb-sub-item{
   display:flex;align-items:center;gap:9px;
   padding:8px 12px 8px 44px;margin:1px 8px;border-radius:8px;
@@ -356,8 +417,18 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:#64748b;}
 <link rel="stylesheet" href="/css/payroll.css">
 <% } %>
 </head>
-<body class="<%= useFinanceSidebar ? 'hms-body--finance-staff' : '' %><%= useHrSelfSidebar ? ' hms-body--hr-self' : '' %><%= deptOdooApp ? ' hms-body--dept-odoo' : '' %><%= pharmacyOdooApp ? ' hms-body--pharmacy-odoo' : '' %><%= radiologyOdooApp ? ' hms-body--radiology-odoo' : '' %><%= laboratoryOdooApp ? ' hms-body--laboratory-odoo' : '' %><%= maternityOdooApp ? ' hms-body--maternity-odoo' : '' %><%= vaccinationOdooApp ? ' hms-body--vaccination-odoo' : '' %><%= isModuleOdoo ? ('hms-body--module-odoo hms-body--odoo-' + hmsOdooModule) : '' %><%= useOdooShell ? ' hms-body--odoo' : '' %><%= locals.hmsSurfaceBodyClass || '' %>">
+<body class="<%= useFinanceSidebar ? 'hms-body--finance-staff' : '' %><%= useHrSelfSidebar ? ' hms-body--hr-self' : '' %><%= deptOdooApp ? ' hms-body--dept-odoo' : '' %><%= pharmacyOdooApp ? ' hms-body--pharmacy-odoo' : '' %><%= radiologyOdooApp ? ' hms-body--radiology-odoo' : '' %><%= laboratoryOdooApp ? ' hms-body--laboratory-odoo' : '' %><%= maternityOdooApp ? ' hms-body--maternity-odoo' : '' %><%= vaccinationOdooApp ? ' hms-body--vaccination-odoo' : '' %><%= isModuleOdoo ? ('hms-body--module-odoo hms-body--odoo-' + hmsOdooModule) : '' %><%= useOdooShell ? ' hms-body--odoo' : '' %><%= hasSectionTheme ? ' hms-has-section-theme' : '' %><%= locals.hmsSurfaceBodyClass || '' %>">
 <% if (locals.user) { %>
+<%
+var _hmsShortName = locals.userDisplayName || (typeof hmsFormatDisplayName === 'function' ? hmsFormatDisplayName(locals.user && locals.user.name) : (locals.user && locals.user.name)) || 'Staff';
+var _hmsNavName = locals.userNavDisplayName || (typeof hmsFormatNavDisplayName === 'function' ? hmsFormatNavDisplayName(locals.user && locals.user.name) : _hmsShortName);
+var _hmsUserLabel = _hmsNavName || _hmsShortName;
+var _hmsNameParts = String((locals.user && locals.user.name) || _hmsUserLabel || 'Staff').trim().split(/\s+/).filter(Boolean);
+var _hmsInitials = (_hmsNameParts[0] ? _hmsNameParts[0][0] : 'S') + (_hmsNameParts.length > 1 ? _hmsNameParts[_hmsNameParts.length - 1][0] : (_hmsNameParts[0] ? _hmsNameParts[0][1] || '' : 'T'));
+locals.userInitials = String(_hmsInitials || 'ST').toUpperCase();
+var _hmsTopTitle = typeof hmsFormatTopbarTitle === 'function' ? hmsFormatTopbarTitle(title) : title;
+%>
+<% if (useGlobalSidebar) { %>
 <aside id="hms-sidebar" class="<%= useFinanceSidebar ? 'hms-sidebar--finance' : '' %><%= useHrSelfSidebar ? ' hms-sidebar--hr-self' : '' %>">
 
   <!-- Logo -->
@@ -367,32 +438,9 @@ html.dark ::-webkit-scrollbar-thumb:hover{background:#64748b;}
     </div>
     <div class="sb-logo-info">
       <div class="sb-logo-name"><%= _brandName %></div>
-      <div class="sb-logo-sub"><%= _brandTag %></div>
       <div class="sb-logo-status"><span class="sb-logo-dot"></span> <%= typeof t === 'function' ? t('shell.online', { ns: 'common', defaultValue: 'Online' }) : 'Online' %></div>
     </div>
   </div>
-
-  <!-- Search -->
-  <% if (!useFinanceSidebar && !useHrSelfSidebar && !isModuleOdoo) { %>
-  <div class="sb-search">
-    <i class="fa fa-search sb-search-icon"></i>
-    <label for="sbSearch" class="sr-only"><%= typeof t === 'function' ? t('shell.menu_filter_ph', { ns: 'common', defaultValue: 'Filter menu…' }) : 'Filter menu…' %></label>
-    <input type="text" id="sbSearch" aria-label="<%= typeof t === 'function' ? t('shell.menu_filter_ph', { ns: 'common', defaultValue: 'Filter menu…' }) : 'Filter menu…' %>" placeholder="<%= typeof t === 'function' ? t('shell.menu_filter_ph', { ns: 'common', defaultValue: 'Filter menu…' }) : 'Filter menu…' %>" autocomplete="off">
-  </div>
-  <% } %>
-
-  <!-- Theme toggle -->
-  <% if (!useFinanceSidebar && !useHrSelfSidebar && !isModuleOdoo) { %>
-  <div class="sb-theme-row">
-    <div class="sb-theme-label">
-      <i class="fa fa-sun-o"></i> <%= typeof t === 'function' ? t('shell.theme', { ns: 'common', defaultValue: 'Theme' }) : 'Theme' %>
-    </div>
-    <label class="toggle-sw">
-      <input type="checkbox" id="themeToggle">
-      <span class="toggle-knob"></span>
-    </label>
-  </div>
-  <% } %>
 
   <!-- Nav -->
   <nav class="sb-nav <%= useFinanceSidebar ? 'sb-nav--finance' : '' %><%= useHrSelfSidebar ? ' sb-nav--hr-self' : '' %>">
@@ -415,7 +463,7 @@ if (useFinanceSidebar && !locals.finNav) {
 
     <%
     var homeUrl = '/hms';
-    var homeLabel = typeof t === 'function' ? t('hms_hub', { ns: 'nav', defaultValue: 'Medical Center' }) : 'Medical Center';
+    var homeLabel = typeof t === 'function' ? t('hms_hub', { ns: 'nav', defaultValue: 'Clinical hub' }) : 'Clinical hub';
     if (!isAdminOrSuper || locals.previewRole) {
       var _aclHome = locals.aclLayout || (typeof _acl !== 'undefined' ? _acl : null);
       var _effRole = locals.navRole || role;
@@ -436,54 +484,27 @@ if (useFinanceSidebar && !locals.finNav) {
       <a href="<%= (locals.hmsPath || '').split('?')[0] %>" class="font-weight-bold ml-1"><%= typeof t === 'function' ? t('exit_preview', { ns: 'nav', defaultValue: 'Exit preview' }) : 'Exit preview' %></a>
     </div>
     <% } %>
-    <% var _hmsDep = locals.hmsDeployment; %>
-    <% if (_hmsDep && role !== '99' && _hmsDep.slices && _hmsDep.slices.indexOf('full') === -1) { %>
-    <div class="alert alert-info border-0 shadow-sm mx-3 mb-2 py-2 small" style="border-radius:8px;">
-      <i class="fa fa-hospital-o mr-1"></i>
-      Deployment: <strong><%= _hmsDep.profileName || _hmsDep.productMode || 'custom' %></strong>
-      ? only enabled modules are shown.
-    </div>
-    <% } %>
     <%- include('hms-nav-sidebar') %>
 <% } /* end hospital nav (non?finance staff) */ %>
 
   </nav>
 
-<%
-var _hmsShortName = locals.userDisplayName || (typeof hmsFormatDisplayName === 'function' ? hmsFormatDisplayName(locals.user && locals.user.name) : (locals.user && locals.user.name)) || 'Staff';
-var _hmsNavName = locals.userNavDisplayName || (typeof hmsFormatNavDisplayName === 'function' ? hmsFormatNavDisplayName(locals.user && locals.user.name) : _hmsShortName);
-var _hmsTopTitle = typeof hmsFormatTopbarTitle === 'function' ? hmsFormatTopbarTitle(title) : title;
-%>
-
-  <!-- User card -->
-  <div class="sb-user-card">
-    <div class="sb-user-top">
-      <div class="sb-avatar">
-        <%- include('hms-user-avatar', { avatarClass: 'hms-user-avatar hms-user-avatar--lg', userProfileEmoji: locals.userProfileEmoji }) %>
-        <span class="sb-avatar-dot"></span>
-      </div>
-      <div class="sb-user-meta">
-        <div class="sb-user-name"><%= _hmsShortName %></div>
-        <div class="sb-user-role"><%= locals.user.role_name || (typeof t === 'function' ? t('user', { ns: 'nav', defaultValue: 'User' }) : 'User') %></div>
-      </div>
-      <a href="/logout" class="sb-logout-btn" title="Logout"><i class="fa fa-sign-out"></i></a>
-    </div>
-    <div class="sb-user-email"><%= locals.user.email || '' %></div>
-  </div>
-
 </aside>
+<% } /* useGlobalSidebar */ %>
 
 <% if (useOdooShell) { %>
 <div class="hms-odoo-app" id="hmsOdooApp">
 <%- include('hms-odoo-nav') %>
-<% } %>
-<!-- Main -->
 <div class="main-wrapper" id="mainWrapper">
-<% if (useOdooShell) { %><main class="o_action_manager"><% } %>
+<main class="o_action_manager">
+<% } else { %>
+<div class="main-wrapper" id="mainWrapper">
+<% } %>
+<% if (useGlobalTopbar) { %>
   <div class="hms-topbar">
     <div class="topbar-title" id="topbarPageTitle"><%= _hmsTopTitle %></div>
     <div class="topbar-right">
-      <a href="<%= locals.navHomeUrl || '/dashboard' %>" class="topbar-home-btn" id="topbarHomeBtn">
+      <a href="<%= locals.navHomeUrl || '/hms' %>" class="topbar-home-btn" id="topbarHomeBtn">
         <i class="fa fa-home"></i> <%= locals.navHomeLabel || (typeof t === 'function' ? t('home', { ns: 'nav', defaultValue: 'Home' }) : 'Home') %>
       </a>
       <%- include('hms-lang-switcher') %>
@@ -520,8 +541,9 @@ var _hmsTopTitle = typeof hmsFormatTopbarTitle === 'function' ? hmsFormatTopbarT
       </div>
     </div>
   </div>
+<% } /* useGlobalTopbar */ %>
 
-<% if (locals.user && locals.showPageNav !== false && !useOdooShell) { %>
+<% if (locals.user && locals.showPageNav !== false && !useOdooShell && !deptOdooApp) { %>
   <%- include('page-nav-data', { pageNav: locals.pageNav || {} }) %>
   <div class="hms-page-nav-bar">
     <%- include('page-nav-react', { pageNav: locals.pageNav || {} }) %>
@@ -531,7 +553,7 @@ var _hmsTopTitle = typeof hmsFormatTopbarTitle === 'function' ? hmsFormatTopbarT
 <script>
 (function(){
   // Define HMS first so page scripts (e.g. Patient Directory) always have alerts even if later UI init throws.
-  window.HMS = {
+  window.HMS = Object.assign({}, <%- JSON.stringify(locals.hmsCountry || {}) %>, {
     toast: Swal.mixin({
       toast: true,
       position: 'top-end',
@@ -616,7 +638,7 @@ var _hmsTopTitle = typeof hmsFormatTopbarTitle === 'function' ? hmsFormatTopbarT
         .then(function(r){ if (r.isConfirmed && href) { el.__hmsConfirmed = true; window.location.href = href; } });
       return false;
     }
-  };
+  });
 
   var html  = document.getElementById('hmsHtml');
   var tog   = document.getElementById('themeToggle');
@@ -629,16 +651,29 @@ var _hmsTopTitle = typeof hmsFormatTopbarTitle === 'function' ? hmsFormatTopbarT
     });
   }
 
-  // Submenu toggle
+  // Submenu toggle (supports nested groups under Advanced)
   document.querySelectorAll('.sb-item[data-sub]').forEach(function(el){
-    el.addEventListener('click', function(){
+    el.addEventListener('click', function(ev){
+      ev.stopPropagation();
       var id  = this.getAttribute('data-sub');
       var sub = document.getElementById(id);
       if (!sub) return;
       var was = sub.classList.contains('open');
-      document.querySelectorAll('.sb-sub-wrap').forEach(function(s){s.classList.remove('open');});
-      document.querySelectorAll('.sb-item[data-sub]').forEach(function(e){e.classList.remove('open');});
-      if(!was){ sub.classList.add('open'); this.classList.add('open'); }
+      var parentWrap = this.closest('.sb-sub-wrap');
+      if (parentWrap) {
+        parentWrap.querySelectorAll(':scope > .sb-item[data-sub]').forEach(function(e){
+          if (e === el) return;
+          e.classList.remove('open');
+          var sid = e.getAttribute('data-sub');
+          var sw = sid ? document.getElementById(sid) : null;
+          if (sw) sw.classList.remove('open');
+        });
+      } else {
+        document.querySelectorAll('.sb-nav > .sb-sub-wrap').forEach(function(s){ s.classList.remove('open'); });
+        document.querySelectorAll('.sb-nav > .sb-item[data-sub]').forEach(function(e){ e.classList.remove('open'); });
+      }
+      if (!was) { sub.classList.add('open'); this.classList.add('open'); }
+      else { sub.classList.remove('open'); this.classList.remove('open'); }
     });
   });
 
@@ -679,7 +714,7 @@ var _hmsTopTitle = typeof hmsFormatTopbarTitle === 'function' ? hmsFormatTopbarT
         sec.style.display = (!q || anyVisible) ? '' : 'none';
       });
       if (!q) {
-        document.querySelectorAll('.sb-section,.sb-item[href]').forEach(function(e) { e.style.display = ''; });
+        document.querySelectorAll('.sb-section,.sb-item,.sb-sub-item').forEach(function(e) { e.style.display = ''; });
       }
     }
     sbSearchEl.addEventListener('input', function() { hmsFilterSidebarNav(this.value); });
@@ -690,6 +725,16 @@ var _hmsTopTitle = typeof hmsFormatTopbarTitle === 'function' ? hmsFormatTopbarT
 
   <% if(locals.flash){ %> HMS.toast.fire({ icon: 'success', title: <%- JSON.stringify(String(locals.flash)) %> }); <% } %>
   <% if(locals.error){ %> HMS.toast.fire({ icon: 'error', title: <%- JSON.stringify(String(locals.error)) %> }); <% } %>
+  (function() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      if (!params.has('msg') && !params.has('err')) return;
+      params.delete('msg');
+      params.delete('err');
+      var next = params.toString();
+      window.history.replaceState({}, '', window.location.pathname + (next ? '?' + next : '') + (window.location.hash || ''));
+    } catch (_) {}
+  })();
 })();
 </script>
 

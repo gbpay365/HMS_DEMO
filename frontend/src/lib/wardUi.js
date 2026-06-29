@@ -1,4 +1,5 @@
 import { tFallback } from './tFallback';
+import { formatMoney } from './hmsLocale';
 
 export function ipdStatusPill(status) {
   const s = String(status || 'admitted').toLowerCase();
@@ -25,5 +26,5 @@ export function bedStatusClass(status) {
 }
 
 export function formatFcfa(n) {
-  return Math.round(Number(n) || 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 });
+  return formatMoney(n);
 }

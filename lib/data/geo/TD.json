@@ -1,0 +1,127 @@
+{
+  "code": "TD",
+  "name": "Chad",
+  "regionLabel": "Region",
+  "subRegionLabel": "Department",
+  "regions": [
+    "Bahr el Gazel",
+    "Batha",
+    "Borkou",
+    "Chari-Baguirmi",
+    "Ennedi-Est",
+    "Ennedi-Ouest",
+    "Guéra",
+    "Hadjer-Lamis",
+    "Kanem",
+    "Lac",
+    "Logone Occidental",
+    "Logone Oriental",
+    "Mandoul",
+    "Mayo-Kebbi Est",
+    "Mayo-Kebbi Ouest",
+    "Moyen-Chari",
+    "N'Djamena",
+    "Ouaddaï",
+    "Salamat",
+    "Sila",
+    "Tandjilé",
+    "Tibesti",
+    "Wadi Fira"
+  ],
+  "subRegions": {
+    "Bahr el Gazel": [
+      "Moussoro"
+    ],
+    "Batha": [
+      "Ati",
+      "Oum Hadjer"
+    ],
+    "Borkou": [
+      "Faya-Largeau"
+    ],
+    "Chari-Baguirmi": [
+      "Baguirmi Department",
+      "Bousso",
+      "Dababa",
+      "Gaoui",
+      "Linia",
+      "Mandjafa",
+      "Massenya"
+    ],
+    "Ennedi-Ouest": [
+      "Fada"
+    ],
+    "Guéra": [
+      "Bitkine",
+      "Melfi",
+      "Mongo"
+    ],
+    "Hadjer-Lamis": [
+      "Bokoro",
+      "Massaguet",
+      "Massakory"
+    ],
+    "Kanem": [
+      "Mao"
+    ],
+    "Lac": [
+      "Bol"
+    ],
+    "Logone Occidental": [
+      "Beïnamar",
+      "Benoy",
+      "Lac Wey",
+      "Moundou"
+    ],
+    "Logone Oriental": [
+      "Bébédja",
+      "Béboto",
+      "Doba"
+    ],
+    "Mandoul": [
+      "Goundi",
+      "Koumra",
+      "Moïssala"
+    ],
+    "Mayo-Kebbi Est": [
+      "Bongor",
+      "Gounou Gaya",
+      "Guelendeng"
+    ],
+    "Mayo-Kebbi Ouest": [
+      "Mboursou Léré",
+      "Pala"
+    ],
+    "Moyen-Chari": [
+      "Kyabé",
+      "Sarh"
+    ],
+    "N'Djamena": [
+      "N'Djamena"
+    ],
+    "Ouaddaï": [
+      "Abéché",
+      "Adré",
+      "Goz Béïda"
+    ],
+    "Salamat": [
+      "Am Timan"
+    ],
+    "Sila": [
+      "Goz Beïda"
+    ],
+    "Tandjilé": [
+      "Béré",
+      "Kelo",
+      "Laï"
+    ],
+    "Tibesti": [
+      "Aozou"
+    ],
+    "Wadi Fira": [
+      "Biltine",
+      "Iriba"
+    ]
+  },
+  "source": "dr5hn/countries-states-cities-database"
+}

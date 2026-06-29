@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { fmtCatalogPrice, lineGradient, ORDER_THEMES } from '../lib/lineItemUi';
+import { priceSuffixLabel } from '../lib/hmsLocale';
 import { OrderSectionShell } from './OrderSectionShell';
 
 function itemHaystack(item) {
@@ -17,9 +18,10 @@ export function CatalogOrderPicker({
   hint,
   placeholder = 'Search by name…',
   emptyMessage = 'No matching items',
-  priceLabel = 'FCFA',
+  priceLabel = priceSuffixLabel(),
   inputClassName = 'hms-input'}) {
   const th = ORDER_THEMES[theme] || ORDER_THEMES.lab;
+  const isMocdoc = th.variant === 'mocdoc';
   const catalogById = useMemo(() => {
     const m = new Map();
     for (const item of catalog) m.set(String(item.id), item);
@@ -73,14 +75,22 @@ export function CatalogOrderPicker({
       {selectedItems.map((item, index) => (
         <div
           key={item.id}
-          className={`group flex items-center gap-2.5 rounded-xl border border-slate-100/80 bg-white/90 px-2.5 py-2 shadow-sm transition hover:bg-white hover:shadow-md ${th.rowHover}`}
+          className={
+            isMocdoc
+              ? 'consult-mocdoc-line-row'
+              : `group flex items-center gap-2.5 rounded-xl border border-slate-100/80 bg-white/90 px-2.5 py-2 shadow-sm transition hover:bg-white hover:shadow-md ${th.rowHover}`
+          }
         >
           <div
-            className={`flex h-9 min-w-[2.25rem] shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-sm font-extrabold text-white shadow-md ${lineGradient(index)}`}
+            className={
+              isMocdoc
+                ? 'consult-mocdoc-line-serial'
+                : `flex h-9 min-w-[2.25rem] shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-sm font-extrabold text-white shadow-md ${lineGradient(index)}`
+            }
           >
             {index + 1}
           </div>
-          <span className={`shrink-0 text-base font-bold ${th.dash}`}>—</span>
+          {!isMocdoc ? <span className={`shrink-0 text-base font-bold ${th.dash}`}>—</span> : null}
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-semibold text-slate-800">{item.name}</div>
             <div className="text-[11px] font-medium text-slate-500">
@@ -90,10 +100,14 @@ export function CatalogOrderPicker({
           <button
             type="button"
             onClick={() => removeAt(index)}
-            className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-red-50 hover:text-red-600"
+            className={
+              isMocdoc
+                ? 'consult-mocdoc-line-remove'
+                : 'shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-red-50 hover:text-red-600'
+            }
             aria-label="Remove"
           >
-            ✕
+            {isMocdoc ? '×' : '✕'}
           </button>
         </div>
       ))}
@@ -117,28 +131,50 @@ export function CatalogOrderPicker({
           />
         </div>
         {open && suggestions.length > 0 ? (
-          <div className="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+          <div className={isMocdoc ? 'consult-mocdoc-suggest' : 'absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg'}>
             {suggestions.map((item) => (
               <button
                 key={item.id}
                 type="button"
-                className="flex w-full items-start gap-2 px-3 py-2 text-left text-sm hover:bg-slate-50"
+                className={
+                  isMocdoc
+                    ? 'consult-mocdoc-suggest-item'
+                    : 'flex w-full items-start gap-2 px-3 py-2 text-left text-sm hover:bg-slate-50'
+                }
                 onClick={() => addItem(item.id)}
               >
-                <span className="mt-0.5 font-bold text-slate-400">+</span>
-                <span>
-                  <span className="font-medium text-slate-800">{item.name}</span>
-                  <span className="text-slate-500">
-                    {' '}
-                    — {fmtCatalogPrice(item.price)} {priceLabel}
-                  </span>
-                </span>
+                {isMocdoc ? (
+                  <>
+                    <span className="font-medium text-slate-800">{item.name}</span>
+                    <span className="text-slate-500">
+                      {' '}
+                      — {fmtCatalogPrice(item.price)} {priceLabel}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="mt-0.5 font-bold text-slate-400">+</span>
+                    <span>
+                      <span className="font-medium text-slate-800">{item.name}</span>
+                      <span className="text-slate-500">
+                        {' '}
+                        — {fmtCatalogPrice(item.price)} {priceLabel}
+                      </span>
+                    </span>
+                  </>
+                )}
               </button>
             ))}
           </div>
         ) : null}
         {open && query && suggestions.length === 0 ? (
-          <div className="absolute z-20 mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-center text-xs text-slate-500 shadow-lg">
+          <div
+            className={
+              isMocdoc
+                ? 'consult-mocdoc-suggest px-3 py-3 text-center text-xs text-slate-500'
+                : 'absolute z-20 mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-center text-xs text-slate-500 shadow-lg'
+            }
+          >
             {emptyMessage}
           </div>
         ) : null}

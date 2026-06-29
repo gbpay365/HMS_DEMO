@@ -12,7 +12,7 @@ if (typeof _tl !== 'function') {
 }
 var _units = units || [];
 %>
-<%- include('partials/pharmacy-odoo-start', { phaOdooMenu: 'purchase', phaOdooTitle: _tl('pharmacy_po_new.title', 'New purchase order'), nursingSupplyPending, flash, error }) %>
+<%- include('partials/pharmacy-odoo-start', { phaOdooMenu: 'purchase', phaOdooSub: 'po_new', phaOdooTitle: _tl('pharmacy_po_new.title', 'New purchase order'), nursingSupplyPending, flash, error }) %>
 <div class="o_control_panel">
   <div class="o_cp_breadcrumb"><span><%= _tl('pharmacy_po_new.title', 'New purchase order') %></span></div>
   <a href="/pharmacy/purchase-orders" class="o_btn_link"><%= _tl('pharmacy_shared.all_pos', 'All POs') %></a>

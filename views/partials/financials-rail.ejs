@@ -21,10 +21,10 @@ var _finRailCompact = !!locals.finRailCompact;
   <% if (!_finRailCompact) { %>
   <div class="fin-rail-brand">
     <%= _tf('rail.brand', 'Accounting') %>
-    <small><%= _tf('rail.brand_sub', 'Books & GL · XAF') %></small>
+    <small><%= isNigeria ? 'Books & GL · NGN' : _tf('rail.brand_sub', 'Books & GL · XAF') %></small>
   </div>
   <% } else { %>
-  <div class="fin-rail-brand fin-rail-brand--compact"><%= _tf('rail.brand_compact', 'Accounting · XAF') %></div>
+  <div class="fin-rail-brand fin-rail-brand--compact"><%= isNigeria ? 'Accounting · NGN' : _tf('rail.brand_compact', 'Accounting · XAF') %></div>
   <% } %>
   <div class="fin-rail-section"><%= _tf('rail.section_company', 'Company') %></div>
   <a href="/financials" class="<%= _finNav==='dashboard'?'active':'' %>"><i class="fa fa-dashboard"></i> <%= _tf('rail.dashboard', 'Dashboard') %></a>

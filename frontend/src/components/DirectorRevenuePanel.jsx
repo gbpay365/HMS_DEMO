@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HubStatCard } from './HubStatCard';
 import { enrichDirectorRevenueStats, formatRevenueAmount } from '../lib/directorRevenueCatalog';
+import { currencyCode } from '../lib/hmsLocale';
 
 const PERIODS = [
   { id: 'daily', query: { period: 'day' } },
@@ -134,7 +135,7 @@ export function DirectorRevenuePanel({ revenueStatItems = [], showSection = true
             {totalCard ? (
               <div className="mb-4">
                 <HubStatCard
-                  label={`${statLabel(totalCard)} (XAF)`}
+                  label={`${statLabel(totalCard)} (${currencyCode()})`}
                   value={cardValue('total')}
                   icon={totalCard.icon}
                   color={totalCard.color}
@@ -149,7 +150,7 @@ export function DirectorRevenuePanel({ revenueStatItems = [], showSection = true
                   .map((s) => (
                     <HubStatCard
                       key={s.code}
-                      label={`${statLabel(s)} (XAF)`}
+                      label={`${statLabel(s)} (${currencyCode()})`}
                       value={cardValue(s.statKey)}
                       icon={s.icon}
                       color={s.color}
@@ -167,7 +168,7 @@ export function DirectorRevenuePanel({ revenueStatItems = [], showSection = true
                   {otherCards.map((s) => (
                     <HubStatCard
                       key={s.code}
-                      label={`${statLabel(s)} (XAF)`}
+                      label={`${statLabel(s)} (${currencyCode()})`}
                       value={cardValue(s.statKey)}
                       icon={s.icon}
                       color={s.color}

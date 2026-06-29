@@ -71,3 +71,9 @@
     at Socket.emit (node:events:519:35)
     at TCP.<anonymous> (node:net:351:12)
 [2026-06-23T07:38:54.976Z] INFO: Self-healed: deleted broken nested mysql2 at startup.
+[2026-06-26T17:01:09.456Z] unhandledRejection: Error: Access denied for user 'root'@'localhost' (using password: NO)
+    at PromisePool.catalogAwareQuery [as query] (C:\HMS_DEMO\app.js:565:24)
+    at C:\HMS_DEMO\node_modules\express-mysql-session\index.js:384:30
+    at new Promise (<anonymous>)
+    at MySQLStore.query (C:\HMS_DEMO\node_modules\express-mysql-session\index.js:381:10)
+    at C:\HMS_DEMO\node_modules\express-mysql-session\index.js:372:16

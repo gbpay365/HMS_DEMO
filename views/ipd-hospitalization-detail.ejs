@@ -14,7 +14,7 @@
  <div><a href="/ipd/hospitalizations" class="text-white-50 small"><%= _t('detail.breadcrumb_hospitalizations', { ns: 'ipd', defaultValue: 'Hospitalizations' }) %></a>
  <h4 class="font-weight-bold mb-0 text-white"><%=adm.first_name%> <%=adm.last_name%></h4>
  <span class="small" style="opacity:.85;"><%=adm.ward_name||_t('detail.pending_bed', { ns: 'ipd', defaultValue: 'Pending bed' })%> <%=adm.bed_label||''%> � <%=adm.ipd_status%></span></div>
- <div class="text-right"><div class="h5 mb-0"><%=Number(forecast.forecast_total||0).toLocaleString()%> FCFA</div><div class="small" style="opacity:.8;"><%= _t('detail.invoice_forecast', { ns: 'ipd', defaultValue: 'Invoice forecast' }) %></div></div>
+ <div class="text-right"><div class="h5 mb-0"><%= fmtMoney(forecast.forecast_total||0) %></div><div class="small" style="opacity:.8;"><%= _t('detail.invoice_forecast', { ns: 'ipd', defaultValue: 'Invoice forecast' }) %></div></div>
 </div></div>
 <ul class="nav nav-pills mb-3">
  <li class="nav-item"><a class="nav-link <%=tab==='overview'?'active':''%>" href="?tab=overview"><%= _t('detail.tab_overview', { ns: 'ipd', defaultValue: 'Overview' }) %></a></li>

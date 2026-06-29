@@ -2,4 +2,7 @@
 <% if (typeof hmsPrintIncludeEpsonCss !== 'undefined' && hmsPrintIncludeEpsonCss !== false) { %>
 <link rel="stylesheet" href="/css/print-epson-lq.css?v=<%= _printV %>" media="print">
 <% } %>
+<script>
+window.HMS = Object.assign({}, <%- JSON.stringify(locals.hmsCountry || {}) %>);
+</script>
 <script src="/dist/hms-print.js?v=<%= _printV %>" defer></script>

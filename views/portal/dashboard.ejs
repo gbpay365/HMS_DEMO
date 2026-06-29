@@ -795,7 +795,7 @@ body {
    <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;">
     <span class="pp-chip"><i class="fa fa-phone"></i> <%= patient.phone || _tp('profile.no_phone', 'No phone') %></span>
     <span class="pp-chip"><i class="fa fa-envelope-o"></i> <%= patient.email || _tp('profile.no_email', 'No email') %></span>
-    <% if (patient.cni_number) { %><span class="pp-chip"><i class="fa fa-id-card-o"></i> ID <%= patient.cni_number %></span><% } %>
+    <% if (patient.cni_number) { %><span class="pp-chip"><i class="fa fa-id-card-o"></i> <%= typeof isNigeria !== 'undefined' && isNigeria ? 'NIN' : 'ID' %> <%= patient.cni_number %></span><% } %>
    </div>
   </div>
   <div style="min-width:200px;">
@@ -825,7 +825,7 @@ body {
   <div class="pp-stat"><div class="v"><%= (labResults && labResults.length) ? labResults.length : 0 %></div><div class="l"><i class="fa fa-flask" aria-hidden="true"></i> <%= _tp('stats.lab_tests', 'Lab tests') %></div></div>
   <div class="pp-stat"><div class="v"><%= (radResults && radResults.length) ? radResults.length : 0 %></div><div class="l"><i class="fa fa-picture-o" aria-hidden="true"></i> <%= _tp('stats.imaging', 'Imaging') %></div></div>
   <div class="pp-stat"><div class="v"><%= (consultations && consultations.length) ? consultations.length : 0 %></div><div class="l"><i class="fa fa-stethoscope" aria-hidden="true"></i> <%= _tp('stats.consultations', 'Consultations') %></div></div>
-  <div class="pp-stat"><div class="v"><%= wallet ? Number(wallet.balance||0).toLocaleString('fr-FR') : '0' %></div><div class="l"><i class="fa fa-money" aria-hidden="true"></i> <%= _tp('stats.wallet', 'Wallet (FCFA)') %></div></div>
+  <div class="pp-stat"><div class="v"><%= wallet ? fmtMoney(wallet.balance||0) : fmtMoney(0) %></div><div class="l"><i class="fa fa-money" aria-hidden="true"></i> <%= _tp('stats.wallet', isNigeria ? 'Wallet (NGN)' : 'Wallet (FCFA)') %></div></div>
  </div>
 
  <!-- Tabs -->
@@ -1120,7 +1120,7 @@ body {
    </div>
    <div class="pp-card-b">
     <div style="font-family:'Outfit',sans-serif;font-size:2.25rem;font-weight:700;color:var(--pp-success);margin-bottom:8px;">
-     <%= Number(wallet.balance||0).toLocaleString('fr-FR') %> <span style="font-size:1rem;color:var(--pp-muted);font-weight:500;">FCFA</span>
+     <%= fmtMoney(wallet.balance||0) %>
     </div>
     <p style="color:var(--pp-muted);font-size:.88rem;margin-bottom:20px;"><%= _tp('wallet.balance_hint', 'Use your wallet balance for lab, pharmacy, and services at the hospital. Top up at reception or via approved channels.') %></p>
     <% if (wallet.qr_token) { %>

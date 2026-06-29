@@ -26,7 +26,7 @@
    <div class="card-body">
     <dl class="row small mb-0">
      <dt class="col-5 text-muted"><%= _t('credit_account.outstanding', { ns: 'legacy', defaultValue: 'Outstanding' }) %></dt>
-     <dd class="col-7 font-weight-bold text-danger" style="font-size:1.1rem;"><%= parseFloat(acct.outstanding_balance||0).toLocaleString('fr-FR') %> FCFA</dd>
+     <dd class="col-7 font-weight-bold text-danger" style="font-size:1.1rem;"><%= parseFloat(acct.outstanding_balance||0).toLocaleString('fr-FR') %></dd>
      <dt class="col-5 text-muted"><%= _t('credit_account.aging', { ns: 'legacy', defaultValue: 'Aging' }) %></dt><dd class="col-7"><%= acct.aging_days||0 %> <%= _t('credit_account.days', { ns: 'legacy', defaultValue: 'days' }) %></dd>
      <dt class="col-5 text-muted"><%= _t('credit_account.patient', { ns: 'legacy', defaultValue: 'Patient' }) %></dt><dd class="col-7"><a href="/patient-chart/<%= acct.patient_id %>">#P-<%= acct.patient_id %></a></dd>
      <% if (acct.guarantor_name) { %><dt class="col-5 text-muted"><%= _t('credit_account.guarantor', { ns: 'legacy', defaultValue: 'Guarantor' }) %></dt><dd class="col-7"><%= acct.guarantor_name %> <%= acct.guarantor_phone ? '· '+acct.guarantor_phone : '' %></dd><% } %>
@@ -169,7 +169,7 @@
       <tr>
        <td><%= pl.title||'—' %></td>
        <td><%= pl.installment_count||'—' %></td>
-       <td><%= parseFloat(pl.amount_each||0).toLocaleString('fr-FR') %> FCFA</td>
+       <td><%= parseFloat(pl.amount_each||0).toLocaleString('fr-FR') %></td>
        <td><%= pl.first_due_date ? fmtDate(pl.first_due_date) : '—' %></td>
        <td><span class="badge badge-<%= pl.status==='active'?'success':'secondary' %>"><%= pl.status %></span></td>
       </tr>

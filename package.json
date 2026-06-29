@@ -16,6 +16,7 @@
     "import:staff-excel": "node scripts/import-staff-from-excel.js",
     "import:staff-profile-photos": "node scripts/import-staff-profile-photos.js",
     "build:ui": "npm install --prefix frontend --include=dev && npm run build --prefix frontend",
+    "build:geo": "node scripts/extract-cameroon-geo.js && node scripts/build-west-central-africa-geo.js",
     "build:deploy": "node scripts/build-deploy-package.js",
     "build:deploy:protected": "node scripts/build-deploy-package.js --obfuscate",
     "build:deployment-pdf": "node scripts/build-deployment-guide-pdf.js",

@@ -3,6 +3,7 @@
  */
 const { finCoaGroupedByClass, coaClassTitle } = require('../lib/hmsFinChartOfAccounts');
 const { seedFinAccounts, loadSeedAccounts } = require('../lib/finAccountSeedData');
+const { glMaps } = require('../lib/finGlAccountMaps');
 
 module.exports = function registerFinancialsChartOfAccounts(app, pool, requireAuth, requirePerm) {
  const finRead = requirePerm('accounting.read', 'accounting.write', 'financials.read', 'financials.write');
@@ -11,7 +12,8 @@ module.exports = function registerFinancialsChartOfAccounts(app, pool, requireAu
  app.post('/financials/accounts/seed', requireAuth, finWrite, async (req, res) => {
   try {
    const r = await seedFinAccounts(pool, { forceUpdate: true, forceReset: true });
-   const msg = `Chart of accounts seeded: ${r.inserted} added, ${r.updated} updated, ${r.deactivated || 0} legacy deactivated (${r.total} active / ${r.expected || r.total} OHADA 6-digit accounts).`;
+   const coaLabel = glMaps().coaLabel;
+   const msg = `Chart of accounts seeded: ${r.inserted} added, ${r.updated} updated, ${r.deactivated || 0} legacy deactivated (${r.total} active / ${r.expected || r.total} ${coaLabel} accounts).`;
    return res.redirect('/financials/accounts?msg=' + encodeURIComponent(msg));
   } catch (err) {
    console.error('FINANCIALS COA SEED:', err.message);

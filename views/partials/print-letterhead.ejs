@@ -7,7 +7,7 @@ var _bLegal = _b.legalName || _b.orgName || 'ZAIZENS';
 var _bOrg = locals.finReportOrgName || _b.orgName || _b.facilityName || 'ZAIZENS';
 var _bTag = _b.tagline || '';
 var _bLogo = _b.logoPath || '/img/zaizens-brand.svg';
-var _bLh = _b.letterheadPath || '/img/hms-letterhead.png?v=20260515';
+var _bLh = String(_b.letterheadPath || '').trim();
 var _bSlipHeader = _b.slipHeader || _bOrg || 'ZAIZENS';
 var __lh = {
  docTitle:  (typeof docTitle  !== 'undefined') ? docTitle  : '',
@@ -72,11 +72,13 @@ var __lh = {
   <div class="hms-lh-facility"><%= _bSlipHeader %></div>
   <% if (__lh.docTitle) { %><div class="hms-lh-tagline"><%= __lh.docTitle %></div><% } %>
  </div>
-<% } else { %>
+<% } else if (_bLh || __lh.docTitle || __lh.docNumber || __lh.docDate || __lh.tagline) { %>
  <div class="hms-letterhead <%= __lh.variant === 'compact' ? 'hms-lh-compact' : '' %>">
+  <% if (_bLh) { %>
   <div class="hms-lh-banner">
    <img src="<%= _bLh %>" alt="<%= _bOrg %>" />
   </div>
+  <% } %>
   <% if (__lh.docTitle || __lh.docNumber || __lh.docDate) { %>
    <div class="hms-lh-bar">
     <div class="hms-lh-title"><%= __lh.docTitle || '' %></div>

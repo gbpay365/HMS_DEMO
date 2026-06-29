@@ -26,7 +26,7 @@ var _radCanCatalog = _radHasP('service_catalog.radiology.read', 'service_catalog
   deptModuleHref: '/radiology',
   deptModuleLabel: _top('radiology_odoo.module', 'Radiology'),
   deptModuleIcon: 'radiology',
-  deptExtraCss: ['/css/radiology-odoo.css?v=2'],
+  deptExtraCss: ['/css/radiology-odoo.css?v=3'],
   deptNavUser: _radUser
 }) %>
       <a href="/radiology" class="o_nav_link<%= _radActive('requests') %>"><i class="fa fa-inbox hms-dept-nav-ico" aria-hidden="true"></i><%= _top('radiology_odoo.requests', 'Requests') %></a>
@@ -39,6 +39,7 @@ var _radCanCatalog = _radHasP('service_catalog.radiology.read', 'service_catalog
           <% if (_radHasP('radiology.write')) { %><a href="/radiology/order-alerts"><i class="fa fa-bell hms-dept-nav-ico" aria-hidden="true"></i><%= _top('radiology_odoo.order_alerts', 'Order alerts') %></a><% } %>
           <% if (_radHasP('radiology.read', 'radiology.write')) { %><a href="/radiology/supply-requests"><i class="fa fa-shopping-cart hms-dept-nav-ico" aria-hidden="true"></i><%= _top('radiology_odoo.supply_requests', 'Procurement requests') %></a><% } %>
           <a href="/radiology/templates"><i class="fa fa-file-text hms-dept-nav-ico" aria-hidden="true"></i><%= _top('radiology_odoo.exam_templates', 'Exam templates') %></a>
+          <% if (_radHasP('radiology.write')) { %><a href="/radiology/ops/walk-in"><i class="fa fa-user-plus hms-dept-nav-ico" aria-hidden="true"></i><%= _top('radiology_odoo.walk_in', 'Walk-in register') %></a><% } %>
           <a href="/radiology/configuration"><i class="fa fa-sliders hms-dept-nav-ico" aria-hidden="true"></i><%= _top('radiology_odoo.tests_groups_rooms', 'Tests, groups & rooms') %></a>
         </div>
       </div>

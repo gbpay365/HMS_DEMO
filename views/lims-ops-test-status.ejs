@@ -1,0 +1,46 @@
+<%- include('partials/header') %>
+<%- include('partials/laboratory-odoo-start', {
+  labOdooMenu: 'operations',
+  labOdooTitle: 'Test-wise analytics',
+  labOdooActions: '<a href="/lims/ops/test-status?date=' + date + '&format=csv" class="o_btn_secondary"><i class="fa fa-download"></i> Export CSV</a>'
+}) %>
+<div class="o_content">
+<%- include('partials/lims-ops-nav', { limsOpsMenu: 'test' }) %>
+<form method="get" class="form-inline mb-3">
+ <input type="date" name="date" value="<%= date %>" class="form-control form-control-sm mr-2">
+ <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+</form>
+<div class="hms-surface-card">
+ <div class="table-responsive">
+  <table class="table table-sm table-hover mb-0">
+   <thead class="thead-light">
+    <tr>
+     <th>Test</th><th>Paid</th><th>Processing</th><th>Retest</th><th>Completed</th>
+     <th>Verified</th><th>Approved</th><th>Printed</th><th>Total</th><th>Status</th>
+    </tr>
+   </thead>
+   <tbody>
+   <% if (!rows || !rows.length) { %>
+   <tr><td colspan="10" class="text-muted text-center py-4">No tests today.</td></tr>
+   <% } %>
+   <% (rows || []).forEach(function(r){ %>
+   <tr>
+    <td class="font-weight-bold"><%= r.test_name %></td>
+    <td><%= r.bill_paid || 0 %></td>
+    <td><%= r.processing || 0 %></td>
+    <td><%= r.retest || 0 %></td>
+    <td><%= r.completed || 0 %></td>
+    <td><%= r.verified || 0 %></td>
+    <td><%= r.approved || 0 %></td>
+    <td><%= r.printed || 0 %></td>
+    <td><%= r.total %></td>
+    <td><span class="badge badge-light border"><%= r.status %></span></td>
+   </tr>
+   <% }); %>
+   </tbody>
+  </table>
+ </div>
+</div>
+</div>
+<%- include('partials/laboratory-odoo-end') %>
+<%- include('partials/footer') %>

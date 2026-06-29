@@ -7,7 +7,7 @@ import { SurfaceHero } from '../components/SurfaceHero';
 import { confirmModal } from '../lib/modalBridge';
 import { openAddChargeModal } from '../lib/addChargeBridge';
 import { Modal } from '../components/Modal';
-import { ModalCancelButton, ModalSubmitButton } from '../components/ModalActions';
+import { formatMoney, priceUnitLabel } from '../lib/hmsLocale';
 
 const FLAGS = ['trauma', 'cardiac', 'stroke', 'pediatric', 'psych', 'obstetric'];
 const PATHWAY_KEYS = [
@@ -43,7 +43,7 @@ const ORDER_STATUS_KEYS = {
   cancelled: 'order_status_cancelled'};
 
 function fmtFcfa(n) {
-  return Math.round(parseFloat(n || 0)).toLocaleString('fr-FR');
+  return formatMoney(n);
 }
 
 function statusChip(st) {
@@ -157,7 +157,7 @@ function ErOrderCatalogFields({ orderType, t }) {
             </option>
             {items.map((it) => (
               <option key={it.id} value={it.id}>
-                {it.name} — {fmtFcfa(it.price)} FCFA
+                {it.name} — {fmtFcfa(it.price)}
               </option>
             ))}
           </select>
@@ -413,7 +413,7 @@ export function EmergencyVisitPageApp({
         <StatCard
           label={t('emergencyVisit.stat_charges')}
           value={`${fmtFcfa(totalCharges)}`}
-          hint={t('shared.fcfa', { ns: 'ipd' })}
+          hint={priceUnitLabel()}
           tone="warning"
           icon="money"
         />
@@ -904,12 +904,12 @@ export function EmergencyVisitPageApp({
                         {c.settled ? <span className="ml-1 font-bold text-emerald-600">{t('emergencyVisit.settled')}</span> : null}
                       </div>
                     </div>
-                    <div className="shrink-0 font-bold text-red-600">{fmtFcfa(c.amount)} FCFA</div>
+                    <div className="shrink-0 font-bold text-red-600">{fmtFcfa(c.amount)}</div>
                   </div>
                 ))}
                 <div className="flex justify-between bg-red-50 px-4 py-2 font-bold text-red-800">
                   <span>{t('emergencyVisit.total_open_tab')}</span>
-                  <span>{fmtFcfa(totalCharges)} FCFA</span>
+                  <span>{fmtFcfa(totalCharges)}</span>
                 </div>
               </>
             )}

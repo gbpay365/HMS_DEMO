@@ -1,6 +1,7 @@
 <% if (locals.useOdooShell) { %></main><% } %>
     </div>
 <% if (locals.useOdooShell) { %></div><script src="/js/hms-odoo-shell.js?v=3" defer></script><% } %>
+<% if (locals.user) { %><script src="/js/hms-nav-topbar-extras.js?v=1" defer></script><% } %>
 <script src="/js/hms-list-search.js" defer></script>
 <script>
 window.HMS_TABLE_PAGINATION_I18N = <%- JSON.stringify({

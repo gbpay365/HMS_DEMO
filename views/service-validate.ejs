@@ -1,8 +1,23 @@
-<% var _pd = locals.pageData || {}; var _kind = _pd.kind || 'laboratory'; locals.hmsSurfaceBodyClass = ' hms-body--validate-entry hms-body--validate-entry-' + (_kind === 'pharmacy' ? 'pharmacy' : _kind === 'radiology' ? 'rad' : 'lab'); %>
+<% var _pd = locals.pageData || {}; var _kind = _pd.kind || 'laboratory';
+if (_kind === 'pharmacy') { locals.pharmacyOdooApp = true; }
+locals.hmsSurfaceBodyClass = ' hms-body--validate-entry hms-body--validate-entry-' + (_kind === 'pharmacy' ? 'pharmacy' : _kind === 'radiology' ? 'rad' : 'lab');
+%>
 <%- include('partials/header') %>
+<% if (_kind === 'pharmacy') { %>
+<%- include('partials/react-pharmacy-validate-mount', {
+  reactPage: locals.reactPage || 'lab-workflow',
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.service_validate', { ns: 'common' }) : 'Loading…'),
+  pageData: locals.pageData || {},
+  phaOdooTitle: (typeof t === 'function' ? t('document_titles.validate_code_pharmacy', { ns: 'common', defaultValue: 'Validate code' }) : 'Validate code'),
+  nursingSupplyPending: locals.nursingSupplyPending,
+  flash: locals.flash,
+  error: locals.error
+}) %>
+<% } else { %>
 <%- include('partials/react-page-mount', {
   reactPage: locals.reactPage || 'lab-workflow',
   reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.service_validate', { ns: 'common' }) : 'Loading…'),
   pageData: locals.pageData || {}
 }) %>
+<% } %>
 <%- include('partials/footer') %>

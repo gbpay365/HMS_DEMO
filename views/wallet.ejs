@@ -121,7 +121,7 @@
  <div class="wlt-kpi-grid">
  <div class="wlt-kpi kpi-trust">
  <div class="kpi-label"><%= _t('wallet_page.kpi_total_trust', { ns: 'legacy', defaultValue: 'Total Held in Trust' }) %></div>
- <div class="kpi-val"><%= Number(stats.total_trust || 0).toLocaleString('fr-FR') %> <small style="font-size:.9rem;">FCFA</small></div>
+ <div class="kpi-val"><%= fmtMoney(stats.total_trust || 0) %></div>
  <div class="kpi-sub"><%= _t('wallet_page.kpi_total_trust_sub', { ns: 'legacy', defaultValue: 'Across all active wallets' }) %></div>
  </div>
  <div class="wlt-kpi kpi-count">
@@ -132,7 +132,7 @@
  <div class="wlt-kpi kpi-today">
  <div class="kpi-label"><%= _t('wallet_page.kpi_today_txn', { ns: 'legacy', defaultValue: "Today's Transactions" }) %></div>
  <div class="kpi-val"><%= stats.txn_today || 0 %></div>
- <div class="kpi-sub"><%= _t('wallet_page.kpi_volume', { ns: 'legacy', defaultValue: 'Volume:' }) %> <%= Number(stats.vol_today || 0).toLocaleString('fr-FR') %> FCFA</div>
+ <div class="kpi-sub"><%= _t('wallet_page.kpi_volume', { ns: 'legacy', defaultValue: 'Volume:' }) %> <%= Number(stats.vol_today || 0).toLocaleString('fr-FR') %></div>
  </div>
  <div class="wlt-kpi kpi-vol">
  <div class="kpi-label"><%= _t('wallet_page.kpi_gbpay', { ns: 'legacy', defaultValue: 'GBPay / MoMo' }) %></div>
@@ -256,7 +256,7 @@
  </td>
  <td><code style="font-size:.78rem;background:#f1f5f9;padding:2px 8px;border-radius:6px;color:#475569;">#WLT-<%= String(w.id).padStart(4,'0') %></code></td>
  <td>
- <div class="<%= balClass %> bal-display"><%= bal.toLocaleString('fr-FR') %> <small style="font-size:.7rem;font-weight:600;">FCFA</small></div>
+ <div class="<%= balClass %> bal-display"><%= fmtMoney(bal) %></div>
  <div class="bal-meter"><div class="bal-meter-fill" style="width:<%= meterW %>%;background:<%= meterColor %>;"></div></div>
  </td>
  <td>

@@ -1,9 +1,12 @@
 /** Hospital revenue GL accounts with HMS service catalog prices (Account_Core parity). */
 
-import { isPaymentMethodAccountCode, PAYMENT_METHOD_SHORT_LABELS } from './paymentMethodAccounts';
+import { isPaymentMethodAccountCode, paymentMethodShortLabels, isIfrsAccounting } from './paymentMethodAccounts';
 
 export function isHospitalRevenueAccount(code) {
   const c = String(code || '');
+  if (isIfrsAccounting()) {
+    return c.startsWith('510') || c.startsWith('520');
+  }
   return (
     c.startsWith('7016') ||
     c.startsWith('7026') ||
@@ -52,8 +55,9 @@ export function applyCatalogPriceToLine(line, _entry, service) {
 
 export function defaultLineDescription(accountCode, accountLabel, catalogByCode) {
   const code = String(accountCode || '').trim();
-  if (isPaymentMethodAccountCode(code) && PAYMENT_METHOD_SHORT_LABELS[code]) {
-    return PAYMENT_METHOD_SHORT_LABELS[code];
+  const labels = paymentMethodShortLabels();
+  if (isPaymentMethodAccountCode(code) && labels[code]) {
+    return labels[code];
   }
   const entry = catalogEntryForAccount(catalogByCode, accountCode);
   const service = entry ? pickDefaultCatalogService(entry) : null;

@@ -12,6 +12,7 @@ import { employeeStatus, employeeStatusLabel, formatDate, hasPerm, postForm } fr
 import { confirmModal } from '../lib/modalBridge';
 import { DEFAULT_PAGE_SIZE } from '../lib/pagination';
 import { ResetEmployeePasswordModal } from '../modals/ResetEmployeePasswordModal';
+import { EditEmployeeProfileModal } from '../modals/EditEmployeeProfileModal';
 import { ExportEmployeesModal } from '../modals/ExportEmployeesModal';
 
 function avatarEmoji(employee) {
@@ -71,13 +72,16 @@ export function EmployeesPageApp({
   const [resetTarget, setResetTarget] = useState(null);
   const [resetOpen, setResetOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [employeeRows, setEmployeeRows] = useState(employees);
 
   const isAdmin = userRole === '1' || userRole === '99' || hasPerm(userPerms, ['*', 'employee.write']);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return employees;
-    return employees.filter((e) => {
+    if (!q) return employeeRows;
+    return employeeRows.filter((e) => {
       const roleLabel = roleMap[String(e.role)] || String(e.role || '');
       const hay = [
         e.first_name,
@@ -93,7 +97,7 @@ export function EmployeesPageApp({
         .toLowerCase();
       return hay.includes(q);
     });
-  }, [employees, search, roleMap]);
+  }, [employeeRows, search, roleMap]);
 
   const { setPage, pager, rows } = useClientPagination(filtered, {
     pageSize,
@@ -103,9 +107,13 @@ export function EmployeesPageApp({
     const items = [];
     if (isAdmin || hasPerm(userPerms, ['employee.write'])) {
       items.push({
-        href: `/employees/${e.id}/edit`,
         label: t('employees.edit_profile'),
-        icon: <span className="text-brand">✎</span>});
+        icon: <span className="text-brand">✎</span>,
+        onClick: () => {
+          setEditTarget(e);
+          setEditOpen(true);
+        },
+      });
     }
     if (canResetEmployeePassword(userRole, e.role, userPerms)) {
       items.push({
@@ -169,7 +177,7 @@ export function EmployeesPageApp({
         </SurfaceHero>
 
         <div className="mb-4 grid gap-3 sm:grid-cols-2">
-          <StatCard label={t('employees.stat_total')} value={employees.length} tone="brand" icon="users" />
+          <StatCard label={t('employees.stat_total')} value={employeeRows.length} tone="brand" icon="users" />
           <StatCard label={t('employees.stat_showing')} value={filtered.length} tone="default" icon="search" />
         </div>
 
@@ -181,7 +189,7 @@ export function EmployeesPageApp({
               placeholder={t('employees.search_ph')}
             />
             <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
-              {t('employees.total_count', { total: employees.length, count: filtered.length })}
+              {t('employees.total_count', { total: employeeRows.length, count: filtered.length })}
             </span>
           </div>
         </div>
@@ -261,6 +269,45 @@ export function EmployeesPageApp({
             }}
           />
         </div>
+
+        <EditEmployeeProfileModal
+          open={editOpen}
+          employeeId={editTarget?.id}
+          onClose={() => {
+            setEditOpen(false);
+            setEditTarget(null);
+          }}
+          onSaved={(updated) => {
+            if (!updated?.id) {
+              window.location.reload();
+              return;
+            }
+            setEmployeeRows((prev) =>
+              prev.map((row) =>
+                Number(row.id) === Number(updated.id)
+                  ? {
+                      ...row,
+                      first_name: updated.first_name,
+                      last_name: updated.last_name,
+                      username: updated.username,
+                      emailid: updated.emailid,
+                      phone: updated.phone,
+                      gender: updated.gender,
+                      profile_emoji: updated.profile_emoji,
+                      photo_path: updated.photo_path,
+                      joining_date: updated.joining_date,
+                      role: updated.role,
+                      primary_department: updated.primary_department,
+                      specialisation: updated.specialisation,
+                      status: updated.status,
+                      departments_all: (updated.departments || []).join(', ') || updated.primary_department || '',
+                      specialisations_all: (updated.specialisations || []).join(', ') || updated.specialisation || '',
+                    }
+                  : row
+              )
+            );
+          }}
+        />
 
         <ResetEmployeePasswordModal
           open={resetOpen}

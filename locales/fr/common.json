@@ -5,7 +5,9 @@
     "french": "Français",
     "updated": "Langue mise à jour.",
     "switch_to_en": "English",
-    "switch_to_fr": "Français"
+    "switch_to_fr": "Français",
+    "short_en": "ENG",
+    "short_fr": "Fr"
   },
   "actions": {
     "ok": "OK",
@@ -57,6 +59,7 @@
     "staff": "Chargement de l'annuaire personnel…",
     "appointments": "Chargement des rendez-vous…",
     "front_desk": "Chargement de l'accueil…",
+    "front_desk_validate": "Chargement de la validation…",
     "opd_queue": "Chargement de la file d'attente…",
     "doctor_schedule": "Chargement du planning…",
     "billing": "Chargement de la facturation…",

@@ -32,6 +32,9 @@ export function OpdWorkflowBanner() {
       footnote={t('opd.workflow_footnote')}
       stationTitle={(n) => t('opd.workflow_station', { n })}
       listAriaLabel={t('opd.workflow_stations_aria')}
+      defaultCollapsed
+      showLabel={t('opd.workflow_show')}
+      hideLabel={t('opd.workflow_hide')}
     />
   );
 }

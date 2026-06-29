@@ -5,6 +5,7 @@ const { postExpenseToGl } = require('../lib/hmsFinJournalPost');
 const ensureFinJournal019 = require('../lib/ensureFinJournal019');
 const { mapFinRows } = require('../lib/hmsFormatDate');
 const { expensesPayload, expenseNewPayload } = require('../lib/finReactPayloads');
+const hmsCountry = require('../lib/hmsCountry');
 
 const DEFAULT_CATEGORIES = [
  'Utilities',
@@ -201,7 +202,7 @@ module.exports = function registerFinancialsExpenses(app, pool, requireAuth) {
   let err = '';
   if (!ed) err = 'Please enter a valid expense date.';
   else if (!cat) err = 'Category is required.';
-  else if (amt < 1) err = 'Amount must be at least 1 FCFA.';
+  else if (amt < 1) err = `Amount must be at least 1 ${hmsCountry.currencyCode()}.`;
 
   if (err) {
    return res.render('financials-expenses-new', {

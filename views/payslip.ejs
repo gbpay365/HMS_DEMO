@@ -329,7 +329,9 @@ if (typeof _tl !== 'function') {
 <body>
 <%
   /* ── Helpers ── */
-  const xaf = n => Math.round(n || 0).toLocaleString('fr-FR');
+  const isNg = typeof isNigeria !== 'undefined' && isNigeria;
+  const curSym = (typeof currencySymbol !== 'undefined' && currencySymbol) ? currencySymbol : 'FCFA';
+  const xaf = n => Math.round(n || 0).toLocaleString('en-NG');
 
   function numberToWords(num) {
     const n = Math.round(num) || 0;
@@ -351,7 +353,7 @@ if (typeof _tl !== 'function') {
   }
 
   const net = gross - ded;
-  const netWords = numberToWords(net) + ' Francs CFA';
+  const netWords = numberToWords(net) + (isNg ? ' Naira' : ' Francs CFA');
   const orgName  = brand.slipHeader || brand.orgName || brand.facilityName || 'Hospital';
   const empAddr        = (empSettings.employer_address || '').trim();
   const empPhone       = (empSettings.employer_phone  || '').trim();
@@ -440,8 +442,8 @@ if (typeof _tl !== 'function') {
       <tr>
         <th style="width:45%"><%= _tl('payslip.th_description', 'Description') %></th>
         <th style="width:15%"><%= _tl('payslip.th_qty', 'Qty / Days') %></th>
-        <th style="width:20%"><%= _tl('payslip.th_rate', 'Rate (FCFA)') %></th>
-        <th style="width:20%"><%= _tl('payslip.th_amount', 'Amount (FCFA)') %></th>
+        <th style="width:20%"><%= _tl('payslip.th_rate', isNg ? 'Rate (NGN)' : 'Rate (FCFA)') %></th>
+        <th style="width:20%"><%= _tl('payslip.th_amount', isNg ? 'Amount (NGN)' : 'Amount (FCFA)') %></th>
       </tr>
     </thead>
     <tbody>
@@ -504,10 +506,47 @@ if (typeof _tl !== 'function') {
 
       <!-- DEDUCTIONS HEADER -->
       <tr class="section-hdr section-deductions">
-        <td colspan="4"><%= _tl('payslip.statutory_deductions', 'Statutory Deductions / Retenues Légales') %></td>
+        <td colspan="4"><%= _tl('payslip.statutory_deductions', isNg ? 'Statutory Deductions' : 'Statutory Deductions / Retenues Légales') %></td>
       </tr>
 
-      <!-- CNPS employee (Vieillesse) 4.2 % -->
+      <% if (isNg) { %>
+      <% const pensionEmp = parseFloat(row.cnps_employee)||0; %>
+      <% if (pensionEmp > 0) { %>
+      <tr class="pay-deductions-line">
+        <td><%= _tl('payslip.ng_pension', 'Pension (PFA) — employee 8%') %></td>
+        <td><%= xaf(b + h + t) %></td>
+        <td>8.00%</td>
+        <td class="ded-amt"><%= xaf(pensionEmp) %></td>
+      </tr>
+      <% } %>
+      <% const nhfEmp = parseFloat(row.cimr_employee)||0; %>
+      <% if (nhfEmp > 0) { %>
+      <tr class="pay-deductions-line">
+        <td><%= _tl('payslip.ng_nhf', 'NHF — National Housing Fund') %></td>
+        <td><%= xaf(b) %></td>
+        <td>2.50%</td>
+        <td class="ded-amt"><%= xaf(nhfEmp) %></td>
+      </tr>
+      <% } %>
+      <% const nhisEmp = parseFloat(row.crtv_deduction)||0; %>
+      <% if (nhisEmp > 0) { %>
+      <tr class="pay-deductions-line">
+        <td><%= _tl('payslip.ng_nhis', 'NHIS — health insurance') %></td>
+        <td><%= xaf(gross) %></td>
+        <td>&mdash;</td>
+        <td class="ded-amt"><%= xaf(nhisEmp) %></td>
+      </tr>
+      <% } %>
+      <% const paye = parseFloat(row.income_tax)||0; %>
+      <% if (paye > 0) { %>
+      <tr class="pay-deductions-line">
+        <td><%= _tl('payslip.ng_paye', 'PAYE (Pay As You Earn)') %></td>
+        <td><%= _tl('payslip.taxable_base', 'Chargeable income') %></td>
+        <td>&mdash;</td>
+        <td class="ded-amt"><%= xaf(paye) %></td>
+      </tr>
+      <% } %>
+      <% } else { %>
       <% const cnpsEmp = parseFloat(row.cnps_employee)||0; %>
       <% if (cnpsEmp > 0) { %>
       <tr class="pay-deductions-line">
@@ -583,6 +622,7 @@ if (typeof _tl !== 'function') {
         <td class="ded-amt"><%= xaf(cnhc) %></td>
       </tr>
       <% } %>
+      <% } %>
 
       <!-- TOTAL DEDUCTIONS subtotal -->
       <tr class="subtotal-row pay-deductions-line">
@@ -615,7 +655,7 @@ if (typeof _tl !== 'function') {
   <!-- ── NET PAY BANNER ── -->
   <div class="ps-net-banner">
     <div class="net-label"><%= _tl('payslip.net_pay', 'Net Pay / Salaire Net') %></div>
-    <div class="net-amount">FCFA &nbsp;<%= xaf(net) %></div>
+    <div class="net-amount"><%= curSym %> &nbsp;<%= xaf(net) %></div>
     <div class="net-words"><%= netWords %></div>
   </div>
 

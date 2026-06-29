@@ -1,0 +1,79 @@
+<%- include('partials/header') %>
+<%- include('partials/laboratory-odoo-start', {
+  labOdooMenu: 'operations',
+  labOdooTitle: 'Referrers & B2B providers'
+}) %>
+<div class="o_content">
+<%- include('partials/lims-ops-nav', { limsOpsMenu: 'referrers' }) %>
+<% if (flash) { %><div class="alert alert-success small mb-3"><%= flash %></div><% } %>
+<% if (error) { %><div class="alert alert-danger small mb-3"><%= error %></div><% } %>
+<div class="row">
+ <div class="col-lg-6 mb-4">
+  <div class="hms-surface-card p-3 mb-3">
+   <h6 class="font-weight-bold">Add / edit referrer</h6>
+   <form method="post" action="/lims/ops/referrers">
+    <input type="hidden" name="id" id="ref_id" value="">
+    <div class="form-row">
+     <div class="form-group col-md-4"><label class="small">Code</label><input name="code" class="form-control form-control-sm"></div>
+     <div class="form-group col-md-8"><label class="small">Name *</label><input name="name" required class="form-control form-control-sm"></div>
+    </div>
+    <div class="form-row">
+     <div class="form-group col-md-4"><label class="small">Type</label>
+      <select name="referrer_type" class="form-control form-control-sm"><option value="doctor">Doctor</option><option value="hospital">Hospital</option><option value="clinic">Clinic</option></select>
+     </div>
+     <div class="form-group col-md-4"><label class="small">Mobile</label><input name="mobile" class="form-control form-control-sm"></div>
+     <div class="form-group col-md-4"><label class="small">Email</label><input name="email" type="email" class="form-control form-control-sm"></div>
+    </div>
+    <div class="form-group"><label class="small">Address</label><input name="address" class="form-control form-control-sm"></div>
+    <button type="submit" class="btn btn-sm btn-primary">Save referrer</button>
+   </form>
+  </div>
+  <div class="hms-surface-card">
+   <div class="table-responsive">
+    <table class="table table-sm mb-0">
+     <thead><tr><th>Name</th><th>Type</th><th>Mobile</th></tr></thead>
+     <tbody>
+     <% (referrers || []).forEach(function(r){ %>
+     <tr><td><%= r.name %></td><td><%= r.referrer_type %></td><td><%= r.mobile || '—' %></td></tr>
+     <% }); %>
+     </tbody>
+    </table>
+   </div>
+  </div>
+ </div>
+ <div class="col-lg-6 mb-4">
+  <div class="hms-surface-card p-3 mb-3">
+   <h6 class="font-weight-bold">Add / edit credit provider (B2B)</h6>
+   <form method="post" action="/lims/ops/credit-providers">
+    <input type="hidden" name="id" value="">
+    <div class="form-row">
+     <div class="form-group col-md-4"><label class="small">Code</label><input name="code" class="form-control form-control-sm"></div>
+     <div class="form-group col-md-8"><label class="small">Name *</label><input name="name" required class="form-control form-control-sm"></div>
+    </div>
+    <div class="form-row">
+     <div class="form-group col-md-4"><label class="small">Type</label>
+      <select name="provider_type" class="form-control form-control-sm"><option value="corporate">Corporate</option><option value="insurance">Insurance</option><option value="hmo">HMO</option></select>
+     </div>
+     <div class="form-group col-md-4"><label class="small">Phone</label><input name="contact_phone" class="form-control form-control-sm"></div>
+     <div class="form-group col-md-4"><label class="small">Email</label><input name="contact_email" type="email" class="form-control form-control-sm"></div>
+    </div>
+    <button type="submit" class="btn btn-sm btn-primary">Save provider</button>
+   </form>
+  </div>
+  <div class="hms-surface-card">
+   <div class="table-responsive">
+    <table class="table table-sm mb-0">
+     <thead><tr><th>Name</th><th>Type</th><th>Contact</th></tr></thead>
+     <tbody>
+     <% (providers || []).forEach(function(p){ %>
+     <tr><td><%= p.name %></td><td><%= p.provider_type %></td><td><%= p.contact_phone || p.contact_email || '—' %></td></tr>
+     <% }); %>
+     </tbody>
+    </table>
+   </div>
+  </div>
+ </div>
+</div>
+</div>
+<%- include('partials/laboratory-odoo-end') %>
+<%- include('partials/footer') %>

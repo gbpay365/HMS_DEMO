@@ -11,6 +11,35 @@ export function OrderSectionShell({
   empty}) {
   const th = ORDER_THEMES[theme] || ORDER_THEMES.plan;
 
+  if (th.variant === 'mocdoc') {
+    return (
+      <div className="consult-mocdoc-lines consult-mocdoc-order">
+        <div className="consult-mocdoc-lines-head">
+          <div className="consult-mocdoc-lines-head-title">
+            <span className="consult-mocdoc-lines-head-badge">{iconLetter}</span>
+            {title}
+          </div>
+          {onAdd ? (
+            <button type="button" onClick={onAdd} className="consult-mocdoc-lines-add">
+              <span className="text-base leading-none">+</span>
+              {addLabel}
+            </button>
+          ) : null}
+        </div>
+        <div className="consult-mocdoc-lines-body">
+          {children}
+          {empty ? <p className="py-3 text-center text-sm text-slate-500">{empty}</p> : null}
+        </div>
+        {hint ? (
+          <div className="consult-mocdoc-lines-footer">
+            <i className="fa fa-lightbulb-o mr-1" />
+            {hint}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div className={`hms-surface-card overflow-hidden rounded-2xl border bg-white shadow-sm ${th.shell}`}>
       <div className={`flex items-center justify-between border-b px-4 py-2.5 ${th.header}`}>

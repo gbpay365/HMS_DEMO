@@ -26,6 +26,13 @@ const APPS = {
   'print-emergency-mlc': PrintEmergencyMlcApp,
   'print-medical-passport': PrintMedicalPassportApp};
 
+function bootHmsCountry(props) {
+  const boot = props?.hmsCountry;
+  if (boot && typeof boot === 'object' && Object.keys(boot).length) {
+    window.HMS = Object.assign({}, window.HMS || {}, boot);
+  }
+}
+
 function bootPrintPage() {
   const root = document.getElementById('hms-react-root');
   if (!root) return;
@@ -33,6 +40,7 @@ function bootPrintPage() {
   const App = APPS[page];
   if (!App) return;
   const props = parsePageData('hms-page-data') || {};
+  bootHmsCountry(props);
   initI18n(localeFromPageData(props));
   createRoot(root).render(
     createElement(

@@ -4,6 +4,7 @@ import { Modal } from '../components/Modal';
 import { ModalCancelButton, ModalSubmitButton } from '../components/ModalActions';
 import { CATALOG_CATEGORIES } from '../lib/catalogUi';
 import { catalogCategoryWritable } from '../lib/catalogAccessClient';
+import { priceUnitLabel } from '../lib/hmsLocale';
 
 function fieldLabels(category, t) {
   const isPharm = String(category || '').trim().toLowerCase() === 'pharmacy';
@@ -110,7 +111,7 @@ export function CatalogServiceModal({ open, onClose, mode = 'add', service = nul
         </div>
         <div>
           <label className="hms-label" htmlFor="cat-price">
-            {t('modals.catalogService.price')} <span className="text-red-500">*</span>
+            {t('modals.catalogService.price', { currency: priceUnitLabel() })} <span className="text-red-500">*</span>
           </label>
           <input
             id="cat-price"

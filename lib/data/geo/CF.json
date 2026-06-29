@@ -1,0 +1,104 @@
+{
+  "code": "CF",
+  "name": "Central African Republic",
+  "regionLabel": "Prefecture",
+  "subRegionLabel": "Sub-prefecture",
+  "regions": [
+    "Bamingui-Bangoran",
+    "Bangui",
+    "Basse-Kotto",
+    "Haut-Mbomou",
+    "Haute-Kotto",
+    "Kémo",
+    "Lobaye",
+    "Mambéré-Kadéï",
+    "Mbomou",
+    "Nana-Grébizi",
+    "Nana-Mambéré",
+    "Ombella-M'Poko",
+    "Ouaka",
+    "Ouham",
+    "Ouham-Pendé",
+    "Sangha-Mbaéré",
+    "Vakaga"
+  ],
+  "subRegions": {
+    "Bamingui-Bangoran": [
+      "Bamingui",
+      "Ndélé"
+    ],
+    "Bangui": [
+      "Bangui"
+    ],
+    "Basse-Kotto": [
+      "Alindao",
+      "Kembé",
+      "Mobaye"
+    ],
+    "Haut-Mbomou": [
+      "Obo",
+      "Zemio"
+    ],
+    "Haute-Kotto": [
+      "Bria",
+      "Ouadda"
+    ],
+    "Kémo": [
+      "Sibut"
+    ],
+    "Lobaye": [
+      "Boda",
+      "Boganangone",
+      "Mbaiki",
+      "Mongoumba"
+    ],
+    "Mambéré-Kadéï": [
+      "Berberati",
+      "Carnot",
+      "Gamboula"
+    ],
+    "Mbomou": [
+      "Bangassou",
+      "Gambo",
+      "Ouango",
+      "Rafai"
+    ],
+    "Nana-Grébizi": [
+      "Kaga Bandoro"
+    ],
+    "Nana-Mambéré": [
+      "Baoro",
+      "Bouar"
+    ],
+    "Ombella-M'Poko": [
+      "Bimbo",
+      "Boali",
+      "Damara"
+    ],
+    "Ouaka": [
+      "Bambari",
+      "Grimari",
+      "Ippy",
+      "Kouango"
+    ],
+    "Ouham": [
+      "Batangafo",
+      "Bossangoa",
+      "Bouca",
+      "Kabo"
+    ],
+    "Ouham-Pendé": [
+      "Bocaranga",
+      "Bozoum",
+      "Paoua"
+    ],
+    "Sangha-Mbaéré": [
+      "Nola"
+    ],
+    "Vakaga": [
+      "Birao",
+      "Ouanda-Djallé"
+    ]
+  },
+  "source": "dr5hn/countries-states-cities-database"
+}

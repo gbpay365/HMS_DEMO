@@ -1,9 +1,16 @@
-<% locals.hmsSurfaceBodyClass = ' hms-body--cashier'; %>
+<% locals.hmsSurfaceBodyClass = ' hms-body--cashier-odoo'; locals.showPageNav = false; %>
 <%- include('partials/header') %>
 
-<%- include('partials/react-accounting-page-mount', {
+<%- include('partials/react-cashier-page-mount', {
   reactPage: 'cashier',
-  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.cashier', { ns: 'common' }) : 'Loading…')
+  reactLoadingLabel: (typeof t === 'function' ? t('loading_pages.cashier', { ns: 'common' }) : 'Loading…'),
+  cashierPage: locals.cashierPage,
+  pendingCount: locals.pendingCount,
+  billingPendingCount: locals.billingPendingCount,
+  opdPendingCount: locals.opdPendingCount,
+  userDisplayName: locals.userDisplayName,
+  flash: locals.flash,
+  error: locals.error
 }) %>
 
 <%- include('partials/hms-wallet-modals-mount') %>

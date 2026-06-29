@@ -1,7 +1,11 @@
 <%- include('partials/header') %>
-
-<div class="page-wrapper hms-surface-module">
- <div class="content">
+<% var _hub = locals.procHubUrl || '/procurement'; var _rfqBase = locals.procRfqBase || '/procurement/rfq'; %>
+<% if (locals.pharmacyOdooApp) { %>
+<%- include('partials/pharmacy-odoo-start', { phaOdooMenu: 'purchase', phaOdooSub: 'procurement', phaOdooTitle: locals.phaOdooTitle || 'Requests for quotation', nursingSupplyPending, flash, error }) %>
+<div class="o_content p-3 hms-surface-module"><div class="content">
+<% } else { %>
+<div class="page-wrapper hms-surface-module"><div class="content">
+<% } %>
  <% if(locals.flash){ %>
  <div class="hms-flash hms-flash--success"><%= flash %></div>
  <% } %>
@@ -11,14 +15,14 @@
 
  <% if(!rfqReady){ %>
  <div class="hms-flash hms-flash--error border-0 shadow-sm"><%- _tl('procurement_rfq.migration_warning', 'Run database migration <code>046_procurement_module.sql</code> to enable RFQs.') %></div>
- <p class="mb-0"><a href="/procurement" class="hms-btn hms-btn-secondary btn-sm"><%= _tl('procurement_rfq.back_to_hub', 'Back to procurement hub') %></a></p>
+ <p class="mb-0"><a href="<%= _hub %>" class="hms-btn hms-btn-secondary btn-sm"><%= _tl('procurement_rfq.back_to_hub', 'Back to procurement hub') %></a></p>
  <% } else if (!rfq && !rfqNotFound) { %>
  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
  <div>
  <h4 class="page-title font-weight-bold text-dark mb-1"><%= _tl('procurement_rfq.list_title', 'Requests for quotation') %></h4>
  <p class="text-muted small mb-0"><%= _tl('procurement_rfq.list_subtitle', 'Create RFQs, add lines, issue to vendors, then record quotations (PHP parity).') %></p>
  </div>
- <a href="/procurement" class="hms-btn hms-btn-secondary btn-sm rounded-pill"><i class="fa fa-arrow-left mr-1"></i><%= _tl('procurement_rfq.procurement_hub', 'Procurement hub') %></a>
+ <a href="<%= _hub %>" class="hms-btn hms-btn-secondary btn-sm rounded-pill"><i class="fa fa-arrow-left mr-1"></i><%= _tl('procurement_rfq.procurement_hub', 'Procurement hub') %></a>
  </div>
 
  <% if (canWrite) { %>
@@ -52,18 +56,18 @@
   <div class="hms-stat-card hms-stat-card--success"><div class="hms-stat-card__value"><%= _rs.closed %></div><div class="hms-stat-card__label"><%= _tl('procurement_rfq.stat_closed', 'Closed') %></div></div>
  </div>
 
- <form method="get" action="/procurement/rfq" class="hms-filter-bar">
+ <form method="get" action="<%= _rfqBase %>" class="hms-filter-bar">
   <input type="search" name="q" class="hms-input w-full hms-filter-bar__search" value="<%= _search %>" placeholder="<%= _tl('procurement_rfq.search_ph', 'Search RFQ # or title') %>">
   <% if (_rf) { %><input type="hidden" name="status" value="<%= _rf %>"><% } %>
   <button type="submit" class="hms-btn hms-btn-secondary"><%= _tl('procurement_rfq.search', 'Search') %></button>
-  <% if (_search || _rf) { %><a href="/procurement/rfq" class="btn btn-link"><%= _tl('procurement_rfq.reset', 'Reset') %></a><% } %>
+  <% if (_search || _rf) { %><a href="<%= _rfqBase %>" class="btn btn-link"><%= _tl('procurement_rfq.reset', 'Reset') %></a><% } %>
  </form>
 
  <div class="hms-chip-row">
-  <a href="/procurement/rfq<%= _search ? ('?q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= !_rf ? ' active' : '' %>"><%= _tl('procurement_rfq.chip_all', 'All') %></a>
-  <a href="/procurement/rfq?status=draft<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _rf === 'draft' ? ' active' : '' %>">Draft</a>
-  <a href="/procurement/rfq?status=issued<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _rf === 'issued' ? ' active' : '' %>">Issued</a>
-  <a href="/procurement/rfq?status=closed<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _rf === 'closed' ? ' active' : '' %>">Closed</a>
+  <a href="<%= _rfqBase %><%= _search ? ('?q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= !_rf ? ' active' : '' %>"><%= _tl('procurement_rfq.chip_all', 'All') %></a>
+  <a href="<%= _rfqBase %>?status=draft<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _rf === 'draft' ? ' active' : '' %>">Draft</a>
+  <a href="<%= _rfqBase %>?status=issued<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _rf === 'issued' ? ' active' : '' %>">Issued</a>
+  <a href="<%= _rfqBase %>?status=closed<%= _search ? ('&q=' + encodeURIComponent(_search)) : '' %>" class="hms-chip<%= _rf === 'closed' ? ' active' : '' %>">Closed</a>
  </div>
 
  <div class="hms-surface-card">
@@ -80,7 +84,7 @@
  <tbody>
  <% (rfqList || []).forEach(function(r){ %>
  <tr>
- <td><a class="font-weight-bold" href="/procurement/rfq/<%= r.id %>"><%= r.rfq_number %></a></td>
+ <td><a class="font-weight-bold" href="<%= _rfqBase %>/<%= r.id %>"><%= r.rfq_number %></a></td>
  <td><%= r.title %></td>
  <td>
  <span class="badge <%= badgeClass(r.status) %> px-2 py-1 text-uppercase small"><%= r.status %></span>
@@ -98,7 +102,7 @@
 
  <% } else if (rfqNotFound) { %>
  <div class="hms-flash hms-flash--error"><%= _tl('procurement_rfq.not_found', 'RFQ not found.') %></div>
- <p><a href="/procurement/rfq"><%= _tl('procurement_rfq.back_to_list', 'Back to list') %></a></p>
+ <p><a href="<%= _rfqBase %>"><%= _tl('procurement_rfq.back_to_list', 'Back to list') %></a></p>
 
  <% } else { %>
  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
@@ -107,7 +111,7 @@
  <p class="text-muted small mb-0"><%= rfq.title %></p>
  </div>
  <div class="d-flex flex-wrap align-items-center gap-2">
- <a href="/procurement/rfq" class="btn btn-sm btn-outline-secondary font-weight-bold"><i class="fa fa-arrow-left mr-1"></i><%= _tl('procurement_rfq.all_rfqs', 'All RFQs') %></a>
+ <a href="<%= _rfqBase %>" class="btn btn-sm btn-outline-secondary font-weight-bold"><i class="fa fa-arrow-left mr-1"></i><%= _tl('procurement_rfq.all_rfqs', 'All RFQs') %></a>
  <span class="badge <%= badgeClass(rfq.status) %> px-2 py-1 text-uppercase small"><%= rfq.status %></span>
  </div>
  </div>
@@ -287,5 +291,8 @@
  <% } %>
  </div>
 </div>
+<% if (locals.pharmacyOdooApp) { %>
+<%- include('partials/pharmacy-odoo-end') %>
+<% } %>
 
 <%- include('partials/footer') %>

@@ -98,10 +98,18 @@
 
 /* Department body classes — tint mesh + Odoo brand */
 body.hms-body--pharmacy-odoo {
+  --hms-dept-pharmacy: #d4537e;
+  --hms-brand: #d4537e;
+  --hms-brand-hover: #993556;
+  --hms-brand-dark: #6d1b3a;
+  --hms-brand-light: #fce4ec;
+  --hms-brand-soft: rgba(212, 83, 126, 0.12);
+  --hms-brand-glow: rgba(212, 83, 126, 0.32);
   --o-brand: var(--hms-dept-pharmacy);
-  --o-brand-hover: #059669;
-  --o-brand-soft: rgba(16, 185, 129, 0.12);
-  --hms-surface-mesh-a: rgba(16, 185, 129, 0.09);
+  --o-brand-hover: var(--hms-brand-hover);
+  --o-brand-soft: var(--hms-brand-soft);
+  --hms-surface-mesh-a: rgba(212, 83, 126, 0.08);
+  --hms-surface-mesh-b: rgba(75, 21, 40, 0.05);
 }
 
 body.hms-body--laboratory-odoo,

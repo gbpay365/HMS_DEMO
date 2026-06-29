@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlashMessages } from '../components/FlashMessages';
 import { FilterChip } from '../components/FilterChip';
@@ -7,17 +7,25 @@ import { SearchField } from '../components/SearchField';
 import { StatCard } from '../components/StatCard';
 import { SurfaceHero } from '../components/SurfaceHero';
 import { StatusBadge } from '../components/StatusBadge';
+import { FILE_ACCEPT } from '../components/CatalogImportPanel';
 import { useClientPagination } from '../hooks/useClientPagination';
-import { hasPerm, inventoryStockStatusLabel, postForm } from '../lib/listUi';
+import { hasPerm, inventoryStockStatusLabel } from '../lib/listUi';
 import { confirmModal } from '../lib/modalBridge';
 import { DEFAULT_PAGE_SIZE } from '../lib/pagination';
+import { PharmacyPrescriptionsPanel } from '../components/pharmacy/PharmacyPrescriptionsPanel';
+import { PharmacySalesPanel } from '../components/pharmacy/PharmacySalesPanel';
+import { PharmacyExpiryPanel } from '../components/pharmacy/PharmacyExpiryPanel';
 
 const VIEW_KEYS = [
   { id: 'overview', labelKey: 'pharmacy.tab_overview' },
   { id: 'products', labelKey: 'pharmacy.tab_products' },
   { id: 'dispensing', labelKey: 'pharmacy.tab_dispensing' },
   { id: 'prescriptions', labelKey: 'pharmacy.tab_prescriptions' },
+  { id: 'sales', labelKey: 'pharmacy.tab_sales' },
+  { id: 'expiry', labelKey: 'pharmacy.tab_expiry' },
 ];
+
+const TAB_VIEW_KEYS = VIEW_KEYS.filter((v) => v.id !== 'overview');
 
 const PHARMACY_RETURN = '/pharmacy?view=products';
 
@@ -75,7 +83,7 @@ function PharmacyQuickStockAdjust({ itemId, quantity, canWrite, t }) {
           />
           <button
             type="submit"
-            className="h-7 rounded-lg bg-slate-800 px-2 text-[10px] font-bold uppercase tracking-wide text-white hover:bg-slate-900"
+            className="pha-btn-primary h-7 rounded-lg px-2 text-[10px] font-bold uppercase tracking-wide text-white"
             title={t('pharmacy.adjust_apply')}
           >
             {t('pharmacy.adjust_apply')}
@@ -105,7 +113,7 @@ function PharmacyReceiveStock({ itemId, canWrite, t }) {
         className="h-7 w-14 rounded-lg border border-slate-200 px-1.5 text-center text-xs"
         required
       />
-      <button type="submit" className="h-7 rounded-lg bg-emerald-600 px-2 text-[10px] font-bold uppercase tracking-wide text-white hover:bg-emerald-700">
+      <button type="submit" className="pha-btn-primary h-7 rounded-lg px-2 text-[10px] font-bold uppercase tracking-wide text-white">
         {t('pharmacy.receive_stock')}
       </button>
     </form>
@@ -133,10 +141,79 @@ function PharmacyReorderLevel({ itemId, reorderLevel, canWrite, t }) {
         defaultValue={level}
         className="h-7 w-16 rounded-lg border border-slate-200 px-1.5 text-right text-xs font-semibold"
       />
-      <button type="submit" className="h-7 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-bold uppercase tracking-wide text-slate-700 hover:border-brand hover:text-brand">
+      <button type="submit" className="pha-btn-secondary h-7 rounded-lg px-2 text-[10px] font-bold uppercase tracking-wide">
         {t('pharmacy.adjust_apply')}
       </button>
     </form>
+  );
+}
+
+function PharmacyProductPrice({ itemId, price, canWrite, t }) {
+  const amount = Number(price) || 0;
+  if (!canWrite) {
+    return (
+      <div className="text-right">
+        <div className="font-semibold tabular-nums">{amount.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} FCFA</div>
+        <div className="text-[10px] text-slate-400">{t('pharmacy.price_catalog_hint')}</div>
+      </div>
+    );
+  }
+  return (
+    <form
+      method="POST"
+      action="/pharmacy/product-price"
+      className="inline-flex flex-col items-end gap-1"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <input type="hidden" name="inventory_item_id" value={itemId} />
+      <input type="hidden" name="_return" value={PHARMACY_RETURN} />
+      <div className="flex items-center justify-end gap-1">
+        <input
+          type="number"
+          name="price"
+          min="0"
+          step="1"
+          defaultValue={amount}
+          className="h-7 w-24 rounded-lg border border-slate-200 px-1.5 text-right text-xs font-semibold"
+        />
+        <button type="submit" className="pha-btn-secondary h-7 rounded-lg px-2 text-[10px] font-bold uppercase tracking-wide">
+          {t('pharmacy.adjust_apply')}
+        </button>
+      </div>
+      <div className="text-[10px] text-slate-400">{t('pharmacy.price_catalog_hint')}</div>
+    </form>
+  );
+}
+
+function PharmacyProductUpload({ canImport, t }) {
+  const fileRef = useRef(null);
+
+  if (!canImport) return null;
+
+  const handleFile = async (ev) => {
+    const file = ev.target.files?.[0];
+    if (!file) return;
+    const ok = await confirmModal({
+      title: t('pharmacy.upload_products'),
+      message: t('pharmacy.upload_products_confirm'),
+      confirmLabel: t('catalog.import_confirm_btn', { defaultValue: 'Import' }),
+    });
+    if (!ok) {
+      ev.target.value = '';
+      return;
+    }
+    ev.target.form?.submit();
+  };
+
+  return (
+    <>
+      <button type="button" className="hms-btn-secondary text-xs" onClick={() => fileRef.current?.click()}>
+        {t('pharmacy.upload_products')}
+      </button>
+      <form method="post" action="/pharmacy/import-file" encType="multipart/form-data" className="hidden">
+        <input ref={fileRef} type="file" name="file" accept={FILE_ACCEPT} onChange={handleFile} />
+      </form>
+    </>
   );
 }
 
@@ -157,6 +234,14 @@ export function PharmacyPageApp({
   dispensedToday = 0,
   prescriptions = [],
   rxStats = {},
+  rxPatients = [],
+  salesStats = {},
+  salesLines = [],
+  pendingSales = [],
+  salesDay = '',
+  expiryItems = [],
+  expiryStats = {},
+  expiryDays = 30,
   userDisplayName = 'Pharmacist',
   userPerms = [],
   flash = null,
@@ -169,6 +254,7 @@ export function PharmacyPageApp({
   const [dispMode, setDispMode] = useState(dispenseMode === 'pending' ? 'pending' : 'log');
 
   const canWrite = hasPerm(userPerms, ['pharmacy.write', '*']);
+  const canImport = hasPerm(userPerms, ['pharmacy.write', 'service_catalog.pharmacy.write', '*']);
 
   const dispensingList =
     dispMode === 'pending' ? pendingDispense.length ? pendingDispense : queue : dispensed;
@@ -217,8 +303,9 @@ export function PharmacyPageApp({
   const quickLinks = [
     { href: '/pharmacy?view=products', labelKey: 'pharmacy.link_products' },
     { href: '/pharmacy?view=dispensing', labelKey: 'pharmacy.link_dispensing' },
+    { href: '/pharmacy?view=sales', labelKey: 'pharmacy.link_sales' },
+    { href: '/pharmacy?view=expiry', labelKey: 'pharmacy.link_expiry' },
     { href: '/pharmacy/validate', labelKey: 'pharmacy.link_validate' },
-    { href: '/pharmacy/reporting/expiry', labelKey: 'pharmacy.link_expiry' },
   ];
 
   const viewTitle = t(VIEW_KEYS.find((v) => v.id === view)?.labelKey || 'pharmacy.tab_overview');
@@ -227,22 +314,14 @@ export function PharmacyPageApp({
     <div className="page-wrapper hms-surface-module hms-ui">
       <FlashMessages flash={flash} error={error} />
 
-      <SurfaceHero icon="medkit" title={viewTitle} subtitle={t('pharmacy.dashboard_subtitle')}>
-        <div className="hms-surface-hero-actions mt-4">
-          <a href="/pharmacy/validate" className="hms-btn-primary text-xs">
-            {t('pharmacy.link_validate')}
-          </a>
-          <a href="/pharmacy/reporting" className="hms-btn-secondary text-xs">
-            {t('pharmacy.link_reports')}
-          </a>
-        </div>
-      </SurfaceHero>
+      <SurfaceHero icon="medkit" title={viewTitle} subtitle={t('pharmacy.dashboard_subtitle')} />
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {VIEW_KEYS.map((v) => (
+      <div className="ph-hub-view-tabs mb-4 flex flex-wrap gap-2">
+        {TAB_VIEW_KEYS.map((v) => (
           <FilterChip
             key={v.id}
             active={view === v.id}
+            className="!text-sm !px-4 !py-2"
             onClick={() => {
               setView(v.id);
               setSearch('');
@@ -257,7 +336,7 @@ export function PharmacyPageApp({
       {view === 'overview' ? (
         <>
           <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            <StatCard label={t('pharmacy.kpi_products')} value={stats.total || 0} />
+            <StatCard label={t('pharmacy.kpi_total_drugs')} value={stats.total || 0} />
             <StatCard label={t('pharmacy.kpi_pending')} value={pendingDispense.length || queue.length} tone="warning" />
             <StatCard label={t('pharmacy.kpi_dispensed_today')} value={dispensedToday} tone="brand" />
             <StatCard label={t('pharmacy.kpi_out_stock')} value={stats.out_stock || 0} tone="danger" />
@@ -272,33 +351,28 @@ export function PharmacyPageApp({
             ))}
           </div>
         </>
+      ) : view === 'prescriptions' ? (
+        <PharmacyPrescriptionsPanel
+          prescriptions={prescriptions}
+          rxStats={rxStats}
+          patients={rxPatients}
+          userPerms={userPerms}
+        />
+      ) : view === 'sales' ? (
+        <PharmacySalesPanel
+          salesStats={salesStats}
+          salesLines={salesLines}
+          pendingSales={pendingSales}
+          salesDay={salesDay}
+        />
+      ) : view === 'expiry' ? (
+        <PharmacyExpiryPanel expiryItems={expiryItems} expiryStats={expiryStats} expiryDays={expiryDays} />
       ) : (
         <>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <SearchField value={search} onChange={(ev) => setSearch(ev.target.value)} placeholder={t('shared.search')} />
             <div className="flex flex-wrap items-center gap-2">
-              {view === 'products' ? (
-                <>
-                  <a href="/catalog" className="hms-btn-secondary text-xs">
-                    {t('pharmacy.link_catalog_prices')}
-                  </a>
-                  {canWrite ? (
-                    <button
-                      type="button"
-                      className="hms-btn-primary text-xs"
-                      onClick={async () => {
-                        const ok = await confirmModal({
-                          title: t('pharmacy.sync_inventory'),
-                          message: t('pharmacy.sync_inventory_confirm'),
-                          confirmLabel: t('pharmacy.sync_inventory')});
-                        if (ok) postForm('/pharmacy/sync-inventory');
-                      }}
-                    >
-                      {t('pharmacy.sync_inventory')}
-                    </button>
-                  ) : null}
-                </>
-              ) : null}
+              {view === 'products' ? <PharmacyProductUpload canImport={canImport} t={t} /> : null}
               {view === 'dispensing' ? (
                 <>
                   <div className="flex rounded-full border border-slate-200 bg-white p-0.5 text-xs font-semibold">
@@ -317,7 +391,7 @@ export function PharmacyPageApp({
                     </a>
                     <a
                       href="/pharmacy?view=dispensing&dispense=pending"
-                      className={`rounded-full px-3 py-1.5 ${dispMode === 'pending' ? 'bg-amber-500 text-white' : 'text-slate-600'}`}
+                      className={`rounded-full px-3 py-1.5 ${dispMode === 'pending' ? 'pha-tab-pending-active text-white' : 'text-slate-600'}`}
                       onClick={(ev) => {
                         if (!ev.metaKey && !ev.ctrlKey) {
                           ev.preventDefault();
@@ -368,6 +442,7 @@ export function PharmacyPageApp({
                       <th className="px-4 py-3 text-right">{t('pharmacy.col_price')}</th>
                       <th className="px-4 py-3 text-right">{t('pharmacy.col_on_hand')}</th>
                       <th className="px-4 py-3 text-right">{t('pharmacy.col_reorder')}</th>
+                      <th className="px-4 py-3">{t('pharmacy.col_expiry')}</th>
                       <th className="px-4 py-3">{t('shared.status')}</th>
                       <th className="px-4 py-3 text-right">{t('shared.action')}</th>
                     </tr>
@@ -394,7 +469,7 @@ export function PharmacyPageApp({
                 <tbody className="divide-y divide-slate-100">
                   {rows.length === 0 ? (
                     <tr>
-                      <td colSpan={view === 'products' ? 8 : view === 'dispensing' ? 7 : 6} className="px-4 py-10 text-center text-sm text-slate-500">
+                      <td colSpan={view === 'products' ? 9 : view === 'dispensing' ? 7 : 6} className="px-4 py-10 text-center text-sm text-slate-500">
                         {view === 'dispensing' && dispMode === 'log'
                           ? t('pharmacy.empty_dispensed')
                           : t('pharmacy.empty')}
@@ -411,23 +486,33 @@ export function PharmacyPageApp({
                           <td className="px-4 py-3 font-mono text-xs">{item.sku}</td>
                           <td className="px-4 py-3">
                             <div className="font-semibold text-ink">{item.name}</div>
-                            {exp ? (
-                              <div className={`text-xs ${exp === 'expired' ? 'text-red-600' : 'text-amber-600'}`}>
-                                {exp === 'expired' ? t('pharmacy.expired') : t('pharmacy.expiring_soon')} · {String(item.expiry_date).slice(0, 10)}
-                              </div>
-                            ) : null}
                             <PharmacyReceiveStock itemId={item.id} canWrite={canWrite} t={t} />
                           </td>
-                          <td className="px-4 py-3 text-xs text-slate-500">{item.category || item.medicine_category_name || t('pharmacy.general')}</td>
+                          <td className="px-4 py-3 text-xs text-slate-500">
+                            {item.category || item.medicine_category_name || t('pharmacy.general')}
+                          </td>
                           <td className="px-4 py-3 text-right">
-                            <div className="font-semibold tabular-nums">{price.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} FCFA</div>
-                            <div className="text-[10px] text-slate-400">{t('pharmacy.price_catalog_hint')}</div>
+                            <PharmacyProductPrice itemId={item.id} price={price} canWrite={canWrite} t={t} />
                           </td>
                           <td className="px-4 py-3 text-right">
                             <PharmacyQuickStockAdjust itemId={item.id} quantity={qty} canWrite={canWrite} t={t} />
                           </td>
                           <td className="px-4 py-3 text-right">
                             <PharmacyReorderLevel itemId={item.id} reorderLevel={item.reorder_level} canWrite={canWrite} t={t} />
+                          </td>
+                          <td className="px-4 py-3 text-xs">
+                            {item.expiry_date ? (
+                              <div className={exp === 'expired' ? 'pha-text-expired font-semibold' : exp === 'soon' ? 'pha-text-expiry-alert font-semibold' : 'text-slate-600'}>
+                                {String(item.expiry_date).slice(0, 10)}
+                                {exp === 'expired' ? (
+                                  <div className="text-[10px] uppercase tracking-wide">{t('pharmacy.expired')}</div>
+                                ) : exp === 'soon' ? (
+                                  <div className="text-[10px] uppercase tracking-wide">{t('pharmacy.expiring_soon')}</div>
+                                ) : null}
+                              </div>
+                            ) : (
+                              <span className="text-slate-400">—</span>
+                            )}
                           </td>
                           <td className="px-4 py-3">
                             <StatusBadge variant={st.variant} label={st.label} />
@@ -466,7 +551,7 @@ export function PharmacyPageApp({
                                     : '—'}
                                 </div>
                                 {q.service_code ? (
-                                  <code className="mt-0.5 inline-block rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] text-emerald-800">
+                                  <code className="pha-rx-code mt-0.5 inline-block rounded px-1.5 py-0.5 text-[10px]">
                                     {q.service_code}
                                   </code>
                                 ) : null}

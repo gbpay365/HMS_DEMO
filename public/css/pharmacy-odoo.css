@@ -10,7 +10,7 @@ body.hms-body--pharmacy-odoo .hms-topbar {
 body.hms-body--pharmacy-odoo .main-wrapper {
   margin-left: 0 !important;
   min-height: 100vh;
-  background: #f9fafb;
+  background: var(--pha-page-bg, #fff0f5);
 }
 
 body.hms-body--pharmacy-odoo .page-wrapper,
@@ -21,13 +21,13 @@ body.hms-body--pharmacy-odoo .page-wrapper > .content {
 }
 
 .pharmacy-odoo-app {
-  --o-brand: #10b981;
-  --o-brand-hover: #5c3d54;
+  --o-brand: var(--hms-dept-pharmacy, #d4537e);
+  --o-brand-hover: var(--hms-brand-hover, #993556);
   --o-border: #dee2e6;
   --o-text: #212529;
   --o-muted: #6c757d;
   --o-surface: #ffffff;
-  --o-bg: #f8f9fa;
+  --o-bg: var(--pha-page-bg, #fff0f5);
   font-family: 'Inter', 'Roboto', 'Segoe UI', sans-serif;
   color: var(--o-text);
   min-height: 100vh;
@@ -242,8 +242,9 @@ body.hms-body--pharmacy-odoo .page-wrapper > .content {
 }
 
 .pharmacy-odoo-app .o_flash_success {
-  background: #d1fae5;
-  color: #065f46;
+  background: var(--pha-rx-label-bg, #fce4ec);
+  color: var(--pha-primary, #4b1528);
+  border-left: 4px solid var(--pha-accent, #d4537e);
 }
 
 .pharmacy-odoo-app .o_flash_error {
@@ -264,23 +265,27 @@ body.hms-body--pharmacy-odoo .page-wrapper > .content {
 }
 
 .pharmacy-odoo-app .o_cp_new {
-  background: var(--o-brand);
+  background: linear-gradient(135deg, var(--o-brand), var(--o-brand-hover));
   color: #fff;
   border: none;
-  border-radius: 4px;
-  padding: 7px 16px;
+  border-radius: 10px;
+  padding: 8px 16px;
   font-size: 0.88rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  box-shadow: 0 4px 14px var(--hms-brand-glow, rgba(212, 83, 126, 0.32));
+  transition: transform 0.12s, box-shadow 0.12s;
 }
 
 .pharmacy-odoo-app .o_cp_new:hover {
-  background: var(--o-brand-hover);
+  background: linear-gradient(135deg, var(--o-brand-hover), var(--pha-accent-dark, #6d1b3a));
   color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(212, 83, 126, 0.38);
 }
 
 .pharmacy-odoo-app .o_cp_breadcrumb {
@@ -563,18 +568,18 @@ body.hms-body--pharmacy-odoo .page-wrapper > .content {
 }
 
 .pharmacy-odoo-app .o_status_sales {
-  background: #198754;
+  background: var(--pha-accent, #d4537e);
   color: #fff;
 }
 
 .pharmacy-odoo-app .o_status_pending {
-  background: #fff3cd;
-  color: #856404;
+  background: #fef9c3;
+  color: #854d0e;
 }
 
 .pharmacy-odoo-app .o_status_preparing {
-  background: #cfe2ff;
-  color: #084298;
+  background: #dbeafe;
+  color: #1e3a8a;
 }
 
 .pharmacy-odoo-app .o_product_expiry {

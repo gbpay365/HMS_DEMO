@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
+import { DashboardHero } from '../components/DashboardHero';
+import { DashboardMetricTile } from '../components/DashboardMetricTile';
+import { DashboardPanel } from '../components/DashboardPanel';
 import { FlashMessages } from '../components/FlashMessages';
 import { HmsDataTable } from '../components/HmsDataTable';
-import { SurfaceHero } from '../components/SurfaceHero';
-import { SurfaceStatLink } from '../components/SurfaceStatLink';
 import { TrendChart } from '../components/TrendChart';
 import { badgeClass } from '../lib/listUi';
 import { DASHBOARD_TILE_SECTIONS } from '../lib/dashboardTileCatalog';
@@ -14,6 +15,15 @@ const LINKS = [
   { code: 'dash.link.front_desk', href: '/front-desk', labelKey: 'links.front_desk', icon: 'fa-hand-o-right' },
   { code: 'dash.link.wards', href: '/wards', labelKey: 'links.wards', icon: 'fa-hospital-o' },
 ];
+
+const SECTION_META = {
+  live: { icon: 'fa-bolt' },
+  clinical: { icon: 'fa-stethoscope' },
+  operations: { icon: 'fa-cogs' },
+  finance: { icon: 'fa-wallet' },
+};
+
+const HERO_DUPLICATE_STATS = new Set(['patients', 'appointments', 'inpatients', 'doctors']);
 
 function vis(uiVis, code) {
   return uiVis?.[code] !== false && uiVis?.[code] !== 0;
@@ -39,8 +49,32 @@ function formatTileValue(tile, stats) {
   return raw;
 }
 
+function sectionGridClass(sectionId) {
+  if (sectionId === 'operations' || sectionId === 'finance') return 'hms-dash-tile-grid hms-dash-tile-grid--modules';
+  return 'hms-dash-tile-grid';
+}
+
+function DashboardEmpty({ icon, text, ctaHref, ctaLabel }) {
+  return (
+    <div className="hms-dash-empty">
+      <div className="hms-dash-empty__icon">
+        <i className={`fa ${icon}`} aria-hidden="true" />
+      </div>
+      <p className="hms-dash-empty__text">{text}</p>
+      {ctaHref && ctaLabel ? (
+        <a href={ctaHref} className="hms-dash-empty__cta">
+          {ctaLabel}
+        </a>
+      ) : null}
+    </div>
+  );
+}
+
 export function DashboardPageApp({
   stats = {},
+  heroKpis = null,
+  dashboardProfile = 'default',
+  dashboardHomeUrl = null,
   chartLabels = [],
   chartValues = [],
   recentPatients = [],
@@ -48,86 +82,102 @@ export function DashboardPageApp({
   recentDoctors = [],
   erPatients = [],
   flash = null,
-  uiVis = {}}) {
-  const { t } = useTranslation('dashboard');
+  uiVis = {},
+}) {
+  const { t } = useTranslation(['dashboard', 'common']);
   const enrichedStats = { ...stats, erCount: erPatients.length };
   const visibleLinks = LINKS.filter((l) => vis(uiVis, l.code));
+  const isProfileDashboard = dashboardProfile && dashboardProfile !== 'default';
+  const profileSubtitle = isProfileDashboard
+    ? t(`profiles.${dashboardProfile}.subtitle`, { defaultValue: '' })
+    : t('subtitle');
+  const profileTitle = isProfileDashboard
+    ? t(`profiles.${dashboardProfile}.title`, { defaultValue: t('title') })
+    : t('title');
 
   const visibleSections = DASHBOARD_TILE_SECTIONS.map((section) => ({
     ...section,
-    tiles: section.tiles.filter((tile) => vis(uiVis, tile.code)),
+    tiles: section.tiles.filter((tile) => {
+      if (!vis(uiVis, tile.code)) return false;
+      if (section.id === 'clinical' && tile.stat && HERO_DUPLICATE_STATS.has(tile.stat)) return false;
+      return true;
+    }),
   })).filter((section) => section.tiles.length > 0);
+
+  const showChart = vis(uiVis, 'dash.panel.chart');
+  const showAppts = vis(uiVis, 'dash.panel.recent_appts');
+  const showPatients = vis(uiVis, 'dash.panel.new_patients');
+  const showDoctors = vis(uiVis, 'dash.panel.doctors_duty');
+  const chartHasData = chartValues.some((v) => Number(v) > 0);
 
   return (
     <div className="page-wrapper hms-surface-module hms-dashboard-page">
       <div className="content px-4 pb-10 pt-2 sm:px-6">
         <FlashMessages flash={flash} />
 
-        <SurfaceHero
-          icon="fa-hospital-o"
+        <DashboardHero
           badge={t('hospital')}
-          title={t('title')}
-          subtitle={t('subtitle')}
-        >
-          {(visibleLinks.length > 0 || vis(uiVis, 'dash.btn.new')) ? (
-            <div className="hms-surface-hero-actions mt-4 flex flex-wrap gap-2">
-              {vis(uiVis, 'dash.btn.new') ? (
-                <a href="/patients?action=new" className="hms-btn-primary text-xs">
-                  <i className="fa fa-user-plus mr-1" aria-hidden="true" />
-                  {t('new_patient')}
-                </a>
-              ) : null}
-              {visibleLinks.map((l) => (
-                <a
-                  key={l.code}
-                  href={l.href}
-                  className="hms-btn-secondary text-xs"
-                  {...(l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                >
-                  <i className={`fa ${l.icon} mr-1`} aria-hidden="true" />
-                  {t(l.labelKey)}
-                </a>
-              ))}
-            </div>
-          ) : null}
-        </SurfaceHero>
+          title={profileTitle}
+          subtitle={profileSubtitle || undefined}
+          stats={stats}
+          heroKpis={heroKpis}
+          dashboardProfile={dashboardProfile}
+          t={t}
+          visibleLinks={visibleLinks}
+          showNewPatient={!isProfileDashboard && vis(uiVis, 'dash.btn.new')}
+        />
 
-        {visibleSections.map((section) => (
-          <section key={section.id} className="hms-stat-section mb-6">
-            <h2 className="hms-stat-section__title">{t(section.labelKey)}</h2>
-            <div className="hms-stat-grid">
-              {section.tiles.map((tile) => (
-                <SurfaceStatLink
-                  key={tile.code}
-                  href={tile.href}
-                  label={t(tile.labelKey)}
-                  value={tile.stat != null ? formatTileValue(tile, enrichedStats) : undefined}
-                  icon={tile.icon}
-                  color={tile.color}
-                  hint={tile.hintKey ? t(tile.hintKey) : null}
-                  valueless={tile.valueless || tile.stat == null}
-                  tone={tile.tone}
-                />
-              ))}
-            </div>
+        {isProfileDashboard && dashboardHomeUrl ? (
+          <section className="mb-6 flex flex-wrap items-center gap-3">
+            <a href={dashboardHomeUrl} className="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:opacity-90">
+              <i className="fa fa-external-link" aria-hidden="true" />
+              {t(`profiles.${dashboardProfile}.open_portal`, { defaultValue: 'Open my workspace' })}
+            </a>
           </section>
-        ))}
+        ) : null}
 
-        {vis(uiVis, 'dash.panel.er_list') && erPatients.length > 0 ? (
-          <div className="hms-flash hms-flash--error mb-6 rounded-2xl p-4">
-            <h2 className="mb-3 text-sm font-bold">
+        {!isProfileDashboard && visibleSections.map((section) => {
+          const meta = SECTION_META[section.id] || {};
+          return (
+            <section key={section.id} className="hms-dash-section">
+              <div className="hms-dash-section__head">
+                {meta.icon ? (
+                  <span className="hms-dash-section__icon">
+                    <i className={`fa ${meta.icon}`} aria-hidden="true" />
+                  </span>
+                ) : null}
+                <h2 className="hms-dash-section__title">{t(section.labelKey)}</h2>
+              </div>
+              <div className={sectionGridClass(section.id)}>
+                {section.tiles.map((tile) => (
+                  <DashboardMetricTile
+                    key={tile.code}
+                    href={tile.href}
+                    label={t(tile.labelKey)}
+                    value={tile.stat != null ? formatTileValue(tile, enrichedStats) : undefined}
+                    icon={tile.icon}
+                    color={tile.color}
+                    hint={tile.hintKey ? t(tile.hintKey) : null}
+                    valueless={tile.valueless || tile.stat == null}
+                    tone={tile.tone}
+                  />
+                ))}
+              </div>
+            </section>
+          );
+        })}
+
+        {!isProfileDashboard && vis(uiVis, 'dash.panel.er_list') && erPatients.length > 0 ? (
+          <div className="hms-dash-er-alert">
+            <div className="hms-dash-er-alert__head">
               <i className="fa fa-heartbeat mr-1" aria-hidden="true" />
               {t('panels.active_emergencies')}
-            </h2>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            </div>
+            <div className="hms-dash-er-alert__grid">
               {erPatients.map((er) => {
                 const name = `${er.first_name || ''} ${er.last_name || ''}`.trim() || t('panels.unknown');
                 return (
-                  <a
-                    key={er.id}
-                    href="/emergency"
-                    className="rounded-xl border border-red-100 bg-white px-3 py-2 text-sm text-ink transition hover:border-red-300"
-                  >
+                  <a key={er.id} href="/emergency" className="hms-dash-er-alert__card">
                     <div className="font-semibold">{name}</div>
                     <div className="text-xs text-slate-500">
                       {formatTime(er.queue_started_at)} · {(er.queue_status || 'unknown').replace(/_/g, ' ')}
@@ -139,70 +189,85 @@ export function DashboardPageApp({
           </div>
         ) : null}
 
-        <div className="grid gap-4 lg:grid-cols-12">
-          {vis(uiVis, 'dash.panel.chart') ? (
-            <div className={vis(uiVis, 'dash.panel.recent_appts') ? 'lg:col-span-8' : 'lg:col-span-12'}>
-              <div className="hms-surface-card overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card">
-                <TrendChart labels={chartLabels} values={chartValues} label={t('panels.registrations_7d')} />
+        {!isProfileDashboard && (showChart || showAppts) ? (
+          <div className="hms-dash-analytics">
+            {showChart ? (
+              <div className={showAppts ? 'hms-dash-analytics__wide' : 'hms-dash-analytics__full'}>
+                <DashboardPanel
+                  title={t('panels.registrations_7d')}
+                  icon="fa-line-chart"
+                  iconTone="brand"
+                  bodyClassName="hms-dash-panel__body--flush"
+                >
+                  <div className="px-4 pb-4 pt-3">
+                    {chartHasData ? (
+                      <TrendChart embedded labels={chartLabels} values={chartValues} />
+                    ) : (
+                      <DashboardEmpty
+                        icon="fa-bar-chart"
+                        text={t('panels.empty_chart')}
+                        ctaHref={vis(uiVis, 'dash.btn.new') ? '/patients?action=new' : '/patients'}
+                        ctaLabel={t('panels.empty_cta_patients')}
+                      />
+                    )}
+                  </div>
+                </DashboardPanel>
               </div>
-            </div>
-          ) : null}
+            ) : null}
 
-          {vis(uiVis, 'dash.panel.recent_appts') ? (
-            <div className={vis(uiVis, 'dash.panel.chart') ? 'lg:col-span-4' : 'lg:col-span-12'}>
-              <div className="hms-surface-card rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-ink">
-                    <i className="fa fa-calendar-check-o mr-1 text-brand" aria-hidden="true" />
-                    {t('panels.recent_appointments')}
-                  </h3>
-                  {vis(uiVis, 'dash.card.appointments') ? (
-                    <a href="/appointments" className="text-xs font-semibold text-brand hover:underline">
-                      {t('common:actions.view_all')}
-                    </a>
-                  ) : null}
-                </div>
-                <div className="divide-y divide-slate-100">
+            {showAppts ? (
+              <div className={showChart ? 'hms-dash-analytics__side' : 'hms-dash-analytics__full'}>
+                <DashboardPanel
+                  title={t('panels.recent_appointments')}
+                  icon="fa-calendar-check-o"
+                  iconTone="sky"
+                  actionHref={vis(uiVis, 'dash.card.appointments') ? '/appointments' : undefined}
+                  actionLabel={vis(uiVis, 'dash.card.appointments') ? t('common:actions.view_all') : undefined}
+                  bodyClassName="hms-dash-panel__body--list"
+                >
                   {recentAppts.length === 0 ? (
-                    <p className="py-6 text-center text-xs text-slate-500">{t('panels.no_appointments')}</p>
+                    <DashboardEmpty
+                      icon="fa-calendar-o"
+                      text={t('panels.no_appointments')}
+                      ctaHref="/appointments"
+                      ctaLabel={t('panels.empty_cta_appointments')}
+                    />
                   ) : (
-                    recentAppts.map((ap, i) => (
-                      <div key={i} className="py-2.5">
-                        <div className="text-sm font-semibold text-ink">
-                          {ap.patient_name || `${ap.first_name || ''} ${ap.last_name || ''}`.trim()}
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          {[ap.doctor, ap.department].filter(Boolean).join(' · ')}
-                        </div>
-                        <div className="text-xs text-slate-400">
-                          {ap.date}
-                          {ap.time ? ` · ${ap.time}` : ''}
-                        </div>
-                      </div>
-                    ))
+                    <ul className="hms-dash-appt-list">
+                      {recentAppts.map((ap, i) => (
+                        <li key={i} className="hms-dash-appt-list__item">
+                          <div className="hms-dash-appt-list__name">
+                            {ap.patient_name || `${ap.first_name || ''} ${ap.last_name || ''}`.trim()}
+                          </div>
+                          <div className="hms-dash-appt-list__meta">
+                            {[ap.doctor, ap.department].filter(Boolean).join(' · ')}
+                          </div>
+                          <div className="hms-dash-appt-list__time">
+                            {ap.date}
+                            {ap.time ? ` · ${ap.time}` : ''}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
                   )}
-                </div>
+                </DashboardPanel>
               </div>
-            </div>
-          ) : null}
-        </div>
+            ) : null}
+          </div>
+        ) : null}
 
-        <div className="mt-4 grid gap-4 lg:grid-cols-12">
-          {vis(uiVis, 'dash.panel.new_patients') ? (
-            <div className={vis(uiVis, 'dash.panel.doctors_duty') ? 'lg:col-span-8' : 'lg:col-span-12'}>
-              <div className="hms-surface-card overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card">
-                <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-                  <h3 className="text-sm font-bold text-ink">
-                    <i className="fa fa-user-plus mr-1 text-brand" aria-hidden="true" />
-                    {t('panels.new_patients')}
-                  </h3>
-                  {vis(uiVis, 'dash.card.patients') ? (
-                    <a href="/patients" className="text-xs font-semibold text-brand hover:underline">
-                      {t('common:actions.view_all')}
-                    </a>
-                  ) : null}
-                </div>
-                <div className="overflow-x-auto">
+        {!isProfileDashboard && (showPatients || showDoctors) ? (
+          <div className="hms-dash-directory">
+            {showPatients ? (
+              <div className={showDoctors ? 'hms-dash-directory__wide' : 'hms-dash-directory__full'}>
+                <DashboardPanel
+                  title={t('panels.new_patients')}
+                  icon="fa-user-plus"
+                  iconTone="brand"
+                  actionHref={vis(uiVis, 'dash.card.patients') ? '/patients' : undefined}
+                  actionLabel={vis(uiVis, 'dash.card.patients') ? t('common:actions.view_all') : undefined}
+                  bodyClassName="hms-dash-panel__body--flush"
+                >
                   <HmsDataTable
                     emptyMessage={t('panels.no_patients')}
                     columns={[
@@ -218,17 +283,20 @@ export function DashboardPageApp({
                               {row.first_name} {row.last_name}
                             </span>
                           </div>
-                        )},
+                        ),
+                      },
                       {
                         key: 'email',
                         label: t('panels.email'),
                         cellClassName: 'text-xs text-slate-500',
-                        render: (row) => row.email || '—'},
+                        render: (row) => row.email || '—',
+                      },
                       {
                         key: 'phone',
                         label: t('panels.phone'),
                         cellClassName: 'text-xs text-slate-500',
-                        render: (row) => row.phone || '—'},
+                        render: (row) => row.phone || '—',
+                      },
                       {
                         key: 'type',
                         label: t('panels.type'),
@@ -239,54 +307,61 @@ export function DashboardPageApp({
                               {isIp ? t('panels.inpatient') : t('panels.outpatient')}
                             </span>
                           );
-                        }},
+                        },
+                      },
                     ]}
                     rows={recentPatients}
                     rowKey="id"
                   />
-                </div>
+                </DashboardPanel>
               </div>
-            </div>
-          ) : null}
+            ) : null}
 
-          {vis(uiVis, 'dash.panel.doctors_duty') ? (
-            <div className={vis(uiVis, 'dash.panel.new_patients') ? 'lg:col-span-4' : 'lg:col-span-12'}>
-              <div className="hms-surface-card rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
-                <h3 className="mb-3 text-sm font-bold text-ink">
-                  <i className="fa fa-user-md mr-1 text-emerald-600" aria-hidden="true" />
-                  {t('panels.doctors_on_duty')}
-                </h3>
-                <ul className="space-y-3">
+            {showDoctors ? (
+              <div className={showPatients ? 'hms-dash-directory__side' : 'hms-dash-directory__full'}>
+                <DashboardPanel
+                  title={t('panels.doctors_on_duty')}
+                  icon="fa-user-md"
+                  iconTone="emerald"
+                  bodyClassName="hms-dash-panel__body--list"
+                >
                   {recentDoctors.length === 0 ? (
-                    <li className="text-xs text-slate-500">{t('panels.no_active_doctors')}</li>
+                    <DashboardEmpty
+                      icon="fa-user-md"
+                      text={t('panels.no_active_doctors')}
+                      ctaHref="/doctors"
+                      ctaLabel={t('panels.empty_cta_doctors')}
+                    />
                   ) : (
-                    recentDoctors.map((doc) => (
-                      <li key={doc.id || `${doc.first_name}-${doc.last_name}`} className="flex items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-xs font-bold text-emerald-700">
-                          {initials(doc.first_name, doc.last_name)}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <div className="truncate text-sm font-semibold text-ink">
-                            {doc.first_name} {doc.last_name}
+                    <ul className="hms-dash-doctor-list">
+                      {recentDoctors.map((doc) => (
+                        <li key={doc.id || `${doc.first_name}-${doc.last_name}`} className="hms-dash-doctor-list__item">
+                          <span className="hms-dash-doctor-list__avatar">
+                            {initials(doc.first_name, doc.last_name)}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="hms-dash-doctor-list__name">
+                              {doc.first_name} {doc.last_name}
+                            </div>
+                            <div className="hms-dash-doctor-list__role">
+                              {doc.bio || doc.primary_department || t('panels.doctor_role')}
+                            </div>
                           </div>
-                          <div className="truncate text-xs text-slate-500">
-                            {doc.bio || doc.primary_department || t('panels.doctor_role')}
-                          </div>
-                        </div>
-                        <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" title={t('panels.active')} />
-                      </li>
-                    ))
+                          <span className="hms-dash-doctor-list__status" title={t('panels.active')} />
+                        </li>
+                      ))}
+                    </ul>
                   )}
-                </ul>
-                {vis(uiVis, 'dash.card.doctors') ? (
-                  <a href="/doctors" className="mt-4 block text-center text-xs font-semibold text-brand hover:underline">
-                    {t('panels.view_all_doctors')}
-                  </a>
-                ) : null}
+                  {vis(uiVis, 'dash.card.doctors') ? (
+                    <a href="/doctors" className="hms-dash-panel__footer-link">
+                      {t('panels.view_all_doctors')}
+                    </a>
+                  ) : null}
+                </DashboardPanel>
               </div>
-            </div>
-          ) : null}
-        </div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </div>
   );

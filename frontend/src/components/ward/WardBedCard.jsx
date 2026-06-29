@@ -177,7 +177,7 @@ export function WardBedCard({
           {bed.running_bill > 0 ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 ring-1 ring-inset ring-rose-200">
               <i className="fa fa-money text-[10px]" aria-hidden="true" />
-              {formatFcfa(bed.running_bill)} {t('shared.fcfa')}
+              {formatFcfa(bed.running_bill)}
             </span>
           ) : null}
         </div>

@@ -1,8 +1,29 @@
 (function () {
   'use strict';
 
+  function currencyLabel() {
+    try {
+      if (window.HMS && window.HMS.currencyCode) return String(window.HMS.currencyCode);
+    } catch (_) { /* ignore */ }
+    return '';
+  }
+
+  function fmtMoneyJs(n) {
+    var x = Math.round(Number(n) || 0);
+    try {
+      var h = window.HMS || {};
+      var locale = h.currencyLocale || 'en-GB';
+      var sym = h.currencySymbol || '';
+      var code = h.currencyCode || '';
+      var formatted = x.toLocaleString(locale, { maximumFractionDigits: 0 });
+      if (sym && sym !== code) return sym + formatted + (code ? ' ' + code : '');
+      return formatted + (code ? ' ' + code : '');
+    } catch (_) { /* ignore */ }
+    return String(x);
+  }
+
   function fmtXaf(n) {
-    return (Number(n) || 0).toLocaleString('fr-FR');
+    return fmtMoneyJs(n);
   }
 
   function parseAmt(raw) {
@@ -197,7 +218,7 @@
       if (msgEl) {
         msgEl.classList.remove('text-success', 'text-danger', 'text-warning');
         if (canPost) {
-          msgEl.textContent = 'Balanced — ready to post (' + fmtXaf(t.td) + ' XAF).';
+          msgEl.textContent = 'Balanced — ready to post (' + fmtXaf(t.td) + ' ' + currencyLabel() + ').';
           msgEl.classList.add('text-success');
         } else if (t.problems.length) {
           msgEl.textContent = t.problems[0];
@@ -207,10 +228,10 @@
             'Double entry needs at least ' + MIN_LINES + ' lines with amounts (add an offsetting line).';
           msgEl.classList.add('text-warning');
         } else if (diff > 0) {
-          msgEl.textContent = 'Out of balance — add ' + fmtXaf(diff) + ' XAF to credits (or reduce debits).';
+          msgEl.textContent = 'Out of balance — add ' + fmtXaf(diff) + ' ' + currencyLabel() + ' to credits (or reduce debits).';
           msgEl.classList.add('text-danger');
         } else if (diff < 0) {
-          msgEl.textContent = 'Out of balance — add ' + fmtXaf(-diff) + ' XAF to debits (or reduce credits).';
+          msgEl.textContent = 'Out of balance — add ' + fmtXaf(-diff) + ' ' + currencyLabel() + ' to debits (or reduce credits).';
           msgEl.classList.add('text-danger');
         } else {
           msgEl.textContent = 'Enter at least two lines: one debit and one credit, same total.';

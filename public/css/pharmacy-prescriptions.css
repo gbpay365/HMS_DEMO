@@ -1,0 +1,471 @@
+/**
+ * Pharmacy prescriptions queue — KPI cards, status badges, workflow stepper, detail modal
+ */
+.pharmacy-odoo-app {
+  --ph-rx-new-bg: #dbeafe;
+  --ph-rx-new-text: #1e3a8a;
+  --ph-rx-prep-bg: #fef9c3;
+  --ph-rx-prep-text: #854d0e;
+  --ph-rx-ready-bg: #dcfce7;
+  --ph-rx-ready-text: #14532d;
+  --ph-rx-disp-bg: #fce4ec;
+  --ph-rx-disp-text: #4b1528;
+  --ph-rx-out-bg: #fef2f2;
+  --ph-rx-out-text: #991b1b;
+  --ph-rx-cancel-bg: #f3f4f6;
+  --ph-rx-cancel-text: #374151;
+  --ph-rx-partial-bg: #ede9fe;
+  --ph-rx-partial-text: #5b21b6;
+  --ph-stock-in-bg: #dcfce7;
+  --ph-stock-in: #16a34a;
+  --ph-stock-out-bg: #fef2f2;
+  --ph-stock-out: #dc2626;
+  --ph-stock-low-bg: #fef9c3;
+}
+
+.ph-rx-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 640px) {
+  .ph-rx-kpi-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .ph-rx-kpi-row {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.ph-rx-kpi-card {
+  background: #fff;
+  border: 0.5px solid var(--pha-soft-border, #f4c0d1);
+  border-radius: 10px;
+  border-top-width: 3px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 3px rgba(75, 21, 40, 0.06);
+}
+
+.ph-rx-kpi-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 4px;
+  line-height: 1.35;
+}
+
+.ph-rx-kpi-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.ph-rx-kpi-hint {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.ph-rx-panel {
+  background: #fff;
+  border: 0.5px solid var(--pha-soft-border, #f4c0d1);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(75, 21, 40, 0.06);
+}
+
+.ph-rx-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 0.5px solid var(--pha-soft-border, #f4c0d1);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--pha-primary, #4b1528);
+}
+
+.ph-rx-panel-head i {
+  color: var(--pha-accent, #d4537e);
+}
+
+.ph-rx-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--pha-soft-border, #f4c0d1);
+}
+
+.ph-rx-filter-bar .hms-input,
+.ph-rx-filter-bar select {
+  height: 38px;
+  font-size: 14px;
+}
+
+.ph-rx-filter-bar .ph-rx-tab-toggle {
+  font-size: 14px;
+}
+
+.ph-rx-count {
+  margin-left: auto;
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.ph-rx-table-wrap {
+  overflow-x: auto;
+}
+
+.ph-rx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.ph-rx-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #475569;
+  background: #fdf2f7;
+  border-bottom: 0.5px solid var(--pha-soft-border, #f4c0d1);
+}
+
+.ph-rx-table td {
+  padding: 12px 16px;
+  border-bottom: 0.5px solid #f3f4f6;
+  vertical-align: middle;
+  color: #1e293b;
+}
+
+.ph-rx-table .ph-rx-empty {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  font-size: 15px;
+  color: #64748b;
+}
+
+.ph-rx-table tbody tr:hover {
+  background: rgba(255, 240, 245, 0.5);
+}
+
+.ph-rx-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--pha-rx-label-bg, #fce4ec);
+  color: var(--pha-primary, #4b1528);
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ph-rx-patient-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ph-rx-patient-name {
+  font-weight: 500;
+  color: var(--pha-primary, #4b1528);
+}
+
+.ph-rx-patient-id {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.ph-rx-sub {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.ph-rx-drugs {
+  font-size: 11px;
+  color: #6b7280;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ph-rx-num {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--pha-primary, #4b1528);
+}
+
+.ph-rx-badge {
+  display: inline-block;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 11px;
+  border: 0.5px solid;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.ph-badge-rx-new {
+  background: var(--ph-rx-new-bg);
+  color: var(--ph-rx-new-text);
+  border-color: #93c5fd;
+}
+
+.ph-badge-rx-prep {
+  background: var(--ph-rx-prep-bg);
+  color: var(--ph-rx-prep-text);
+  border-color: #fde68a;
+}
+
+.ph-badge-rx-ready {
+  background: var(--ph-rx-ready-bg);
+  color: var(--ph-rx-ready-text);
+  border-color: #86efac;
+}
+
+.ph-badge-rx-dispensed {
+  background: var(--ph-rx-disp-bg);
+  color: var(--ph-rx-disp-text);
+  border-color: var(--pha-soft-border, #f4c0d1);
+}
+
+.ph-badge-rx-out {
+  background: var(--ph-rx-out-bg);
+  color: var(--ph-rx-out-text);
+  border-color: #fecaca;
+}
+
+.ph-badge-rx-cancelled {
+  background: var(--ph-rx-cancel-bg);
+  color: var(--ph-rx-cancel-text);
+  border-color: #d1d5db;
+}
+
+.ph-badge-rx-partial {
+  background: var(--ph-rx-partial-bg);
+  color: var(--ph-rx-partial-text);
+  border-color: #c4b5fd;
+}
+
+.ph-rx-steps {
+  display: flex;
+  gap: 0;
+  margin: 8px 0 4px;
+}
+
+.ph-rx-step {
+  flex: 1;
+  text-align: center;
+  position: relative;
+}
+
+.ph-rx-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: #e5e7eb;
+  z-index: 0;
+}
+
+.ph-rx-step.is-done:not(:last-child)::after,
+.ph-rx-step.is-active:not(:last-child)::after {
+  background: var(--pha-accent, #d4537e);
+}
+
+.ph-rx-step-dot {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.ph-rx-step.is-done .ph-rx-step-dot,
+.ph-rx-step.is-active .ph-rx-step-dot {
+  background: var(--pha-accent, #d4537e);
+  color: #fff;
+}
+
+.ph-rx-step-label {
+  display: block;
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+.ph-rx-step.is-active .ph-rx-step-label,
+.ph-rx-step.is-done .ph-rx-step-label {
+  color: var(--pha-primary, #4b1528);
+  font-weight: 600;
+}
+
+.ph-rx-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  font-size: 12px;
+}
+
+.ph-rx-detail-label {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.ph-rx-detail-value {
+  font-weight: 500;
+  color: var(--pha-primary, #4b1528);
+}
+
+.ph-rx-drug-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 0.5px solid;
+  margin-bottom: 6px;
+}
+
+.ph-rx-drug-row.in-stock {
+  background: var(--ph-stock-in-bg);
+  border-color: var(--ph-stock-in);
+}
+
+.ph-rx-drug-row.out-stock {
+  background: var(--ph-stock-out-bg);
+  border-color: var(--ph-stock-out);
+}
+
+.ph-rx-drug-name {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ph-rx-drug-meta {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.ph-rx-stock-tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 0.5px solid;
+}
+
+.ph-rx-stock-tag.in-stock {
+  background: #dcfce7;
+  color: #14532d;
+  border-color: #86efac;
+}
+
+.ph-rx-stock-tag.out-stock {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.ph-rx-notes {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--ph-stock-low-bg);
+  border: 0.5px solid var(--pha-stock-low, #ff9800);
+  font-size: 12px;
+  color: #854d0e;
+}
+
+.hms-chrome-btn--pharmacy {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+.hms-chrome-btn--pharmacy:hover {
+  background: rgba(255, 255, 255, 0.28) !important;
+}
+
+body.hms-body--pharmacy-odoo .hms-modal-header--pharmacy + * .hms-input:focus,
+.pharmacy-odoo-app .hms-modal-header--pharmacy ~ * .hms-input:focus {
+  border-color: var(--pha-accent, #d4537e) !important;
+  box-shadow: 0 0 0 3px rgba(212, 83, 126, 0.15) !important;
+}
+
+.ph-rx-med-suggest {
+  scrollbar-width: thin;
+}
+
+.ph-rx-modal-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.ph-expiry-alert-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 0.5px solid #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 14px;
+}
+
+.ph-expiry-alert-banner .ph-expiry-banner-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ph-expiry-alert-banner i {
+  color: #dc2626;
+  font-size: 18px;
+  margin-top: 2px;
+}
+
+@media (min-width: 1024px) {
+  .ph-rx-kpi-row.ph-rx-kpi-row--4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Pharmacy hub view tabs — larger than default FilterChip */
+.pharmacy-odoo-app .ph-hub-view-tabs button[role='tab'] {
+  font-size: 14px !important;
+  padding: 0.5rem 1rem !important;
+}
+
+.pharmacy-odoo-app .ph-rx-panel .pha-btn-primary,
+.pharmacy-odoo-app .ph-rx-panel .pha-btn-secondary {
+  font-size: 13px !important;
+  padding: 0.4rem 0.75rem !important;
+}

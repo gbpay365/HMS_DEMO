@@ -1,4 +1,4 @@
-<% locals.hmsSurfaceBodyClass = ' hms-body--portal'; %>
+<% locals.hmsSurfaceBodyClass = locals.portalSurfaceBodyClass || ' hms-body--portal'; %>
 <%- include('partials/header') %>
 
 <%- include('partials/react-page-mount', {

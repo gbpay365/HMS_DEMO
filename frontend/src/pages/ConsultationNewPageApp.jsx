@@ -1,10 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CatalogOrderPicker } from '../components/CatalogOrderPicker';
 import { CustomCatalogRows } from '../components/CustomCatalogRows';
-import { CatalogSearchSelect } from '../components/CatalogSearchSelect';
-import { OrderSectionShell } from '../components/OrderSectionShell';
-import { todayIsoDate } from '../lib/prescriptionDate';
+import { formatMoney, priceUnitLabel } from '../lib/hmsLocale';
 import { FlashMessages } from '../components/FlashMessages';
 import { StatCard } from '../components/StatCard';
 import { SurfaceHero } from '../components/SurfaceHero';
@@ -17,7 +15,10 @@ import {
   SOAP_HISTORY_SUBJECTIVE} from '../lib/soapClinicalCatalog';
 import { postForm } from '../lib/listUi';
 import { confirmModal } from '../lib/modalBridge';
-import { calcMedQuantity, formatMedQuantityFormula } from '../lib/calcMedQuantity';
+import {
+  ConsultationPrescriptionSection,
+  initialMedRows,
+  validateMedicationRows} from '../components/consultation/ConsultationPrescriptionSection';
 
 const MED_DOSAGE_VALUES = [
   { value: '1 tab', key: 'dosage_1_tab' },
@@ -36,6 +37,7 @@ const MED_DOSAGE_VALUES = [
 ];
 
 const MED_FREQUENCY_VALUES = [
+  { value: 'Only Once', key: 'freq_only_once' },
   { value: 'Once daily', key: 'freq_once_daily' },
   { value: 'Twice daily', key: 'freq_twice_daily' },
   { value: 'Three times daily', key: 'freq_three_daily' },
@@ -68,18 +70,9 @@ const NEXT_CONSULTATION_VALUES = [
   { value: '1 year', key: 'interval_1_year' },
 ];
 
-const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200';
-const selectClass =
-  'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200';
-const lockedInputClass = `${inputClass} cursor-not-allowed bg-slate-100 text-slate-600`;
-
-function catalogUnitPrice(pharmacyCatalog, catalogName) {
-  const key = String(catalogName || '').trim().toLowerCase();
-  if (!key) return 0;
-  const hit = (pharmacyCatalog || []).find((item) => String(item.name || '').trim().toLowerCase() === key);
-  return hit ? Math.round(parseFloat(hit.price != null ? hit.price : 0) || 0) : 0;
-}
+const inputClass = 'consult-mocdoc-field';
+const selectClass = 'consult-mocdoc-field';
+const lockedInputClass = 'consult-mocdoc-field consult-mocdoc-field--locked';
 
 function useConsultationMedOptions(t) {
   return useMemo(
@@ -163,11 +156,6 @@ function normalizeNextConsultValue(value) {
   return hit ? hit.value : v;
 }
 
-function fmtPrice(n) {
-  const v = parseFloat(n || 0);
-  return Number.isFinite(v) ? Math.round(v).toLocaleString('fr-FR') : '0';
-}
-
 function pickOptionValue(value, options) {
   const v = String(value || '').trim();
   if (!v) return '';
@@ -194,450 +182,24 @@ function MedPickSelect({ name, value, placeholder, options }) {
 
 function FieldLabel({ children, required }) {
   return (
-    <label className="mb-2 block text-sm font-bold text-slate-800">
+    <label className="consult-mocdoc-label">
       {children}
       {required ? <span className="text-red-500"> *</span> : null}
     </label>
   );
 }
 
-function SectionCard({ icon, title, action, children }) {
+function SectionCard({ icon, title, action, children, flush = false, className = '' }) {
   return (
-    <div className="mb-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm hms-surface-card">
-      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 md:px-5">
-        <h2 className="flex items-center gap-2.5 text-base font-bold text-slate-800">
+    <div className={`consult-mocdoc-section ${className}`}>
+      <div className="consult-mocdoc-section-head">
+        <h2 className="consult-mocdoc-section-title">
           {icon}
           {title}
         </h2>
         {action}
       </div>
-      <div className="p-4 md:p-5">{children}</div>
-    </div>
-  );
-}
-
-const medRxInputBase =
-  'w-full rounded-lg border px-2.5 py-2 text-sm font-semibold text-slate-800 shadow-sm transition placeholder:text-slate-400 focus:outline-none focus:ring-2';
-
-const medRxBoxWrap = 'border-slate-200/80 bg-white ring-1 ring-slate-100/80';
-const medRxIconBg = 'bg-brand';
-const medRxInput = `${medRxInputBase} border-slate-200 bg-white focus:border-brand focus:ring-brand/20`;
-
-const MED_RX_THEMES = {
-  dosage: {
-    wrap: medRxBoxWrap,
-    icon: 'fa-flask',
-    iconBg: medRxIconBg,
-    input: medRxInput},
-  frequency: {
-    wrap: medRxBoxWrap,
-    icon: 'fa-repeat',
-    iconBg: medRxIconBg,
-    input: medRxInput},
-  days: {
-    wrap: medRxBoxWrap,
-    icon: 'fa-calendar',
-    iconBg: medRxIconBg,
-    input: medRxInput},
-  qty: {
-    wrap: medRxBoxWrap,
-    icon: 'fa-calculator',
-    iconBg: medRxIconBg,
-    input: medRxInput},
-  qtyAuto: {
-    input: `${medRxInputBase} border-emerald-200 bg-emerald-50/80 font-bold text-emerald-900 focus:border-emerald-500 focus:ring-emerald-200/80`},
-  start: {
-    wrap: medRxBoxWrap,
-    icon: 'fa-calendar-check-o',
-    iconBg: medRxIconBg,
-    input: medRxInput}};
-
-function MedRxParamBox({ themeKey, label, required, badge, children, footer }) {
-  const theme = MED_RX_THEMES[themeKey];
-  return (
-    <div className={`flex h-full min-h-[5.5rem] flex-col rounded-xl border p-2.5 shadow-sm ${theme.wrap}`}>
-      <div className="mb-2 flex min-h-[1.5rem] flex-wrap items-center gap-1.5">
-        <span
-          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10px] text-white shadow-sm ${theme.iconBg}`}
-        >
-          <i className={`fa ${theme.icon}`} aria-hidden="true" />
-        </span>
-        <span className="text-[10px] font-bold uppercase leading-tight tracking-wide text-slate-700">
-          {label}
-          {required ? <span className="text-red-500"> *</span> : null}
-        </span>
-        {badge}
-      </div>
-      <div className="flex-1">{children}</div>
-      {footer ? <div className="mt-1.5">{footer}</div> : null}
-    </div>
-  );
-}
-
-function MedComboInput({ name, value, options, placeholder, listId, required, onChange, inputClassName }) {
-  const controlled = typeof onChange === 'function';
-  const cls = inputClassName || inputClass;
-  return (
-    <>
-      <input
-        name={name}
-        list={listId}
-        className={cls}
-        placeholder={placeholder}
-        {...(controlled
-          ? { value: value ?? '', onChange: (e) => onChange(e.target.value) }
-          : {})}
-        required={required}
-        autoComplete="off"
-      />
-      <datalist id={listId}>
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value} />
-        ))}
-      </datalist>
-    </>
-  );
-}
-
-function resolveMedDrugFields(med, pharmacyCatalog) {
-  const name = String(med?.name || '').trim();
-  if (!name) return { catalogName: '', customName: '' };
-  const hit = (pharmacyCatalog || []).find(
-    (item) => String(item.name || '').trim().toLowerCase() === name.toLowerCase()
-  );
-  if (hit) return { catalogName: hit.name, customName: '' };
-  return { catalogName: '', customName: name };
-}
-
-function resolveMedName(catalogName, customName) {
-  return String(customName || '').trim() || String(catalogName || '').trim();
-}
-
-function validateMedicationRows(formEl, t) {
-  if (!formEl) return '';
-  const fd = new FormData(formEl);
-  const catalogNames = fd.getAll('med_catalog_name[]');
-  const customNames = fd.getAll('med_custom_name[]');
-  const dosages = fd.getAll('med_dosage[]');
-  const freqs = fd.getAll('med_frequency[]');
-  const durations = fd.getAll('med_duration[]');
-  const quantities = fd.getAll('med_quantity[]');
-  const maxLen = Math.max(
-    catalogNames.length,
-    customNames.length,
-    dosages.length,
-    freqs.length,
-    durations.length,
-    quantities.length
-  );
-  for (let i = 0; i < maxLen; i++) {
-    const name = resolveMedName(catalogNames[i], customNames[i]);
-    if (!name) continue;
-    const dosage = String(dosages[i] || '').trim();
-    const frequency = String(freqs[i] || '').trim();
-    const duration = String(durations[i] || '').trim();
-    const daysNum = parseInt(duration, 10);
-    if (!dosage || !frequency || !duration || !Number.isFinite(daysNum) || daysNum < 1) {
-      return t('consultation.err_med_incomplete', { drug: name });
-    }
-  }
-  return '';
-}
-
-function MedicationRow({ med, pharmacyCatalog, medOptions, t, rowIndex, onRemove }) {
-  const initialDrug = useMemo(() => resolveMedDrugFields(med, pharmacyCatalog), [med, pharmacyCatalog]);
-  const [catalogName, setCatalogName] = useState(initialDrug.catalogName);
-  const [customName, setCustomName] = useState(initialDrug.customName);
-  const resolvedName = resolveMedName(catalogName, customName);
-  const isCustom = !!String(customName || '').trim();
-  const [unitPrice, setUnitPrice] = useState(() => {
-    if (med?.unit_price != null && parseFloat(med.unit_price) >= 0) return Math.round(parseFloat(med.unit_price) || 0);
-    if (isCustom) return 0;
-    return catalogUnitPrice(pharmacyCatalog, catalogName);
-  });
-  const dosageListId = `consult-dose-${rowIndex}`;
-  const freqListId = `consult-freq-${rowIndex}`;
-  const treatmentStart = med?.treatment_start ? String(med.treatment_start).slice(0, 10) : todayIsoDate();
-
-  const [dosage, setDosage] = useState(med.dosage || '');
-  const [frequency, setFrequency] = useState(med.frequency || '');
-  const [days, setDays] = useState(med.duration != null && med.duration !== '' ? String(med.duration) : '');
-  const [qtyManual, setQtyManual] = useState(false);
-  const [quantity, setQuantity] = useState(() => {
-    const auto = calcMedQuantity({
-      dosage: med.dosage,
-      frequency: med.frequency,
-      days: med.duration});
-    if (med.quantity != null && med.quantity !== '') return String(med.quantity);
-    return auto != null ? String(auto) : '1';
-  });
-
-  const qtyFormula = useMemo(
-    () => formatMedQuantityFormula({ dosage, frequency, days }),
-    [dosage, frequency, days]
-  );
-
-  useEffect(() => {
-    if (qtyManual) return;
-    const auto = calcMedQuantity({ dosage, frequency, days });
-    if (auto != null && auto > 0) setQuantity(String(auto));
-  }, [dosage, frequency, days, qtyManual]);
-
-  useEffect(() => {
-    if (isCustom) {
-      setUnitPrice(0);
-      return;
-    }
-    setUnitPrice(catalogUnitPrice(pharmacyCatalog, catalogName));
-  }, [catalogName, customName, isCustom, pharmacyCatalog]);
-
-  return (
-    <div className="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 hover:shadow-md">
-      <input type="hidden" name="med_name[]" value={resolvedName} />
-      <div className="mb-4 flex flex-wrap items-center gap-2.5">
-        <div className="flex h-9 min-w-[2.25rem] shrink-0 items-center justify-center rounded-xl bg-brand text-sm font-extrabold text-white shadow-md">
-          {rowIndex + 1}
-        </div>
-        <span className="hidden text-base font-bold text-slate-400 sm:inline">—</span>
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand text-white shadow-sm">
-            <i className="fa fa-medkit text-sm" aria-hidden />
-          </span>
-          <div className="min-w-0">
-            <div className="text-xs font-bold uppercase tracking-wide text-slate-600">
-              {t('consultation.med_line_label')}
-            </div>
-            {resolvedName ? (
-              <div className="truncate text-sm font-semibold text-slate-800">{resolvedName}</div>
-            ) : (
-              <div className="text-[11px] text-slate-500">{t('consultation.med_pick_drug_hint')}</div>
-            )}
-          </div>
-        </div>
-        {isCustom ? (
-          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-800">
-            <i className="fa fa-star text-[9px]" aria-hidden />
-            {t('consultation.custom_drug_badge')}
-          </span>
-        ) : catalogName ? (
-          <span className="inline-flex items-center gap-1 rounded-full border border-brand/30 bg-brand-light px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand">
-            <i className="fa fa-check text-[9px]" aria-hidden />
-            {t('consultation.catalog_drug_badge')}
-          </span>
-        ) : null}
-        <button
-          type="button"
-          onClick={onRemove}
-          className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-slate-400 opacity-70 transition group-hover:opacity-100 hover:bg-red-50 hover:text-red-600"
-          title={t('consultation.remove')}
-        >
-          <i className="fa fa-times" aria-hidden />
-        </button>
-      </div>
-
-      <div className="mb-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <div
-          className={`rounded-xl border p-3 shadow-sm transition ${
-            !isCustom && catalogName
-              ? 'border-brand/40 bg-brand-light/30 ring-2 ring-brand/15'
-              : 'border-slate-200 bg-slate-50/50 ring-1 ring-slate-100'
-          }`}
-        >
-          <div className="mb-2.5 flex items-start gap-2.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand text-white shadow-sm">
-              <i className="fa fa-search text-xs" aria-hidden />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="text-xs font-bold uppercase tracking-wide text-slate-700">
-                {t('consultation.med_drug')}
-              </div>
-              <p className="mt-0.5 text-[11px] leading-snug text-slate-500">{t('consultation.catalog_drug_hint')}</p>
-            </div>
-          </div>
-          <CatalogSearchSelect
-            items={pharmacyCatalog}
-            name="med_catalog_name[]"
-            value={catalogName}
-            onChange={setCatalogName}
-            placeholder={t('consultation.catalog_search_ph')}
-            emptyMessage={t('consultation.catalog_no_match')}
-            groupKey="used_for"
-            showPrice
-            priceLabel={t('consultation.price_fcfa_short')}
-            inputClassName={`${inputClass} border-slate-200 bg-white font-semibold focus:border-brand focus:ring-brand/20`}
-          />
-        </div>
-
-        <div
-          className={`rounded-xl border p-3 shadow-sm transition ${
-            isCustom
-              ? 'border-amber-300/80 bg-amber-50/40 ring-2 ring-amber-200/50'
-              : 'border-slate-200 bg-slate-50/30 ring-1 ring-slate-100'
-          }`}
-        >
-          <div className="mb-2.5 flex items-start gap-2.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-white shadow-sm">
-              <i className="fa fa-pencil text-xs" aria-hidden />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="text-xs font-bold uppercase tracking-wide text-amber-900">
-                {t('consultation.custom_drug_field')}
-              </div>
-              <p className="mt-0.5 text-[11px] leading-snug text-amber-800/75">{t('consultation.custom_drug_field_hint')}</p>
-            </div>
-          </div>
-          <input
-            name="med_custom_name[]"
-            className={`${inputClass} border-amber-200/80 bg-white font-semibold focus:border-amber-400 focus:ring-amber-200`}
-            placeholder={t('consultation.custom_drug_field_ph')}
-            value={customName}
-            onChange={(ev) => setCustomName(ev.target.value)}
-            autoComplete="off"
-          />
-        </div>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-12 lg:items-stretch">
-        <div className="lg:col-span-2">
-          <MedRxParamBox themeKey="dosage" label={t('consultation.med_dosage')} required={!!resolvedName}>
-            <MedComboInput
-              name="med_dosage[]"
-              value={dosage}
-              onChange={(v) => {
-                setQtyManual(false);
-                setDosage(v);
-              }}
-              placeholder={t('consultation.custom_dosage_ph')}
-              options={medOptions.dosage}
-              listId={dosageListId}
-              required={!!resolvedName}
-              inputClassName={MED_RX_THEMES.dosage.input}
-            />
-          </MedRxParamBox>
-        </div>
-        <div className="lg:col-span-2">
-          <MedRxParamBox themeKey="frequency" label={t('consultation.med_frequency')} required={!!resolvedName}>
-            <MedComboInput
-              name="med_frequency[]"
-              value={frequency}
-              onChange={(v) => {
-                setQtyManual(false);
-                setFrequency(v);
-              }}
-              placeholder={t('consultation.custom_frequency_ph')}
-              options={medOptions.frequency}
-              listId={freqListId}
-              required={!!resolvedName}
-              inputClassName={MED_RX_THEMES.frequency.input}
-            />
-          </MedRxParamBox>
-        </div>
-        <div className="lg:col-span-2">
-          <MedRxParamBox themeKey="days" label={t('consultation.med_days')} required={!!resolvedName}>
-            <input
-              name="med_duration[]"
-              type="number"
-              min="1"
-              max="365"
-              className={MED_RX_THEMES.days.input}
-              placeholder={t('consultation.days_ph')}
-              value={days}
-              onChange={(e) => {
-                setQtyManual(false);
-                setDays(e.target.value);
-              }}
-              required={!!resolvedName}
-            />
-          </MedRxParamBox>
-        </div>
-        <div className="lg:col-span-3">
-          <MedRxParamBox
-            themeKey="qty"
-            label={t('consultation.med_quantity')}
-            required={!!resolvedName}
-            badge={
-              !qtyManual && qtyFormula ? (
-                <span className="inline-flex items-center rounded-full bg-emerald-600/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-emerald-800">
-                  {t('consultation.med_qty_auto')}
-                </span>
-              ) : null
-            }
-            footer={
-              qtyFormula ? (
-                <p className="text-[10px] leading-snug text-emerald-800/80">
-                  {t('consultation.med_qty_formula', {
-                    dose: qtyFormula.perDose,
-                    freq: qtyFormula.perDay,
-                    days: qtyFormula.dayCount,
-                    total: qtyFormula.total})}
-                  {qtyManual ? (
-                    <button
-                      type="button"
-                      className="ml-1 font-bold text-indigo-600 hover:underline"
-                      onClick={() => setQtyManual(false)}
-                    >
-                      {t('consultation.med_qty_recalc')}
-                    </button>
-                  ) : null}
-                </p>
-              ) : (
-                <p className="text-[10px] text-amber-700/90">
-                  {t('consultation.med_qty_fill_dose')}
-                </p>
-              )
-            }
-          >
-            <input
-              name="med_quantity[]"
-              type="number"
-              min="1"
-              max="9999"
-              step="1"
-              className={!qtyManual && qtyFormula ? MED_RX_THEMES.qtyAuto.input : MED_RX_THEMES.qty.input}
-              placeholder="1"
-              value={quantity}
-              onChange={(e) => {
-                setQtyManual(true);
-                setQuantity(e.target.value);
-              }}
-              required={!!resolvedName}
-              title={t('consultation.med_quantity_hint')}
-            />
-          </MedRxParamBox>
-        </div>
-        <div className="lg:col-span-3">
-          <MedRxParamBox themeKey="start" label={t('consultation.med_treatment_start')}>
-            <input
-              name="med_treatment_start[]"
-              type="date"
-              className={MED_RX_THEMES.start.input}
-              defaultValue={treatmentStart}
-              required={!!resolvedName}
-            />
-          </MedRxParamBox>
-        </div>
-      </div>
-      <input type="hidden" name="med_unit_price[]" value={unitPrice} />
-      <div className="mt-3 grid gap-3 md:grid-cols-12">
-        <div className="md:col-span-4">
-          <FieldLabel>{t('consultation.med_timing')}</FieldLabel>
-          <MedPickSelect
-            name="med_timing[]"
-            value={med.timing}
-            placeholder={t('consultation.select_timing')}
-            options={medOptions.timing}
-          />
-        </div>
-        <div className="md:col-span-8">
-          <FieldLabel>{t('consultation.med_instructions')}</FieldLabel>
-          <input
-            name="med_instructions[]"
-            className={inputClass}
-            placeholder={t('consultation.med_instructions_ph')}
-            defaultValue={med.instructions || ''}
-          />
-        </div>
-      </div>
+      <div className={`consult-mocdoc-section-body${flush ? ' consult-mocdoc-section-body--flush' : ''}`}>{children}</div>
     </div>
   );
 }
@@ -671,11 +233,7 @@ export function ConsultationNewPageApp({
   const { t } = useTranslation('clinical');
   const medOptions = useConsultationMedOptions(t);
   const existingMeds = useMemo(() => parseMeds(editRow), [editRow]);
-  const [medRows, setMedRows] = useState(() =>
-    existingMeds.length
-      ? existingMeds
-      : [{ name: '', dosage: '', frequency: '', duration: '', timing: '', instructions: '' }]
-  );
+  const [medRows, setMedRows] = useState(() => initialMedRows(existingMeds, pharmacyCatalog));
   const [medError, setMedError] = useState('');
 
   if (!patient || !visitId) {
@@ -718,13 +276,12 @@ export function ConsultationNewPageApp({
     ? new Date(opdVisit.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
     : '';
 
-  const addMedRow = () =>
-    setMedRows((rows) => [...rows, { name: '', dosage: '', frequency: '', duration: '', timing: '', instructions: '' }]);
-  const removeMedRow = (idx) =>
-    setMedRows((rows) => (rows.length <= 1 ? rows : rows.filter((_, i) => i !== idx)));
-
   const handleSubmit = (e) => {
     setMedError('');
+    if (blocked) {
+      e.preventDefault();
+      return;
+    }
     const err = validateMedicationRows(e.currentTarget, t);
     if (err) {
       e.preventDefault();
@@ -827,10 +384,10 @@ export function ConsultationNewPageApp({
         <input type="hidden" name="opd_visit_id" value={visitId} />
         {editId ? <input type="hidden" name="edit_id" value={editId} /> : null}
 
-        <fieldset disabled={blocked} className="m-0 min-w-0 border-0 p-0">
-          <div className="grid gap-4 lg:grid-cols-12">
-            <div className="lg:col-span-8">
-              <SectionCard icon={<i className="fa fa-edit text-indigo-600" />} title={t('consultation.soap_title')}>
+        <div className="consult-mocdoc">
+          <div className="grid gap-4 lg:grid-cols-12 lg:items-start">
+            <div className="flex flex-col gap-0 lg:col-span-8">
+              <SectionCard icon={<i className="fa fa-edit" aria-hidden />} title={t('consultation.soap_title')}>
                 <SoapPickField
                   label={t('consultation.chief_complaint')}
                   name="chief_complaint"
@@ -867,54 +424,31 @@ export function ConsultationNewPageApp({
                 <SoapPlanField label={t('consultation.plan')} name="treatment_plan" defaultValue={soap.plan} />
               </SectionCard>
 
-              <SectionCard icon={<i className="fa fa-medkit text-brand" aria-hidden />} title={t('consultation.medications')}>
-                {visitId ? (
-                  <div className="mb-3 rounded-xl border border-brand/20 bg-brand-light/40 px-3 py-2 text-xs text-slate-700">
-                    <i className="fa fa-info-circle mr-1" />
-                    {t('opd.treatment.consult_link_hint')}{' '}
-                    <a href={`/opd/treatment/${visitId}`} className="font-bold underline">
-                      {t('opd.treatment.link_label')}
-                    </a>
-                  </div>
-                ) : null}
-                {medError ? (
-                  <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                    {medError}
-                  </div>
-                ) : null}
-                <OrderSectionShell
-                  theme="plan"
-                  iconLetter="M"
-                  title={t('consultation.med_items_label')}
-                  addLabel={t('consultation.add_drug')}
-                  onAdd={addMedRow}
-                  hint={t('consultation.meds_custom_hint')}
-                  empty={medRows.length === 0 ? t('consultation.no_meds') : null}
-                >
-                  {medRows.map((med, i) => (
-                    <MedicationRow
-                      key={i}
-                      rowIndex={i}
-                      med={med}
-                      pharmacyCatalog={pharmacyCatalog}
-                      medOptions={medOptions}
-                      t={t}
-                      onRemove={() => removeMedRow(i)}
-                    />
-                  ))}
-                </OrderSectionShell>
-                {!pharmacyCatalog.length ? (
-                  <p className="mt-2 text-xs text-slate-500">
-                    <i className="fa fa-info-circle mr-1" />
-                    {t('consultation.no_pharmacy_catalog')}
-                  </p>
-                ) : null}
+              <SectionCard
+                icon={<i className="fa fa-medkit" aria-hidden />}
+                title={t('consultation.medications')}
+                flush
+                className="mb-0"
+              >
+                <div className="p-3">
+                <ConsultationPrescriptionSection
+                  medRows={medRows}
+                  setMedRows={setMedRows}
+                  pharmacyCatalog={pharmacyCatalog}
+                  medOptions={medOptions}
+                  patientAge={patientAge}
+                  patientGender={patientGender}
+                  medError={medError}
+                  visitId={visitId}
+                />
+                <p className="mt-2 text-xs text-slate-600">{t('consultation.meds_custom_hint')}</p>
+                </div>
               </SectionCard>
             </div>
 
-            <div className="lg:col-span-4">
-              <SectionCard icon={<i className="fa fa-list text-amber-600" />} title={t('consultation.orders_title')}>
-                <div className="mb-4">
+            <div className="flex flex-col gap-0 lg:col-span-4">
+              <SectionCard icon={<i className="fa fa-list" aria-hidden />} title={t('consultation.orders_title')}>
+                <div className="consult-mocdoc-order">
                   <CatalogOrderPicker
                     name="lab_catalog_id[]"
                     catalog={labCatalog}
@@ -928,7 +462,7 @@ export function ConsultationNewPageApp({
                     emptyMessage={
                       labCatalog.length ? t('consultation.catalog_no_match') : t('consultation.no_catalog_items')
                     }
-                    priceLabel={t('consultation.price_fcfa_short')}
+                    priceLabel={priceUnitLabel()}
                     inputClassName={inputClass}
                   />
                   <CustomCatalogRows
@@ -944,7 +478,7 @@ export function ConsultationNewPageApp({
                     t={t}
                   />
                 </div>
-                <div>
+                <div className="consult-mocdoc-order">
                   <CatalogOrderPicker
                     name="rad_catalog_id[]"
                     catalog={radCatalog}
@@ -958,7 +492,7 @@ export function ConsultationNewPageApp({
                     emptyMessage={
                       radCatalog.length ? t('consultation.catalog_no_match') : t('consultation.no_catalog_items')
                     }
-                    priceLabel={t('consultation.price_fcfa_short')}
+                    priceLabel={priceUnitLabel()}
                     inputClassName={inputClass}
                   />
                   <CustomCatalogRows
@@ -976,18 +510,18 @@ export function ConsultationNewPageApp({
                 </div>
               </SectionCard>
 
-              <SectionCard icon={<i className="fa fa-user-md text-indigo-600" />} title={t('consultation.referral_title')}>
-                <div className="mb-4">
+              <SectionCard icon={<i className="fa fa-user-md" aria-hidden />} title={t('consultation.referral_title')}>
+                <div className="consult-mocdoc-field-group">
                   <FieldLabel>{t('consultation.refer_to')}</FieldLabel>
                   <input name="referral_to" className={lockedInputClass} defaultValue={lockedReferral} readOnly tabIndex={-1} />
-                  <p className="mt-1 text-xs text-slate-500">{t('consultation.refer_locked')}</p>
+                  <p className="consult-mocdoc-hint">{t('consultation.refer_locked')}</p>
                 </div>
-                <div className="mb-4">
+                <div className="consult-mocdoc-field-group">
                   <FieldLabel>{t('consultation.consult_type')}</FieldLabel>
                   <input name="consult_type" className={lockedInputClass} defaultValue={autoConsultType || ''} readOnly tabIndex={-1} />
                 </div>
-                <div>
-                  <FieldLabel>{t('consultation.consult_fee')}</FieldLabel>
+                <div className="consult-mocdoc-field-group">
+                  <FieldLabel>{t('consultation.consult_fee', { currency: priceUnitLabel(), defaultValue: `Consultation fee (${priceUnitLabel()})` })}</FieldLabel>
                   <input
                     name="consult_fee_xaf"
                     type="number"
@@ -998,12 +532,12 @@ export function ConsultationNewPageApp({
                     readOnly
                     tabIndex={-1}
                   />
-                  <p className="mt-1 text-xs text-slate-500">{t('consultation.fee_locked')}</p>
+                  <p className="consult-mocdoc-hint">{t('consultation.fee_locked')}</p>
                 </div>
               </SectionCard>
 
-              <SectionCard icon={<i className="fa fa-calendar-check-o text-brand" aria-hidden />} title={t('consultation.follow_up_title')}>
-                <div className="mb-4">
+              <SectionCard icon={<i className="fa fa-calendar-check-o" aria-hidden />} title={t('consultation.follow_up_title')}>
+                <div className="consult-mocdoc-field-group">
                   <FieldLabel>{t('consultation.next_interval')}</FieldLabel>
                   <select
                     name="next_consultation"
@@ -1018,9 +552,9 @@ export function ConsultationNewPageApp({
                     ))}
                     {hasCustomNextConsult ? <option value={nextConsultValue}>{nextConsultValue}</option> : null}
                   </select>
-                  <p className="mt-1 text-xs text-slate-500">{t('consultation.interval_hint')}</p>
+                  <p className="consult-mocdoc-hint">{t('consultation.interval_hint')}</p>
                 </div>
-                <div className="mb-4">
+                <div className="consult-mocdoc-field-group">
                   <FieldLabel>{t('consultation.empty_stomach')}</FieldLabel>
                   <select name="empty_stomach" className={selectClass} defaultValue={followUp.emptyStomach || ''}>
                     <option value="">{t('consultation.select')}</option>
@@ -1028,17 +562,17 @@ export function ConsultationNewPageApp({
                     <option value="No">{t('shared.no')}</option>
                   </select>
                 </div>
-                <div className="mb-0">
+                <div className="consult-mocdoc-field-group">
                   <FieldLabel>{t('consultation.follow_up_date')}</FieldLabel>
                   <input type="date" name="follow_up_date" className={inputClass} defaultValue={followUp.followUpDate || ''} />
                 </div>
                 {!editId ? (
-                  <label className="mt-4 flex cursor-pointer items-start gap-2 border-t border-slate-100 pt-4 text-sm text-slate-700">
+                  <label className="mt-2 flex cursor-pointer items-start gap-2 border-t border-orange-200 pt-4 text-sm text-slate-700">
                     <input
                       type="checkbox"
                       name="followup_visit_requested"
                       value="1"
-                      className="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      className="consult-mocdoc-checkbox mt-0.5"
                       defaultChecked={followUp.followupRequested}
                     />
                     <span>{t('consultation.follow_up_check')}</span>
@@ -1047,12 +581,12 @@ export function ConsultationNewPageApp({
                   <input type="hidden" name="followup_visit_requested" value="1" />
                 ) : null}
                 {!editId ? (
-                  <p className="mt-2 text-xs text-slate-500">
+                  <p className="consult-mocdoc-hint mt-2">
                     <i className="fa fa-info-circle mr-1" />
                     {t('consultation.follow_up_info')}
                   </p>
                 ) : followUp.followupRequested ? (
-                  <p className="mt-4 border-t border-slate-100 pt-4 text-xs font-semibold text-emerald-700">
+                  <p className="mt-4 border-t border-orange-200 pt-4 text-xs font-semibold text-emerald-700">
                     <i className="fa fa-check-circle mr-1" />
                     {t('consultation.follow_up_requested')}
                   </p>
@@ -1060,12 +594,12 @@ export function ConsultationNewPageApp({
               </SectionCard>
 
               {!admitOrderBlocked ? (
-                <SectionCard icon={<i className="fa fa-bed text-slate-600" />} title={t('consultation.admission_title')}>
+                <SectionCard icon={<i className="fa fa-bed" aria-hidden />} title={t('consultation.admission_title')}>
                   <label className="mb-3 flex cursor-pointer items-center gap-2 text-sm font-semibold text-slate-700">
                     <input
                       type="checkbox"
                       name="admit_recommendation"
-                      className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      className="consult-mocdoc-checkbox"
                     />
                     {t('consultation.admit_recommend')}
                   </label>
@@ -1077,30 +611,28 @@ export function ConsultationNewPageApp({
                 </SectionCard>
               ) : null}
 
-              <div className="sticky top-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="consult-mocdoc-submit sticky top-5">
                 <button
                   type="submit"
-                  className="hms-btn-primary mb-3 w-full py-3 text-sm font-bold disabled:opacity-50"
+                  disabled={blocked}
+                  className="consult-mocdoc-submit-btn"
                 >
                   <i className="fa fa-save mr-2" />
                   {editId ? t('consultation.update') : t('consultation.complete')}
                 </button>
-                <a
-                  href="/opd-queue"
-                  className="flex w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-100"
-                >
+                <a href="/opd-queue" className="consult-mocdoc-cancel-btn">
                   <i className="fa fa-times mr-2 text-red-500" />
                   {t('shared.cancel')}
                 </a>
-                <hr className="my-3 border-slate-100" />
-                <p className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+                <hr className="consult-mocdoc-divider" />
+                <p className="consult-mocdoc-submit-info">
                   <i className="fa fa-info-circle mr-1" />
                   {t('consultation.complete_hint')}
                 </p>
               </div>
             </div>
           </div>
-        </fieldset>
+        </div>
       </form>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CatalogSearchSelect } from '../CatalogSearchSelect';
 import { todayIsoDate } from '../../lib/prescriptionDate';
+import { formatMoney, priceUnitLabel } from '../../lib/hmsLocale';
 
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200';
@@ -96,7 +97,7 @@ export function IpdRxFields({
                 placeholder={t('charge_modal.pharmacy_search_ph')}
                 emptyMessage={t('charge_modal.no_matches')}
                 showPrice
-                priceLabel={t('shared.fcfa')}
+                priceLabel={priceUnitLabel()}
                 inputClassName={`${inputClass} border-violet-200/80 focus:border-violet-400 focus:ring-violet-200`}
               />
             </div>
@@ -231,7 +232,7 @@ export function IpdRxFields({
           readOnly
           tabIndex={-1}
           className={lockedInputClass}
-          value={isCustom ? t('charge_modal.custom_price_zero') : `${unitPrice} ${t('shared.fcfa')}`}
+          value={isCustom ? t('charge_modal.custom_price_zero', { defaultValue: '0 (custom drug)' }) : formatMoney(unitPrice)}
           title={isCustom ? t('charge_modal.custom_price_hint') : t('charge_modal.catalog_price_locked')}
         />
         <input type="hidden" name="unit_price" value={unitPrice} />

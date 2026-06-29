@@ -277,7 +277,7 @@ module.exports = function(app, pool, requireAuth) {
     // ── CASHIER ──────────────────────────────────────────────
     app.get('/portal/cashier', requireAuth, (req, res) => {
         const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
-        return res.redirect(301, '/portal/hub/cashier' + q);
+        return res.redirect(301, '/cashier?page=dashboard' + q);
     });
 
     // ── PATIENT (self-service) ───────────────────────────────
@@ -534,6 +534,28 @@ module.exports = function(app, pool, requireAuth) {
         }
     });
 
+    // ── CASHIER DASHBOARD ──
+    app.get('/portal/api/cashier-dashboard', requireAuth, async (req, res) => {
+        try {
+            const aclLayout = require('../lib/aclLayout');
+            const { fetchCashierDashboard, resolveCashierScope } = require('../lib/cashierDashboard');
+            const { buildVisibleDashboardModel } = require('../lib/cashierDashboardCatalog');
+            const perms = res.locals.userPerms || [];
+            const role = String(req.session.user?.role || '');
+            const pack = aclLayout.forPortal('cashier', perms, role) || {};
+            const model = buildVisibleDashboardModel(pack);
+            if (!model.hasShell && !model.tabs.length) {
+                return res.status(403).json({ ok: false, error: 'You do not have access to the cashier dashboard.' });
+            }
+            const scope = resolveCashierScope(req, res);
+            const data = await fetchCashierDashboard(pool, { aclPack: pack, scope });
+            return res.json(data);
+        } catch (e) {
+            console.error('portal cashier-dashboard:', e);
+            return res.status(500).json({ ok: false, error: e.message || 'Failed to load cashier dashboard' });
+        }
+    });
+
     // ── SECRETARY DASHBOARD ──
     app.get('/portal/api/secretary-dashboard', requireAuth, async (req, res) => {
         try {
@@ -742,6 +764,9 @@ module.exports = function(app, pool, requireAuth) {
         if (dedicated) {
             return res.redirect(dedicated);
         }
+        if (String(code || '').toLowerCase() === 'cashier') {
+            return res.redirect(302, '/cashier?page=dashboard');
+        }
         let rows = await pool.query(
             `SELECT code, label, home_url, icon, color, description, enabled
                FROM tbl_acl_portal WHERE code=? LIMIT 1`,
@@ -884,16 +909,19 @@ module.exports = function(app, pool, requireAuth) {
                 assistant_director: 'assistant_director',
                 front_desk: 'front_desk',
                 secretary: 'secretary',
+                cashier: 'cashier',
             };
             const staffPortalKey = staffProfileMap[portalCode] || staffProfileMap[code] || null;
             if (staffPortalKey) {
                 const { buildVisibleDashboardModel: buildAssistantDirectorModel } = require('../lib/assistantDirectorDashboardCatalog');
                 const { buildVisibleDashboardModel: buildFrontDeskModel } = require('../lib/frontDeskDashboardCatalog');
                 const { buildVisibleDashboardModel: buildSecretaryModel } = require('../lib/secretaryDashboardCatalog');
+                const { buildVisibleDashboardModel: buildCashierModel } = require('../lib/cashierDashboardCatalog');
                 const buildByKey = {
                     assistant_director: buildAssistantDirectorModel,
                     front_desk: buildFrontDeskModel,
                     secretary: buildSecretaryModel,
+                    cashier: buildCashierModel,
                 };
                 const staffPack = aclLayout.forPortal(staffPortalKey, perms, role) || {};
                 const staffModel = buildByKey[staffPortalKey](staffPack);
@@ -934,10 +962,16 @@ module.exports = function(app, pool, requireAuth) {
                 ? await loadVisitingVisitForSession(req)
                 : null;
 
+        const portalSurfaceBodyClass =
+            { front_desk: ' hms-body--front-desk', nursing: ' hms-body--portal', cashier: ' hms-body--cashier' }[portalCode]
+            || { front_desk: ' hms-body--front-desk', nursing: ' hms-body--portal', cashier: ' hms-body--cashier' }[code]
+            || ' hms-body--portal';
+
         res.render('portal-generic', {
             title: meta.label + ' — ZAIZENS',
             portal: tilePortal,
             portalMeta: meta,
+            portalSurfaceBodyClass,
             me,
             showHmsHub,
             stats,

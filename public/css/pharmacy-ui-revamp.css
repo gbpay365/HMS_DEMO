@@ -1,54 +1,396 @@
 /**
- * Pharmacy UI Revamp — module-specific accents (nav: hms-dept-nav.css)
+
+ * Pharmacy UI Revamp — tokens, unified buttons, React overrides
+
  */
+
 .pharmacy-odoo-app {
-  --o-brand: var(--hms-dept-pharmacy);
-  --o-brand-hover: var(--hms-brand-hover);
+
+  --o-brand: var(--pha-accent, var(--hms-dept-pharmacy));
+
+  --o-brand-hover: var(--pha-accent-hover, var(--hms-brand-hover));
+
   --o-brand-soft: var(--hms-brand-soft);
+
+  --o-bg: var(--pha-page-bg, #fff0f5);
+
+  --o-surface: var(--pha-card-bg, #fff);
+
 }
+
+
 
 .pharmacy-odoo-app .o_nav_module--pharmacy::before {
+
   content: '\f484';
+
   font-family: FontAwesome;
+
   margin-right: 6px;
+
   font-weight: normal;
+
 }
+
+
 
 .pharmacy-odoo-app .o_nav_link .pha-nav-ico,
+
 .pharmacy-odoo-app .o_nav_drop_panel a .pha-nav-ico {
+
   display: inline-block;
+
   width: 1.1rem;
+
   text-align: center;
+
   margin-right: 0.4rem;
+
   color: var(--o-brand);
+
   opacity: 0.9;
+
 }
+
+
 
 .pharmacy-odoo-app .o_nav_link:hover .pha-nav-ico,
+
 .pharmacy-odoo-app .o_nav_link.active .pha-nav-ico {
+
   color: var(--o-brand);
+
 }
+
+
 
 .pharmacy-odoo-app .o_nav_drop_panel a {
+
   display: flex;
+
   align-items: center;
+
   gap: 0.25rem;
+
 }
+
+
 
 .pharmacy-odoo-app .o_nav_drop_panel a:hover .pha-nav-ico {
+
   transform: scale(1.08);
+
 }
+
+
 
 .pharmacy-odoo-app .o_list_table thead th {
+
   background: #f1f5f9;
+
   font-weight: 700;
+
   text-transform: uppercase;
+
   font-size: 0.68rem;
+
   letter-spacing: 0.05em;
+
   color: var(--o-muted);
+
 }
 
+
+
 .pharmacy-odoo-app .o_flash {
+
   border-radius: 10px;
+
   border-left: 4px solid var(--o-brand);
+
 }
+
+
+
+/* ── Unified primary button (o_cp_new + hms-btn-primary + React) ── */
+body.hms-body--pharmacy-odoo .pharmacy-odoo-app .o_cp_new,
+body.hms-body--pharmacy-odoo .pharmacy-odoo-app .pha-btn-primary,
+body.hms-body--pharmacy-odoo .hms-ui .pha-btn-primary,
+body.hms-body--pharmacy-odoo .hms-ui .hms-btn-primary,
+body.hms-body--pharmacy-theme .hms-btn-primary,
+body.hms-body--validate-entry-pharmacy .hms-btn-primary,
+body.hms-body--validate-detail-pharmacy .hms-btn-primary,
+body.hms-body--validate-entry-pharmacy .hms-ui .hms-btn-primary,
+body.hms-body--validate-detail-pharmacy .hms-ui .hms-btn-primary {
+  background: linear-gradient(135deg, var(--pha-accent, #d4537e) 0%, var(--pha-accent-hover, #993556) 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px var(--hms-brand-glow, rgba(212, 83, 126, 0.32)) !important;
+  transition: transform 0.12s ease, box-shadow 0.12s ease !important;
+}
+
+body.hms-body--validate-entry-pharmacy .hms-ui .hms-input:focus,
+body.hms-body--validate-detail-pharmacy .hms-ui .hms-input:focus {
+  border-color: var(--pha-accent, #d4537e) !important;
+  --tw-ring-color: rgba(212, 83, 126, 0.2) !important;
+}
+
+body.hms-body--validate-entry-pharmacy .hms-ui .hms-btn-secondary,
+body.hms-body--validate-detail-pharmacy .hms-ui .hms-btn-secondary {
+  border-color: var(--pha-soft-border, #f4c0d1) !important;
+  color: var(--pha-primary, #4b1528) !important;
+}
+
+body.hms-body--validate-entry-pharmacy .hms-ui .hms-btn-secondary:hover,
+body.hms-body--validate-detail-pharmacy .hms-ui .hms-btn-secondary:hover {
+  border-color: var(--pha-accent, #d4537e) !important;
+  color: var(--pha-accent, #d4537e) !important;
+  background: var(--hms-brand-soft) !important;
+}
+
+body.hms-body--pharmacy-odoo .pharmacy-odoo-app .o_cp_new:hover,
+
+body.hms-body--pharmacy-odoo .pharmacy-odoo-app .pha-btn-primary:hover,
+
+body.hms-body--pharmacy-odoo .hms-ui .pha-btn-primary:hover,
+
+body.hms-body--pharmacy-odoo .hms-ui .hms-btn-primary:hover {
+
+  color: #fff !important;
+
+  transform: translateY(-1px);
+
+  box-shadow: 0 6px 18px rgba(212, 83, 126, 0.38) !important;
+
+}
+
+
+
+/* ── Unified secondary button ── */
+
+body.hms-body--pharmacy-odoo .pharmacy-odoo-app .pha-btn-secondary,
+
+body.hms-body--pharmacy-odoo .hms-ui .pha-btn-secondary,
+
+body.hms-body--pharmacy-odoo .hms-ui .hms-btn-secondary {
+
+  background: var(--pha-card-bg, #fff) !important;
+
+  color: var(--pha-primary, #4b1528) !important;
+
+  border: 1.5px solid var(--pha-soft-border, #f4c0d1) !important;
+
+  border-radius: 10px !important;
+
+  font-weight: 700 !important;
+
+}
+
+
+
+body.hms-body--pharmacy-odoo .pharmacy-odoo-app .pha-btn-secondary:hover,
+
+body.hms-body--pharmacy-odoo .hms-ui .pha-btn-secondary:hover,
+
+body.hms-body--pharmacy-odoo .hms-ui .hms-btn-secondary:hover {
+
+  border-color: var(--pha-accent, #d4537e) !important;
+
+  color: var(--pha-accent, #d4537e) !important;
+
+  background: var(--hms-brand-soft) !important;
+
+}
+
+
+
+/* Bootstrap outline → pharmacy secondary */
+
+body.hms-body--pharmacy-odoo .pharmacy-odoo-app .btn-outline-secondary {
+
+  color: var(--pha-primary, #4b1528) !important;
+
+  border-color: var(--pha-soft-border, #f4c0d1) !important;
+
+  border-radius: 8px;
+
+  font-weight: 600;
+
+}
+
+
+
+body.hms-body--pharmacy-odoo .pharmacy-odoo-app .btn-outline-secondary:hover {
+
+  background: var(--hms-brand-soft) !important;
+
+  border-color: var(--pha-accent, #d4537e) !important;
+
+  color: var(--pha-accent, #d4537e) !important;
+
+}
+
+
+
+body.hms-body--pharmacy-odoo .pharmacy-odoo-app .btn-light {
+
+  background: var(--pha-card-bg, #fff) !important;
+
+  border: 1.5px solid var(--pha-soft-border, #f4c0d1) !important;
+
+  color: var(--pha-primary, #4b1528) !important;
+
+  border-radius: 10px;
+
+  font-weight: 600;
+
+}
+
+
+
+/* Rx / PHA code badge */
+
+body.hms-body--pharmacy-odoo .pha-rx-code,
+
+body.hms-body--pharmacy-odoo .hms-ui .pha-rx-code {
+
+  background: var(--pha-rx-label-bg, #fce4ec) !important;
+
+  color: var(--pha-rx-label-text, #4b1528) !important;
+
+}
+
+
+
+/* Nursing dispense info panel */
+
+body.hms-body--pharmacy-odoo .pha-info-panel {
+
+  background: var(--pha-rx-label-bg, #fce4ec);
+
+  border: 1.5px solid var(--pha-soft-border, #f4c0d1);
+
+  border-radius: 10px;
+
+}
+
+
+
+/* React dashboard — align compiled Tailwind brand/emerald with pharmacy palette */
+
+body.hms-body--pharmacy-odoo .hms-ui .text-brand {
+
+  color: var(--hms-brand) !important;
+
+}
+
+
+
+body.hms-body--pharmacy-odoo .hms-ui .bg-brand {
+
+  background-color: var(--hms-brand) !important;
+
+}
+
+
+
+body.hms-body--pharmacy-odoo .hms-ui .ring-brand {
+
+  --tw-ring-color: var(--hms-brand) !important;
+
+}
+
+
+
+body.hms-body--pharmacy-odoo .hms-ui .hover\:bg-brand\/5:hover {
+
+  background-color: var(--hms-brand-soft) !important;
+
+}
+
+
+
+body.hms-body--pharmacy-odoo .hms-ui .hover\:border-brand:hover {
+
+  border-color: var(--hms-brand) !important;
+
+}
+
+
+
+body.hms-body--pharmacy-odoo .hms-ui .hover\:text-brand:hover {
+
+  color: var(--hms-brand) !important;
+
+}
+
+
+
+body.hms-body--pharmacy-odoo .hms-ui .bg-emerald-600,
+
+body.hms-body--pharmacy-odoo .hms-ui .pha-btn-primary {
+
+  background: linear-gradient(135deg, var(--pha-accent), var(--pha-accent-hover)) !important;
+
+}
+
+
+
+body.hms-body--pharmacy-odoo .hms-ui .hover\:bg-emerald-700:hover,
+
+body.hms-body--pharmacy-odoo .hms-ui .pha-btn-primary:hover {
+
+  background: linear-gradient(135deg, var(--pha-accent-hover), var(--pha-accent-dark)) !important;
+
+}
+
+
+
+body.hms-body--pharmacy-odoo .hms-ui .bg-emerald-50 {
+
+  background-color: var(--pha-rx-label-bg) !important;
+
+}
+
+
+
+body.hms-body--pharmacy-odoo .hms-ui .text-emerald-800 {
+
+  color: var(--pha-rx-label-text) !important;
+
+}
+
+
+
+/* Page wrapper tint inside React hub */
+
+body.hms-body--pharmacy-odoo .pharmacy-odoo-app .pha-main .page-wrapper.hms-surface-module {
+
+  background: var(--pha-page-bg, #fff0f5);
+
+  padding: 1rem 1.25rem 1.5rem;
+
+}
+
+/* Status text utilities (scheme traffic-light + expiry) */
+body.hms-body--pharmacy-odoo .pha-text-stock-ok,
+body.hms-body--pharmacy-odoo .hms-ui .pha-text-stock-ok { color: var(--pha-stock-ok) !important; }
+
+body.hms-body--pharmacy-odoo .pha-text-stock-low,
+body.hms-body--pharmacy-odoo .hms-ui .pha-text-stock-low { color: var(--pha-stock-low) !important; }
+
+body.hms-body--pharmacy-odoo .pha-text-stock-out,
+body.hms-body--pharmacy-odoo .hms-ui .pha-text-stock-out { color: var(--pha-stock-out) !important; }
+
+body.hms-body--pharmacy-odoo .pha-text-expiry-alert,
+body.hms-body--pharmacy-odoo .hms-ui .pha-text-expiry-alert { color: var(--pha-expiry-alert) !important; }
+
+body.hms-body--pharmacy-odoo .pha-text-expired,
+body.hms-body--pharmacy-odoo .hms-ui .pha-text-expired { color: var(--pha-expired) !important; }
+
+body.hms-body--pharmacy-odoo .hms-ui .pha-tab-pending-active {
+  background: var(--pha-stock-low) !important;
+}
+

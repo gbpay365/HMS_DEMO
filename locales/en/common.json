@@ -5,7 +5,9 @@
     "french": "Français",
     "updated": "Language updated.",
     "switch_to_en": "English",
-    "switch_to_fr": "Français"
+    "switch_to_fr": "Français",
+    "short_en": "ENG",
+    "short_fr": "Fr"
   },
   "actions": {
     "ok": "OK",
@@ -57,6 +59,7 @@
     "staff": "Loading Staff Directory…",
     "appointments": "Loading Appointments…",
     "front_desk": "Loading Front Desk…",
+    "front_desk_validate": "Loading payment validation…",
     "opd_queue": "Loading OPD Queue…",
     "doctor_schedule": "Loading schedule…",
     "billing": "Loading Billing…",

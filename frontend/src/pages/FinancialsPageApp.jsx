@@ -4,6 +4,7 @@ import { FormField } from '../components/FormField';
 import { StatCard } from '../components/StatCard';
 import { SurfaceHero } from '../components/SurfaceHero';
 import { JournalNewForm } from '../components/journal/JournalNewForm';
+import { formatMoney, currencyCode } from '../lib/hmsLocale';
 
 const FIN_NAV = [
   { key: 'dashboard', href: '/financials', labelKey: 'nav.dashboard' },
@@ -24,8 +25,10 @@ const FIN_NAV = [
 
 function fmt(n) {
   if (n == null || n === '') return '—';
-  return Number(n || 0).toLocaleString('fr-FR');
+  return formatMoney(n);
 }
+
+const cur = currencyCode();
 
 function FinNavLink({ href, active, children }) {
   return (
@@ -153,7 +156,7 @@ function GlAccountsView({ glAccounts = [] }) {
         <details key={acct.code} className="rounded-xl border border-slate-200 bg-white">
           <summary className="cursor-pointer px-4 py-3 font-bold">
             <code>{acct.code}</code> — {acct.label}{' '}
-            <span className="float-right font-mono text-slate-600">{fmt(acct.closing)} XAF</span>
+            <span className="float-right font-mono text-slate-600">{fmt(acct.closing)}</span>
           </summary>
           <div className="border-t border-slate-100 px-2 pb-2">
             <DataTable
@@ -371,7 +374,7 @@ function SettingsForm({ section = 'general', tax = {}, betterpay = {}, canWrite 
       </div>
       <div className="mb-3">
         <label className="mb-1 block text-xs font-bold">{t('settings.currency')}</label>
-        <input name="settings[company_currency]" className="hms-input w-full" defaultValue={tax.currency_code || 'XAF'} readOnly={!canWrite} />
+        <input name="settings[company_currency]" className="hms-input w-full" defaultValue={tax.currency_code || cur} readOnly={!canWrite} />
       </div>
       {section === 'taxes' ? (
         <>
@@ -491,10 +494,10 @@ function DashboardView({ metrics = {}, recentJournals = [], topAccounts = [] }) 
   return (
     <>
       <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label={t('dashboard.income_mtd')} value={`${fmt(m.revenueMtd)} XAF`} tone="brand" icon="arrow-up" />
-        <StatCard label={t('dashboard.expenses_mtd')} value={`${fmt(m.expensesMtd)} XAF`} tone="default" icon="arrow-down" />
-        <StatCard label={t('dashboard.net_income_mtd')} value={`${fmt(m.netIncomeMtd)} XAF`} tone={netTone} icon="line-chart" />
-        <StatCard label={t('dashboard.cash_bank')} value={`${fmt(m.cashBalance)} XAF`} tone="brand" icon="bank" />
+        <StatCard label={t('dashboard.income_mtd')} value={fmt(m.revenueMtd)} tone="brand" icon="arrow-up" />
+        <StatCard label={t('dashboard.expenses_mtd')} value={fmt(m.expensesMtd)} tone="default" icon="arrow-down" />
+        <StatCard label={t('dashboard.net_income_mtd')} value={fmt(m.netIncomeMtd)} tone={netTone} icon="line-chart" />
+        <StatCard label={t('dashboard.cash_bank')} value={fmt(m.cashBalance)} tone="brand" icon="bank" />
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
@@ -780,7 +783,7 @@ export function FinancialsPageApp({
             <StatCard
               key={s.label}
               label={s.label}
-              value={s.format === 'money' ? `${fmt(s.value)} XAF` : s.value}
+              value={s.format === 'money' ? fmt(s.value) : s.value}
               tone="brand"
             />
           ))}

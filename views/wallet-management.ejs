@@ -56,7 +56,7 @@
       <span class="badge badge-<%= w.status==='active'?'success':'secondary' %>"><%= w.status||'—' %></span>
      </td>
      <td class="text-right font-weight-bold text-success" style="font-size:1.05rem;">
-      <%= b.toLocaleString('fr-FR') %> <small class="text-muted">FCFA</small>
+      <%= fmtMoney(b) %>
      </td>
      <td class="small text-muted"><%= w.updated_at ? new Date(w.updated_at).toLocaleString() : '—' %></td>
      <td class="text-right text-nowrap">
@@ -90,7 +90,7 @@
     <div class="modal-body">
      <p class="small text-muted"><%= _t('wallet_management.modal_topup_hint', { ns: 'legacy', defaultValue: 'Receive physical cash from the patient and load into their virtual contactless wallet.' }) %></p>
      <div class="form-group">
-      <label class="font-weight-bold small"><%= _t('wallet_management.amount_label', { ns: 'legacy', defaultValue: 'Deposit Amount (FCFA)' }) %> <span class="text-danger">*</span></label>
+      <label class="font-weight-bold small"><%= _t('wallet_management.amount_label', { ns: 'legacy', defaultValue: isNigeria ? 'Deposit Amount (NGN)' : 'Deposit Amount (FCFA)' }) %> <span class="text-danger">*</span></label>
       <input type="number" step="1" min="1" name="amount" class="hms-input w-full" required placeholder="<%= _t('wallet_management.amount_ph', { ns: 'legacy' }) %>">
      </div>
      <div class="form-group mb-0">

@@ -1,0 +1,74 @@
+{
+  "code": "LR",
+  "name": "Liberia",
+  "regionLabel": "County",
+  "subRegionLabel": "District",
+  "regions": [
+    "Bomi",
+    "Bong",
+    "Gbarpolu",
+    "Grand Bassa",
+    "Grand Cape Mount",
+    "Grand Gedeh",
+    "Grand Kru",
+    "Lofa",
+    "Margibi",
+    "Maryland",
+    "Montserrado",
+    "Nimba",
+    "River Cess",
+    "River Gee",
+    "Sinoe"
+  ],
+  "subRegions": {
+    "Bomi": [
+      "Tubmanburg"
+    ],
+    "Bong": [
+      "Gbarnga"
+    ],
+    "Gbarpolu": [
+      "Bopolu"
+    ],
+    "Grand Bassa": [
+      "Buchanan"
+    ],
+    "Grand Cape Mount": [
+      "Robertsport"
+    ],
+    "Grand Gedeh": [
+      "Zwedru"
+    ],
+    "Grand Kru": [
+      "Barclayville"
+    ],
+    "Lofa": [
+      "Voinjama"
+    ],
+    "Margibi": [
+      "Kakata"
+    ],
+    "Maryland": [
+      "Harper"
+    ],
+    "Montserrado": [
+      "Bensonville",
+      "Monrovia"
+    ],
+    "Nimba": [
+      "Ganta",
+      "New Yekepa",
+      "Sanniquellie"
+    ],
+    "River Cess": [
+      "Cestos City"
+    ],
+    "River Gee": [
+      "Fish Town"
+    ],
+    "Sinoe": [
+      "Greenville"
+    ]
+  },
+  "source": "dr5hn/countries-states-cities-database"
+}

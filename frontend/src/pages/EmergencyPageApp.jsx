@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlashMessages } from '../components/FlashMessages';
+import { formatMoney } from '../lib/hmsLocale';
 import { StatCard } from '../components/StatCard';
 import { SurfaceHero } from '../components/SurfaceHero';
 import { EmergencyQuickRegModal } from '../components/emergency/EmergencyQuickRegModal';
@@ -182,7 +183,7 @@ export function EmergencyPageApp({
 
         {stats.creditTotal > 0 ? (
           <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
-            <strong>{t('emergency.credit_tabs')}</strong> {Math.round(stats.creditTotal).toLocaleString('fr-FR')} {t('emergency.credit_across', { count: stats.total })}
+            <strong>{t('emergency.credit_tabs')}</strong> {formatMoney(stats.creditTotal)} {t('emergency.credit_across', { count: stats.total, defaultValue: 'across {{count}} patients' })}
           </div>
         ) : null}
 

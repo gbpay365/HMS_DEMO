@@ -1,24 +1,21 @@
 <%
 var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
-var _navSections = locals.navSidebar || [];
 var _homeUrl = locals.navHomeUrl || '/hms';
 var _homeLabel = locals.navHomeLabel || _t('nav_sidebar.dashboard', { ns: 'legacy', defaultValue: 'Dashboard' });
-var _showCatalogueNav = !!(locals.previewRole || (isAdminOrSuper && !locals.previewRole));
+var _staffPortals = locals.staffPortals || [];
+var _pathBase = (typeof locals.hmsPath !== 'undefined' && locals.hmsPath) ? String(locals.hmsPath).split('?')[0] : '';
+var _showStaffPortals = _staffPortals.length >= 1;
 %>
-<% if(!sbHidden('sb.home')){ %>
+<% if (!sbHidden('sb.home') && !_showStaffPortals) { %>
 <a href="<%= _homeUrl %>" class="sb-item" data-label="<%= _t('nav_sidebar.home', { ns: 'legacy', defaultValue: 'Home' }) %>">
   <i class="fa fa-home sb-item-icon"></i>
   <span class="sb-item-label"><%= _homeLabel %></span>
 </a>
 <% } %>
 
-<%
-var _staffPortals = locals.staffPortals || [];
-var _pathBase = (typeof locals.hmsPath !== 'undefined' && locals.hmsPath) ? String(locals.hmsPath).split('?')[0] : '';
-%>
-<% if (_staffPortals.length > 1) { %>
+<% if (_showStaffPortals) { %>
 <div class="sb-section"><%= _t('nav_sidebar.my_portals', { ns: 'legacy', defaultValue: 'My portals' }) %></div>
-<% _staffPortals.forEach(function(sp) {
+<% _staffPortals.forEach(function (sp) {
   var _active = _pathBase && (sp.url === _pathBase || (_pathBase.indexOf(sp.url + '/') === 0));
 %>
 <a href="<%= sp.url %>" class="sb-item<%= _active ? ' active' : '' %>" data-label="<%= sp.label %>">
@@ -28,25 +25,4 @@ var _pathBase = (typeof locals.hmsPath !== 'undefined' && locals.hmsPath) ? Stri
 <% }); %>
 <% } %>
 
-<% if (_showCatalogueNav && _navSections.length) { %>
-<% _navSections.forEach(function(sec){ %>
-<% if (sec.items && sec.items.length) { %>
-<div class="sb-section"><%= sec.label %></div>
-<% sec.items.forEach(function(it){ %>
-<%
-  var _href = (it.url && String(it.url) !== '__home__') ? it.url : _homeUrl;
-  var _iconStyle = it.color ? ('color:' + it.color + ';') : '';
-  var _emg = it.code === 'sb.emergency';
-%>
-<a href="<%= _href %>" class="sb-item<%= _emg ? ' emg' : '' %>" data-label="<%= it.label %>">
-  <i class="fa <%= it.icon || 'fa-circle-o' %> sb-item-icon"<% if(_iconStyle){ %> style="<%= _iconStyle %>"<% } %>></i>
-  <span class="sb-item-label"><%= it.label %></span>
-  <% if (_emg) { %><span class="sb-emg-dot"></span><% } %>
-</a>
-<% }); %>
-<% } %>
-<% }); %>
-<% if (isAdminOrSuper && !locals.previewRole) { %>
-<%- include('hms-nav-sidebar-extras') %>
-<% } %>
-<% } %>
+<%- include('hms-nav-sidebar-topnav') %>

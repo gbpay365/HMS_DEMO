@@ -48,10 +48,12 @@
 <body>
 <div class="pp-wrap">
  <div class="pp-card">
+  <% if (locals.showsLanguageSwitcher) { %>
   <form method="post" action="/set-lang" class="pp-lang">
-   <button type="submit" name="lang" value="en" class="<%= _lang === 'en' ? 'is-active' : '' %>">EN</button>
-   <button type="submit" name="lang" value="fr" class="<%= _lang === 'fr' ? 'is-active' : '' %>">FR</button>
+   <button type="submit" name="lang" value="en" class="<%= _lang === 'en' ? 'is-active' : '' %>"><%= _t('language.short_en', { ns: 'common', defaultValue: 'ENG' }) %></button>
+   <button type="submit" name="lang" value="fr" class="<%= _lang === 'fr' ? 'is-active' : '' %>"><%= _t('language.short_fr', { ns: 'common', defaultValue: 'Fr' }) %></button>
   </form>
+  <% } %>
   <div class="pp-icon"><img src="<%= b.faviconPath || '/img/zaizens-favicon.svg' %>" alt="Zaizens"/></div>
   <h1 class="pp-title"><%= b.name || 'ZAIZENS' %> · <%= _tp('login.title_suffix', 'Patient Portal') %></h1>
   <p class="pp-sub"><%= _tp('login.subtitle', 'Sign in with the email we have on file and the portal password your clinic provided.') %></p>

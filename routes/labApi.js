@@ -32,6 +32,11 @@ const {
 } = require('../lib/diagnosticTemplateRefs');
 const { extractTextFromBuffer } = require('../lib/diagnosticOcrExtract');
 const { mapToTemplateFields } = require('../lib/diagnosticOcrMap');
+const {
+  computeDeltaCheck,
+  applyPersistPipeline,
+  importAnalyzerValues,
+} = require('../lib/labLimsOps');
 
 function parsePatientId(raw) {
   const s = String(raw || '').trim();
@@ -726,6 +731,7 @@ module.exports = function createLabApi(pool) {
       const techRaw = req.session.userId != null ? req.session.userId : req.session.user && req.session.user.id;
       const technicianId = techRaw != null ? String(techRaw) : '';
       const report = generateReportObject({ ...req.body, technicianId });
+      if (req.body.criticalManual) report.criticalManual = true;
 
       let serviceCode = String(req.body.serviceCode || '').trim().toUpperCase();
       let opdOrderItemId = parseInt(String(req.body.opdOrderItemId || ''), 10) || 0;
@@ -1035,6 +1041,14 @@ module.exports = function createLabApi(pool) {
         labResultId = ins.insertId;
       }
 
+      if (labResultId) {
+        try {
+          await applyPersistPipeline(pool, labResultId, report, uid);
+        } catch (pipeErr) {
+          console.error('lab persist pipeline:', pipeErr);
+        }
+      }
+
       res.json({ success: true, data: { report, labResultId } });
     } catch (e) {
       console.error('lab report/persist:', e);
@@ -1098,6 +1112,52 @@ module.exports = function createLabApi(pool) {
     } catch (e) {
       console.error('lab report/attach:', e);
       res.status(400).json({ success: false, message: e.message || 'Attach failed' });
+    }
+  });
+
+  router.get('/field-delta', async (req, res) => {
+    try {
+      const patientId = parseInt(String(req.query.patientId || ''), 10) || 0;
+      const testId = String(req.query.testId || '').trim();
+      const fieldKey = String(req.query.fieldKey || '').trim();
+      const value = req.query.value;
+      const excludeResultId = parseInt(String(req.query.labResultId || ''), 10) || 0;
+      const thresholdPct = parseFloat(req.query.thresholdPct) || 15;
+      if (!patientId || !testId || !fieldKey) {
+        return res.status(400).json({ success: false, message: 'patientId, testId, and fieldKey are required' });
+      }
+      const delta = await computeDeltaCheck(pool, {
+        patientId,
+        testId,
+        fieldKey,
+        value,
+        excludeResultId,
+        thresholdPct,
+      });
+      res.json({ success: true, data: delta });
+    } catch (e) {
+      console.error('lab field-delta:', e);
+      res.status(500).json({ success: false, message: e.message || 'Delta check failed' });
+    }
+  });
+
+  router.post('/analyzer-import', async (req, res) => {
+    try {
+      const labResultId = parseInt(String(req.body.labResultId || ''), 10) || 0;
+      const readings = req.body.readings || req.body.values || [];
+      const instrumentId = String(req.body.instrumentId || '').trim() || null;
+      const uid = req.session.userId || req.session.user?.id || null;
+      if (labResultId < 1) {
+        return res.status(400).json({ success: false, message: 'labResultId is required' });
+      }
+      const result = await importAnalyzerValues(pool, labResultId, readings, uid, instrumentId);
+      if (!result.ok) {
+        return res.status(400).json({ success: false, message: result.error || 'Import failed' });
+      }
+      res.json({ success: true, data: result });
+    } catch (e) {
+      console.error('lab analyzer-import:', e);
+      res.status(500).json({ success: false, message: e.message || 'Analyzer import failed' });
     }
   });
 

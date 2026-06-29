@@ -2,7 +2,17 @@
 (function (global) {
   'use strict';
 
-  var LETTERHEAD = '/img/hms-letterhead.png?v=20260515';
+  function letterheadPath() {
+    var brand = global.__HMS_BRAND__;
+    if (brand && brand.letterheadPath) return String(brand.letterheadPath).trim();
+    return '';
+  }
+
+  function letterheadBannerHtml() {
+    var path = letterheadPath();
+    if (!path) return '';
+    return '<div class="drpt-lh-banner"><img src="' + escapeHtml(path) + '" alt="Hospital letterhead" /></div>';
+  }
 
   function escapeHtml(s) {
     if (s == null) return '';
@@ -71,7 +81,7 @@
     var html = '<div class="drpt-sheet" style="--drpt-accent:' + escapeHtml(accent) + '">';
 
     html += '<div class="drpt-letterhead">';
-    html += '<div class="drpt-lh-banner"><img src="' + LETTERHEAD + '" alt="Hospital letterhead" /></div>';
+    html += letterheadBannerHtml();
     html += '<div class="drpt-lh-bar" style="background:' + escapeHtml(accent) + '">';
     html += '<div class="drpt-lh-title">' + escapeHtml(opts.deptLabel || 'Diagnostic Report') + '</div>';
     html += '<div class="drpt-lh-meta">';
@@ -222,7 +232,7 @@
     var html = '<div class="drpt-sheet drpt-batch-cover" style="--drpt-accent:' + escapeHtml(accent) + '">';
 
     html += '<div class="drpt-letterhead">';
-    html += '<div class="drpt-lh-banner"><img src="' + LETTERHEAD + '" alt="Hospital letterhead" /></div>';
+    html += letterheadBannerHtml();
     html += '<div class="drpt-lh-bar" style="background:' + escapeHtml(accent) + '">';
     html +=
       '<div class="drpt-lh-title">' +
@@ -357,7 +367,7 @@
   }
 
   global.HmsDiagnosticReportPrint = {
-    LETTERHEAD: LETTERHEAD,
+    letterheadPath: letterheadPath,
     buildReportHtml: buildReportHtml,
     buildBatchCoverHtml: buildBatchCoverHtml,
     buildBatchDocumentHtml: buildBatchDocumentHtml,

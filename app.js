@@ -138,7 +138,7 @@ const aclLayout = (() => {
    doctors: '/portal/doctor',
    nursing: '/portal/nurse',
    laboratory: '/portal/lab',
-   cashier: '/portal/cashier',
+   cashier: '/cashier?page=dashboard',
    pharmacy: '/portal/pharmacy',
    radiology: '/portal/radiology',
    accountant: '/portal/accountant',
@@ -169,8 +169,7 @@ const aclLayout = (() => {
    portalUrl: (portalCode) => PORTAL_PATH[String(portalCode || '').trim()] || '/portal/front-desk',
    staffHomeUrl: (role) => {
     const r = String(role != null ? role : '');
-    if (r === '99') return '/super-admin';
-    if (r === '1') return '/hms';
+    if (r === '99' || r === '1') return '/hms';
     return null;
    }
   };
@@ -205,6 +204,7 @@ const { suggestTemplateForOrderName: suggestRadTemplateForOrderName } = require(
 const paymentValidity = require('./lib/paymentValidity');
 const { allocateUniquePaymentCode, assignServiceCodesForConsultation, assignServiceCodesForOrderItems, paymentCodeTypeLabel, resolvePaymentCodePrefix } = require('./lib/paymentTicketCode');
 const betterPayQr = require('./lib/betterPayQr');
+const cashierPaymentMethods = require('./lib/cashierPaymentMethods');
 const betterPayPayment = require('./lib/betterPayPayment');
 const betterPayConfig = require('./lib/betterPayConfig');
 const cashierPrepayIssue = require('./lib/cashierPrepayIssue');
@@ -655,68 +655,7 @@ async function migratePatientInsuranceSchema(db) {
 }
 
 async function ensureOpdOrderItemsSchema(db) {
- if (db && db.driver === 'postgres') return;
- // Core queue table: per-item billing state for consultation-prescribed lab/radiology
- await db.query(`
-  CREATE TABLE IF NOT EXISTS tbl_opd_order_item (
-   id INT AUTO_INCREMENT PRIMARY KEY,
-   facility_id INT DEFAULT 1,
-   patient_id INT NOT NULL,
-   opd_visit_id INT NULL,
-   consultation_id INT NULL,
-   item_type VARCHAR(20) NOT NULL,
-   catalog_id INT NULL,
-   item_name VARCHAR(255) DEFAULT NULL,
-   unit_price DECIMAL(12,2) DEFAULT 0,
-   quantity DECIMAL(10,2) DEFAULT 1,
-   status VARCHAR(20) DEFAULT 'pending',
-   service_code VARCHAR(40) NULL,
-   ticket_id INT NULL,
-   paid_at DATETIME NULL,
-   served_at DATETIME NULL,
-   served_by INT NULL,
-   served_notes TEXT NULL,
-   created_by INT NULL,
-   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-   KEY idx_status_patient (status, patient_id),
-   KEY idx_consult (consultation_id),
-   KEY idx_visit (opd_visit_id),
-   KEY idx_service_code (service_code)
-  )
- `).catch(() => {});
-
- // Link back from downstream request tables (if they exist) for idempotency
- const addCol = async (table, colDef) => {
-  try { await db.query(`ALTER TABLE ${table} ADD COLUMN ${colDef}`); }
-  catch (e) {
-   const msg = String(e.message || '');
-   const ignore = e.code === 'ER_DUP_FIELDNAME' || e.errno === 1060 || /Duplicate column/i.test(msg) || /already exists/i.test(msg);
-   if (!ignore) console.warn(`ensureOpdOrderItemsSchema(${table}):`, msg);
-  }
- };
- await addCol('tbl_lab_result', 'opd_order_item_id INT NULL');
- await addCol('tbl_radiology_result', 'opd_order_item_id INT NULL');
- // Self-healing migrations for older schemas without the new workflow cols.
- await addCol('tbl_opd_order_item', 'service_code VARCHAR(40) NULL');
- await addCol('tbl_opd_order_item', 'served_at DATETIME NULL');
- await addCol('tbl_opd_order_item', 'served_by INT NULL');
- await addCol('tbl_opd_order_item', 'served_notes TEXT NULL');
- await addCol('tbl_opd_order_item', 'inventory_item_id INT NULL');
- await addCol('tbl_opd_order_item', 'stock_deducted_at DATETIME NULL');
- await addCol('tbl_opd_order_item', 'pharmacist_available TINYINT(1) NOT NULL DEFAULT 0');
- await addCol('tbl_opd_order_item', 'off_catalog_dispense TINYINT(1) NOT NULL DEFAULT 0');
- await addCol('tbl_opd_order_item', 'stock_dispense_note VARCHAR(255) NULL');
- // External-document classification flags so the patient profile can list
- // doctor/nurse-uploaded scans alongside the in-house results.
- await addCol('tbl_lab_result',       'source VARCHAR(20) DEFAULT NULL');
- await addCol('tbl_radiology_result', 'source VARCHAR(20) DEFAULT NULL');
- await addCol('tbl_lab_result',       'external_doc_id INT NULL');
- await addCol('tbl_radiology_result', 'external_doc_id INT NULL');
- // Structured template output from /laboratory/templates (JSON + flags)
- await addCol('tbl_lab_result', 'structured_result LONGTEXT NULL');
- await addCol('tbl_lab_result', 'template_test_id VARCHAR(80) NULL');
- await addCol('tbl_radiology_result', 'structured_result LONGTEXT NULL');
- await addCol('tbl_radiology_result', 'template_test_id VARCHAR(80) NULL');
+ return require('./lib/ensureOpdOrderItemsSchema').ensureOpdOrderItemsSchema(db);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -835,15 +774,27 @@ app.post('/set-lang', hmsI18n.handleSetLang);
 app.get('/set-lang', hmsI18n.handleSetLang);
 
 const hmsBrand = require('./lib/hmsBrand');
+const hmsCountry = require('./lib/hmsCountry');
+const { formatMoney: fmtMoney, currencyCode: hmsCurrencyCode, currencySymbol: hmsCurrencySymbol } = require('./lib/hmsMoneyFormat');
 const { attachFinReportOrgLocals } = require('./lib/hmsFinReportOrg');
 
-// Global template variables
-app.use((req, res, next) => {
+// Global template variables (country profile loaded from DB before locals are set)
+app.use(async (req, res, next) => {
+ try {
+  if (pool) await hmsCountry.profileService.ensureLoaded(pool);
+ } catch (_) {}
  res.locals.user = req.session.user || null;
  res.locals.brand = hmsBrand;
  res.locals.title = hmsBrand.name;
  res.locals.hmsPath = req.path || '';
  res.locals.hmsQuery = req.url && req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+ res.locals.hmsCountry = hmsCountry.publicPayload();
+ res.locals.isNigeria = hmsCountry.isNigeria;
+ res.locals.isCameroon = hmsCountry.isCameroon;
+ res.locals.showsLanguageSwitcher = hmsCountry.showsLanguageSwitcher;
+ res.locals.currencyCode = hmsCurrencyCode();
+ res.locals.currencySymbol = hmsCurrencySymbol();
+ res.locals.fmtMoney = fmtMoney;
  next();
 });
 
@@ -1152,7 +1103,7 @@ app.use(async (req, res, next) => {
    moduleOverrides: aclLayout.getModuleOverrides(),
   };
   const permForNav =
-   viewerRole === '99' && !res.locals.previewRole ? ['*'] : navPerms;
+   (viewerRole === '99' || viewerRole === '1') && !res.locals.previewRole ? ['*'] : navPerms;
   res.locals.navSidebar = aclLayout.buildSidebarNav(permForNav, navRole, navOpts);
   res.locals.navTopnav = aclLayout.buildTopNav(permForNav, navRole, navOpts);
   res.locals.accountingModuleNav = aclLayout.buildAccountingModuleNav(permForNav, navRole, navOpts);
@@ -1189,7 +1140,7 @@ app.use(async (req, res, next) => {
 
 app.use((req, res, next) => {
  if (!req.session?.user) return next();
- const home = res.locals.staffLandingUrlResolved || res.locals.staffHomeUrlResolved || '/dashboard';
+ const home = res.locals.staffLandingUrlResolved || res.locals.staffHomeUrlResolved || '/hms';
  const override = res.locals.pageNav || {};
  res.locals.pageNav = {
   homeHref: override.homeHref || home,
@@ -1411,6 +1362,7 @@ safeMount('opdMed',    () => require('./routes/opdMed')(app, pool, requireAuth, 
 safeMount('deathRegistry', () => require('./routes/deathRegistry')(app, pool, requireAuth, requirePerm));
 safeMount('ipdHospitalization', () => require('./routes/ipdHospitalization')(app, pool, requireAuth, requirePerm));
 safeMount('labLims', () => require('./routes/labLims')(app, pool, requireAuth, requirePerm));
+safeMount('labLimsOps', () => require('./routes/labLimsOps')(app, pool, requireAuth, requirePerm));
 safeMount('hmsClinical', () => require('./routes/hmsClinical')(app, pool, requireAuth, requirePerm));
 safeMount('portals',   () => require('./routes/portals')(app, pool, requireAuth));
 safeMount('nursingSupply', () => require('./routes/nursingSupply')(app, pool, requireAuth, requirePerm));
@@ -1422,6 +1374,9 @@ safeMount('assetManagement', () => require('./routes/assetManagement')(app, pool
 safeMount('pharmacyModule', () => require('./routes/pharmacyModule')(app, pool, requireAuth, requirePerm));
 safeMount('pharmacyReporting', () => require('./routes/pharmacyReporting')(app, pool, requireAuth, requirePerm));
 safeMount('staff',     () => require('./routes/staff')(app, pool, requireAuth));
+safeMount('countryConfiguration', () =>
+ require('./routes/countryConfiguration')(app, pool, requireAuth, requirePerm)
+);
 safeMount('hmsLicense', () => require('./routes/hmsLicense')(app, pool, requireAuth));
 safeMount('integrations', () => require('./routes/integrations')(app, pool));
 safeMount('integrationSettings', () => require('./routes/integrationSettings')(app, pool, requireAuth, requireSuperAdmin));
@@ -1429,6 +1384,8 @@ safeMount('hmsDirectorReports', () =>
  require('./routes/hmsDirectorReports')(app, pool, requireAuth)
 );
 // Payroll moved to standalone Zaizens_PayRoll (C:\Zaizens_PayRoll)
+safeMount('taxHub', () => require('./routes/taxHub')(app, pool, requireAuth, { requirePerm }));
+safeMount('statutoryReports', () => require('./routes/statutoryReports')(app, pool, requireAuth, { requirePerm }));
 safeMount('internalBusinessRules', () => require('./routes/internalBusinessRules')(app, pool));
 safeMount('financialsTrialBalance', () =>
  require('./routes/financialsTrialBalance')(app, pool, requireAuth, requirePerm)
@@ -1477,6 +1434,9 @@ safeMount('financialsBalanceSheet', () =>
 safeMount('financialsAccountingAdmin', () =>
  require('./routes/financialsAccountingAdmin')(app, pool, requireAuth, requirePerm)
 );
+safeMount('cashierDisbursement', () =>
+ require('./routes/cashierDisbursement')(app, pool, requireAuth, requirePerm)
+);
 safeMount('financialsExpenses', () => require('./routes/financialsExpenses')(app, pool, requireAuth));
 safeMount('financialsPlatformOverview', () =>
  require('./routes/financialsPlatformOverview')(app, pool, requireAuth)
@@ -1488,6 +1448,9 @@ safeMount('financialsHub', () => require('./routes/financialsHub')(app, pool, re
 safeMount('financialsSettings', () =>
  require('./routes/financialsSettings')(app, pool, requireAuth, requirePerm)
 );
+safeMount('nigeriaGeo', () => require('./routes/nigeriaGeo')(app, requireAuth));
+safeMount('ghanaGeo', () => require('./routes/ghanaGeo')(app, requireAuth));
+safeMount('countryGeo', () => require('./routes/countryGeo')(app, requireAuth));
 safeMount('maternity', () => require('./routes/maternity')(app, pool, requireAuth, requirePerm));
 safeMount('vaccination', () => require('./routes/vaccination')(app, pool, requireAuth, requirePerm));
 
@@ -1498,10 +1461,12 @@ app.get('/', (req, res) => {
  try {
   if (req.session && req.session.user) {
    const _lr = String(req.session.user.role || '');
-   if (_lr === '99') return res.redirect('/super-admin');
-   if (_lr === '1') return res.redirect('/hms');
-   const _ld = aclLayout.staffHomeUrlFromSession(req.session);
-   return res.redirect(_ld || '/hms');
+   const _perms = _lr === '99' || _lr === '1' ? ['*'] : (req.session.userPerms || []);
+   const { resolveCashierLandingUrl } = require('./lib/cashierLanding');
+   const _ld = typeof aclLayout.staffLandingUrlFromSession === 'function'
+    ? aclLayout.staffLandingUrlFromSession(req.session, _perms)
+    : null;
+   return res.redirect(resolveCashierLandingUrl(_ld || aclLayout.staffHomeUrlFromSession(req.session) || '/hms'));
   }
   const msg = hmsI18n.translateQueryMsg(res, req.query.msg, req.query.msgKey);
   const err = hmsI18n.translateFlashErr(res, req.query.err, req.query.errKey, req.query);
@@ -1627,19 +1592,22 @@ app.post('/login', async (req, res) => {
   await attachCashierToSession(pool, req, { forceAssign: true });
  } catch (_) {}
 
- // 4. Redirect based on role
- // Super Admin === Æ’ === Æ’ ============================== /super-admin console
- // Admin (1) === Æ’ === Æ’ ============================== /dashboard (full admin view)
- // All other roles === Æ’ === Æ’ ============================== their dedicated portal
- if (user.role == 99) return res.redirect('/super-admin');
- if (user.role == 1)  return res.redirect('/hms');
- // Primary: home portal from Access Control (tbl_acl_role_portal via aclLayout).
+ // 4. Redirect based on role — role home portal (configured in Access Control), not dashboard
+ // Super Admin (99) and Admin (1) land on /hms; other roles use their assigned home portal.
  const homeOpts = { specialisation: user.specialisation || null };
- let dest = aclLayout.staffHomeUrl(String(user.role), homeOpts);
+ const loginPerms =
+  String(user.role) === '1' || String(user.role) === '99' ? ['*'] : req.session.userPerms || [];
+ let dest =
+  typeof aclLayout.staffLandingUrl === 'function'
+   ? aclLayout.staffLandingUrl(String(user.role), homeOpts, loginPerms)
+   : null;
  if (!dest && typeof aclLayout.ensurePortalCacheReady === 'function') {
   await aclLayout.ensurePortalCacheReady();
-  dest = aclLayout.staffHomeUrl(String(user.role), homeOpts);
+  dest = aclLayout.staffLandingUrl(String(user.role), homeOpts, loginPerms);
  }
+ if (!dest) dest = aclLayout.staffHomeUrl(String(user.role), homeOpts);
+ const { resolveCashierLandingUrl } = require('./lib/cashierLanding');
+ dest = resolveCashierLandingUrl(dest);
  if (dest) return res.redirect(dest);
  return res.redirect('/profile?err=' + encodeURIComponent(flashT(res, 'flash.no_home_portal_is_assigned_for_your_role_an_administrator_must_set_role_')));
  } catch (err) {
@@ -2123,7 +2091,8 @@ app.get('/logout', (req, res) => {
 
 // MY PROFILE === Æ’ ===   GET (view own profile)
 async function profileHandler(req, res) {
- const uid = req.session.user?.id;
+ const { resolveSessionUserId } = require('./lib/selfProfile');
+ const uid = resolveSessionUserId(req);
  try {
  const [rows] = await pool.query('SELECT * FROM tbl_employee WHERE id=? LIMIT 1', [uid]);
  const emp = rows?.[0] || null;
@@ -2146,7 +2115,8 @@ app.get('/my-profile', requireAuth, profileHandler);
 
 // MY PROFILE === Æ’ ===   POST (update own profile / change password)
 async function profilePostHandler(req, res) {
- const uid = req.session.user?.id;
+ const { resolveSessionUserId } = require('./lib/selfProfile');
+ const uid = resolveSessionUserId(req);
  const { first_name, last_name, emailid, phone, pwd, bio } = req.body;
  try {
  let passSQL = '', passParams = [];
@@ -2169,6 +2139,41 @@ async function profilePostHandler(req, res) {
 }
 app.post('/profile', requireAuth, requirePerm('profile.self.write'), profilePostHandler);
 app.post('/my-profile', requireAuth, requirePerm('profile.self.write'), profilePostHandler);
+
+app.get('/api/profile/self', requireAuth, async (req, res) => {
+ const { loadSelfProfilePayload } = require('./lib/selfProfile');
+ const payload = await loadSelfProfilePayload(pool, req);
+ if (!payload.ok) return res.status(payload.status || 400).json(payload);
+ return res.json({ ok: true, profile: payload.profile, form: payload.form });
+});
+
+app.get('/api/profile/departments', requireAuth, async (req, res) => {
+ try {
+  const { loadDepartments } = require('./lib/selfProfile');
+  const departments = await loadDepartments(pool);
+  return res.json({ ok: true, departments });
+ } catch (e) {
+  console.error('Profile departments API:', e.message);
+  return res.status(500).json({ ok: false, error: e.message || 'Failed to load departments.' });
+ }
+});
+
+app.post('/api/profile/self', requireAuth, requirePerm('profile.self.write'), require('./lib/staffProfilePhotoUpload').staffProfilePhotoMiddleware(), async (req, res) => {
+ const { updateSelfProfile } = require('./lib/selfProfile');
+ try {
+  const result = await updateSelfProfile(pool, req);
+  if (!result.ok) return res.status(result.status || 400).json(result);
+  return res.json({
+   ok: true,
+   message: flashT(res, 'flash.profile_updated_successfully'),
+   profile: result.profile,
+   form: result.form,
+  });
+ } catch (e) {
+  console.error('Profile API POST:', e.message);
+  return res.status(500).json({ ok: false, error: e.message || 'Failed to save profile.' });
+ }
+});
 
 
 // DASHBOARD === Æ’ ===   Admin (role=1) and all other staff land here
@@ -2211,24 +2216,33 @@ app.get('/dashboard', requireAuth, requirePerm('dashboard.read', '*'), async (re
  "SELECT a.id, p.first_name, p.last_name, a.admitted_at FROM tbl_admission a JOIN tbl_patient p ON p.id=a.patient_id WHERE a.discharged_at IS NULL AND a.admitting_department LIKE '%Emergency%' ORDER BY a.admitted_at DESC"
  ).catch(()=>[]);
  const erPatients = [
- ...erRows,
- ...admitRows.map(r => ({...r, queue_status:'admitted', queue_started_at:r.admitted_at}))
+  ...erRows,
+  ...admitRows.map(r => ({...r, queue_status:'admitted', queue_started_at:r.admitted_at}))
  ];
+
+ const defaultStats = {
+  doctors: doctorCount,
+  patients: pats[0]?.total || 0,
+  appointments: appts[0]?.total || 0,
+  inpatients: inpats[0]?.total || 0,
+ };
+ const { buildMainDashboardHero } = require('./lib/mainDashboardHero');
+ const { profile: dashboardProfile, heroKpis, homeUrl: dashboardHomeUrl } = await buildMainDashboardHero(pool, req, res, defaultStats);
 
  res.render('dashboard', {
  title: pageTitle(res, 'document_titles.dashboard', 'Dashboard — ZAIZENS'),
  pageData: {
   stats: {
-   doctors: doctorCount,
-   patients: pats[0]?.total || 0,
-   appointments: appts[0]?.total || 0,
-   inpatients: inpats[0]?.total || 0,
+   ...defaultStats,
    outpatients: (pats[0]?.total || 0) - (inpats[0]?.total || 0),
    opd_open: hubLive.opd_open || 0,
    revenue_today: hubLive.revenue_today || 0,
    lab_open: hubLive.lab_open || 0,
    rad_open: hubLive.rad_open || 0,
   },
+  heroKpis,
+  dashboardProfile,
+  dashboardHomeUrl,
   chartLabels,
   chartValues,
   recentPatients,
@@ -3873,6 +3887,17 @@ app.get('/front-desk', requireAuth, async (req, res) => {
  }
 });
 
+app.get('/front-desk/validate-payment-code', requireAuth, requirePerm('front_desk.payment_code.validate', 'opd.read', 'patient.read', 'payment.validity.read'), (req, res) => {
+ res.render('front-desk-validate-payment', {
+  title: pageTitle(res, 'frontDesk.validate.title', 'Validate payment code', { ns: 'clinical' }),
+  pageData: {
+   initialCode: String(req.query.code || '').trim(),
+   flash: req.query.msg || null,
+   error: req.query.err || null,
+  },
+ });
+});
+
 // DOCTORS DIRECTORY
 app.get('/doctors', requireAuth, async (req, res) => {
  try {
@@ -4201,6 +4226,17 @@ app.post('/laboratory/add', requireAuth, async (req, res) => {
  }
 });
 
+// Top nav — live clock badges (notifications / messages)
+app.get('/api/nav/header-extras', requireAuth, async (req, res) => {
+ try {
+  const uid = parseInt(String(req.session.userId ?? req.session.user?.id ?? ''), 10) || 0;
+  const data = await require('./lib/navHeaderExtras').getNavHeaderExtras(pool, uid);
+  return res.json(data);
+ } catch (e) {
+  return res.json({ notifications: 0, messages: 0, systemOnline: true, dbOnline: true });
+ }
+});
+
 // IPD / ER lab & radiology order alerts — inbox + API for banner strip
 app.get('/api/clinical-dept-alerts', requireAuth, async (req, res) => {
  try {
@@ -4454,33 +4490,49 @@ app.get('/radiology/order-alerts', requireAuth, requirePerm('radiology.write'), 
   const unacked = await clinicalDeptAlerts.listUnacked(pool, 'radiology', uid, 80);
   await enrichClinicalDeptAlertsWithOi(pool, unacked);
   const recent = await clinicalDeptAlerts.listAllRecent(pool, 'radiology', 60);
+  const { labPageData } = require('./lib/reactRouteHelpers');
   res.render('clinical-dept-inbox', {
    title: pageTitle(res, 'document_titles.radiology_order_alerts', 'Radiology · Order alerts'),
-   dept: 'radiology',
-   deptLabel: 'Radiology',
-   unacked,
-   recent,
-   flash: req.query.msg || null,
-   error: req.query.err || null,
+   ...labPageData('order-alerts', {
+    dept: 'radiology',
+    deptLabel: 'Radiology',
+    unacked,
+    recent,
+    flash: req.query.msg || null,
+    error: req.query.err || null,
+   }),
   });
  } catch (e) {
   renderAppError(res, 500, 'page.load_failed', 'Load failed', { detail: e.message });
  }
 });
 
+// Radiology walk-in registration (Operations → Walk-in register)
+require('./routes/radWalkinOps')(app, pool, requireAuth, requirePerm);
+
 app.get('/pharmacy/order-alerts', requireAuth, requirePerm('pharmacy.write'), async (req, res) => {
  try {
   const uid = parseInt(String(req.session.userId ?? req.session.user?.id ?? ''), 10) || 0;
   const unacked = await clinicalDeptAlerts.listUnacked(pool, 'pharmacy', uid, 80);
   const recent = await clinicalDeptAlerts.listAllRecent(pool, 'pharmacy', 60);
-  res.render('clinical-dept-inbox', {
-   title: pageTitle(res, 'document_titles.pharmacy_order_alerts', 'Pharmacy · Order alerts'),
-   dept: 'pharmacy',
-   deptLabel: 'Pharmacy',
-   unacked,
-   recent,
+  const { labPageData } = require('./lib/reactRouteHelpers');
+  const { loadPharmacyOdooLocals } = require('./lib/pharmacyOdooShell');
+  const phaShell = await loadPharmacyOdooLocals(pool, {
    flash: req.query.msg || null,
    error: req.query.err || null,
+  });
+  res.render('clinical-dept-inbox', {
+   title: pageTitle(res, 'document_titles.pharmacy_order_alerts', 'Pharmacy · Order alerts'),
+   phaOdooTitle: pageTitle(res, 'document_titles.pharmacy_order_alerts', 'Order alerts'),
+   ...phaShell,
+   ...labPageData('order-alerts', {
+    dept: 'pharmacy',
+    deptLabel: 'Pharmacy',
+    unacked,
+    recent,
+    flash: req.query.msg || null,
+    error: req.query.err || null,
+   }),
   });
  } catch (e) {
   renderAppError(res, 500, 'page.load_failed', 'Load failed', { detail: e.message });
@@ -4554,7 +4606,7 @@ app.get('/radiology', requireAuth, requirePerm('radiology.read','radiology.write
   const results = await hmsRad.listRegistryResults(pool, { limit: 2500 });
   const list = Array.isArray(results) ? results : [];
   for (const r of list) enrichRadRegistryRow(r);
-  res.render('radiology', {
+  res.render('radiology', radOdooLocals({
    title: pageTitle(res, 'document_titles.radiology_results', 'Radiology — Results'),
    pageData: {
     results: list,
@@ -4564,7 +4616,7 @@ app.get('/radiology', requireAuth, requirePerm('radiology.read','radiology.write
     error: req.query.err || null,
     canView: true,
    },
-  });
+  }));
  } catch (err) {
   console.error(err);
   renderAppError(res, 500, 'page.load_radiology_requests', 'Could not fetch radiology results.');
@@ -5109,8 +5161,9 @@ async function loadServiceCode(db, code, facilityId) {
 }
 
 /** Render entry form for a station. */
-function renderValidateEntry(res, kind, opts = {}) {
+async function renderValidateEntry(res, kind, opts = {}) {
  const { labPageData } = require('./lib/reactRouteHelpers');
+ const { loadPharmacyOdooLocals } = require('./lib/pharmacyOdooShell');
  const validateTitleKey =
   kind === 'laboratory'
    ? 'document_titles.validate_code_lab'
@@ -5123,9 +5176,17 @@ function renderValidateEntry(res, kind, opts = {}) {
    : kind === 'radiology'
     ? 'Radiology · Validate code'
     : 'Pharmacy · Validate code';
- res.render('service-validate', {
-  title: pageTitle(res, validateTitleKey, validateTitleFallback),
-  ...labPageData('validate', {
+ const phaShell = kind === 'pharmacy' ? await loadPharmacyOdooLocals(pool, opts) : {};
+ return res.render('service-validate', {
+   title: pageTitle(res, validateTitleKey, validateTitleFallback),
+   hmsSurfaceBodyClass:
+    kind === 'pharmacy'
+     ? ' hms-body--validate-entry hms-body--validate-entry-pharmacy'
+     : kind === 'radiology'
+      ? ' hms-body--validate-entry hms-body--validate-entry-rad'
+      : ' hms-body--validate-entry hms-body--validate-entry-lab',
+   ...phaShell,
+   ...labPageData('validate', {
    kind,
    code: opts.code || '',
    error: opts.error || null,
@@ -5183,14 +5244,19 @@ function validateHubMeta(kind) {
 }
 
 /** Render the per-station detail page. */
-function renderValidateDetail(res, ctx, opts = {}) {
+async function renderValidateDetail(res, ctx, opts = {}) {
  const { labPageData, serializeValidateCtx } = require('./lib/reactRouteHelpers');
+ const { loadPharmacyOdooLocals } = require('./lib/pharmacyOdooShell');
  if (!ctx || !ctx.ok) {
   return renderValidateEntry(res, ctx?.kind || 'laboratory', { code: ctx?.code || '', error: ctx?.error || opts.error });
  }
  if (ctx.kind === 'pharmacy') {
-  res.render('service-validate-detail', {
+  const phaShell = await loadPharmacyOdooLocals(pool, opts);
+  return res.render('service-validate-detail', {
    title: pageTitle(res, 'document_titles.pharmacy_validate_detail', 'Pharmacy · {{code}}', { code: ctx.code }),
+   hmsSurfaceBodyClass: ' hms-body--validate-detail hms-body--validate-detail-pharmacy',
+   phaOdooTitle: ctx.code,
+   ...phaShell,
    ...labPageData('validate-detail', {
     ...serializeValidateCtx(ctx),
     flash: opts.flash || null,
@@ -5900,7 +5966,7 @@ app.post('/radiology/attach-document/:code', requireAuth, externalUploadMw('resu
  (req, res) => handleInHouseAttachment(req, res, 'radiology'));
 
 // ── Pharmacy ─────────────────────────────────────────────────────────────────
-app.get('/pharmacy/validate', requireAuth, (req, res) => {
+app.get('/pharmacy/validate', requireAuth, async (req, res) => {
  const code = (req.query.code || '').toString().trim();
  if (!code) return renderValidateEntry(res, 'pharmacy', { flash: req.query.msg, error: req.query.err });
  return res.redirect('/pharmacy/validate/' + encodeURIComponent(code));
@@ -6132,13 +6198,11 @@ app.get('/pharmacy', requireAuth, requirePerm('pharmacy.read','pharmacy.write'),
   await ensureNursingSupplyRequestSchema(pool).catch(() => {});
   const ensureInventorySchema = require('./lib/ensureInventorySchema');
   await ensureInventorySchema(pool).catch(() => {});
-  let nursingSupplyPending = 0;
-  try {
-   const [[r]] = await pool.query(
-    "SELECT COUNT(*) AS c FROM tbl_nursing_supply_request WHERE status IN ('pending','preparing')"
-   );
-   nursingSupplyPending = parseInt(r && r.c, 10) || 0;
-  } catch (e) { nursingSupplyPending = 0; }
+  const { loadPharmacyOdooLocals } = require('./lib/pharmacyOdooShell');
+  const odooLocals = await loadPharmacyOdooLocals(pool, {
+   flash: req.query.msg || null,
+   error: req.query.err || null,
+  });
 
  // 1. Stock Stats (pharmacy products = active service-catalog pharmacy items)
  const { countPharmacyProducts, pharmacyCatalogJoin, pruneOrphanPharmacyInventory } = require('./lib/pharmacyProductScope');
@@ -6167,13 +6231,16 @@ app.get('/pharmacy', requireAuth, requirePerm('pharmacy.read','pharmacy.write'),
   loadDispensedPharmacyLines,
   loadPendingPharmacyDispense,
   countDispensedPharmacyLines,
+  sumPharmacySalesForDay,
   normalizeDay: normalizeDispenseDay,
  } = require('./lib/pharmacyDispenseRegistry');
  const dispenseDay = normalizeDispenseDay(req.query.day);
  const dispenseMode = String(req.query.dispense || 'log').toLowerCase() === 'pending' ? 'pending' : 'log';
  const dispensed = await loadDispensedPharmacyLines(pool, { day: dispenseDay });
  const pendingDispense = await loadPendingPharmacyDispense(pool);
- const dispensedToday = await countDispensedPharmacyLines(pool, new Date().toISOString().slice(0, 10));
+ const todayIso = new Date().toISOString().slice(0, 10);
+ const dispensedToday = await countDispensedPharmacyLines(pool, todayIso);
+ const salesToday = await sumPharmacySalesForDay(pool, todayIso);
  // Legacy prescription_line queue (kept for old IPD path; usually empty in OPD)
  const [queue] = await pool.query(`
  SELECT pl.*, r.patient_id, r.title AS prescription_title, r.status AS prescription_status,
@@ -6185,31 +6252,41 @@ app.get('/pharmacy', requireAuth, requirePerm('pharmacy.read','pharmacy.write'),
  ORDER BY pl.id DESC LIMIT 200
  `).catch(() => [[]]);
 
- const [prescriptions] = await pool.query(`
- SELECT r.id, r.patient_id, r.title, r.status, r.created_at, p.first_name, p.last_name
- FROM tbl_prescription r
- JOIN tbl_patient p ON p.id = r.patient_id
- ORDER BY r.id DESC LIMIT 80
- `);
+ const { loadPharmacyPrescriptionQueue } = require('./lib/pharmacyPrescriptionsHub');
+ const { loadPharmacySalesHub } = require('./lib/pharmacySalesHub');
+ const { loadPharmacyExpiryHub } = require('./lib/pharmacyExpiryHub');
+ const { prescriptions, rxStats } = await loadPharmacyPrescriptionQueue(pool, { limit: 80 });
+ const salesDay = normalizeDispenseDay(req.query.day);
+ const expiryDays = Math.max(1, Math.min(365, parseInt(String(req.query.days || '30'), 10) || 30));
+ const [salesHub, expiryHub] = await Promise.all([
+  loadPharmacySalesHub(pool, { day: salesDay }),
+  loadPharmacyExpiryHub(pool, { days: expiryDays }),
+ ]);
+ const [rxPatients] = await pool.query(
+  'SELECT id, first_name, last_name, patient_code, phone FROM tbl_patient WHERE status=1 ORDER BY last_name, first_name LIMIT 500'
+ ).catch(() => [[]]);
 
- const today = new Date().toISOString().split('T')[0];
- const [[rxToday]] = await pool.query(
-  'SELECT COUNT(*) AS c FROM tbl_prescription WHERE DATE(created_at) = ?',
-  [today]
- ).catch(() => [[{ c: 0 }]]);
- const [[rxActive]] = await pool.query(
-  "SELECT COUNT(*) AS c FROM tbl_prescription WHERE status = 'active'"
- ).catch(() => [[{ c: 0 }]]);
+ const activeView = String(req.query.view || 'overview').toLowerCase();
+ const allowedViews = ['overview', 'dispensing', 'products', 'prescriptions', 'sales', 'expiry'];
+ const phaView = allowedViews.includes(activeView) ? activeView : 'overview';
 
- const activeView = String(req.query.view || 'products').toLowerCase();
- const allowedViews = ['overview', 'dispensing', 'products', 'prescriptions'];
- const phaView = allowedViews.includes(activeView) ? activeView : 'dispensing';
+ const {
+  loadLowStockDrugs,
+  loadExpiringSoonDrugs,
+  countMedicineReturns,
+ } = require('./lib/pharmacyDashboard');
+ const [lowStockDrugs, expiringSoonDrugs, medicineReturns] = await Promise.all([
+  loadLowStockDrugs(pool, 50),
+  loadExpiringSoonDrugs(pool, 30, 50),
+  countMedicineReturns(pool),
+ ]);
 
  res.render('pharmacy', {
   title: pageTitle(res, 'document_titles.pharmacy', 'Pharmacy'),
   pharmacyOdooApp: true,
   phaView,
-  nursingSupplyPending,
+  nursingSupplyPending: odooLocals.nursingSupplyPending,
+  expiryAlertCount: odooLocals.expiryAlertCount,
   pageData: {
    phaView,
    stats: statsRow,
@@ -6220,8 +6297,20 @@ app.get('/pharmacy', requireAuth, requirePerm('pharmacy.read','pharmacy.write'),
    dispenseDay,
    dispenseMode,
    dispensedToday,
+   salesToday,
+   medicineReturns,
+   lowStockDrugs,
+   expiringSoonDrugs,
    prescriptions,
-   rxStats: { today: parseInt(rxToday && rxToday.c, 10) || 0, active: parseInt(rxActive && rxActive.c, 10) || 0 },
+   rxStats,
+   rxPatients: rxPatients || [],
+   salesStats: salesHub.stats,
+   salesLines: salesHub.salesLines,
+   pendingSales: salesHub.pendingSales,
+   salesDay: salesHub.salesDay,
+   expiryItems: expiryHub.items,
+   expiryStats: expiryHub.stats,
+   expiryDays: expiryHub.expiryDays,
    userDisplayName: res.locals.userDisplayName || req.session.user?.name || 'Pharmacist',
    userPerms: res.locals.userPerms || [],
    flash: req.query.msg || null,
@@ -6233,6 +6322,28 @@ app.get('/pharmacy', requireAuth, requirePerm('pharmacy.read','pharmacy.write'),
  } catch (err) {
  console.error(err);
  renderAppError(res, 500, 'page.load_pharmacy', 'Pharmacy load failure.', { detail: err.message })
+ }
+});
+
+app.post('/pharmacy/prescriptions/:id/dispense', requireAuth, requirePerm('pharmacy.write'), async (req, res) => {
+ const rxId = parseInt(String(req.params.id || ''), 10) || 0;
+ if (rxId < 1) {
+  return res.redirect('/pharmacy?view=prescriptions&err=' + encodeURIComponent(flashT(res, 'flash.prescription_not_found')));
+ }
+ try {
+  const [[rx]] = await pool.query('SELECT id, status FROM tbl_prescription WHERE id = ? LIMIT 1', [rxId]);
+  if (!rx) {
+   return res.redirect('/pharmacy?view=prescriptions&err=' + encodeURIComponent(flashT(res, 'flash.prescription_not_found')));
+  }
+  await pool.query("UPDATE tbl_prescription SET status = 'dispensed' WHERE id = ?", [rxId]);
+  await pool.query(
+   "UPDATE tbl_prescription_line SET dispense_status = 'dispensed', dispensed_at = NOW() WHERE prescription_id = ? AND line_type = 'medication' AND COALESCE(dispense_status,'') <> 'dispensed'",
+   [rxId]
+  ).catch(() => {});
+  return res.redirect('/pharmacy?view=prescriptions&msg=' + encodeURIComponent(flashT(res, 'flash.medication_marked_as_dispensed')));
+ } catch (e) {
+  console.error('pharmacy rx dispense:', e);
+  return res.redirect('/pharmacy?view=prescriptions&err=' + encodeURIComponent(e.message || 'Dispense failed.'));
  }
 });
 
@@ -6358,6 +6469,99 @@ app.post('/pharmacy/sync-inventory', requireAuth, requirePerm('pharmacy.write'),
  }
 });
 
+app.post('/pharmacy/import-price-list', requireAuth, requirePerm('pharmacy.write', 'service_catalog.pharmacy.write'), async (req, res) => {
+ const ret = '/pharmacy?view=products';
+ const sep = '?';
+ try {
+  await ensureServiceCatalogSchema(pool);
+  const { seedPharmacyServiceCatalog } = require('./lib/pharmacyCatalogSeedData');
+  const deactivateMissing = String(req.body.deactivate_missing || '') === '1';
+  const r = await seedPharmacyServiceCatalog(pool, { deactivateMissing });
+  const { importPharmacyCatalogToInventory } = require('./lib/importPharmacyCatalogToInventory');
+  await importPharmacyCatalogToInventory(pool).catch(() => {});
+  const msg =
+    `Pharmacy price list imported: ${r.inserted} added, ${r.updated} updated` +
+    (deactivateMissing && r.deactivated ? `, ${r.deactivated} deactivated` : '') +
+    ` (${r.total} items). Stock registry synced.`;
+  return res.redirect(ret + sep + 'msg=' + encodeURIComponent(msg));
+ } catch (e) {
+  console.error('pharmacy import-price-list:', e);
+  return res.redirect(ret + sep + 'err=' + encodeURIComponent(e.message || 'Import failed.'));
+ }
+});
+
+app.post('/pharmacy/import-file', requireAuth, requirePerm('pharmacy.write', 'service_catalog.pharmacy.write'), (req, res, next) => {
+ const { pharmacyCatalogUploadMw } = require('./lib/pharmacyCatalogUploadMulter');
+ pharmacyCatalogUploadMw('file')(req, res, (err) => {
+  if (err) {
+   console.error('pharmacy import-file upload:', err.message);
+   return res.redirect('/pharmacy?view=products&err=' + encodeURIComponent(err.message || 'Upload failed.'));
+  }
+  next();
+ });
+}, async (req, res) => {
+ const ret = '/pharmacy?view=products';
+ const sep = '?';
+ try {
+  await ensureServiceCatalogSchema(pool);
+  if (!req.file || !req.file.buffer) {
+   return res.redirect(ret + sep + 'err=' + encodeURIComponent('No file received. Choose an Excel, PDF, or Word file.'));
+  }
+  const { parsePharmacyCatalogFile, upsertPharmacyCatalogRows } = require('./lib/pharmacyCatalogFileImport');
+  const { rows, warnings, mergedInFile } = await parsePharmacyCatalogFile(
+   req.file.buffer,
+   req.file.originalname,
+   req.file.mimetype
+  );
+  if (!rows.length) {
+   const hint = (warnings && warnings[0]) || 'No medications with prices were found in the file.';
+   return res.redirect(ret + sep + 'err=' + encodeURIComponent(hint));
+  }
+  const deactivateMissing = String(req.body.deactivate_missing || '') === '1';
+  const r = await upsertPharmacyCatalogRows(pool, rows, {
+    deactivateMissing,
+    mergedInFile: mergedInFile || 0,
+  });
+  const { importPharmacyCatalogToInventory } = require('./lib/importPharmacyCatalogToInventory');
+  const { pruneOrphanPharmacyInventory } = require('./lib/pharmacyProductScope');
+  await importPharmacyCatalogToInventory(pool).catch(() => {});
+  await pruneOrphanPharmacyInventory(pool).catch(() => {});
+  const warnNote = warnings && warnings.length ? ` Note: ${warnings.join(' ')}` : '';
+  const dupeNote =
+    (r.mergedInFile || 0) + (r.duplicatesRemoved || 0) > 0
+      ? ` Duplicates: ${r.mergedInFile || 0} merged in file, ${r.duplicatesRemoved || 0} removed in catalog.`
+      : '';
+  const msg =
+    `Products imported: ${r.inserted} added, ${r.updated} updated` +
+    (deactivateMissing && r.deactivated ? `, ${r.deactivated} deactivated` : '') +
+    ` (${r.imported} unique items). Stock registry synced.${dupeNote}${warnNote}`;
+  return res.redirect(ret + sep + 'msg=' + encodeURIComponent(msg));
+ } catch (e) {
+  console.error('pharmacy import-file:', e);
+  return res.redirect(ret + sep + 'err=' + encodeURIComponent(e.message || 'Import failed.'));
+ }
+});
+
+app.post('/pharmacy/product-price', requireAuth, requirePerm('pharmacy.write'), async (req, res) => {
+ const { setPharmacyProductPrice, safePharmacyReturnUrl } = require('./lib/pharmacyStockManage');
+ const ret = safePharmacyReturnUrl(req.body._return);
+ const sep = ret.includes('?') ? '&' : '?';
+ const itemId = parseInt(req.body.inventory_item_id, 10) || 0;
+ try {
+  const r = await setPharmacyProductPrice(pool, {
+    itemId,
+    price: req.body.price,
+  });
+  if (!r.ok) {
+   return res.redirect(ret + sep + 'err=' + encodeURIComponent(r.error || 'Update failed.'));
+  }
+  return res.redirect(ret + sep + 'msg=' + encodeURIComponent('Product price updated.'));
+ } catch (e) {
+  console.error('pharmacy product-price:', e);
+  return res.redirect(ret + sep + 'err=' + encodeURIComponent(e.message || 'Update failed.'));
+ }
+});
+
 app.get('/pharmacy/products/:id/movements', requireAuth, requirePerm('pharmacy.read', 'pharmacy.write'), async (req, res) => {
  const id = parseInt(req.params.id, 10) || 0;
  const { loadPharmacyInventoryItem } = require('./lib/pharmacyStockManage');
@@ -6475,7 +6679,13 @@ app.post('/prescriptions/add', requireAuth, async (req, res) => {
       "INSERT INTO tbl_prescription (patient_id, title, notes, items, status, created_by, created_at) VALUES (?,?,?,?,'active',?,NOW())",
       [parseInt(patient_id)||0, (title||'Prescription').trim(), notes||null, items||null, uid]
     );
-    res.redirect('/prescriptions?msg=' + encodeURIComponent(flashT(res, 'flash.prescription_created_successfully')))
+    const msg = encodeURIComponent(flashT(res, 'flash.prescription_created_successfully'));
+    const retRaw = String(req.body._return || '').trim();
+    if (retRaw.startsWith('/pharmacy') && !retRaw.startsWith('//')) {
+      const sep = retRaw.includes('?') ? '&' : '?';
+      return res.redirect(retRaw + sep + 'msg=' + msg);
+    }
+    res.redirect('/prescriptions?msg=' + msg);
   } catch(err) {
     console.error('PRESCRIPTION ADD ERROR:', err.message);
     res.redirect('/prescriptions?err=' + encodeURIComponent(flashT(res, 'flash.failed_to_create_prescription', { message: err.message })));
@@ -7207,6 +7417,22 @@ app.get('/cashier', requireAuth, requirePerm('cashier.read','cashier.write'), as
  FROM tbl_payment_ticket t
  `).catch(() => [[{ today_revenue:0, pending_count:0, today_count:0, today_wallet:0 }]]);
 
+ const { buildCashierDailySummary } = require('./lib/cashierDailySummary');
+ const { buildKpiFromSummary, resolveCashierScope, fetchTodayDisbursementTotal } = require('./lib/cashierDashboard');
+ const cashierScope = resolveCashierScope(req, res);
+ let todayTotals = buildKpiFromSummary({ paymentRows: [], categoryRows: [] });
+ try {
+  const dailySummary = await buildCashierDailySummary(pool, {
+   period: 'day',
+   allCashiers: cashierScope.allCashiers,
+   paidBy: cashierScope.paidBy,
+  });
+  const disbursementTotal = await fetchTodayDisbursementTotal(pool, cashierScope);
+  todayTotals = buildKpiFromSummary(dailySummary, disbursementTotal);
+ } catch (summaryErr) {
+  console.warn('CASHIER TODAY TOTALS:', summaryErr.message);
+ }
+
  // Catalog
  const [consultCatalog = []] = await pool.query(
  "SELECT id, name, price, COALESCE(department_name,'') as department_name FROM tbl_service_catalog WHERE status = 1 AND LOWER(TRIM(category)) = 'consultation' ORDER BY name"
@@ -7296,7 +7522,7 @@ app.get('/cashier', requireAuth, requirePerm('cashier.read','cashier.write'), as
   { departmentNames }
  );
 
- const paymentMethods = betterPayQr.CASHIER_PAYMENT_METHODS;
+ const paymentMethods = cashierPaymentMethods.getCashierPaymentMethods();
 
  // Auto-add ipd_payment_code + ipd_paid_at columns if not yet migrated
  await pool.query("ALTER TABLE tbl_admission ADD COLUMN IF NOT EXISTS ipd_payment_code VARCHAR(40) DEFAULT NULL").catch(() => {});
@@ -7671,12 +7897,92 @@ app.get('/cashier', requireAuth, requirePerm('cashier.read','cashier.write'), as
   console.error('CASHIER BILLING INVOICES:', billingErr.message);
  }
 
+ const { fetchCashierInsuranceClaims } = require('./lib/cashierInsuranceClaims');
+ let insuranceClaims = [];
+ let insuranceSummary = { pending_count: 0 };
+ let insuranceMonthLabel = '';
+ try {
+  const insuranceData = await fetchCashierInsuranceClaims(pool, { limit: 200 });
+  insuranceClaims = insuranceData.claims || [];
+  insuranceSummary = insuranceData.summary || insuranceSummary;
+  insuranceMonthLabel = insuranceData.month_label || '';
+ } catch (insErr) {
+  console.error('CASHIER INSURANCE CLAIMS:', insErr.message);
+ }
+
+ const { fetchCashierShiftSummary } = require('./lib/cashierShiftSummary');
+ let shiftSummary = {};
+ try {
+  shiftSummary = await fetchCashierShiftSummary(pool, {
+   allCashiers: cashierScope.allCashiers,
+   paidBy: cashierScope.paidBy,
+   facilityId: req.session.facilityId || 1,
+  });
+ } catch (shiftErr) {
+  console.error('CASHIER SHIFT SUMMARY:', shiftErr.message);
+ }
+
+ const { fetchCashierRefunds } = require('./lib/cashierRefunds');
+ let cashierRefunds = [];
+ let refundSummary = {};
+ let refundMonthLabel = '';
+ try {
+  const refundData = await fetchCashierRefunds(pool, { limit: 200 });
+  cashierRefunds = refundData.refunds || [];
+  refundSummary = refundData.summary || {};
+  refundMonthLabel = refundData.month_label || '';
+ } catch (refundErr) {
+  console.error('CASHIER REFUNDS:', refundErr.message);
+ }
+
+ let overviewKpi = {};
+ let overviewRevenueChart = [];
+ let reportsData = {};
+ try {
+  const { fetchCashierOverview } = require('./lib/cashierOverview');
+  const overviewData = await fetchCashierOverview(pool, { scope: cashierScope });
+  overviewKpi = overviewData.kpi || {};
+  overviewRevenueChart = overviewData.revenue_chart || [];
+ } catch (overviewErr) {
+  console.error('CASHIER OVERVIEW:', overviewErr.message);
+ }
+
+ try {
+  const { fetchCashierReports, resolveCashierReportsScope } = require('./lib/cashierReports');
+  const reportsScope = resolveCashierReportsScope(req, res);
+  const periodKey = String(req.query.period || 'this_month').toLowerCase();
+  reportsData = await fetchCashierReports(pool, { periodKey, scope: reportsScope });
+ } catch (reportsErr) {
+  console.error('CASHIER REPORTS:', reportsErr.message);
+ }
+
  const { fixUtf8MojibakeRows } = require('./lib/fixUtf8Mojibake');
  const catalogTextFields = ['name', 'department_name', 'category'];
  const fixCatalogLabels = (rows) => fixUtf8MojibakeRows(rows, catalogTextFields);
 
+ const { loadCashierOdooLocals } = require('./lib/cashierOdooShell');
+ const { loadSelfProfile, loadSelfProfilePayload } = require('./lib/selfProfile');
+ const profilePayload = await loadSelfProfilePayload(pool, req);
+ const selfProfile = profilePayload.ok ? profilePayload.profile : await loadSelfProfile(pool, req);
+ const profileDepartments = profilePayload.ok ? profilePayload.form?.departments || [] : [];
+ const cashierPage = String(req.query.page || 'dashboard').toLowerCase();
+ const cashierTab = String(req.query.tab || '').toLowerCase() || (cashierPage === 'bills' ? 'pending' : '');
+ const cashierReport = String(req.query.report || 'revenue').toLowerCase();
+ const odooLocals = loadCashierOdooLocals(req, {
+  userDisplayName: res.locals.user?.name || req.session?.user?.name,
+  flash: req.query.msg || null,
+  error: req.query.err || null,
+ });
  res.render('cashier', {
  title: pageTitle(res, 'document_titles.cashier', 'Payment and Billing — ZAIZENS'),
+ ...odooLocals,
+ cashierPage,
+ cashierTab,
+ cashierReport,
+ pendingCount: Array.isArray(pending) ? pending.length : 0,
+ billingPendingCount: parseInt(billingSummary?.pending_count, 10) || 0,
+ insurancePendingCount: parseInt(insuranceSummary?.pending_count, 10) || 0,
+ opdPendingCount: Array.isArray(opdPendingGroups) ? opdPendingGroups.length : 0,
  pageData: {
   pending: Array.isArray(pending) ? pending : [],
   history: Array.isArray(history) ? history : [],
@@ -7699,9 +8005,26 @@ app.get('/cashier', requireAuth, requirePerm('cashier.read','cashier.write'), as
   billingInvoices,
   billingSummary,
   billingTotal,
+  insuranceClaims,
+  insuranceSummary,
+  insuranceMonthLabel,
+  shiftSummary,
+  cashierRefunds,
+  refundSummary,
+  refundMonthLabel,
   serviceCatalogForInvoice: fixCatalogLabels(serviceCatalogForInvoice),
   pharmacyCatalogForInvoice: fixCatalogLabels(pharmacyCatalog),
   kpi: kpi || { today_revenue: 0, pending_count: 0, today_count: 0, today_wallet: 0 },
+  overviewKpi,
+  overviewRevenueChart,
+  reportsData,
+  todayTotals,
+  cashierIdentity: odooLocals.cashierIdentity,
+  cashierPage,
+  cashierTab,
+  cashierReport,
+  selfProfile,
+  profileDepartments,
   flash: req.query.msg || null,
   error: req.query.err || null,
   userPerms: res.locals.userPerms || [],
@@ -8586,7 +8909,7 @@ app.post('/cashier/opd-orders/refund', requireAuth, async (req, res) => {
    console.error('cashier journal pipeline (opd refund):', pipeErr.message);
   }
   const tab = consultId > 0 ? '&tab=rx' : '';
-  const msg = `Refunded ${result.refundedIds.length} item(s) — ${result.refundTotal} FCFA via ${refundMethod}.`;
+  const msg = `Refunded ${result.refundedIds.length} item(s) — ${fmtMoney(result.refundTotal)} via ${refundMethod}.`;
   if (result.receiptId) {
    return res.redirect(`/cashier/print-receipt/${result.receiptId}?msg=${encodeURIComponent(msg)}`);
   }
@@ -8725,130 +9048,12 @@ app.get('/api/cashier/doctors-for-dept', requireAuth, async (req, res) => {
 // Used by public/js/hms-cameroon-address.js + views/patients.ejs
 // ────────────────────────────────────────────────────────────
 app.get('/api/cameroon-geo', requireAuth, (req, res) => {
- // Minimal structured dataset (regions -> divisions -> communes).
- // Villages are hints (optional) and can be overridden with "Other".
- const regions = [
-  'Adamawa','Centre','East','Far North','Littoral',
-  'North','North-West','South','South-West','West'
- ];
-
- const departments = {
-  'Adamawa': ['Djérem','Faro-et-Déo','Mayo-Banyo','Mbéré','Vina'],
-  'Centre': ['Haute-Sanaga','Lekié','Mbam-et-Inoubou','Mbam-et-Kim','Méfou-et-Afamba','Méfou-et-Akono','Mfoundi','Nyong-et-Kéllé','Nyong-et-Mfoumou','Nyong-et-So’o'],
-  'East': ['Boumba-et-Ngoko','Haut-Nyong','Kadey','Lom-et-Djérem'],
-  'Far North': ['Diamaré','Logone-et-Chari','Mayo-Danay','Mayo-Kani','Mayo-Sava','Mayo-Tsanaga'],
-  'Littoral': ['Moungo','Nkam','Sanaga-Maritime','Wouri'],
-  'North': ['Bénoué','Faro','Mayo-Louti','Mayo-Rey'],
-  'North-West': ['Boyo','Bui','Donga-Mantung','Menchum','Mezam','Momo','Ngo-Ketunjia'],
-  'South': ['Dja-et-Lobo','Mvila','Océan','Vallée-du-Ntem'],
-  'South-West': ['Fako','Koupé-Manengouba','Lebialem','Manyu','Meme','Ndian'],
-  'West': ['Bamboutos','Haut-Nkam','Hauts-Plateaux','Koung-Khi','Menoua','Mifi','Ndé','Noun']
- };
-
- /** Hand-picked councils for common departments; gaps filled below for every region/division pair. */
- const communesDetailed = {
-  'Centre': {
-   'Mfoundi': ['Yaoundé I','Yaoundé II','Yaoundé III','Yaoundé IV','Yaoundé V','Yaoundé VI','Yaoundé VII','Other council…'],
-   'Haute-Sanaga': ['Nanga-Eboko','Minta','Nsem','Other council…'],
-   'Lekié': ['Monatélé','Obala','Okola','Sa’a','Other council…'],
-   'Mbam-et-Inoubou': ['Bafia','Makénéné','Nitoukou','Other council…'],
-   'Mbam-et-Kim': ['Ntui','Ngambé-Tikar','Other council…'],
-   'Méfou-et-Afamba': ['Mfou','Awae','Edzendouan','Soa','Other council…'],
-   'Méfou-et-Akono': ['Ngoumou','Akono','Mbankomo','Other council…'],
-   'Nyong-et-Kéllé': ['Bot Makak','Éséka','Makak','Other council…'],
-   'Nyong-et-Mfoumou': ['Akonolinga','Ayos','Other council…'],
-   'Nyong-et-So’o': ['Mbalmayo','Ngomedzap','Other council…']
-  },
-  'Littoral': {
-   'Wouri': ['Douala I','Douala II','Douala III','Douala IV','Douala V','Douala VI','Manjo?','Other council…'],
-   'Moungo': ['Nkongsamba I','Nkongsamba II','Nkongsamba III','Loum','Penja','Mbanga','Other council…'],
-   'Sanaga-Maritime': ['Édéa I','Édéa II','Dizangué','Pouma','Other council…'],
-   'Nkam': ['Nkondjock','Yabassi','Other council…']
-  },
-  'West': {
-   'Mifi': ['Bafoussam I','Bafoussam II','Bafoussam III','Other council…'],
-   'Menoua': ['Dschang','Fokoué','Santchou','Penka-Michel','Other council…'],
-   'Noun': ['Foumban','Koutaba','Magba','Massangam','Other council…'],
-   'Bamboutos': ['Batcham','Galim','Other council…'],
-   'Haut-Nkam': ['Baham','Batikam','Other council…'],
-   'Hauts-Plateaux': ['Bahouan','Other council…'],
-   'Koung-Khi': ['Kouoptamo','Other council…'],
-   'Ndé': ['Bangangté','Other council…']
-  },
-  'South-West': {
-   'Fako': ['Buea','Limbe I','Limbe II','Limbe III','Tiko','Muyuka','Other council…'],
-   'Meme': ['Kumba I','Kumba II','Kumba III','Other council…'],
-   'Koupé-Manengouba': ['Bangem','Tombel','Other council…'],
-   'Lebialem': ['Menji','Other council…'],
-   'Manyu': ['Mamfe','Other council…'],
-   'Ndian': ['Mundemba','Other council…']
-  },
-  'North': {
-   'Bénoué': ['Garoua I','Garoua II','Garoua III','Other council…'],
-   'Faro': ['Poli','Other council…'],
-   'Mayo-Louti': ['Guider','Other council…'],
-   'Mayo-Rey': ['Tcholliré','Other council…']
-  },
-  'Far North': {
-   'Diamaré': ['Maroua I','Maroua II','Maroua III','Other council…'],
-   'Logone-et-Chari': ['Kousséri','Other council…'],
-   'Mayo-Danay': ['Yagoua','Other council…'],
-   'Mayo-Kani': ['Kaélé','Other council…'],
-   'Mayo-Sava': ['Mora','Other council…'],
-   'Mayo-Tsanaga': ['Mokolo','Other council…']
-  },
-  'Adamawa': {
-   'Djérem': ['Tibati','Other council…'],
-   'Faro-et-Déo': ['Tignère','Other council…'],
-   'Mayo-Banyo': ['Banyo','Other council…'],
-   'Mbéré': ['Meiganga','Other council…'],
-   'Vina': ['Ngaoundéré','Other council…']
-  },
-  'East': {
-   'Boumba-et-Ngoko': ['Yokadouma','Other council…'],
-   'Haut-Nyong': ['Abong-Mbang','Other council…'],
-   'Kadey': ['Batouri','Other council…'],
-   'Lom-et-Djérem': ['Bertoua','Other council…']
-  },
-  'North-West': {
-   'Boyo': ['Fundong','Other council…'],
-   'Bui': ['Kumbo','Other council…'],
-   'Donga-Mantung': ['Nkambé','Other council…'],
-   'Menchum': ['Wum','Other council…'],
-   'Mezam': ['Bamenda I','Bamenda II','Bamenda III','Other council…'],
-   'Momo': ['Mbengwi','Other council…'],
-   'Ngo-Ketunjia': ['Ndop','Other council…']
-  },
-  'South': {
-   'Dja-et-Lobo': ['Sangmélima','Other council…'],
-   'Mvila': ['Ebolowa','Other council…'],
-   'Océan': ['Kribi I','Kribi II','Other council…'],
-   'Vallée-du-Ntem': ['Ambam','Other council…']
-  }
- };
-
- const communes = {};
- regions.forEach(reg => {
-  communes[reg] = {};
-  (departments[reg] || []).forEach(div => {
-   const pick = communesDetailed[reg] && communesDetailed[reg][div];
-   communes[reg][div] =
-    pick && pick.length
-     ? pick.slice()
-     : [`${div} — Main centre`, `${div} — Other locality`, 'Other council…'];
-  });
- });
-
- const villageDefaults = ['Other (specify)…'];
- const villageHints = {
-  'Centre|Mfoundi|Yaoundé I': ['Bastos','Tsinga','Nlongkak','Mokolo','Other (specify)…'],
-  'Centre|Mfoundi|Yaoundé III': ['Efoulan','Nsimeyong','Mendong','Other (specify)…'],
-  'Littoral|Wouri|Douala I': ['Akwa','Bonanjo','Deido','Bali','Other (specify)…'],
-  'Littoral|Wouri|Douala V': ['Bonaberi','Makepe','Logpom','Other (specify)…'],
-  'West|Mifi|Bafoussam I': ['Banengo','Tamdja','Houngang','Other (specify)…']
- };
-
- res.json({ regions, departments, communes, villageDefaults, villageHints });
+ const hmsCountry = require('./lib/hmsCountry');
+ if (hmsCountry.code !== 'CM') {
+  return res.status(404).json({ error: 'Cameroon geo is disabled for this deployment.' });
+ }
+ const { getCountryGeoPayload } = require('./lib/countryGeo');
+ res.json(getCountryGeoPayload('CM'));
 });
 
 // INSURANCE carriers for registration dropdowns
@@ -9547,6 +9752,149 @@ app.get('/api/cashier/billing-invoices', requireAuth, requirePerm('cashier.read'
  }
 });
 
+app.get('/api/cashier/refunds', requireAuth, requirePerm('cashier.read', 'cashier.write'), async (req, res) => {
+ try {
+  const { fetchCashierRefunds } = require('./lib/cashierRefunds');
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 200, 1), 500);
+  const data = await fetchCashierRefunds(pool, { limit });
+  return res.json({ ok: true, ...data });
+ } catch (e) {
+  console.error('CASHIER REFUNDS API:', e.message);
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
+app.get('/api/cashier/bills/lookup', requireAuth, requirePerm('cashier.read', 'cashier.write'), async (req, res) => {
+ try {
+  const { lookupCashierBill } = require('./lib/cashierLookupBill');
+  const out = await lookupCashierBill(pool, req.query.code || req.query.ticket_code || '');
+  if (!out.ok) return res.status(out.status || 404).json(out);
+  return res.json(out);
+ } catch (e) {
+  console.error('CASHIER BILL LOOKUP:', e.message);
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
+app.get('/api/cashier/search', requireAuth, requirePerm('cashier.read', 'cashier.write'), async (req, res) => {
+ try {
+  const { searchCashierGlobal } = require('./lib/cashierGlobalSearch');
+  const out = await searchCashierGlobal(pool, req.query.q || req.query.term || '', {
+   limit: parseInt(req.query.limit, 10) || 8,
+  });
+  return res.json(out);
+ } catch (e) {
+  console.error('CASHIER SEARCH:', e.message);
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
+app.get('/api/cashier/overview', requireAuth, requirePerm('cashier.read', 'cashier.write'), async (req, res) => {
+ try {
+  const { fetchCashierOverview } = require('./lib/cashierOverview');
+  const { resolveCashierScope } = require('./lib/cashierDashboard');
+  const scope = resolveCashierScope(req, res);
+  const out = await fetchCashierOverview(pool, { scope });
+  return res.json(out);
+ } catch (e) {
+  console.error('CASHIER OVERVIEW:', e.message);
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
+app.post('/api/cashier/refunds', requireAuth, requirePerm('cashier.write'), async (req, res) => {
+ try {
+  const { createCashierRefundRequest } = require('./lib/cashierRefunds');
+  const out = await createCashierRefundRequest(pool, req.body || {}, req.session);
+  if (!out.ok) return res.status(out.status || 400).json(out);
+  return res.json(out);
+ } catch (e) {
+  console.error('CASHIER REFUND CREATE:', e.message);
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
+app.post('/api/cashier/refunds/:id/approve', requireAuth, requirePerm('cashier.write'), async (req, res) => {
+ try {
+  const { approveCashierRefundRequest } = require('./lib/cashierRefunds');
+  const out = await approveCashierRefundRequest(pool, req.params.id, req.session);
+  if (!out.ok) return res.status(out.status || 400).json(out);
+  return res.json(out);
+ } catch (e) {
+  console.error('CASHIER REFUND APPROVE:', e.message);
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
+app.get('/api/cashier/shift-summary', requireAuth, requirePerm('cashier.read', 'cashier.write'), async (req, res) => {
+ try {
+  const { fetchCashierShiftSummary } = require('./lib/cashierShiftSummary');
+  const { resolveCashierScope } = require('./lib/cashierDashboard');
+  const scope = resolveCashierScope(req, res);
+  const summary = await fetchCashierShiftSummary(pool, {
+   allCashiers: scope.allCashiers,
+   paidBy: scope.paidBy,
+   facilityId: req.session.facilityId || 1,
+   date: String(req.query.date || '').trim() || undefined,
+  });
+  return res.json({ ok: true, summary });
+ } catch (e) {
+  console.error('CASHIER SHIFT API:', e.message);
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
+app.get('/api/cashier/reports', requireAuth, requirePerm('cashier.read', 'cashier.write'), async (req, res) => {
+ try {
+  const { fetchCashierReports, resolveCashierReportsScope } = require('./lib/cashierReports');
+  const scope = resolveCashierReportsScope(req, res);
+  const periodKey = String(req.query.period || 'this_month').toLowerCase();
+  const out = await fetchCashierReports(pool, { periodKey, scope });
+  return res.json(out);
+ } catch (e) {
+  console.error('CASHIER REPORTS API:', e.message);
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
+app.get('/api/cashier/insurance-claims', requireAuth, requirePerm('cashier.read', 'cashier.write'), async (req, res) => {
+ try {
+  const { fetchCashierInsuranceClaims } = require('./lib/cashierInsuranceClaims');
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 200, 1), 500);
+  const data = await fetchCashierInsuranceClaims(pool, { limit });
+  return res.json({ ok: true, ...data });
+ } catch (e) {
+  console.error('CASHIER INSURANCE API:', e.message);
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
+app.post('/api/cashier/insurance-claims', requireAuth, requirePerm('cashier.write'), async (req, res) => {
+ try {
+  const { createCashierInsuranceClaim } = require('./lib/cashierCreateInsuranceClaim');
+  const out = await createCashierInsuranceClaim(pool, req.body || {}, req.session);
+  if (!out.ok) return res.status(out.status || 400).json(out);
+  return res.json(out);
+ } catch (e) {
+  console.error('CASHIER CREATE INSURANCE CLAIM:', e.message);
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
+app.get('/api/cashier/insurance-carriers', requireAuth, requirePerm('cashier.read', 'cashier.write'), async (req, res) => {
+ try {
+  const { ensureCashierInsuranceClaimSchema } = require('./lib/ensureCashierInsuranceClaimSchema');
+  await ensureCashierInsuranceClaimSchema(pool);
+  const [rows] = await pool
+    .query('SELECT id, code, name FROM tbl_insurance_carrier WHERE status = 1 ORDER BY name')
+    .catch(() => [[]]);
+  return res.json({ ok: true, carriers: rows || [] });
+ } catch (e) {
+  console.error('CASHIER INSURANCE CARRIERS:', e.message);
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
 app.post('/api/cashier/invoices', requireAuth, requirePerm('cashier.write'), async (req, res) => {
  try {
   const { createCashierInvoice } = require('./lib/cashierCreateInvoice');
@@ -9784,94 +10132,7 @@ app.get('/cashier/print-slip/:code', requireAuth, async (req, res) => {
  }
 });
 
-// CASHIER: desk expense / emergency payout (utilities, admin cash advance, etc.)
-app.post('/cashier/disbursement', requireAuth, requirePerm('cashier.write'), async (req, res) => {
- const {
-  normalizeDisbursementType,
-  normalizeDisbursementCategory,
-  disbursementTypeLabel,
- } = require('./lib/cashierDisbursementOptions');
- const { txnType, glKind } = normalizeDisbursementType(req.body.txn_type);
- const amount = parseFloat(req.body.amount) || 0;
- const category = normalizeDisbursementCategory(req.body.category);
- const paymentMethod = betterPayQr.normalizePaymentMethod(req.body.payment_method) || 'Cash';
- const narration = String(req.body.narration || '').trim();
- const uid = parseInt(String(req.session.userId || req.session.user?.id || 0), 10) || 0;
- const fid = parseInt(String(req.session.facilityId || 1), 10) || 1;
-
- if (amount < 1) {
-  return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.invalid_amount', { defaultValue: 'Enter a valid amount.' })));
- }
- if (!narration) {
-  return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.description_required', { defaultValue: 'Description is required.' })));
- }
- if (uid < 1) {
-  return res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.access_denied', { defaultValue: 'Access denied' })));
- }
-
- const conn = await pool.getConnection();
- try {
-  const { ensureCashierDisbursementSchema } = require('./lib/ensureCashierDisbursementSchema');
-  await ensureCashierDisbursementSchema(conn);
-  await conn.beginTransaction();
-
-  const [ins] = await conn.query(
-   `INSERT INTO tbl_cashier_disbursement
-    (facility_id, txn_type, category, amount, payment_method, narration, created_by)
-    VALUES (?, ?, ?, ?, ?, ?, ?)`,
-   [fid, txnType, category, amount, paymentMethod, narration.slice(0, 500), uid]
-  );
-  const disbursementId = parseInt(String(ins?.insertId || 0), 10) || 0;
-  if (disbursementId < 1) throw new Error('Could not save disbursement.');
-
-  let cashierTxnResult = null;
-  const { recordDisbursementInTransaction } = require('./lib/cashierTxnWire');
-  cashierTxnResult = await recordDisbursementInTransaction(conn, {
-   facilityId: fid,
-   userId: uid,
-   disbursementId,
-   glKind,
-   amount,
-   paymentMethod,
-   expenseCategory: category,
-   narration,
-  });
-
-  await conn.commit();
-  conn.release();
-
-  try {
-   const { runCashierPostCommit } = require('./lib/cashierTxnWire');
-   await runCashierPostCommit(pool, {
-    txnId: cashierTxnResult?.txnId || null,
-    journalKind: glKind === 'payout' ? 'payout' : 'expense',
-    expenseId: disbursementId,
-    disbursementId,
-    amount,
-    paymentMethod,
-    expenseCategory: category,
-    narration,
-    createdBy: uid,
-    facilityId: fid,
-    cashierCode: cashierTxnResult?.cashierCode,
-    cashierIdentity: cashierTxnResult?.cashierIdentity,
-    reference: `CD-${disbursementId}`,
-   });
-  } catch (pipeErr) {
-   console.error('cashier journal pipeline (disbursement):', pipeErr.message);
-  }
-
-  const typeLabel = disbursementTypeLabel(txnType);
-  const journalNote = cashierTxnResult?.txnId ? ' Till ledger and journal updated.' : ' Journal posted.';
-  const msg = `${typeLabel} recorded: ${amount} FCFA (${paymentMethod}). Cashier ${cashierTxnResult?.cashierCode || ''}.${journalNote}`;
-  return res.redirect('/cashier/ledger?msg=' + encodeURIComponent(msg));
- } catch (err) {
-  await conn.rollback().catch(() => {});
-  conn.release();
-  console.error('CASHIER DISBURSEMENT:', err.message);
-  return res.redirect('/cashier?err=' + encodeURIComponent(err.message || 'Disbursement failed.'));
- }
-});
+// CASHIER: desk expense / emergency payout — routes in routes/cashierDisbursement.js
 
 function cashierBatchPrintAccess(req, res) {
  const perms = res.locals.userPerms || req.session?.perms || [];
@@ -10099,6 +10360,92 @@ app.get('/api/cashier/daily-summary', requireAuth, requirePerm('cashier.read', '
  }
 });
 
+app.get('/api/cashier/eod-reconciliation', requireAuth, requirePerm('cashier.read', 'cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
+ try {
+  const access = cashierBatchPrintAccess(req, res);
+  if (!access.ok) {
+   return res.status(403).json({ ok: false, error: 'Access denied' });
+  }
+  const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
+  await ensureCashierEodSchema(pool).catch(() => {});
+  const { buildCashierEodReport, todayIso } = require('./lib/cashierEodReconciliation');
+  const date = String(req.query.date || '').trim() || todayIso();
+  const facilityId = parseInt(req.session?.facilityId, 10) || 1;
+  const report = await buildCashierEodReport(pool, {
+   date,
+   facilityId,
+   allCashiers: access.allCashiers,
+   paidBy: access.paidBy,
+  });
+  return res.json({ ok: true, report });
+ } catch (err) {
+  console.error('cashier eod-reconciliation api GET:', err.message);
+  return res.status(500).json({ ok: false, error: err.message || 'Report failed' });
+ }
+});
+
+app.post('/api/cashier/eod-reconciliation', requireAuth, requirePerm('cashier.read', 'cashier.write'), async (req, res) => {
+ try {
+  const access = cashierBatchPrintAccess(req, res);
+  if (!access.ok) {
+   return res.status(403).json({ ok: false, error: 'Access denied' });
+  }
+  const { ensureCashierEodSchema } = require('./lib/ensureCashierEodSchema');
+  await ensureCashierEodSchema(pool).catch(() => {});
+  const { saveCashierEodReconciliation, buildCashierEodReport, todayIso } = require('./lib/cashierEodReconciliation');
+  const body = req.body && typeof req.body === 'object' ? req.body : {};
+  const date = String(body.date || req.query.date || '').trim() || todayIso();
+  const facilityId = parseInt(req.session?.facilityId, 10) || 1;
+  await saveCashierEodReconciliation(pool, {
+   date,
+   facilityId,
+   allCashiers: access.allCashiers,
+   paidBy: access.paidBy,
+   userId: req.session.userId || req.session.user?.id,
+   body,
+  });
+  const report = await buildCashierEodReport(pool, {
+   date,
+   facilityId,
+   allCashiers: access.allCashiers,
+   paidBy: access.paidBy,
+  });
+  return res.json({
+   ok: true,
+   message: flashT(res, 'cashier.eod.saved', { ns: 'clinical', defaultValue: 'Reconciliation saved.' }),
+   report,
+  });
+ } catch (err) {
+  console.error('cashier eod-reconciliation api POST:', err.message);
+  return res.status(500).json({ ok: false, error: err.message || 'Save failed' });
+ }
+});
+
+app.get('/api/cashier/ledger', requireAuth, requirePerm('cashier.read', 'cashier.write', 'billing.read', 'financials.read'), async (req, res) => {
+ try {
+  const access = cashierBatchPrintAccess(req, res);
+  if (!access.ok) {
+   return res.status(403).json({ ok: false, error: 'Access denied' });
+  }
+  const { ensureCashierTxnSchema } = require('./lib/ensureCashierTxnSchema');
+  await ensureCashierTxnSchema(pool).catch(() => {});
+  const { buildCashierLedgerReport } = require('./lib/cashierLedgerReport');
+  const { todayIso } = require('./lib/cashierEodReconciliation');
+  const date = String(req.query.date || '').trim() || todayIso();
+  const facilityId = parseInt(req.session?.facilityId, 10) || 1;
+  const report = await buildCashierLedgerReport(pool, {
+   date,
+   facilityId,
+   cashierCode: req.query.cashier_code,
+   paymentMethod: req.query.payment_method,
+  });
+  return res.json({ ok: true, report });
+ } catch (err) {
+  console.error('cashier ledger api:', err.message);
+  return res.status(500).json({ ok: false, error: err.message || 'Report failed' });
+ }
+});
+
 // CASHIER: ISSUE TICKET (legacy simple flow === Æ’ ===   kept for backwards compat)
 app.post('/cashier/issue-ticket', requireAuth, async (req, res) => {
  let { patient_id, service_id, amount } = req.body;
@@ -10201,6 +10548,60 @@ app.post('/cashier/issue-ticket', requireAuth, async (req, res) => {
  } catch (err) {
  console.error('TICKET GENERATION ERROR:', err.message);
  res.redirect('/cashier?err=' + encodeURIComponent(flashT(res, 'flash.system_error', { message: err.message })));
+ }
+});
+
+// CASHIER: Lab walk-in queue (from LIMS walk-in registration)
+app.get('/api/cashier/lab-walkins', requireAuth, requirePerm('cashier.read', 'cashier.write'), async (req, res) => {
+ try {
+  const { listPendingWalkins } = require('./lib/labWalkinCashier');
+  const walkins = await listPendingWalkins(pool);
+  return res.json({ ok: true, walkins });
+ } catch (e) {
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
+app.post('/cashier/lab-walkin/:id/bill', requireAuth, requirePerm('cashier.write'), async (req, res) => {
+ try {
+  const walkinId = parseInt(req.params.id, 10) || 0;
+  const uid = req.session.userId || req.session.user?.id || null;
+  const fid = Math.max(1, parseInt(String(req.session.facilityId || 1), 10) || 1);
+  const { createBillFromWalkin } = require('./lib/labWalkinCashier');
+  const result = await createBillFromWalkin(pool, walkinId, uid, fid);
+  if (!result.ok) {
+   return res.redirect('/cashier?tab=lab_walkin&err=' + encodeURIComponent(result.error || 'Billing failed'));
+  }
+  return res.redirect(result.redirect || `/cashier/settle/${result.ticketId}`);
+ } catch (e) {
+  return res.redirect('/cashier?tab=lab_walkin&err=' + encodeURIComponent(e.message));
+ }
+});
+
+// CASHIER: Radiology walk-in queue (from radiology walk-in registration)
+app.get('/api/cashier/rad-walkins', requireAuth, requirePerm('cashier.read', 'cashier.write'), async (req, res) => {
+ try {
+  const { listPendingWalkins } = require('./lib/radWalkinCashier');
+  const walkins = await listPendingWalkins(pool);
+  return res.json({ ok: true, walkins });
+ } catch (e) {
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
+app.post('/cashier/rad-walkin/:id/bill', requireAuth, requirePerm('cashier.write'), async (req, res) => {
+ try {
+  const walkinId = parseInt(req.params.id, 10) || 0;
+  const uid = req.session.userId || req.session.user?.id || null;
+  const fid = Math.max(1, parseInt(String(req.session.facilityId || 1), 10) || 1);
+  const { createBillFromWalkin } = require('./lib/radWalkinCashier');
+  const result = await createBillFromWalkin(pool, walkinId, uid, fid);
+  if (!result.ok) {
+   return res.redirect('/cashier?tab=rad_walkin&err=' + encodeURIComponent(result.error || 'Billing failed'));
+  }
+  return res.redirect(result.redirect || `/cashier/settle/${result.ticketId}`);
+ } catch (e) {
+  return res.redirect('/cashier?tab=rad_walkin&err=' + encodeURIComponent(e.message));
  }
 });
 
@@ -10704,8 +11105,9 @@ app.get('/cashier/print-invoice/:id', requireAuth, async (req, res) => {
   const { paymentCode, lineItems, sectionCodes, prescriptionItems } = printPayload;
   const subtotal = lineItems.reduce((s, it) => s + (Number(it.amount || 0) || 0), 0);
   const vatEnabled = String(req.query.vat || '').trim() === '1' || String(req.query.vat || '').trim().toLowerCase() === 'true';
-  const rate = req.query.vat_rate ? parseFloat(req.query.vat_rate) : 19.25;
-  const vatRate = Number.isFinite(rate) && rate >= 0 && rate <= 100 ? rate : 19.25;
+  const defaultVat = parseFloat(hmsCountry.defaultVatRate());
+  const rate = req.query.vat_rate ? parseFloat(req.query.vat_rate) : defaultVat;
+  const vatRate = Number.isFinite(rate) && rate >= 0 && rate <= 100 ? rate : defaultVat;
   const vatAmount = vatEnabled ? Math.round(subtotal * (vatRate / 100)) : 0;
   const grandTotal = subtotal + vatAmount;
   const vatRateLabel = `${vatRate}%`;
@@ -10901,7 +11303,7 @@ app.get('/cashier/print-ticket/:code', requireAuth, async (req, res) => {
 app.post('/cashier/lookup', requireAuth, async (req, res) => {
  const { code } = req.body;
  const emptyKpi = { today_revenue: 0, pending_count: 0, today_count: 0, today_wallet: 0 };
- const defaultPaymentMethods = betterPayQr.CASHIER_PAYMENT_METHODS;
+ const defaultPaymentMethods = cashierPaymentMethods.getCashierPaymentMethods();
  try {
  const [rows] = await pool.query(
   'SELECT t.*, p.first_name, p.last_name FROM tbl_payment_ticket t JOIN tbl_patient p ON p.id = t.patient_id WHERE t.ticket_code = ? LIMIT 1',
@@ -10941,16 +11343,33 @@ app.post('/cashier/lookup', requireAuth, async (req, res) => {
   userPerms: res.locals.userPerms || [],
  };
 
+ const { loadCashierOdooLocals } = require('./lib/cashierOdooShell');
+ const odooLocals = loadCashierOdooLocals(req, { userDisplayName: res.locals.user?.name });
+
  if (rows.length === 0) {
  return res.render('cashier', {
   title: pageTitle(res, 'document_titles.cashier', 'Payment and Billing — ZAIZENS'),
-  pageData: Object.assign({}, basePageData, { pending: [], error: 'Ticket not found.' }),
+  ...odooLocals,
+  error: 'Ticket not found.',
+  cashierTab: 'pending',
+  cashierPage: 'bills',
+  pendingCount: 0,
+  billingPendingCount: 0,
+  opdPendingCount: 0,
+  pageData: Object.assign({}, basePageData, { pending: [], error: 'Ticket not found.', cashierIdentity: odooLocals.cashierIdentity }),
  });
  }
 
  res.render('cashier', {
   title: pageTitle(res, 'document_titles.cashier', 'Payment and Billing — ZAIZENS'),
-  pageData: Object.assign({}, basePageData, { pending: rows, flash: 'Result for ' + code }),
+  ...odooLocals,
+  flash: 'Result for ' + code,
+  cashierTab: 'pending',
+  cashierPage: 'bills',
+  pendingCount: rows.length,
+  billingPendingCount: 0,
+  opdPendingCount: 0,
+  pageData: Object.assign({}, basePageData, { pending: rows, flash: 'Result for ' + code, cashierIdentity: odooLocals.cashierIdentity }),
  });
  } catch (err) {
  console.error(err);
@@ -12060,6 +12479,12 @@ app.post('/consultation-new', requireAuth, async (req, res) => {
   const durations = pickArr(req.body['med_duration[]']);
   const timings = pickArr(req.body['med_timing[]']);
   const insts = pickArr(req.body['med_instructions[]']);
+  const generics = pickArr(req.body['med_generic[]']);
+  const medTypes = pickArr(req.body['med_type[]']);
+  const doseMorns = pickArr(req.body['med_dose_morn[]']);
+  const doseNoons = pickArr(req.body['med_dose_noon[]']);
+  const doseEves = pickArr(req.body['med_dose_eve[]']);
+  const doseNights = pickArr(req.body['med_dose_night[]']);
   const quantities = pickArr(req.body['med_quantity[]']);
   const treatmentStarts = pickArr(req.body['med_treatment_start[]']);
   const { resolveOpdDrugUnitPrice } = require('./lib/prescriptionPricing');
@@ -12072,6 +12497,12 @@ app.post('/consultation-new', requireAuth, async (req, res) => {
    durations.length,
    timings.length,
    insts.length,
+   generics.length,
+   medTypes.length,
+   doseMorns.length,
+   doseNoons.length,
+   doseEves.length,
+   doseNights.length,
    quantities.length,
    treatmentStarts.length,
    0
@@ -12109,6 +12540,8 @@ app.post('/consultation-new', requireAuth, async (req, res) => {
     name: pricing.name || name,
     catalog_name: catalogName,
     custom_name: customName,
+    generic_name: (generics[i] || '').toString().trim(),
+    med_type: (medTypes[i] || '').toString().trim(),
     dosage,
     frequency,
     duration,
@@ -12118,6 +12551,10 @@ app.post('/consultation-new', requireAuth, async (req, res) => {
     treatment_start: treatmentStart,
     unit_price: pricing.isCustom ? 0 : pricing.unitPrice,
     is_custom: pricing.isCustom,
+    dose_morn: parseInt(doseMorns[i], 10) || 0,
+    dose_noon: parseInt(doseNoons[i], 10) || 0,
+    dose_eve: parseInt(doseEves[i], 10) || 0,
+    dose_night: parseInt(doseNights[i], 10) || 0,
    });
   }
 
@@ -13013,56 +13450,13 @@ app.get('/migrate-rosters', async (req, res) => {
 
 // NURSE ROSTER
 const hmsRoster = require('./lib/hmsRoster');
+const { rosterRedirectBase } = require('./lib/cashierOdooShell');
+const { createCashierRosterRenderers } = require('./lib/cashierRosterRender');
+const { renderNurseRosterPage } = createCashierRosterRenderers(pool, { pageTitle, renderAppError });
 
-app.get('/nurse-roster', requireAuth, requirePerm('nurse_duty.read', 'nurse_duty.write'), async (req, res) => {
- const view = hmsRoster.parseView(req.query.view);
- let date = String(req.query.date || hmsRoster.isoToday()).slice(0, 10);
- if (req.query.month) date = hmsRoster.firstDayOfMonth(String(req.query.month) + '-01');
- const facilityId = hmsRoster.resolveFacilityId(req);
- const cfg = hmsRoster.rosterKindConfig('nurse');
-
- try {
- await hmsRoster.ensureNurseRosterSchema(pool);
- const nurses = await hmsRoster.fetchRosterStaff(pool, 'nurse');
- const rosterRows = await hmsRoster.fetchRosterRows(pool, 'nurse', facilityId, view, date);
-
- const rd = hmsRoster.buildRosterRenderData({
-  kind: 'nurse',
-  view,
-  date,
-  dateField: cfg.dateField,
-  typeField: cfg.typeField,
-  staff: nurses,
-  rosterRows,
- });
-
- const nr = String((req.session.user || {}).role || '');
- res.render('nurse-roster', {
-  title: pageTitle(res, 'document_titles.nurse_roster', 'Nurse Shift Roster — ZAIZENS'),
-  nurses,
-  roster: rd.roster,
-  view: rd.view,
-  date: rd.date,
-  weekStart: rd.weekStart,
-  weekDays: rd.weekDays,
-  monthMeta: rd.monthMeta,
-  monthWeeks: rd.monthWeeks,
-  staffWithWeek: rd.staffWithWeek,
-  staffDayShift: rd.staffDayShift,
-  staffDayDetails: rd.staffDayDetails,
-  shiftDefaults: hmsRoster.NURSE_SHIFT_DEFAULTS,
-  period: rd.period,
-  prevNavDate: rd.prevNavDate,
-  nextNavDate: rd.nextNavDate,
-  isAdminOrSuper: nr === '1' || nr === '99',
-  flash: req.query.msg || null,
-  error: req.query.err || null,
- });
- } catch (err) {
- console.error('ROSTER LOAD ERROR:', err);
- renderAppError(res, 500, 'page.load_roster', 'Roster load failure.', { detail: err.message })
- }
-});
+app.get('/nurse-roster', requireAuth, requirePerm('nurse_duty.read', 'nurse_duty.write'), (req, res) =>
+ renderNurseRosterPage(req, res, { cashierShell: String(req.query.from || '') === 'cashier' })
+);
 
 app.post('/nurse-roster/save', requireAuth, requireAdminOrSuper, async (req, res) => {
  const { date, view } = req.body;
@@ -13070,7 +13464,7 @@ app.post('/nurse-roster/save', requireAuth, requireAdminOrSuper, async (req, res
  const facilityId = hmsRoster.resolveFacilityId(req);
  if (!Object.keys(shifts).length) {
   return res.redirect(
-   hmsRoster.rosterRedirectUrl('/nurse-roster', view || 'day', date, { err: 'No shifts received — save again' })
+   hmsRoster.rosterRedirectUrl(rosterRedirectBase(req, '/nurse-roster'), view || 'day', date, { err: 'No shifts received — save again' })
   );
  }
  try {
@@ -13078,11 +13472,11 @@ app.post('/nurse-roster/save', requireAuth, requireAdminOrSuper, async (req, res
  await pool.query('START TRANSACTION');
  await hmsRoster.saveRosterShifts(pool, 'nurse', facilityId, date, shifts);
  await pool.query('COMMIT');
- res.redirect(hmsRoster.rosterRedirectUrl('/nurse-roster', view || 'day', date, { msg: 'Roster saved successfully' }));
+ res.redirect(hmsRoster.rosterRedirectUrl(rosterRedirectBase(req, '/nurse-roster'), view || 'day', date, { msg: 'Roster saved successfully' }));
  } catch (err) {
  await pool.query('ROLLBACK').catch(() => {});
  console.error('NURSE ROSTER SAVE:', err);
- res.redirect(hmsRoster.rosterRedirectUrl('/nurse-roster', req.body.view || 'day', req.body.date, { err: 'Save failure' }));
+ res.redirect(hmsRoster.rosterRedirectUrl(rosterRedirectBase(req, '/nurse-roster'), req.body.view || 'day', req.body.date, { err: 'Save failure' }));
  }
 });
 
@@ -13093,11 +13487,11 @@ app.post('/nurse-roster/copy', requireAuth, requireAdminOrSuper, async (req, res
  await hmsRoster.ensureNurseRosterSchema(pool);
  await hmsRoster.copyRosterDay(pool, 'nurse', facilityId, from_date, to_date);
  res.redirect(
-  hmsRoster.rosterRedirectUrl('/nurse-roster', view || 'day', to_date, { msg: 'Roster copied successfully' })
+  hmsRoster.rosterRedirectUrl(rosterRedirectBase(req, '/nurse-roster'), view || 'day', to_date, { msg: 'Roster copied successfully' })
  );
  } catch (err) {
  console.error('NURSE ROSTER COPY:', err);
- res.redirect(hmsRoster.rosterRedirectUrl('/nurse-roster', view || 'day', to_date, { err: 'Copy failure' }));
+ res.redirect(hmsRoster.rosterRedirectUrl(rosterRedirectBase(req, '/nurse-roster'), view || 'day', to_date, { err: 'Copy failure' }));
  }
 });
 
@@ -14936,73 +15330,14 @@ app.get('/credit-account/:id', requireAuth, requirePerm('credit.read','credit.wr
 });
 
 // DOCTOR DUTY ROSTER
-function isRosterAdminUser(req) {
- const dr = String((req.session && req.session.user && req.session.user.role) || '');
- return dr === '1' || dr === '99';
-}
-
-app.get('/doctor-roster', requireAuth, requirePerm('doctor_duty.read', 'doctor_duty.write'), async (req, res) => {
- const view = hmsRoster.parseView(req.query.view);
- let date = String(req.query.date || hmsRoster.isoToday()).slice(0, 10);
- if (req.query.month) date = hmsRoster.firstDayOfMonth(String(req.query.month) + '-01');
- const facilityId = hmsRoster.resolveFacilityId(req);
- const cfg = hmsRoster.rosterKindConfig('doctor');
- const staffEmpId = parseInt(String(req.session.userId ?? req.session.user?.id ?? ''), 10) || 0;
- const userPerms = res.locals.userPerms || [];
- const canEditAll = isRosterAdminUser(req);
- const canEditRoster = canEditAll || (userPerms || []).includes('doctor_duty.write');
-
- try {
- const doctors = await hmsRoster.fetchRosterStaff(pool, 'doctor');
- const rosterRows = await hmsRoster.fetchRosterRows(pool, 'doctor', facilityId, view, date);
-
- const rd = hmsRoster.buildRosterRenderData({
-  kind: 'doctor',
-  view,
-  date,
-  dateField: cfg.dateField,
-  typeField: cfg.typeField,
-  staff: doctors,
-  rosterRows,
- });
-
- const [consultationRooms] = await pool
-  .query(
-   'SELECT id, code, name FROM tbl_consultation_room WHERE facility_id = ? AND status = 1 ORDER BY sort_order ASC, id ASC',
-   [facilityId]
-  )
-  .catch(() => [[]]);
-
- res.render('doctor-roster', {
-  title: pageTitle(res, 'document_titles.doctor_duty_roster', 'Doctor Duty Roster — ZAIZENS'),
-  doctors,
-  roster: rd.roster,
-  view: rd.view,
-  date: rd.date,
-  weekStart: rd.weekStart,
-  weekDays: rd.weekDays,
-  monthMeta: rd.monthMeta,
-  monthWeeks: rd.monthWeeks,
-  staffWithWeek: rd.staffWithWeek,
-  staffDayShift: rd.staffDayShift,
-  staffDayDetails: rd.staffDayDetails || {},
-  shiftDefaults: hmsRoster.DOCTOR_SHIFT_DEFAULTS,
-  consultationRooms: consultationRooms || [],
-  period: rd.period,
-  prevNavDate: rd.prevNavDate,
-  nextNavDate: rd.nextNavDate,
-  isAdminOrSuper: isRosterAdminUser(req),
-  canEditRoster,
-  canEditAll,
-  staffEmpId,
-  flash: req.query.msg || null,
-  error: req.query.err || null,
- });
- } catch (err) {
- console.error('DOCTOR ROSTER ERROR:', err);
- renderAppError(res, 500, 'page.load_doctor_roster', 'Doctor roster failure.', { detail: err.message })
- }
+const { isRosterAdminUser, renderDoctorRosterPage } = createCashierRosterRenderers(pool, {
+ pageTitle,
+ renderAppError,
 });
+
+app.get('/doctor-roster', requireAuth, requirePerm('doctor_duty.read', 'doctor_duty.write'), (req, res) =>
+ renderDoctorRosterPage(req, res, { cashierShell: String(req.query.from || '') === 'cashier' })
+);
 
 app.post('/doctor-roster/save', requireAuth, requirePerm('doctor_duty.write'), async (req, res) => {
  const { date, view } = req.body;
@@ -15012,7 +15347,7 @@ app.post('/doctor-roster/save', requireAuth, requirePerm('doctor_duty.write'), a
  const shifts = hmsRoster.filterRosterShiftsForEditor(rawShifts, staffEmpId, isRosterAdminUser(req));
  if (!Object.keys(shifts).length) {
   return res.redirect(
-   hmsRoster.rosterRedirectUrl('/doctor-roster', view || 'day', date, { err: 'No duty rows received — save again' })
+   hmsRoster.rosterRedirectUrl(rosterRedirectBase(req, '/doctor-roster'), view || 'day', date, { err: 'No duty rows received — save again' })
   );
  }
  try {
@@ -15020,13 +15355,13 @@ app.post('/doctor-roster/save', requireAuth, requirePerm('doctor_duty.write'), a
  await hmsRoster.saveRosterShifts(pool, 'doctor', facilityId, date, shifts);
  await pool.query('COMMIT');
  res.redirect(
-  hmsRoster.rosterRedirectUrl('/doctor-roster', view || 'day', date, { msg: 'Duty roster saved successfully' })
+  hmsRoster.rosterRedirectUrl(rosterRedirectBase(req, '/doctor-roster'), view || 'day', date, { msg: 'Duty roster saved successfully' })
  );
  } catch (err) {
  await pool.query('ROLLBACK').catch(() => {});
  console.error('DOCTOR ROSTER SAVE:', err);
  res.redirect(
-  hmsRoster.rosterRedirectUrl('/doctor-roster', req.body.view || 'day', req.body.date, { err: 'Save failure' })
+  hmsRoster.rosterRedirectUrl(rosterRedirectBase(req, '/doctor-roster'), req.body.view || 'day', req.body.date, { err: 'Save failure' })
  );
  }
 });
@@ -15035,21 +15370,21 @@ app.post('/doctor-roster/copy', requireAuth, requirePerm('doctor_duty.write'), a
  const { from_date, to_date, view } = req.body;
  if (!isRosterAdminUser(req)) {
   return res.redirect(
-   hmsRoster.rosterRedirectUrl('/doctor-roster', view || 'day', to_date, { err: 'Copy day is limited to administrators' })
+   hmsRoster.rosterRedirectUrl(rosterRedirectBase(req, '/doctor-roster'), view || 'day', to_date, { err: 'Copy day is limited to administrators' })
   );
  }
  const facilityId = hmsRoster.resolveFacilityId(req);
  try {
  await hmsRoster.copyRosterDay(pool, 'doctor', facilityId, from_date, to_date);
  res.redirect(
-  hmsRoster.rosterRedirectUrl('/doctor-roster', view || 'day', to_date, {
+  hmsRoster.rosterRedirectUrl(rosterRedirectBase(req, '/doctor-roster'), view || 'day', to_date, {
    msg: 'Duty roster copied successfully',
   })
  );
  } catch (err) {
  console.error('DOCTOR ROSTER COPY:', err);
  res.redirect(
-  hmsRoster.rosterRedirectUrl('/doctor-roster', view || 'day', to_date, { err: 'Copy failure' })
+  hmsRoster.rosterRedirectUrl(rosterRedirectBase(req, '/doctor-roster'), view || 'day', to_date, { err: 'Copy failure' })
  );
  }
 });
@@ -15882,7 +16217,7 @@ app.post('/ipd/add-charge', requireAuth, async (req, res) => {
  }
 
  const ref = req.get('referer') || '/wards';
- res.redirect(ref + (ref.includes('?') ? '&' : '?') + 'msg=Charge+of+' + amt + '+FCFA+added+to+running+bill.');
+ res.redirect(ref + (ref.includes('?') ? '&' : '?') + 'msg=' + encodeURIComponent(`Charge of ${fmtMoney(amt)} added to running bill.`));
  } catch(err) {
  console.error('IPD CHARGE ERROR:', err.message);
  res.redirect('/wards?err=' + encodeURIComponent(flashT(res, 'flash.charge_failed', { message: err.message })));
@@ -17082,6 +17417,9 @@ app.get('/radiology/print-all-by-code/:code', requireAuth, requirePerm('radiolog
  }
 });
 
+// Cashier roster aliases (/cashier/nurse-roster → /nurse-roster?from=cashier)
+require('./routes/cashierRosterShell')(app, { requireAuth, requirePerm });
+
 // 404 / 500 HANDLERS — MUST BE LAST
 // If views/error.ejs is missing on the server, still return HTML (avoid double-failure).
 function _escapeHtml(s) {
@@ -17233,6 +17571,13 @@ if (require.main === module && !underPassenger()) {
      await require('./lib/ensureEmployeeHrSchema')(pool);
     }
     await aclLayout.init(pool);
+    try {
+      const { ensureCountryProfileSchema } = require('./lib/ensureCountryProfileSchema');
+      await ensureCountryProfileSchema(pool);
+      await require('./lib/hmsCountryProfileService').loadActiveFromDb(pool);
+    } catch (countryBootErr) {
+      console.warn('country profile boot:', countryBootErr.message);
+    }
     bootStep('pre-listen-schema', 'ok');
    } catch (e) {
     bootStep('pre-listen-schema', 'warn', e);
@@ -17318,6 +17663,11 @@ if (require.main === module && !underPassenger()) {
    const { ensureDeploymentSchema } = require('./lib/ensureDeploymentSchema');
    await ensureDeploymentSchema(pool);
   }],
+  ['ensureCountryProfileSchema', async () => {
+   const { ensureCountryProfileSchema } = require('./lib/ensureCountryProfileSchema');
+   await ensureCountryProfileSchema(pool);
+   await require('./lib/hmsCountryProfileService').loadActiveFromDb(pool);
+  }],
   ['ensureNavAccessSchema',         async () => {
    const { ensureNavAccessSchema } = require('./lib/ensureNavAccessSchema');
    await ensureNavAccessSchema(pool);
@@ -17348,6 +17698,18 @@ if (require.main === module && !underPassenger()) {
   }],
   ['ensureLabLimsSchema', async () => {
    const fn = require('./lib/ensureLabLimsSchema');
+   await fn(pool);
+  }],
+  ['ensureLabLimsPhaseSchema', async () => {
+   const fn = require('./lib/ensureLabLimsPhaseSchema');
+   await fn(pool);
+  }],
+  ['ensureLabWalkinSchema', async () => {
+   const fn = require('./lib/ensureLabWalkinSchema');
+   await fn(pool);
+  }],
+  ['ensureRadWalkinSchema', async () => {
+   const fn = require('./lib/ensureRadWalkinSchema');
    await fn(pool);
   }],
   ['ensureDiagTemplateRefSchema', async () => {

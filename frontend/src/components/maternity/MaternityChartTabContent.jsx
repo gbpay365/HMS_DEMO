@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { FormField } from '../FormField';
 import { formatDate } from '../../lib/listUi';
+import { formatMoney } from '../../lib/hmsLocale';
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -564,7 +565,7 @@ export function MaternityChartBillingPanel({ billing }) {
             <div key={s.code || s.label} className="col-md-6 col-lg-4 mb-2">
               <div className="border rounded p-2 h-100 bg-white">
                 <div className="small font-weight-bold">{s.label}</div>
-                <div className="small text-muted">{Number(s.price || 0).toLocaleString()} FCFA</div>
+                <div className="small text-muted">{formatMoney(s.price || 0)}</div>
                 <span className={`badge mt-1 ${s.paid ? 'badge-success' : 'badge-warning'}`}>
                   {s.paid ? tc('billing_paid', 'Paid') : tc('billing_due', 'Payment due')}
                 </span>

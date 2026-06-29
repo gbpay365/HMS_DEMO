@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { fcfaFmt, fetchPharmacyInventory, fetchServiceCatalog } from '../lib/addChargeApi';
+import { fetchPharmacyInventory, fetchServiceCatalog } from '../lib/addChargeApi';
+import { formatMoney } from '../lib/hmsLocale';
 import { notifyAlert } from '../lib/notifyBridge';
 import { FormField } from '../components/FormField';
 import { Modal } from '../components/Modal';
@@ -363,7 +364,7 @@ export function AddChargeModal({
                               }}
                             >
                               <span className="font-semibold">{it.name}</span>
-                              <span className="text-slate-500"> — {fcfaFmt(it.price)} FCFA</span>
+                              <span className="text-slate-500"> — {formatMoney(it.price)}</span>
                             </button>
                           ))
                         )}
@@ -389,7 +390,7 @@ export function AddChargeModal({
                     </option>
                     {state.catalogItems.map((it) => (
                       <option key={it.id} value={it.id}>
-                        {it.name} — {fcfaFmt(it.price)} FCFA
+                        {it.name} — {formatMoney(it.price)}
                       </option>
                     ))}
                   </select>

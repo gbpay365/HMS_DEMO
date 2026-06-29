@@ -16,23 +16,19 @@
   <h1 class="hms-surface-hero-title"><%= _t('procurement_page.title', { ns: 'legacy', defaultValue: 'Procurement Hub' }) %></h1>
   <p><%= _t('procurement_page.subtitle', { ns: 'legacy', defaultValue: 'Manage suppliers, purchase orders, and supply chain logistics.' }) %></p>
  </div>
- <div class="row align-items-center mb-4">
- <div class="col-sm-8 d-none">
- <h4 class="page-title font-weight-bold text-dark"><%= _t('procurement_page.title', { ns: 'legacy', defaultValue: 'Procurement Hub' }) %></h4>
- </div>
- <div class="col-sm-4 text-right">
- <div class="btn-group">
- <button class="hms-btn hms-btn-primary dropdown-toggle" data-toggle="dropdown">
- <i class="fa fa-plus mr-2"></i> <%= _t('procurement_page.new_action', { ns: 'legacy', defaultValue: 'New Action' }) %>
- </button>
- <div class="dropdown-menu">
- <a class="dropdown-item" href="/procurement/rfq"><%= _t('procurement_page.create_rfq', { ns: 'legacy', defaultValue: 'Create RFQ' }) %></a>
- <a class="dropdown-item" href="/procurement/purchase-requests">Create purchase request</a>
- <a class="dropdown-item" href="/procurement/purchase-orders/new">Issue PO</a>
- <a class="dropdown-item" href="/procurement/vendors"><%= _t('procurement_page.add_vendor', { ns: 'legacy', defaultValue: 'Add Vendor' }) %></a>
- </div>
- </div>
- </div>
+ <div class="d-flex flex-wrap mb-4 hms-proc-hub-actions">
+  <a href="/procurement/rfq" class="hms-btn hms-btn-primary mr-2 mb-2">
+   <i class="fa fa-file-text-o mr-1"></i><%= _t('procurement_page.create_rfq', { ns: 'legacy', defaultValue: 'RFQ' }) %>
+  </a>
+  <a href="/procurement/purchase-requests" class="hms-btn hms-btn-primary mr-2 mb-2">
+   <i class="fa fa-file-text mr-1"></i><%= _t('procurement_page.purchase_request', { ns: 'legacy', defaultValue: 'Purchase Request' }) %>
+  </a>
+  <a href="/procurement/purchase-orders/new" class="hms-btn hms-btn-primary mr-2 mb-2">
+   <i class="fa fa-shopping-cart mr-1"></i><%= _t('procurement_page.issue_po', { ns: 'legacy', defaultValue: 'Issue PO' }) %>
+  </a>
+  <a href="/procurement/vendors" class="hms-btn hms-btn-primary mb-2">
+   <i class="fa fa-truck mr-1"></i><%= _t('procurement_page.add_vendor', { ns: 'legacy', defaultValue: 'Add Vendor' }) %>
+  </a>
  </div>
 
  <!-- KPI Row -->

@@ -46,6 +46,17 @@
     "open": "Open",
     "full_opd_queue": "Full OPD queue",
     "live_stats": "Live statistics",
+    "groups": {
+      "flow": "Patient flow today",
+      "diagnostics": "Diagnostics",
+      "census": "Hospital census",
+      "finance": "Finance"
+    },
+    "modules": {
+      "patient": "Patients & visits",
+      "diagnostics": "Diagnostics & pharmacy",
+      "facilities": "Front office & facilities"
+    },
     "card_maternity": "Maternity",
     "card_maternity_desc": "ANC & delivery"
   },
@@ -1517,7 +1528,8 @@
     "title": "Procurement Hub",
     "subtitle": "Manage suppliers, purchase orders, and supply chain logistics.",
     "new_action": "New Action",
-    "create_rfq": "Create RFQ",
+    "create_rfq": "RFQ",
+    "purchase_request": "Purchase Request",
     "issue_po": "Issue PO",
     "add_vendor": "Add Vendor",
     "kpi_active_vendors": "Active Vendors",

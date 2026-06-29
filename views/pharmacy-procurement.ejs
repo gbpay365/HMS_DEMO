@@ -1,0 +1,26 @@
+<%- include('partials/header') %>
+<%
+if (typeof _t !== 'function') {
+  var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; });
+}
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    var o = { ns: 'legacy', defaultValue: fallback };
+    if (opts && typeof opts === 'object') { for (var pk in opts) { if (Object.prototype.hasOwnProperty.call(opts, pk)) o[pk] = opts[pk]; } }
+    return _t(key, o);
+  };
+}
+%>
+<%- include('partials/pharmacy-odoo-start', {
+  phaOdooMenu: 'purchase',
+  phaOdooSub: 'procurement',
+  phaOdooTitle: _tl('procurement_page.title', 'Procurement Hub'),
+  nursingSupplyPending,
+  flash,
+  error
+}) %>
+<div class="o_content p-3 hms-ui page-wrapper hms-surface-module">
+  <%- include('partials/procurement-hub-panel', { procLinks: procLinks, stats: stats, pos: pos, canWrite: canWrite }) %>
+</div>
+<%- include('partials/pharmacy-odoo-end') %>
+<%- include('partials/footer') %>

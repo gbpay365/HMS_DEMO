@@ -9,6 +9,7 @@ const { journalPostManualWithResult, journalPostLastError } = require('../lib/hm
 const { loadActiveCostCenters, resolveCostCenterIdByCode } = require('../lib/finCostCenters');
 const { generateJournalReference, todayIsoDate } = require('../lib/journalEntryReference');
 const { mapFinRows, formatDisplayDate } = require('../lib/hmsFormatDate');
+const hmsCountry = require('../lib/hmsCountry');
 
 function finRead(req, res, next) {
  const p = res.locals.userPerms || [];
@@ -143,6 +144,8 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
   if (!(await finTablesOk(pool))) {
    return res.redirect('/financials/journal?err=' + encodeURIComponent('Journal tables missing.'));
   }
+  const { ensureProfileCoaSeeded } = require('../lib/ensureProfileCoa');
+  await ensureProfileCoaSeeded(pool).catch(() => {});
   let accounts = await loadPostingAccounts(pool);
   if (!accounts.length) {
    const { seedFinAccounts } = require('../lib/finAccountSeedData');
@@ -161,7 +164,7 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
       reference: generateJournalReference(today),
       journal_type: 'JNL',
       journal_code: 'OD',
-      currency_code: 'XAF',
+      currency_code: hmsCountry.currencyCode(),
       exchange_rate: 1,
     },
     flash: req.query.msg || null,
@@ -271,11 +274,21 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
    });
   }
 
-  const asDraft = req.body.save_as_draft === '1';
-  const result = await journalPostManualWithResult(pool, fid, jdate, ref, desc, uid, glLines, {
-    asDraft,
-    journalCode: String(req.body.journal_code || 'OD').trim().slice(0, 8) || 'OD',
-  });
+  const { postManualJournalEntry } = require('../lib/finManualJournalPost');
+  const result = await postManualJournalEntry(pool, req.session || {}, req.body);
+  if (!result.ok && result.needsSubAccounts) {
+   return res.render('financials-journal-new', {
+    title: 'New journal entry — ZAIZENS',
+    ...journalNewPayload({
+     accounts,
+     costCenters,
+     body: req.body,
+     flash: null,
+     error: result.error,
+     needsSubAccounts: result.missing,
+    }),
+   });
+  }
   if (!result.ok || !result.journalId) {
    return res.render('financials-journal-new', {
     title: 'New journal entry — ZAIZENS',
@@ -284,15 +297,29 @@ module.exports = function registerFinancialsJournal(app, pool, requireAuth) {
      costCenters,
      body: req.body,
      flash: null,
-     error: journalPostLastError() || 'Could not post journal.',
+     error: result.error || journalPostLastError() || 'Could not post journal.',
     }),
    });
   }
-  const msg = result.duplicate
-    ? 'Journal was already posted (duplicate source).'
-    : asDraft
-      ? 'Draft journal saved.'
-      : 'Journal posted.';
-  return res.redirect(`/financials/journal-view?id=${result.journalId}&msg=` + encodeURIComponent(msg));
+  return res.redirect(`/financials/journal-view?id=${result.journalId}&msg=` + encodeURIComponent(result.message));
+ });
+
+ app.post('/api/financials/journal-new', requireAuth, finWrite, ensureTables, async (req, res) => {
+  try {
+   if (!(await finTablesOk(pool))) {
+    return res.status(503).json({ ok: false, error: 'Journal tables missing.' });
+   }
+   const { postManualJournalEntry } = require('../lib/finManualJournalPost');
+   const result = await postManualJournalEntry(pool, req.session || {}, req.body || {});
+   if (!result.ok && result.needsSubAccounts) {
+    return res.status(422).json(result);
+   }
+   if (!result.ok) {
+    return res.status(400).json(result);
+   }
+   return res.json(result);
+  } catch (e) {
+   return res.status(500).json({ ok: false, error: e.message || 'Journal post failed.' });
+  }
  });
 };

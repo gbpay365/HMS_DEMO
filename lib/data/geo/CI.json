@@ -1,0 +1,146 @@
+{
+  "code": "CI",
+  "name": "Côte d'Ivoire",
+  "regionLabel": "District",
+  "subRegionLabel": "Region",
+  "regions": [
+    "Abidjan",
+    "Bas-Sassandra",
+    "Comoé",
+    "Denguélé",
+    "Gôh-Djiboua",
+    "Lacs",
+    "Lagunes",
+    "Montagnes",
+    "Sassandra-Marahoué",
+    "Savanes",
+    "Vallée du Bandama",
+    "Woroba",
+    "Yamoussoukro",
+    "Zanzan"
+  ],
+  "subRegions": {
+    "Abidjan": [
+      "Abidjan",
+      "Abobo",
+      "Anyama",
+      "Bingerville"
+    ],
+    "Bas-Sassandra": [
+      "Gbôklé",
+      "Nawa",
+      "San-Pédro",
+      "Sassandra",
+      "Tabou"
+    ],
+    "Comoé": [
+      "Abengourou",
+      "Aboisso",
+      "Adiaké",
+      "Agnibilékrou",
+      "Ayamé",
+      "Bonoua",
+      "Grand-Bassam",
+      "Indénié-Djuablin",
+      "Sud-Comoé"
+    ],
+    "Denguélé": [
+      "Folon",
+      "Kabadougou",
+      "Odienné"
+    ],
+    "Gôh-Djiboua": [
+      "Divo",
+      "Gagnoa",
+      "Gôh",
+      "Guibéroua",
+      "Lakota",
+      "Lôh-Djiboua",
+      "Oumé"
+    ],
+    "Lacs": [
+      "Arrah",
+      "Bélier",
+      "Bocanda",
+      "Bongouanou",
+      "Daoukro",
+      "Dimbokro",
+      "Iffou",
+      "Moronou",
+      "N'Zi",
+      "Toumodi",
+      "Yamoussoukro"
+    ],
+    "Lagunes": [
+      "Adzopé",
+      "Affery",
+      "Agboville",
+      "Agnéby-Tiassa",
+      "Akoupé",
+      "Dabou",
+      "Grand-Lahou",
+      "Grands-Ponts",
+      "Tiassalé"
+    ],
+    "Montagnes": [
+      "Bangolo",
+      "Biankouma",
+      "Cavally",
+      "Danané",
+      "Duekoué",
+      "Guémon",
+      "Guiglo",
+      "Man",
+      "Tonkpi",
+      "Toulépleu Gueré"
+    ],
+    "Sassandra-Marahoué": [
+      "Bouaflé",
+      "Daloa",
+      "Haut-Sassandra",
+      "Issia",
+      "Marahoué",
+      "Vavoua",
+      "Zuénoula"
+    ],
+    "Savanes": [
+      "Bagoué",
+      "Boundiali",
+      "Ferkéssédougou",
+      "Kong",
+      "Korhogo",
+      "Ouangolodougou",
+      "Poro",
+      "Sinématiali",
+      "Tchologo",
+      "Tengrela"
+    ],
+    "Vallée du Bandama": [
+      "Béoumi",
+      "Botro",
+      "Bouaké",
+      "Dabakala",
+      "Gbêkê",
+      "Hambol",
+      "Katiola",
+      "Sakassou"
+    ],
+    "Woroba": [
+      "Bafing",
+      "Béré",
+      "Mankono",
+      "Séguéla",
+      "Touba",
+      "Worodougou"
+    ],
+    "Zanzan": [
+      "Bondoukou",
+      "Bouna",
+      "Bounkani",
+      "Gontougo",
+      "Sinfra",
+      "Tanda"
+    ]
+  },
+  "source": "dr5hn/countries-states-cities-database"
+}

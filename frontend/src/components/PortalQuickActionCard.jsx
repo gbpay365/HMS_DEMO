@@ -7,14 +7,22 @@ function resolveTileHref(tile) {
   return raw;
 }
 
-function FaTileIcon({ icon, color, compact }) {
+function FaTileIcon({ icon, color, compact, dense, animated }) {
   const cls = icon?.startsWith('fa-') ? icon : icon ? `fa-${icon}` : 'fa-th-large';
+  const sizeClass = dense
+    ? 'h-9 w-9 rounded-lg text-sm'
+    : compact
+      ? 'h-11 w-11 rounded-2xl text-lg'
+      : 'h-14 w-14 rounded-2xl text-2xl';
   return (
     <span
-      className={`flex shrink-0 items-center justify-center rounded-2xl text-white shadow-md ${
-        compact ? 'h-11 w-11 text-lg' : 'h-14 w-14 text-2xl'
+      className={`flex shrink-0 items-center justify-center text-white shadow-md transition duration-300 ${sizeClass} ${
+        animated ? 'hms-staff-action-card__icon group-hover:scale-110 group-hover:-rotate-3' : ''
       }`}
-      style={{ background: `linear-gradient(135deg, ${color}, ${color}cc)` }}
+      style={{
+        background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+        boxShadow: `0 4px 14px ${color}45`,
+      }}
     >
       <i className={`fa ${cls}`} aria-hidden="true" />
     </span>
@@ -32,7 +40,13 @@ function resolveTileHint(tile, t) {
   return t('portalQuick.open_workspace');
 }
 
-export function PortalQuickActionCard({ tile, accentColor = '#714b67', compact = false }) {
+export function PortalQuickActionCard({
+  tile,
+  accentColor = '#714b67',
+  compact = false,
+  dense = false,
+  animationDelay = 0,
+}) {
   const { t } = useTranslation(['clinical', 'nav']);
   const color = tile.color || accentColor;
   const href = resolveTileHref(tile);
@@ -50,6 +64,31 @@ export function PortalQuickActionCard({ tile, accentColor = '#714b67', compact =
       window.location.assign(href);
     }
   };
+
+  if (dense) {
+    return (
+      <a
+        href={href || '#'}
+        onClick={handleClick}
+        className="hms-staff-action-card group flex cursor-pointer items-center gap-2.5 rounded-xl border border-slate-100 bg-white p-2.5 shadow-card transition duration-300 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-lg"
+        style={{ animationDelay: `${animationDelay}ms` }}
+      >
+        <FaTileIcon icon={tile.icon} color={color} dense animated />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-bold text-ink transition duration-300 group-hover:text-brand">
+            {label}
+          </div>
+          <div className="truncate text-xs leading-snug text-slate-500">{hint}</div>
+        </div>
+        <span
+          className="shrink-0 text-slate-300 transition duration-300 group-hover:translate-x-1 group-hover:text-brand"
+          aria-hidden="true"
+        >
+          →
+        </span>
+      </a>
+    );
+  }
 
   if (compact) {
     return (
@@ -90,35 +129,43 @@ export function PortalQuickActionCard({ tile, accentColor = '#714b67', compact =
   );
 }
 
-export function PortalQuickActions({ tiles = [], accentColor = '#714b67' }) {
+export function PortalQuickActions({ tiles = [], accentColor = '#714b67', dense = false }) {
   const { t } = useTranslation('clinical');
   if (!tiles.length) return null;
 
-  const compact = tiles.length > 6;
-  const gridClass = compact
-    ? 'grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
-    : tiles.length <= 3
-      ? 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
-      : 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+  const compact = !dense && tiles.length > 6;
+  const gridClass = dense
+    ? 'grid gap-2 sm:grid-cols-2 lg:grid-cols-3'
+    : compact
+      ? 'grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
+      : tiles.length <= 3
+        ? 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
+        : 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
   return (
-    <section className="mb-6">
-      <div className="mb-4 flex items-end justify-between gap-3">
+    <section className={dense ? 'mb-4' : 'mb-6'}>
+      <div className={`flex items-end justify-between gap-3 ${dense ? 'mb-2' : 'mb-4'}`}>
         <div>
-          <h2 className="text-lg font-extrabold text-ink">{t('portalQuick.title')}</h2>
-          <p className="text-xs text-slate-500">{t('portalQuick.subtitle')}</p>
+          <h2 className={`font-extrabold text-ink ${dense ? 'text-xs uppercase tracking-wider text-slate-500' : 'text-lg'}`}>
+            {t('portalQuick.title')}
+          </h2>
+          {!dense ? <p className="text-xs text-slate-500">{t('portalQuick.subtitle')}</p> : null}
         </div>
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-          {tiles.length} {tiles.length === 1 ? t('portalQuick.shortcut') : t('portalQuick.shortcuts')}
-        </span>
+        {!dense ? (
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+            {tiles.length} {tiles.length === 1 ? t('portalQuick.shortcut') : t('portalQuick.shortcuts')}
+          </span>
+        ) : null}
       </div>
       <div className={gridClass}>
-        {tiles.map((tile) => (
+        {tiles.map((tile, idx) => (
           <PortalQuickActionCard
             key={tile.code || tile.url}
             tile={tile}
             accentColor={accentColor}
             compact={compact}
+            dense={dense}
+            animationDelay={dense ? idx * 80 + 120 : 0}
           />
         ))}
       </div>

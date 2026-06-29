@@ -1,0 +1,1529 @@
+{
+  "accounts": [
+    {
+      "code": "100000",
+      "label": "Class 1 — Non-current assets",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": null,
+      "is_posting": 0,
+      "sort_order": 100000
+    },
+    {
+      "code": "110000",
+      "label": "Property, plant and equipment",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "100000",
+      "is_posting": 0,
+      "sort_order": 110000
+    },
+    {
+      "code": "110100",
+      "label": "Land",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "110000",
+      "is_posting": 1,
+      "sort_order": 110100
+    },
+    {
+      "code": "110200",
+      "label": "Buildings",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "110000",
+      "is_posting": 1,
+      "sort_order": 110200
+    },
+    {
+      "code": "110300",
+      "label": "Medical equipment",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "110000",
+      "is_posting": 1,
+      "sort_order": 110300
+    },
+    {
+      "code": "110400",
+      "label": "Furniture and fittings",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "110000",
+      "is_posting": 1,
+      "sort_order": 110400
+    },
+    {
+      "code": "110500",
+      "label": "Motor vehicles",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "110000",
+      "is_posting": 1,
+      "sort_order": 110500
+    },
+    {
+      "code": "110600",
+      "label": "Computer equipment",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "110000",
+      "is_posting": 1,
+      "sort_order": 110600
+    },
+    {
+      "code": "110700",
+      "label": "Generators and plant",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "110000",
+      "is_posting": 1,
+      "sort_order": 110700
+    },
+    {
+      "code": "110800",
+      "label": "Accumulated depreciation — PPE",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "110000",
+      "is_posting": 1,
+      "sort_order": 110800
+    },
+    {
+      "code": "120000",
+      "label": "Intangible assets",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "100000",
+      "is_posting": 0,
+      "sort_order": 120000
+    },
+    {
+      "code": "120100",
+      "label": "Software licences",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "120000",
+      "is_posting": 1,
+      "sort_order": 120100
+    },
+    {
+      "code": "120200",
+      "label": "Goodwill",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "120000",
+      "is_posting": 1,
+      "sort_order": 120200
+    },
+    {
+      "code": "120800",
+      "label": "Accumulated amortisation — intangibles",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "120000",
+      "is_posting": 1,
+      "sort_order": 120800
+    },
+    {
+      "code": "130000",
+      "label": "Right-of-use assets (IFRS 16)",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "100000",
+      "is_posting": 0,
+      "sort_order": 130000
+    },
+    {
+      "code": "130100",
+      "label": "Leased premises — ROU asset",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "130000",
+      "is_posting": 1,
+      "sort_order": 130100
+    },
+    {
+      "code": "140000",
+      "label": "Long-term investments",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "100000",
+      "is_posting": 0,
+      "sort_order": 140000
+    },
+    {
+      "code": "140100",
+      "label": "Investment in subsidiaries",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "140000",
+      "is_posting": 1,
+      "sort_order": 140100
+    },
+    {
+      "code": "140200",
+      "label": "Other long-term investments",
+      "ohada_class": 1,
+      "account_type": "asset",
+      "parent_code": "140000",
+      "is_posting": 1,
+      "sort_order": 140200
+    },
+    {
+      "code": "200000",
+      "label": "Class 2 — Current assets",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": null,
+      "is_posting": 0,
+      "sort_order": 200000
+    },
+    {
+      "code": "210000",
+      "label": "Inventories",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "200000",
+      "is_posting": 0,
+      "sort_order": 210000
+    },
+    {
+      "code": "210100",
+      "label": "Medical supplies inventory",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "210000",
+      "is_posting": 1,
+      "sort_order": 210100
+    },
+    {
+      "code": "210200",
+      "label": "Pharmacy inventory",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "210000",
+      "is_posting": 1,
+      "sort_order": 210200
+    },
+    {
+      "code": "210300",
+      "label": "Laboratory consumables",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "210000",
+      "is_posting": 1,
+      "sort_order": 210300
+    },
+    {
+      "code": "210400",
+      "label": "General stores and linen",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "210000",
+      "is_posting": 1,
+      "sort_order": 210400
+    },
+    {
+      "code": "210500",
+      "label": "Drugs and pharmaceuticals — warehouse",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "210000",
+      "is_posting": 1,
+      "sort_order": 210500
+    },
+    {
+      "code": "220000",
+      "label": "Trade and other receivables",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "200000",
+      "is_posting": 0,
+      "sort_order": 220000
+    },
+    {
+      "code": "220100",
+      "label": "Patients receivable",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "220000",
+      "is_posting": 1,
+      "sort_order": 220100
+    },
+    {
+      "code": "220200",
+      "label": "HMO / insurance receivable",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "220000",
+      "is_posting": 1,
+      "sort_order": 220200
+    },
+    {
+      "code": "220300",
+      "label": "NHIS receivable",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "220000",
+      "is_posting": 1,
+      "sort_order": 220300
+    },
+    {
+      "code": "220400",
+      "label": "Staff advances receivable",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "220000",
+      "is_posting": 1,
+      "sort_order": 220400
+    },
+    {
+      "code": "220500",
+      "label": "Other receivables",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "220000",
+      "is_posting": 1,
+      "sort_order": 220500
+    },
+    {
+      "code": "220800",
+      "label": "Allowance for doubtful debts",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "220000",
+      "is_posting": 1,
+      "sort_order": 220800
+    },
+    {
+      "code": "230000",
+      "label": "Cash and cash equivalents",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "200000",
+      "is_posting": 0,
+      "sort_order": 230000
+    },
+    {
+      "code": "230100",
+      "label": "Cash in hand (main till)",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "230000",
+      "is_posting": 1,
+      "sort_order": 230100
+    },
+    {
+      "code": "230200",
+      "label": "Petty cash",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "230000",
+      "is_posting": 1,
+      "sort_order": 230200
+    },
+    {
+      "code": "230300",
+      "label": "Bank — current account",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "230000",
+      "is_posting": 1,
+      "sort_order": 230300
+    },
+    {
+      "code": "230400",
+      "label": "Bank — POS settlement account",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "230000",
+      "is_posting": 1,
+      "sort_order": 230400
+    },
+    {
+      "code": "230500",
+      "label": "Treasury — patient payment methods",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "230000",
+      "is_posting": 0,
+      "sort_order": 230500
+    },
+    {
+      "code": "230501",
+      "label": "Cash — patient receipts",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "230000",
+      "is_posting": 1,
+      "sort_order": 230501
+    },
+    {
+      "code": "230502",
+      "label": "Bank transfer — patient receipts",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "230000",
+      "is_posting": 1,
+      "sort_order": 230502
+    },
+    {
+      "code": "230503",
+      "label": "POS / Card — patient receipts",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "230000",
+      "is_posting": 1,
+      "sort_order": 230503
+    },
+    {
+      "code": "230504",
+      "label": "Paystack / mobile money — patient receipts",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "230000",
+      "is_posting": 1,
+      "sort_order": 230504
+    },
+    {
+      "code": "230505",
+      "label": "Patient wallet — patient receipts",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "230000",
+      "is_posting": 1,
+      "sort_order": 230505
+    },
+    {
+      "code": "240000",
+      "label": "Prepayments",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "200000",
+      "is_posting": 0,
+      "sort_order": 240000
+    },
+    {
+      "code": "240100",
+      "label": "Prepaid insurance",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "240000",
+      "is_posting": 1,
+      "sort_order": 240100
+    },
+    {
+      "code": "240200",
+      "label": "Prepaid rent",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "240000",
+      "is_posting": 1,
+      "sort_order": 240200
+    },
+    {
+      "code": "240300",
+      "label": "Prepaid subscriptions",
+      "ohada_class": 2,
+      "account_type": "asset",
+      "parent_code": "240000",
+      "is_posting": 1,
+      "sort_order": 240300
+    },
+    {
+      "code": "300000",
+      "label": "Class 3 — Equity",
+      "ohada_class": 3,
+      "account_type": "equity",
+      "parent_code": null,
+      "is_posting": 0,
+      "sort_order": 300000
+    },
+    {
+      "code": "310000",
+      "label": "Share capital",
+      "ohada_class": 3,
+      "account_type": "equity",
+      "parent_code": "300000",
+      "is_posting": 0,
+      "sort_order": 310000
+    },
+    {
+      "code": "310100",
+      "label": "Ordinary share capital",
+      "ohada_class": 3,
+      "account_type": "equity",
+      "parent_code": "310000",
+      "is_posting": 1,
+      "sort_order": 310100
+    },
+    {
+      "code": "320000",
+      "label": "Retained earnings",
+      "ohada_class": 3,
+      "account_type": "equity",
+      "parent_code": "300000",
+      "is_posting": 0,
+      "sort_order": 320000
+    },
+    {
+      "code": "330000",
+      "label": "Reserves",
+      "ohada_class": 3,
+      "account_type": "equity",
+      "parent_code": "300000",
+      "is_posting": 0,
+      "sort_order": 330000
+    },
+    {
+      "code": "330100",
+      "label": "Statutory reserve",
+      "ohada_class": 3,
+      "account_type": "equity",
+      "parent_code": "330000",
+      "is_posting": 1,
+      "sort_order": 330100
+    },
+    {
+      "code": "330200",
+      "label": "Revaluation reserve",
+      "ohada_class": 3,
+      "account_type": "equity",
+      "parent_code": "330000",
+      "is_posting": 1,
+      "sort_order": 330200
+    },
+    {
+      "code": "340000",
+      "label": "Current year profit / loss",
+      "ohada_class": 3,
+      "account_type": "equity",
+      "parent_code": "300000",
+      "is_posting": 0,
+      "sort_order": 340000
+    },
+    {
+      "code": "400000",
+      "label": "Class 4 — Liabilities",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": null,
+      "is_posting": 0,
+      "sort_order": 400000
+    },
+    {
+      "code": "410000",
+      "label": "Trade payables",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "400000",
+      "is_posting": 0,
+      "sort_order": 410000
+    },
+    {
+      "code": "410100",
+      "label": "Suppliers payable",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "410000",
+      "is_posting": 1,
+      "sort_order": 410100
+    },
+    {
+      "code": "410200",
+      "label": "Accrued purchases",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "410000",
+      "is_posting": 1,
+      "sort_order": 410200
+    },
+    {
+      "code": "420000",
+      "label": "Staff and statutory payables",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "400000",
+      "is_posting": 0,
+      "sort_order": 420000
+    },
+    {
+      "code": "420100",
+      "label": "PAYE tax payable",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "420000",
+      "is_posting": 1,
+      "sort_order": 420100
+    },
+    {
+      "code": "420200",
+      "label": "Pension contribution payable (PFA)",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "420000",
+      "is_posting": 1,
+      "sort_order": 420200
+    },
+    {
+      "code": "420300",
+      "label": "NHF payable",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "420000",
+      "is_posting": 1,
+      "sort_order": 420300
+    },
+    {
+      "code": "420400",
+      "label": "NHIS contribution payable",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "420000",
+      "is_posting": 1,
+      "sort_order": 420400
+    },
+    {
+      "code": "420500",
+      "label": "Salaries and wages payable",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "420000",
+      "is_posting": 1,
+      "sort_order": 420500
+    },
+    {
+      "code": "420600",
+      "label": "Staff advances payable",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "420000",
+      "is_posting": 1,
+      "sort_order": 420600
+    },
+    {
+      "code": "420700",
+      "label": "NSITF / ECII payable",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "420000",
+      "is_posting": 1,
+      "sort_order": 420700
+    },
+    {
+      "code": "430000",
+      "label": "Other payables",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "400000",
+      "is_posting": 0,
+      "sort_order": 430000
+    },
+    {
+      "code": "430100",
+      "label": "Accrued expenses",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "430000",
+      "is_posting": 1,
+      "sort_order": 430100
+    },
+    {
+      "code": "430200",
+      "label": "Deposits received",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "430000",
+      "is_posting": 1,
+      "sort_order": 430200
+    },
+    {
+      "code": "440000",
+      "label": "Tax liabilities",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "400000",
+      "is_posting": 0,
+      "sort_order": 440000
+    },
+    {
+      "code": "440100",
+      "label": "VAT output (collected)",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "440000",
+      "is_posting": 1,
+      "sort_order": 440100
+    },
+    {
+      "code": "440200",
+      "label": "VAT input (recoverable)",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "440000",
+      "is_posting": 1,
+      "sort_order": 440200
+    },
+    {
+      "code": "440300",
+      "label": "Withholding tax payable",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "440000",
+      "is_posting": 1,
+      "sort_order": 440300
+    },
+    {
+      "code": "440400",
+      "label": "Company income tax payable",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "440000",
+      "is_posting": 1,
+      "sort_order": 440400
+    },
+    {
+      "code": "440500",
+      "label": "Education tax payable",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "440000",
+      "is_posting": 1,
+      "sort_order": 440500
+    },
+    {
+      "code": "440600",
+      "label": "Stamp duties payable",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "440000",
+      "is_posting": 1,
+      "sort_order": 440600
+    },
+    {
+      "code": "450000",
+      "label": "Borrowings",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "400000",
+      "is_posting": 0,
+      "sort_order": 450000
+    },
+    {
+      "code": "450100",
+      "label": "Bank overdraft",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "450000",
+      "is_posting": 1,
+      "sort_order": 450100
+    },
+    {
+      "code": "450200",
+      "label": "Term loans",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "450000",
+      "is_posting": 1,
+      "sort_order": 450200
+    },
+    {
+      "code": "460000",
+      "label": "Lease liabilities (IFRS 16)",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "400000",
+      "is_posting": 0,
+      "sort_order": 460000
+    },
+    {
+      "code": "460100",
+      "label": "Lease liability — current portion",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "460000",
+      "is_posting": 1,
+      "sort_order": 460100
+    },
+    {
+      "code": "460200",
+      "label": "Lease liability — non-current portion",
+      "ohada_class": 4,
+      "account_type": "liability",
+      "parent_code": "460000",
+      "is_posting": 1,
+      "sort_order": 460200
+    },
+    {
+      "code": "500000",
+      "label": "Class 5 — Revenue",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": null,
+      "is_posting": 0,
+      "sort_order": 500000
+    },
+    {
+      "code": "510000",
+      "label": "Patient service revenue",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "500000",
+      "is_posting": 0,
+      "sort_order": 510000
+    },
+    {
+      "code": "510101",
+      "label": "Outpatient consultation",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "510000",
+      "is_posting": 1,
+      "sort_order": 510101
+    },
+    {
+      "code": "510102",
+      "label": "Laboratory services",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "510000",
+      "is_posting": 1,
+      "sort_order": 510102
+    },
+    {
+      "code": "510103",
+      "label": "Radiology and imaging",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "510000",
+      "is_posting": 1,
+      "sort_order": 510103
+    },
+    {
+      "code": "510104",
+      "label": "Pharmacy sales",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "510000",
+      "is_posting": 1,
+      "sort_order": 510104
+    },
+    {
+      "code": "510105",
+      "label": "Inpatient / hospitalisation",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "510000",
+      "is_posting": 1,
+      "sort_order": 510105
+    },
+    {
+      "code": "510106",
+      "label": "Emergency services",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "510000",
+      "is_posting": 1,
+      "sort_order": 510106
+    },
+    {
+      "code": "510107",
+      "label": "Surgical procedures",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "510000",
+      "is_posting": 1,
+      "sort_order": 510107
+    },
+    {
+      "code": "510108",
+      "label": "Maternity / OBGYN",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "510000",
+      "is_posting": 1,
+      "sort_order": 510108
+    },
+    {
+      "code": "510109",
+      "label": "Dental services",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "510000",
+      "is_posting": 1,
+      "sort_order": 510109
+    },
+    {
+      "code": "510110",
+      "label": "Physiotherapy",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "510000",
+      "is_posting": 1,
+      "sort_order": 510110
+    },
+    {
+      "code": "510111",
+      "label": "Dialysis services",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "510000",
+      "is_posting": 1,
+      "sort_order": 510111
+    },
+    {
+      "code": "510112",
+      "label": "ICU / critical care",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "510000",
+      "is_posting": 1,
+      "sort_order": 510112
+    },
+    {
+      "code": "510199",
+      "label": "Other clinical revenue",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "510000",
+      "is_posting": 1,
+      "sort_order": 510199
+    },
+    {
+      "code": "520000",
+      "label": "Other operating revenue",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "500000",
+      "is_posting": 0,
+      "sort_order": 520000
+    },
+    {
+      "code": "520100",
+      "label": "Accommodation / canteen",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "520000",
+      "is_posting": 1,
+      "sort_order": 520100
+    },
+    {
+      "code": "520200",
+      "label": "Insurance reimbursements",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "520000",
+      "is_posting": 1,
+      "sort_order": 520200
+    },
+    {
+      "code": "520300",
+      "label": "Government grants — health",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "520000",
+      "is_posting": 1,
+      "sort_order": 520300
+    },
+    {
+      "code": "520400",
+      "label": "Training income",
+      "ohada_class": 5,
+      "account_type": "revenue",
+      "parent_code": "520000",
+      "is_posting": 1,
+      "sort_order": 520400
+    },
+    {
+      "code": "600000",
+      "label": "Class 6 — Cost of sales / direct costs",
+      "ohada_class": 6,
+      "account_type": "expense",
+      "parent_code": null,
+      "is_posting": 0,
+      "sort_order": 600000
+    },
+    {
+      "code": "610000",
+      "label": "Medical consumables used",
+      "ohada_class": 6,
+      "account_type": "expense",
+      "parent_code": "600000",
+      "is_posting": 1,
+      "sort_order": 610000
+    },
+    {
+      "code": "610100",
+      "label": "Surgical supplies consumed",
+      "ohada_class": 6,
+      "account_type": "expense",
+      "parent_code": "600000",
+      "is_posting": 1,
+      "sort_order": 610100
+    },
+    {
+      "code": "610200",
+      "label": "Ward consumables",
+      "ohada_class": 6,
+      "account_type": "expense",
+      "parent_code": "600000",
+      "is_posting": 1,
+      "sort_order": 610200
+    },
+    {
+      "code": "620000",
+      "label": "Pharmacy cost of goods sold",
+      "ohada_class": 6,
+      "account_type": "expense",
+      "parent_code": "600000",
+      "is_posting": 1,
+      "sort_order": 620000
+    },
+    {
+      "code": "630000",
+      "label": "Laboratory reagents consumed",
+      "ohada_class": 6,
+      "account_type": "expense",
+      "parent_code": "600000",
+      "is_posting": 1,
+      "sort_order": 630000
+    },
+    {
+      "code": "640000",
+      "label": "Imaging consumables",
+      "ohada_class": 6,
+      "account_type": "expense",
+      "parent_code": "600000",
+      "is_posting": 1,
+      "sort_order": 640000
+    },
+    {
+      "code": "650000",
+      "label": "Blood bank supplies",
+      "ohada_class": 6,
+      "account_type": "expense",
+      "parent_code": "600000",
+      "is_posting": 1,
+      "sort_order": 650000
+    },
+    {
+      "code": "700000",
+      "label": "Class 7 — Operating expenses",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": null,
+      "is_posting": 0,
+      "sort_order": 700000
+    },
+    {
+      "code": "710000",
+      "label": "Staff costs",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "700000",
+      "is_posting": 0,
+      "sort_order": 710000
+    },
+    {
+      "code": "710100",
+      "label": "Salaries and wages",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "710000",
+      "is_posting": 1,
+      "sort_order": 710100
+    },
+    {
+      "code": "710200",
+      "label": "Employer pension contribution (10%)",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "710000",
+      "is_posting": 1,
+      "sort_order": 710200
+    },
+    {
+      "code": "710300",
+      "label": "Staff welfare and meals",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "710000",
+      "is_posting": 1,
+      "sort_order": 710300
+    },
+    {
+      "code": "710400",
+      "label": "Training and development",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "710000",
+      "is_posting": 1,
+      "sort_order": 710400
+    },
+    {
+      "code": "710500",
+      "label": "Medical staff locum fees",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "710000",
+      "is_posting": 1,
+      "sort_order": 710500
+    },
+    {
+      "code": "710600",
+      "label": "NHIS employer contribution",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "710000",
+      "is_posting": 1,
+      "sort_order": 710600
+    },
+    {
+      "code": "710700",
+      "label": "NSITF / ECII employer levy",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "710000",
+      "is_posting": 1,
+      "sort_order": 710700
+    },
+    {
+      "code": "720000",
+      "label": "Utilities",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "700000",
+      "is_posting": 0,
+      "sort_order": 720000
+    },
+    {
+      "code": "720100",
+      "label": "Electricity (PHCN / DISCO)",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "720000",
+      "is_posting": 1,
+      "sort_order": 720100
+    },
+    {
+      "code": "720200",
+      "label": "Water",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "720000",
+      "is_posting": 1,
+      "sort_order": 720200
+    },
+    {
+      "code": "720300",
+      "label": "Diesel and generator fuel",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "720000",
+      "is_posting": 1,
+      "sort_order": 720300
+    },
+    {
+      "code": "720400",
+      "label": "Medical gases",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "720000",
+      "is_posting": 1,
+      "sort_order": 720400
+    },
+    {
+      "code": "730000",
+      "label": "Repairs and maintenance",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "700000",
+      "is_posting": 0,
+      "sort_order": 730000
+    },
+    {
+      "code": "730100",
+      "label": "Building repairs",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "730000",
+      "is_posting": 1,
+      "sort_order": 730100
+    },
+    {
+      "code": "730200",
+      "label": "Equipment maintenance",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "730000",
+      "is_posting": 1,
+      "sort_order": 730200
+    },
+    {
+      "code": "730300",
+      "label": "Biomedical engineering",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "730000",
+      "is_posting": 1,
+      "sort_order": 730300
+    },
+    {
+      "code": "740000",
+      "label": "Professional fees",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "700000",
+      "is_posting": 0,
+      "sort_order": 740000
+    },
+    {
+      "code": "740100",
+      "label": "Legal fees",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "740000",
+      "is_posting": 1,
+      "sort_order": 740100
+    },
+    {
+      "code": "740200",
+      "label": "Audit fees",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "740000",
+      "is_posting": 1,
+      "sort_order": 740200
+    },
+    {
+      "code": "740300",
+      "label": "Consultancy fees",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "740000",
+      "is_posting": 1,
+      "sort_order": 740300
+    },
+    {
+      "code": "750000",
+      "label": "Insurance",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "700000",
+      "is_posting": 0,
+      "sort_order": 750000
+    },
+    {
+      "code": "750100",
+      "label": "Medical malpractice insurance",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "750000",
+      "is_posting": 1,
+      "sort_order": 750100
+    },
+    {
+      "code": "750200",
+      "label": "Property insurance",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "750000",
+      "is_posting": 1,
+      "sort_order": 750200
+    },
+    {
+      "code": "760000",
+      "label": "Rent and rates",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "700000",
+      "is_posting": 0,
+      "sort_order": 760000
+    },
+    {
+      "code": "760100",
+      "label": "Rent — premises",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "760000",
+      "is_posting": 1,
+      "sort_order": 760100
+    },
+    {
+      "code": "760200",
+      "label": "Property rates and levies",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "760000",
+      "is_posting": 1,
+      "sort_order": 760200
+    },
+    {
+      "code": "770000",
+      "label": "Communication",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "700000",
+      "is_posting": 0,
+      "sort_order": 770000
+    },
+    {
+      "code": "770100",
+      "label": "Telephone and internet",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "770000",
+      "is_posting": 1,
+      "sort_order": 770100
+    },
+    {
+      "code": "770200",
+      "label": "Postage and courier",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "770000",
+      "is_posting": 1,
+      "sort_order": 770200
+    },
+    {
+      "code": "780000",
+      "label": "Bank charges",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "700000",
+      "is_posting": 0,
+      "sort_order": 780000
+    },
+    {
+      "code": "780100",
+      "label": "Bank charges",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "780000",
+      "is_posting": 1,
+      "sort_order": 780100
+    },
+    {
+      "code": "780200",
+      "label": "POS charges",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "780000",
+      "is_posting": 1,
+      "sort_order": 780200
+    },
+    {
+      "code": "790000",
+      "label": "General administration",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "700000",
+      "is_posting": 0,
+      "sort_order": 790000
+    },
+    {
+      "code": "790100",
+      "label": "Office supplies",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "790000",
+      "is_posting": 1,
+      "sort_order": 790100
+    },
+    {
+      "code": "790200",
+      "label": "Cleaning and hygiene",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "790000",
+      "is_posting": 1,
+      "sort_order": 790200
+    },
+    {
+      "code": "790300",
+      "label": "Security services",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "790000",
+      "is_posting": 1,
+      "sort_order": 790300
+    },
+    {
+      "code": "790400",
+      "label": "Laundry and linen",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "790000",
+      "is_posting": 1,
+      "sort_order": 790400
+    },
+    {
+      "code": "790500",
+      "label": "Waste disposal",
+      "ohada_class": 7,
+      "account_type": "expense",
+      "parent_code": "790000",
+      "is_posting": 1,
+      "sort_order": 790500
+    },
+    {
+      "code": "800000",
+      "label": "Class 8 — Other income and expenses",
+      "ohada_class": 8,
+      "account_type": "expense",
+      "parent_code": null,
+      "is_posting": 0,
+      "sort_order": 800000
+    },
+    {
+      "code": "810000",
+      "label": "Finance costs",
+      "ohada_class": 8,
+      "account_type": "expense",
+      "parent_code": "800000",
+      "is_posting": 0,
+      "sort_order": 810000
+    },
+    {
+      "code": "810100",
+      "label": "Interest on borrowings",
+      "ohada_class": 8,
+      "account_type": "expense",
+      "parent_code": "810000",
+      "is_posting": 1,
+      "sort_order": 810100
+    },
+    {
+      "code": "810200",
+      "label": "Interest on lease liabilities",
+      "ohada_class": 8,
+      "account_type": "expense",
+      "parent_code": "810000",
+      "is_posting": 1,
+      "sort_order": 810200
+    },
+    {
+      "code": "820000",
+      "label": "Depreciation and amortisation",
+      "ohada_class": 8,
+      "account_type": "expense",
+      "parent_code": "800000",
+      "is_posting": 0,
+      "sort_order": 820000
+    },
+    {
+      "code": "820100",
+      "label": "Depreciation — buildings",
+      "ohada_class": 8,
+      "account_type": "expense",
+      "parent_code": "820000",
+      "is_posting": 1,
+      "sort_order": 820100
+    },
+    {
+      "code": "820200",
+      "label": "Depreciation — medical equipment",
+      "ohada_class": 8,
+      "account_type": "expense",
+      "parent_code": "820000",
+      "is_posting": 1,
+      "sort_order": 820200
+    },
+    {
+      "code": "820300",
+      "label": "Depreciation — vehicles",
+      "ohada_class": 8,
+      "account_type": "expense",
+      "parent_code": "820000",
+      "is_posting": 1,
+      "sort_order": 820300
+    },
+    {
+      "code": "820400",
+      "label": "Amortisation — software",
+      "ohada_class": 8,
+      "account_type": "expense",
+      "parent_code": "820000",
+      "is_posting": 1,
+      "sort_order": 820400
+    },
+    {
+      "code": "830000",
+      "label": "Foreign exchange gains and losses",
+      "ohada_class": 8,
+      "account_type": "expense",
+      "parent_code": "800000",
+      "is_posting": 1,
+      "sort_order": 830000
+    },
+    {
+      "code": "840000",
+      "label": "Gain / loss on disposal of assets",
+      "ohada_class": 8,
+      "account_type": "expense",
+      "parent_code": "800000",
+      "is_posting": 1,
+      "sort_order": 840000
+    },
+    {
+      "code": "850000",
+      "label": "Donations and CSR expenditure",
+      "ohada_class": 8,
+      "account_type": "expense",
+      "parent_code": "800000",
+      "is_posting": 1,
+      "sort_order": 850000
+    },
+    {
+      "code": "860000",
+      "label": "Penalties and fines",
+      "ohada_class": 8,
+      "account_type": "expense",
+      "parent_code": "800000",
+      "is_posting": 1,
+      "sort_order": 860000
+    },
+    {
+      "code": "870000",
+      "label": "Other non-operating income",
+      "ohada_class": 8,
+      "account_type": "income",
+      "parent_code": "800000",
+      "is_posting": 0,
+      "sort_order": 870000
+    },
+    {
+      "code": "870100",
+      "label": "Interest income",
+      "ohada_class": 8,
+      "account_type": "income",
+      "parent_code": "870000",
+      "is_posting": 1,
+      "sort_order": 870100
+    },
+    {
+      "code": "870200",
+      "label": "Miscellaneous income",
+      "ohada_class": 8,
+      "account_type": "income",
+      "parent_code": "870000",
+      "is_posting": 1,
+      "sort_order": 870200
+    }
+  ],
+  "class_titles": {
+    "1": "Class 1 — Non-current assets",
+    "2": "Class 2 — Current assets",
+    "3": "Class 3 — Equity",
+    "4": "Class 4 — Liabilities",
+    "5": "Class 5 — Revenue",
+    "6": "Class 6 — Cost of sales / direct costs",
+    "7": "Class 7 — Operating expenses",
+    "8": "Class 8 — Other income and expenses"
+  },
+  "locale": "en",
+  "country": "NG",
+  "posting_rule": "Nigeria IFRS — hospital chart; journal postings use leaf accounts"
+}

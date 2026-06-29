@@ -1,0 +1,52 @@
+<%- include('partials/header') %>
+<%- include('partials/laboratory-odoo-start', {
+  labOdooMenu: 'operations',
+  labOdooTitle: 'Investigation order status'
+}) %>
+<div class="o_content">
+<%- include('partials/lims-ops-nav', { limsOpsMenu: 'investigation' }) %>
+<% if (error) { %><div class="alert alert-danger small mb-3"><%= error %></div><% } %>
+<form method="get" class="form-inline mb-3">
+ <input type="date" name="date" value="<%= date %>" class="form-control form-control-sm mr-2">
+ <input type="search" name="q" value="<%= q || '' %>" placeholder="Patient, request, test…" class="form-control form-control-sm mr-2">
+ <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+</form>
+<div class="hms-surface-card">
+ <div class="table-responsive">
+  <table class="table table-sm table-hover mb-0">
+   <thead class="thead-light">
+    <tr>
+     <th>Order</th><th>Date</th><th>Patient</th><th>Referred by</th><th>Provider</th>
+     <th class="text-center">Paid</th><th class="text-center">Proc</th><th class="text-center">Retest</th>
+     <th class="text-center">Done</th><th class="text-center">Verified</th><th class="text-center">Approved</th>
+     <th class="text-center">Printed</th><th>Status</th>
+    </tr>
+   </thead>
+   <tbody>
+   <% if (!rows || !rows.length) { %>
+   <tr><td colspan="13" class="text-muted text-center py-4">No orders for this date.</td></tr>
+   <% } %>
+   <% (rows || []).forEach(function(r){ %>
+   <tr>
+    <td class="font-weight-bold"><%= r.order_key %></td>
+    <td class="small"><%= r.order_date ? String(r.order_date).slice(0,10) : '—' %></td>
+    <td><%= r.patient_label %></td>
+    <td class="small"><%= r.referred_by || '—' %></td>
+    <td class="small"><%= r.provider_name %></td>
+    <td class="text-center"><%= r.bill_paid || 0 %></td>
+    <td class="text-center"><%= r.processing || 0 %></td>
+    <td class="text-center"><%= r.retest || 0 %></td>
+    <td class="text-center"><%= r.completed || 0 %></td>
+    <td class="text-center"><%= r.verified || 0 %></td>
+    <td class="text-center"><%= r.approved || 0 %></td>
+    <td class="text-center"><%= r.printed || 0 %></td>
+    <td><span class="badge badge-light border"><%= r.overall_status %></span></td>
+   </tr>
+   <% }); %>
+   </tbody>
+  </table>
+ </div>
+</div>
+</div>
+<%- include('partials/laboratory-odoo-end') %>
+<%- include('partials/footer') %>

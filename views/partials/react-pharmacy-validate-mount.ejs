@@ -1,0 +1,20 @@
+<%
+  var _pd = locals.pageData || {};
+  var _page = locals.reactPage || 'lab-workflow';
+  var _loadingLabel = locals.reactLoadingLabel || (typeof t === 'function' ? t('loading_pages.service_validate', { ns: 'common' }) : 'Loading…');
+  var _title = locals.phaOdooTitle || (typeof t === 'function' ? t('document_titles.validate_code_pharmacy', { ns: 'common', defaultValue: 'Validate code' }) : 'Validate code');
+%>
+<%- include('pharmacy-odoo-start', {
+  phaOdooMenu: 'config',
+  phaOdooSub: 'validate',
+  phaOdooTitle: _title,
+  nursingSupplyPending: locals.nursingSupplyPending,
+  flash: locals.flash || _pd.flash,
+  error: locals.error || _pd.error
+}) %>
+<%- include('react-page-mount', {
+  reactPage: _page,
+  reactLoadingLabel: _loadingLabel,
+  pageData: locals.pageData || {}
+}) %>
+<%- include('pharmacy-odoo-end') %>

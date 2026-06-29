@@ -1,19 +1,31 @@
+import { formatMoney } from './hmsLocale';
+
 const PROFILE_META = {
   assistant_director: {
     titleKey: 'staffDashboard.assistant_director.title',
     subtitleKey: 'staffDashboard.assistant_director.subtitle',
     api: '/portal/api/assistant-director-dashboard',
-    theme: 'dark'},
+    theme: 'dark',
+  },
   front_desk: {
     titleKey: 'staffDashboard.front_desk.title',
     subtitleKey: 'staffDashboard.front_desk.subtitle',
     api: '/portal/api/front-desk-dashboard',
-    theme: 'light'},
+    theme: 'light',
+  },
   secretary: {
     titleKey: 'staffDashboard.secretary.title',
     subtitleKey: 'staffDashboard.secretary.subtitle',
     api: '/portal/api/secretary-dashboard',
-    theme: 'light'}};
+    theme: 'light',
+  },
+  cashier: {
+    titleKey: 'staffDashboard.cashier.title',
+    subtitleKey: 'staffDashboard.cashier.subtitle',
+    api: '/portal/api/cashier-dashboard',
+    theme: 'light',
+  },
+};
 
 export function staffDashboardMeta(profile) {
   return PROFILE_META[profile] || PROFILE_META.front_desk;
@@ -35,7 +47,5 @@ export function kpiValue(data, dataKey) {
 }
 
 export function formatStaffMoney(v) {
-  const n = Math.round(Number(v) || 0);
-  if (!n) return '0 XAF';
-  return `${n.toLocaleString('en-GB')} XAF`;
+  return formatMoney(v);
 }

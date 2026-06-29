@@ -1,7 +1,8 @@
 import { categoryLabelKey, flattenGroupedLineRows, groupLineItemsByCategory } from '../../lib/billingPrintGroups';
+import { formatMoney } from '../../lib/hmsLocale';
 
 function fmt(n) {
-  return Number(n || 0).toLocaleString('fr-FR');
+  return formatMoney(n);
 }
 
 export function BillingGroupedLinesTable({
@@ -24,7 +25,7 @@ export function BillingGroupedLinesTable({
                 {t('receipt.subtotal_section', { section })}
               </td>
               <td className={`${cellPad} text-right font-mono text-sm font-bold leading-none text-slate-900 print:py-0`}>
-                {fmt(row.subtotal)} XAF
+                {fmt(row.subtotal)}
               </td>
             </tr>
           );

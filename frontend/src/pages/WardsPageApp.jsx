@@ -2,7 +2,6 @@ import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { notifyError } from '../lib/notifyBridge';
 import { WardBedCard } from '../components/ward/WardBedCard';
-import { IpdWorkflowBanner } from '../components/ipd/IpdWorkflowBanner';
 import { FlashMessages } from '../components/FlashMessages';
 import { StatCard } from '../components/StatCard';
 import { SurfaceHero } from '../components/SurfaceHero';
@@ -133,8 +132,6 @@ export function WardsPageApp({
           </div>
         </SurfaceHero>
 
-        <IpdWorkflowBanner />
-
         <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label={t('wards.kpi_total')} value={stats.total || bedCount} tone="brand" icon="bed" />
           <StatCard label={t('wards.kpi_avail')} value={stats.avail} tone="brand" icon="check-circle" />
@@ -246,7 +243,7 @@ export function WardsPageApp({
                           </div>
                           <span className={`mt-1 inline-block ${pill.className}`}>{pill.label}</span>
                           <div className="mt-1 text-xs font-bold text-red-600">
-                            {formatFcfa(a.running_bill)} {t('shared.fcfa')}
+                            {formatFcfa(a.running_bill)}
                           </div>
                           <div className="mt-2 flex flex-wrap gap-1">
                             <a href={`/patient-chart/${a.patient_id}`} className="text-[10px] text-brand hover:underline">

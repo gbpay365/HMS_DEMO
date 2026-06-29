@@ -1,0 +1,98 @@
+{
+  "code": "MR",
+  "name": "Mauritania",
+  "regionLabel": "Region",
+  "subRegionLabel": "Department",
+  "regions": [
+    "Adrar",
+    "Assaba",
+    "Brakna",
+    "Dakhlet Nouadhibou",
+    "Gorgol",
+    "Guidimaka",
+    "Hodh Ech Chargui",
+    "Hodh El Gharbi",
+    "Inchiri",
+    "Nouakchott-Nord",
+    "Nouakchott-Ouest",
+    "Nouakchott-Sud",
+    "Tagant",
+    "Tiris Zemmour",
+    "Trarza"
+  ],
+  "subRegions": {
+    "Adrar": [
+      "Atar",
+      "Azougui",
+      "Chingueṭṭi",
+      "Ksar el Khali"
+    ],
+    "Assaba": [
+      "Barkéwol",
+      "Kiffa"
+    ],
+    "Brakna": [
+      "’Elb el Jmel",
+      "Aleg",
+      "Bofal",
+      "Sori Malé"
+    ],
+    "Dakhlet Nouadhibou": [
+      "Cansado",
+      "Iouik",
+      "Nouadhibou"
+    ],
+    "Gorgol": [
+      "Kaédi"
+    ],
+    "Guidimaka": [
+      "Sélibaby"
+    ],
+    "Hodh Ech Chargui": [
+      "Diade",
+      "Kataouane",
+      "Néma",
+      "Timbedra"
+    ],
+    "Hodh El Gharbi": [
+      "Aioun",
+      "Ayoun el Atrous",
+      "Togba"
+    ],
+    "Inchiri": [
+      "Akjoujt"
+    ],
+    "Nouakchott-Nord": [
+      "Dar-Naim",
+      "Teyarett",
+      "Toujouonine"
+    ],
+    "Nouakchott-Ouest": [
+      "Ksar",
+      "Sebkha",
+      "Tevragh-Zeina"
+    ],
+    "Nouakchott-Sud": [
+      "Arafat",
+      "Riyad"
+    ],
+    "Tagant": [
+      "Moudjeria",
+      "Tichit",
+      "Tijigja"
+    ],
+    "Tiris Zemmour": [
+      "Ain Ben Tili",
+      "Chegga",
+      "Fderîck",
+      "Zouérat",
+      "Zouerate"
+    ],
+    "Trarza": [
+      "Legat",
+      "Rosso",
+      "Tékane"
+    ]
+  },
+  "source": "dr5hn/countries-states-cities-database"
+}

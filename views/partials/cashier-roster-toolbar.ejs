@@ -1,0 +1,59 @@
+<%
+var _base = locals.rosterBase || '/nurse-roster';
+var _q = locals.rosterQuerySep || '?';
+var _view = locals.rosterView || 'day';
+var _date = locals.rosterDate || '';
+var _weekStart = locals.rosterWeekStart || _date;
+var _monthStart = (locals.rosterMonthMeta && locals.rosterMonthMeta.start) || _date;
+var _prev = locals.rosterPrevDate || _date;
+var _next = locals.rosterNextDate || _date;
+var _countLabel = locals.rosterCountLabel || '';
+var _tDay = locals.rosterLabelDay || 'Day';
+var _tWeek = locals.rosterLabelWeek || 'Week';
+var _tMonth = locals.rosterLabelMonth || 'Month';
+var _tPrev = locals.rosterLabelPrev || 'Previous';
+var _tNext = locals.rosterLabelNext || 'Next';
+var _tGo = locals.rosterLabelGo || 'Go';
+var _tToday = locals.rosterLabelToday || 'Today';
+var _monthLabel = (locals.rosterMonthMeta && locals.rosterMonthMeta.label) || '';
+var _weekLabel = locals.rosterWeekLabel || _weekStart;
+%>
+<div class="cs-roster-toolbar ins-toolbar">
+  <div class="cs-inner-tabs cs-roster-view-tabs">
+    <a href="<%= _base %><%= _q %>view=day&amp;date=<%= _date %>" class="cs-inner-tab<%= _view === 'day' ? ' active' : '' %>">
+      <i class="fa fa-calendar-o"></i> <%= _tDay %>
+    </a>
+    <a href="<%= _base %><%= _q %>view=week&amp;date=<%= _weekStart %>" class="cs-inner-tab<%= _view === 'week' ? ' active' : '' %>">
+      <i class="fa fa-calendar"></i> <%= _tWeek %>
+    </a>
+    <a href="<%= _base %><%= _q %>view=month&amp;date=<%= _monthStart %>" class="cs-inner-tab<%= _view === 'month' ? ' active' : '' %>">
+      <i class="fa fa-calendar-check-o"></i> <%= _tMonth %>
+    </a>
+  </div>
+  <div class="cs-roster-nav">
+    <a href="<%= _base %><%= _q %>view=<%= _view %>&amp;date=<%= _prev %>" class="cs-btn cs-btn-sm cs-roster-nav-btn" title="<%= _tPrev %>" aria-label="<%= _tPrev %>">
+      <i class="fa fa-chevron-left"></i>
+    </a>
+    <% if (_view === 'month') { %>
+    <span class="cs-roster-period-label"><%= _monthLabel %></span>
+    <% } else if (_view === 'week') { %>
+    <span class="cs-roster-period-label"><%= _weekLabel %></span>
+    <% } else { %>
+    <form action="<%= _base %>" method="GET" class="cs-roster-date-form">
+      <input type="hidden" name="view" value="day">
+      <% if (_base.indexOf('from=cashier') >= 0) { %><input type="hidden" name="from" value="cashier"><% } %>
+      <input type="date" name="date" class="cs-input cs-roster-date-input" value="<%= _date %>">
+      <button type="submit" class="cs-btn cs-btn-sm cs-btn-primary"><%= _tGo %></button>
+    </form>
+    <% } %>
+    <a href="<%= _base %><%= _q %>view=<%= _view %>&amp;date=<%= _next %>" class="cs-btn cs-btn-sm cs-roster-nav-btn" title="<%= _tNext %>" aria-label="<%= _tNext %>">
+      <i class="fa fa-chevron-right"></i>
+    </a>
+    <% if (_view !== 'day') { %>
+    <a href="<%= _base %><%= _q %>view=day" class="cs-btn cs-btn-sm cs-roster-today-btn"><%= _tToday %></a>
+    <% } %>
+  </div>
+  <% if (_countLabel) { %>
+  <span class="cs-roster-count ins-count-label"><%= _countLabel %></span>
+  <% } %>
+</div>

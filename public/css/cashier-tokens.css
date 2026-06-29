@@ -1,0 +1,37 @@
+/**
+ * Cashier module — teal / emerald theme (distinct from pharmacy rose)
+ */
+body.hms-body--cashier-odoo,
+body.hms-body--cashier-odoo .cashier-odoo-app {
+  --cs-primary: #0f4c5c;
+  --cs-accent: #10b981;
+  --cs-accent-hover: #059669;
+  --cs-darker: #083544;
+  --cs-light: #d1fae5;
+  --cs-lighter: #f0faf8;
+  --cs-border: #a7f3d0;
+  --cs-border-mid: #6ee7b7;
+  --cs-rail-text: #a7f3d0;
+  --cs-rail-active: rgba(16, 185, 129, 0.18);
+  --cs-paid-bg: #d1fae5;
+  --cs-paid-text: #065f46;
+  --cs-pending-bg: #fef9c3;
+  --cs-pending-text: #854d0e;
+  --cs-overdue-bg: #fef2f2;
+  --cs-overdue-text: #991b1b;
+  --cs-partial-bg: #ede9fe;
+  --cs-partial-text: #5b21b6;
+  --hms-brand: var(--cs-accent);
+  --hms-brand-hover: var(--cs-accent-hover);
+  --hms-brand-dark: var(--cs-primary);
+  --hms-brand-light: var(--cs-light);
+  --hms-brand-soft: rgba(16, 185, 129, 0.12);
+  --o-brand: var(--cs-accent);
+  --o-brand-hover: var(--cs-accent-hover);
+  --o-bg: var(--cs-lighter);
+  --o-surface: #ffffff;
+}
+
+body.hms-body--cashier-odoo .main-wrapper {
+  background: var(--cs-lighter, #f0faf8) !important;
+}

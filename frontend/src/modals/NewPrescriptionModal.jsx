@@ -3,10 +3,19 @@ import { useTranslation } from 'react-i18next';
 import { Modal } from '../components/Modal';
 import { ModalCancelButton, ModalSubmitButton } from '../components/ModalActions';
 import { PatientSearchField } from '../components/PatientSearchField';
+import { PharmacyMedicationPicker } from '../components/pharmacy/PharmacyMedicationPicker';
 
-export function NewPrescriptionModal({ open, onClose, patients = [], initialPatientId = '' }) {
+export function NewPrescriptionModal({
+  open,
+  onClose,
+  patients = [],
+  initialPatientId = '',
+  theme = 'default',
+  returnUrl = '',
+}) {
   const { t } = useTranslation('clinical');
   const [formKey, setFormKey] = useState(0);
+  const isPharmacy = theme === 'pharmacy';
 
   useEffect(() => {
     if (open) setFormKey((k) => k + 1);
@@ -16,17 +25,30 @@ export function NewPrescriptionModal({ open, onClose, patients = [], initialPati
     <Modal
       open={open}
       onClose={onClose}
+      theme={theme}
       title={t('modals.newPrescription.title')}
       subtitle={t('modals.newPrescription.subtitle')}
       size="lg"
       footer={
-        <>
-          <ModalCancelButton onClick={onClose} />
-          <ModalSubmitButton form="hms-new-rx-form" label={t('modals.newPrescription.create')} />
-        </>
+        isPharmacy ? (
+          <>
+            <button type="button" className="pha-btn-secondary px-4 py-2 text-sm font-semibold" onClick={onClose}>
+              {t('shared.cancel')}
+            </button>
+            <button type="submit" form="hms-new-rx-form" className="pha-btn-primary px-4 py-2 text-sm font-bold">
+              {t('modals.newPrescription.create')}
+            </button>
+          </>
+        ) : (
+          <>
+            <ModalCancelButton onClick={onClose} />
+            <ModalSubmitButton form="hms-new-rx-form" label={t('modals.newPrescription.create')} />
+          </>
+        )
       }
     >
       <form id="hms-new-rx-form" method="post" action="/prescriptions/add" className="space-y-4">
+        {returnUrl ? <input type="hidden" name="_return" value={returnUrl} /> : null}
         <PatientSearchField
           key={formKey}
           id="rx-patient"
@@ -41,18 +63,7 @@ export function NewPrescriptionModal({ open, onClose, patients = [], initialPati
           </label>
           <input id="rx-title" name="title" required className="hms-input" placeholder={t('modals.newPrescription.title_ph')} />
         </div>
-        <div>
-          <label className="hms-label" htmlFor="rx-items">
-            {t('modals.newPrescription.medication_items')}
-          </label>
-          <textarea
-            id="rx-items"
-            name="items"
-            rows={5}
-            className="hms-input resize-y"
-            placeholder={t('modals.newPrescription.items_ph')}
-          />
-        </div>
+        <PharmacyMedicationPicker key={`med-${formKey}`} inputId="rx-items" name="items" />
         <div>
           <label className="hms-label" htmlFor="rx-notes">
             {t('modals.newPrescription.clinical_notes')}

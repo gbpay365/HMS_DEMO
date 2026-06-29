@@ -1,0 +1,10 @@
+<%
+var _opsMenu = locals.radOpsMenu || '';
+function _opsActive(key) { return _opsMenu === key ? ' active' : ''; }
+%>
+<div class="hms-chip-row mb-3 flex-wrap">
+ <span class="small text-muted font-weight-bold mr-2 align-self-center">Radiology ops</span>
+ <a href="/radiology/ops/walk-in" class="hms-chip<%= _opsActive('walkin') %>">Walk-in</a>
+ <a href="/radiology/validate" class="hms-chip<%= _opsActive('validate') %>">Validate RAD</a>
+ <a href="/radiology/order-alerts" class="hms-chip<%= _opsActive('alerts') %>">Order alerts</a>
+</div>

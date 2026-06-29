@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CameroonAddressFields } from '../components/CameroonAddressFields';
+import { NigeriaAddressFields } from '../components/NigeriaAddressFields';
 import { CollapsibleSection } from '../components/CollapsibleSection';
 import { FormErrorBanner } from '../components/FormErrorBanner';
 import { FormField } from '../components/FormField';
@@ -8,6 +9,16 @@ import { Modal } from '../components/Modal';
 import { ModalCancelButton, ModalSubmitButton } from '../components/ModalActions';
 import { PatientInsuranceFields } from '../components/PatientInsuranceFields';
 import { DateDmyInput } from '../components/DateDmyInput';
+import { CascadingAddressFields } from '../components/CascadingAddressFields';
+import { GhanaAddressFields } from '../components/GhanaAddressFields';
+import { ProfileAddressFields } from '../components/ProfileAddressFields';
+import {
+  addressComponentFromBoot,
+  activeCountryCode,
+  applyPhoneDialPrefix,
+  defaultPhoneWithDial,
+  patientRegistrationFromBoot,
+} from '../lib/hmsLocale';
 import {
   filterPhoneInput,
   isValidEmail,
@@ -29,11 +40,25 @@ const INITIAL = {
   nokPhone: '',
   emergPhone: ''};
 
+function resolveAddressMode(mode, geo) {
+  const code = activeCountryCode();
+  if (code === 'GH') return 'ghana';
+  if (code === 'NG') return 'nigeria';
+  if (code === 'CM') return 'cameroon';
+  if (mode === 'ghana' || mode === 'nigeria' || mode === 'cameroon' || mode === 'cascade') return mode;
+  const regions = geo?.regions || geo?.states || [];
+  const subMap = geo?.subRegions || geo?.districts || geo?.lgas || geo?.departments;
+  if (regions.length && subMap && Object.keys(subMap).length) return 'cascade';
+  return mode || 'profile';
+}
+
 export function RegisterPatientModal({ open, onClose, fromMaternity = false }) {
   const { t } = useTranslation(['ops', 'clinical']);
   const datePh = t('modals.registerPatient.date_ph');
+  const patientReg = patientRegistrationFromBoot();
   const [state, setState] = useState(INITIAL);
   const [geo, setGeo] = useState(null);
+  const [addressMode, setAddressMode] = useState(() => addressComponentFromBoot());
   const [carriers, setCarriers] = useState([]);
   const [formKey, setFormKey] = useState(0);
   const dobHiddenRef = useRef(null);
@@ -47,20 +72,49 @@ export function RegisterPatientModal({ open, onClose, fromMaternity = false }) {
     }
 
     let cancelled = false;
-    setState(INITIAL);
+    const defaultPhone = defaultPhoneWithDial();
+    setState({ ...INITIAL, phone: defaultPhone });
+
+    const geoApi =
+      (typeof window !== 'undefined' && window.HMS && window.HMS.geoApi) ||
+      `/api/geo/${(activeCountryCode() || 'ng').toLowerCase()}`;
+    const mode = addressComponentFromBoot();
+
+    const fetchGeo = () =>
+      fetch(geoApi, { credentials: 'same-origin' }).then((r) =>
+        r.ok ? r.json() : Promise.reject(new Error(`geo fetch failed: ${r.status}`))
+      );
 
     Promise.all([
-      fetch('/api/cameroon-geo').then((r) => r.json()),
+      fetchGeo().catch(() => {
+        const code = (activeCountryCode() || '').toLowerCase();
+        if (!code || geoApi.endsWith(`/${code}`)) throw new Error('geo fetch failed');
+        return fetch(`/api/geo/${code}`, { credentials: 'same-origin' }).then((r) =>
+          r.ok ? r.json() : Promise.reject(new Error(`geo fallback failed: ${r.status}`))
+        );
+      }),
       fetch('/api/insurance/carriers').then((r) => r.json()),
     ])
       .then(([geoData, carrierRows]) => {
         if (cancelled) return;
+        setAddressMode(resolveAddressMode(mode, geoData));
         setGeo(geoData);
         setCarriers(Array.isArray(carrierRows) ? carrierRows : []);
       })
       .catch(() => {
         if (!cancelled) {
-          setGeo({ regions: [], departments: {}, communes: {}, villageDefaults: [], villageHints: {} });
+          const fallbackGeo =
+            mode === 'nigeria'
+              ? { states: [], lgas: {}, zones: {} }
+              : mode === 'cameroon'
+                ? { regions: [], departments: {}, communes: {} }
+                : mode === 'ghana'
+                  ? { regions: [], districts: {}, subRegions: {} }
+                  : mode === 'cascade'
+                    ? { regions: [], subRegions: {} }
+                    : null;
+          setAddressMode(resolveAddressMode(mode, fallbackGeo));
+          setGeo(fallbackGeo);
           setCarriers([]);
         }
       });
@@ -135,6 +189,22 @@ export function RegisterPatientModal({ open, onClose, fromMaternity = false }) {
       cniDateHiddenRef.current.value = '';
     }
 
+    const cniVal = String(fd.get('cni_number') || '').trim();
+    if (patientReg.identityPattern && cniVal) {
+      try {
+        const re = new RegExp(patientReg.identityPattern);
+        if (!re.test(cniVal)) {
+          setState((s) => ({
+            ...s,
+            formError: patientReg.identityHint || t('modals.registerPatient.err_id_format', { defaultValue: 'Invalid ID format.' }),
+          }));
+          return;
+        }
+      } catch (_) {
+        /* ignore bad pattern */
+      }
+    }
+
     const carrierId = String(fd.get('ins_carrier_id') || '').trim();
     const autoData = String(fd.get('ins_auto_data') || '').trim();
     const pct = parseInt(String(fd.get('ins_insurer_covered_percent') || ''), 10);
@@ -186,10 +256,24 @@ export function RegisterPatientModal({ open, onClose, fromMaternity = false }) {
             <FormField label={t('modals.registerPatient.last_name')} htmlFor="rp-ln">
               <input id="rp-ln" name="last_name" className="hms-input" autoComplete="family-name" />
             </FormField>
-            <FormField label={t('modals.registerPatient.cni')} htmlFor="rp-cni">
-              <input id="rp-cni" name="cni_number" className="hms-input" />
+            <FormField
+              label={patientReg.identityIdLabel || t('modals.registerPatient.national_id', { defaultValue: 'National ID' })}
+              htmlFor="rp-cni"
+              hint={patientReg.identityHint || ''}
+            >
+              <input
+                id="rp-cni"
+                name="cni_number"
+                className="hms-input"
+                inputMode={patientReg.identityInputMode === 'numeric' ? 'numeric' : 'text'}
+                maxLength={patientReg.identityMaxLength || 100}
+                placeholder={patientReg.identityHint || ''}
+              />
             </FormField>
-            <FormField label={t('modals.registerPatient.cni_issue_date')} htmlFor="rp-cni-date">
+            <FormField
+              label={patientReg.identityIssueDateLabel || t('modals.registerPatient.id_issue_date', { defaultValue: 'ID issue date' })}
+              htmlFor="rp-cni-date"
+            >
               <DateDmyInput
                 id="rp-cni-date"
                 placeholder={datePh}
@@ -265,7 +349,7 @@ export function RegisterPatientModal({ open, onClose, fromMaternity = false }) {
                 inputMode="tel"
                 autoComplete="tel"
                 value={state.phone}
-                onChange={(ev) => setState((s) => ({ ...s, phone: filterPhoneInput(ev.target.value) }))}
+                onChange={(ev) => setState((s) => ({ ...s, phone: applyPhoneDialPrefix(ev.target.value) }))}
               />
             </FormField>
             <FormField
@@ -291,11 +375,21 @@ export function RegisterPatientModal({ open, onClose, fromMaternity = false }) {
 
         <CollapsibleSection
           number="3"
-          title={t('modals.registerPatient.location_title')}
-          hint={t('modals.registerPatient.location_hint')}
+          title={patientReg.locationTitle || t('modals.registerPatient.location_title_generic', { defaultValue: 'Location' })}
+          hint={patientReg.locationHint || ''}
           accent="slate"
         >
-          <CameroonAddressFields geo={geo} />
+          {addressMode === 'nigeria' ? (
+            <NigeriaAddressFields geo={geo} />
+          ) : addressMode === 'cameroon' ? (
+            <CameroonAddressFields geo={geo} />
+          ) : addressMode === 'ghana' ? (
+            <GhanaAddressFields geo={geo} />
+          ) : addressMode === 'cascade' ? (
+            <CascadingAddressFields geo={geo} />
+          ) : (
+            <ProfileAddressFields />
+          )}
         </CollapsibleSection>
 
         <CollapsibleSection number="4" title={t('modals.registerPatient.nok_title')} hint={t('modals.registerPatient.nok_hint')} accent="slate">

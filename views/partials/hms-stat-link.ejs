@@ -11,8 +11,9 @@ var _valueless = typeof valueless !== 'undefined' && !!valueless;
 var _label = (typeof label !== 'undefined') ? label : '';
 var _hint = (typeof hint !== 'undefined' && hint) ? hint : '';
 var _shortcut = (typeof shortcutLabel !== 'undefined' && shortcutLabel) ? shortcutLabel : 'Open →';
+var _compact = typeof compact !== 'undefined' && !!compact;
 %>
-<a href="<%= _href %>" class="hms-stat-link" style="--hms-stat-accent: <%= _color %>;">
+<a href="<%= _href %>" class="hms-stat-link<%= _compact ? ' hms-stat-link--compact' : '' %>" style="--hms-stat-accent: <%= _color %>;">
  <span class="hms-stat-link__orb" aria-hidden="true"></span>
  <span class="hms-stat-link__icon"><i class="fa <%= _icon %>" aria-hidden="true"></i></span>
  <span class="hms-stat-link__body">

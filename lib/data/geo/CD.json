@@ -1,0 +1,154 @@
+{
+  "code": "CD",
+  "name": "Democratic Republic of the Congo",
+  "regionLabel": "Province",
+  "subRegionLabel": "Territory",
+  "regions": [
+    "Bas-Uélé",
+    "Équateur",
+    "Haut-Katanga",
+    "Haut-Lomami",
+    "Haut-Uélé",
+    "Ituri",
+    "Kasaï",
+    "Kasaï Central",
+    "Kasaï Oriental",
+    "Kinshasa",
+    "Kongo Central",
+    "Kwango",
+    "Kwilu",
+    "Lomami",
+    "Lualaba",
+    "Mai-Ndombe",
+    "Maniema",
+    "Mongala",
+    "Nord-Kivu",
+    "Nord-Ubangi",
+    "Sankuru",
+    "Sud-Kivu",
+    "Sud-Ubangi",
+    "Tanganyika",
+    "Tshopo",
+    "Tshuapa"
+  ],
+  "subRegions": {
+    "Bas-Uélé": [
+      "Aketi",
+      "Bondo",
+      "Buta"
+    ],
+    "Équateur": [
+      "Gemena",
+      "Lisala",
+      "Lukolela",
+      "Mbandaka"
+    ],
+    "Haut-Katanga": [
+      "Likasi",
+      "Lubumbashi"
+    ],
+    "Haut-Lomami": [
+      "Bukama",
+      "Kamina"
+    ],
+    "Haut-Uélé": [
+      "Isiro",
+      "Wamba",
+      "Watsa"
+    ],
+    "Ituri": [
+      "Bunia"
+    ],
+    "Kasaï": [
+      "Ilebo",
+      "Luebo",
+      "Mweka",
+      "Tshikapa"
+    ],
+    "Kasaï Oriental": [
+      "Gandajika",
+      "Kabinda",
+      "Mbuji-Mayi"
+    ],
+    "Kinshasa": [
+      "Kinshasa"
+    ],
+    "Kongo Central": [
+      "Boma",
+      "Kasangulu",
+      "Matadi",
+      "Mbanza-Ngungu",
+      "Moanda",
+      "Tshela"
+    ],
+    "Kwango": [
+      "Kasongo-Lunda"
+    ],
+    "Kwilu": [
+      "Bandundu",
+      "Bulungu",
+      "Kikwit",
+      "Mangai"
+    ],
+    "Lomami": [
+      "Lubao",
+      "Mwene-Ditu"
+    ],
+    "Lualaba": [
+      "Kasaji",
+      "Kolwezi"
+    ],
+    "Mai-Ndombe": [
+      "Bolobo",
+      "Inongo",
+      "Mushie",
+      "Nioki"
+    ],
+    "Maniema": [
+      "Kampene",
+      "Kasongo",
+      "Kindu"
+    ],
+    "Mongala": [
+      "Bumba"
+    ],
+    "Nord-Kivu": [
+      "Beni",
+      "Butembo",
+      "Goma",
+      "Sake"
+    ],
+    "Nord-Ubangi": [
+      "Bosobolo",
+      "Businga",
+      "Gbadolite"
+    ],
+    "Sankuru": [
+      "Lodja",
+      "Lusambo"
+    ],
+    "Sud-Kivu": [
+      "Bukavu",
+      "Kabare",
+      "Uvira"
+    ],
+    "Sud-Ubangi": [
+      "Bongandanga",
+      "Libenge"
+    ],
+    "Tanganyika": [
+      "Kabalo",
+      "Kalemie",
+      "Kongolo"
+    ],
+    "Tshopo": [
+      "Basoko",
+      "Kisangani",
+      "Yangambi"
+    ],
+    "Tshuapa": [
+      "Boende"
+    ]
+  },
+  "source": "dr5hn/countries-states-cities-database"
+}

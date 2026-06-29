@@ -2,8 +2,10 @@
 var _lang = locals.lang || 'en';
 var _t = locals.t || function (k) { return k; };
 %>
+<% if (locals.showsLanguageSwitcher) { %>
 <form method="post" action="/set-lang" class="login-lang-form">
   <span class="login-lang-form__label"><%= _t('language.label', { ns: 'common', defaultValue: 'Language' }) %></span>
-  <button type="submit" name="lang" value="en" class="login-lang-form__btn<%= _lang === 'en' ? ' is-active' : '' %>">EN</button>
-  <button type="submit" name="lang" value="fr" class="login-lang-form__btn<%= _lang === 'fr' ? ' is-active' : '' %>">FR</button>
+  <button type="submit" name="lang" value="en" class="login-lang-form__btn<%= _lang === 'en' ? ' is-active' : '' %>"><%= _t('language.short_en', { ns: 'common', defaultValue: 'ENG' }) %></button>
+  <button type="submit" name="lang" value="fr" class="login-lang-form__btn<%= _lang === 'fr' ? ' is-active' : '' %>"><%= _t('language.short_fr', { ns: 'common', defaultValue: 'Fr' }) %></button>
 </form>
+<% } %>

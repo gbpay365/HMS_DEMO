@@ -25,7 +25,8 @@ import {
   resolveLinePostingSide,
   sideHintForLine,
 } from '../../lib/journalCounterparts';
-import { paymentMethodsFromAccounts } from '../../lib/paymentMethodAccounts';
+import { paymentMethodsFromAccounts, isIfrsAccounting, paymentMethodShortLabels, paymentMethodAccountCodes } from '../../lib/paymentMethodAccounts';
+import { formatMoney } from '../../lib/hmsLocale';
 import {
   catalogEntryForAccount,
   defaultLineDescription,
@@ -35,8 +36,14 @@ import {
 } from '../../lib/hospitalServiceCatalog';
 
 function applySideLockHms(line, postingSide) {
-  if (postingSide === 'debit') return { ...line, credit: '' };
-  if (postingSide === 'credit') return { ...line, debit: '' };
+  if (postingSide === 'debit') {
+    const amt = parseJournalAmount(line.debit) || parseJournalAmount(line.credit);
+    return { ...line, debit: amt > 0 ? String(amt) : line.debit, credit: '' };
+  }
+  if (postingSide === 'credit') {
+    const amt = parseJournalAmount(line.credit) || parseJournalAmount(line.debit);
+    return { ...line, credit: amt > 0 ? String(amt) : line.credit, debit: '' };
+  }
   return line;
 }
 
@@ -162,18 +169,20 @@ export function JournalLedgerLinesGrid({ accounts = [], catalogByAccount = {}, j
         }
       }
 
-      const postingSide = resolveLinePostingSide(nextIdx, hmsLinesToCounterpartLines(next, accounts)[nextIdx], journalCode, hmsLinesToCounterpartLines(next, accounts), accountsByCode);
+      const postingSide = resolveLinePostingSide(
+        nextIdx,
+        hmsLinesToCounterpartLines(next, accounts)[nextIdx],
+        journalCode,
+        hmsLinesToCounterpartLines(next, accounts),
+        accountsByCode
+      );
       next[nextIdx] = applySideLockHms(next[nextIdx], postingSide);
 
       const { diff } = lineTotals(hmsLinesToCounterpartLines(next, accounts));
       if (diff !== 0) {
         const abs = Math.abs(diff);
-        const nextSide = resolveLinePostingSide(nextIdx, hmsLinesToCounterpartLines(next, accounts)[nextIdx], journalCode, hmsLinesToCounterpartLines(next, accounts), accountsByCode);
-        if (nextSide === 'credit' || (!nextSide && diff > 0)) {
-          next[nextIdx] = { ...next[nextIdx], credit: String(abs), debit: '' };
-        } else {
-          next[nextIdx] = { ...next[nextIdx], debit: String(abs), credit: '' };
-        }
+        const neededSide = diff > 0 ? 'credit' : 'debit';
+        next[nextIdx] = applyCounterpartAmount(next[nextIdx], neededSide, abs);
       }
 
       const prevNarrative = String(allLines[index].memo || '').trim();
@@ -193,7 +202,7 @@ export function JournalLedgerLinesGrid({ accounts = [], catalogByAccount = {}, j
 
   const syncLineSideLock = useCallback(
     (allLines, index) => {
-      const postingSide = postingSideForHmsLine(index, allLines[index], accounts, journalCode);
+      const postingSide = postingSideForHmsLine(index, allLines[index], accounts, journalCode, allLines);
       const next = allLines.map((ln, i) => (i === index ? applySideLockHms(ln, postingSide) : ln));
       return applyCounterpartToNextLine(next, index);
     },
@@ -220,7 +229,7 @@ export function JournalLedgerLinesGrid({ accounts = [], catalogByAccount = {}, j
     const acct = accountById(accounts, accountId);
     const code = accountCode(acct);
     next = syncLineSideLock(next, index);
-    const side = postingSideForHmsLine(index, next[index], accounts, journalCode);
+    const side = postingSideForHmsLine(index, next[index], accounts, journalCode, next);
     if (side === 'credit' && isHospitalRevenueAccount(code)) {
       next = applyCatalogToHmsLine(next, index, code, catalogByAccount);
     }
@@ -250,7 +259,7 @@ export function JournalLedgerLinesGrid({ accounts = [], catalogByAccount = {}, j
     const acct = hmsAcct;
     const code = accountCode(acct);
     next = syncLineSideLock(next, index);
-    const side = postingSideForHmsLine(index, next[index], accounts, journalCode);
+    const side = postingSideForHmsLine(index, next[index], accounts, journalCode, next);
     if (side === 'credit' && isHospitalRevenueAccount(code)) {
       next = applyCatalogToHmsLine(next, index, code, catalogByAccount);
     }
@@ -270,7 +279,7 @@ export function JournalLedgerLinesGrid({ accounts = [], catalogByAccount = {}, j
 
     const cpIdx = index + 1;
     if (amt > 0 && cpIdx < next.length) {
-      const cpSide = postingSideForHmsLine(cpIdx, next[cpIdx], accounts, journalCode);
+      const cpSide = postingSideForHmsLine(cpIdx, next[cpIdx], accounts, journalCode, next);
       if (cpSide) next = next.map((row, i) => (i === cpIdx ? applyCounterpartAmount(row, cpSide, amt) : row));
     }
 
@@ -356,21 +365,33 @@ export function JournalLedgerLinesGrid({ accounts = [], catalogByAccount = {}, j
     return line.memo || '';
   };
 
+  const isIfrs = isIfrsAccounting();
+  const pmLabels = paymentMethodShortLabels();
+  const pmCodes = paymentMethodAccountCodes();
+  const pmLabelList = pmCodes.map((c) => pmLabels[c] || c).join(' / ');
+  const pmRange = pmCodes.length ? `${pmCodes[0]}–${pmCodes[pmCodes.length - 1]}` : '';
   const showPaymentWarning =
     paymentMethodOptions.length === 0 &&
     lines.some((ln) => {
       const a = accountById(accounts, ln.accountId);
       const ja = a ? toJournalAccount(a) : null;
-      return ja?.ohada_class === 7 || ja?.account_type === 'revenue' || ja?.account_type === 'income';
+      const revClass = isIfrs ? 5 : 7;
+      return ja?.ohada_class === revClass || ja?.account_type === 'revenue' || ja?.account_type === 'income';
     });
+
+  const paymentWarningText = isEn
+    ? isIfrs
+      ? `Payment method accounts (${pmRange}) are missing from the chart. Apply the country profile or reseed the IFRS hospital chart to enable ${pmLabelList} on the debit line.`
+      : 'Payment method accounts (552601–552606) are missing from the chart. Import the chart to enable Cash / OM / MOMO / Bank on the debit line.'
+    : isIfrs
+      ? `Comptes de paiement (${pmRange}) absents du plan. Réappliquez le profil pays ou réimportez le plan IFRS hôpital pour activer ${pmLabelList}.`
+      : 'Comptes de paiement (552601–552606) absents du plan. Importez le plan pour activer Caisse / OM / MOMO / Banque.';
 
   return (
     <div className="jem-lines-stack">
       {showPaymentWarning ? (
         <div className="jem-line-hint jem-line-hint--warn">
-          {isEn
-            ? 'Payment method accounts (552601–552606) are missing from the chart. Import the chart to enable Cash / OM / MOMO / Bank on the debit line.'
-            : 'Comptes de paiement (552601–552606) absents du plan. Importez le plan pour activer Caisse / OM / MOMO / Banque.'}
+          {paymentWarningText}
         </div>
       ) : null}
 
@@ -479,7 +500,7 @@ export function JournalLedgerLinesGrid({ accounts = [], catalogByAccount = {}, j
                         <select className="jem-lt-cc" value={catalogServiceKey} onChange={(e) => onCatalogServiceChange(index, e.target.value)}>
                           {catalogEntry.services.map((svc) => (
                             <option key={svc.key} value={svc.key}>
-                              {svc.name} — {svc.price.toLocaleString(isEn ? 'en-US' : 'fr-FR')} XAF
+                              {svc.name} — {formatMoney(svc.price)}
                             </option>
                           ))}
                         </select>

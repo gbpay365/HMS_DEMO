@@ -1,13 +1,15 @@
 /**
- * OHADA double-entry — counterpart filtering and side locking (Account_Core parity).
+ * Double-entry journal — counterpart filtering and side locking (Account_Core parity).
  */
 
 import {
   isPaymentMethodAccountCode,
-  PAYMENT_METHOD_ACCOUNT_CODES,
+  paymentMethodAccountCodes,
+  isIfrsAccounting,
 } from './paymentMethodAccounts';
+import { currencyCode } from './hmsLocale';
 
-export { isPaymentMethodAccountCode, PAYMENT_METHOD_ACCOUNT_CODES };
+export { isPaymentMethodAccountCode, paymentMethodAccountCodes as PAYMENT_METHOD_ACCOUNT_CODES };
 
 export function ohadaClassFromCode(code) {
   const c = String(code || '').trim();
@@ -36,12 +38,28 @@ export function naturalSideForAccount(account, journalCode = 'OD') {
   if (!account?.code) return null;
   const cls = account.ohada_class ?? ohadaClassFromCode(account.code);
   const type = account.account_type;
+  if (isIfrsAccounting()) {
+    if (cls === 5 || type === 'income' || type === 'revenue') return 'credit';
+    if (cls === 3 || cls === 4) return 'credit';
+    if (cls === 1 || cls === 2) return 'debit';
+    if (cls === 6 || cls === 7 || cls === 8) return type === 'income' ? 'credit' : 'debit';
+    if (journalCode === 'VTE') return 'credit';
+    if (type === 'asset') return 'debit';
+    if (type === 'expense' || type === 'cost') return 'debit';
+    if (type === 'income' || type === 'revenue') return 'credit';
+    if (type === 'liability' || type === 'equity') return 'credit';
+    return null;
+  }
   if (cls === 7 || type === 'income' || type === 'revenue') return 'credit';
   if (cls === 6 || type === 'expense' || type === 'cost') return 'debit';
   if (cls === 5) return 'debit';
   if (cls === 4 && String(account.code).startsWith('411')) return 'debit';
   if (cls === 4) return 'credit';
   if (journalCode === 'VTE') return 'credit';
+  if (type === 'asset') return 'debit';
+  if (type === 'expense' || type === 'cost') return 'debit';
+  if (type === 'income' || type === 'revenue') return 'credit';
+  if (type === 'liability' || type === 'equity') return 'credit';
   return null;
 }
 
@@ -70,13 +88,13 @@ export function resolveLinePostingSide(lineIndex, line, journalCode, allLines, a
 }
 
 export function postingSideForLine(lineIndex, line, account, journalCode, allLines, accountsByCode) {
-  const existing = lineSide(line);
-  if (existing) return existing;
-
   if (lineIndex > 0) {
     const expected = expectedSideForLine(lineIndex, allLines, journalCode, accountsByCode);
     if (expected) return expected;
   }
+
+  const existing = lineSide(line);
+  if (existing) return existing;
 
   return naturalSideForAccount(account, journalCode);
 }
@@ -94,27 +112,46 @@ export function sideFieldState(postingSide) {
 export function sideHintForLine(lineIndex, line, _account, journalCode, allLines, accountsByCode) {
   const side = resolveLinePostingSide(lineIndex, line, journalCode, allLines, accountsByCode);
   if (!side) return '';
-  return side === 'debit' ? 'Enter amount in Debit (XAF)' : 'Enter amount in Credit (XAF)';
+  return side === 'debit'
+    ? `Enter amount in Debit (${currencyCode()})`
+    : `Enter amount in Credit (${currencyCode()})`;
 }
 
-const TREASURY_CODES = [...PAYMENT_METHOD_ACCOUNT_CODES, '531000', '512000', '571000', '521000'];
-const RECEIVABLE_CODES = ['411000'];
-const PAYABLE_CODES = ['401000', '421000', '441000', '445710'];
+function treasuryCodes() {
+  if (isIfrsAccounting()) {
+    return [...paymentMethodAccountCodes(), '230100', '230200', '230300', '230400'];
+  }
+  return [...paymentMethodAccountCodes(), '531000', '512000', '571000', '521000'];
+}
+
+function receivableCodes() {
+  return isIfrsAccounting() ? ['220100'] : ['411000'];
+}
+
+function payableCodes() {
+  return isIfrsAccounting() ? ['410100', '420100', '420200', '440100'] : ['401000', '421000', '441000', '445710'];
+}
 
 function paymentMethodCounterparts(pool, journalCode) {
+  const recv = receivableCodes();
   const paymentPool = pool.filter((a) => isPaymentMethodAccountCode(a.code) || isReceivable(a.code));
   if (paymentPool.length) {
-    return sortByPriority(paymentPool, [...PAYMENT_METHOD_ACCOUNT_CODES, ...RECEIVABLE_CODES], journalCode);
+    return sortByPriority(paymentPool, [...paymentMethodAccountCodes(), ...recv], journalCode);
   }
-  return sortByPriority(pool, [...TREASURY_CODES, ...RECEIVABLE_CODES], journalCode);
+  return sortByPriority(pool, [...treasuryCodes(), ...recv], journalCode);
 }
 
 function sortByPriority(accounts, priorityCodes, journalCode) {
+  const pm = paymentMethodAccountCodes();
   const journalFirst =
     journalCode === 'CA'
-      ? ['552601', '531000', '571000']
+      ? isIfrsAccounting()
+        ? [pm[0], '230100', '230200']
+        : [pm[0], '531000', '571000']
       : journalCode === 'BQ'
-        ? ['552604', '512000', '521000']
+        ? isIfrsAccounting()
+          ? [pm[1] || pm[0], '230300', '230400']
+          : [pm[3] || pm[0], '512000', '521000']
         : [];
   const order = [...journalFirst, ...priorityCodes];
   const rank = new Map(order.map((c, i) => [c, i]));
@@ -127,10 +164,13 @@ function sortByPriority(accounts, priorityCodes, journalCode) {
 }
 
 function isTreasury(code) {
+  if (isPaymentMethodAccountCode(code)) return true;
+  if (isIfrsAccounting()) return ohadaClassFromCode(code) === 2 && String(code).startsWith('23');
   return ohadaClassFromCode(code) === 5;
 }
 
 function isReceivable(code) {
+  if (isIfrsAccounting()) return String(code).startsWith('220');
   return ohadaClassFromCode(code) === 4 && String(code).startsWith('411');
 }
 
@@ -141,16 +181,19 @@ function isPayable(code) {
 
 function isRevenue(account) {
   const cls = account.ohada_class ?? ohadaClassFromCode(account.code);
+  if (isIfrsAccounting()) return cls === 5 || account.account_type === 'income' || account.account_type === 'revenue';
   return cls === 7 || account.account_type === 'income' || account.account_type === 'revenue';
 }
 
 function isExpense(account) {
   const cls = account.ohada_class ?? ohadaClassFromCode(account.code);
+  if (isIfrsAccounting()) return cls === 6 || cls === 7 || cls === 8 || account.account_type === 'expense' || account.account_type === 'cost';
   return cls === 6 || account.account_type === 'expense' || account.account_type === 'cost';
 }
 
 function isHospitalRevenueCode(code) {
   const c = String(code);
+  if (isIfrsAccounting()) return c.startsWith('510') || c.startsWith('520');
   return (
     c.startsWith('7016') ||
     c.startsWith('7026') ||
@@ -170,7 +213,7 @@ export function filterCounterpartAccounts(sourceAccount, sourceSide, allAccounts
     }
     if (isPayable(sourceAccount.code)) {
       pool = pool.filter((a) => isTreasury(a.code) || isExpense(a));
-      return sortByPriority(pool, [...TREASURY_CODES], journalCode);
+      return sortByPriority(pool, [...treasuryCodes()], journalCode);
     }
     if (isTreasury(sourceAccount.code)) {
       pool = pool.filter((a) => isRevenue(a) || isExpense(a));
@@ -189,7 +232,7 @@ export function filterCounterpartAccounts(sourceAccount, sourceSide, allAccounts
     }
     if (isExpense(sourceAccount)) {
       pool = pool.filter((a) => isTreasury(a.code) || isPayable(a.code));
-      return sortByPriority(pool, [...TREASURY_CODES, ...PAYABLE_CODES], journalCode);
+      return sortByPriority(pool, [...treasuryCodes(), ...payableCodes()], journalCode);
     }
     if (isTreasury(sourceAccount.code) || isReceivable(sourceAccount.code)) {
       pool = pool.filter((a) => isRevenue(a) || isExpense(a));
@@ -202,7 +245,7 @@ export function filterCounterpartAccounts(sourceAccount, sourceSide, allAccounts
     }
     if (isPayable(sourceAccount.code)) {
       pool = pool.filter((a) => isTreasury(a.code) || isExpense(a));
-      return sortByPriority(pool, [...TREASURY_CODES], journalCode);
+      return sortByPriority(pool, [...treasuryCodes()], journalCode);
     }
   }
 
@@ -211,25 +254,26 @@ export function filterCounterpartAccounts(sourceAccount, sourceSide, allAccounts
 
 export function pickDefaultCounterpart(counterparts, journalCode) {
   if (!counterparts.length) return null;
+  const pm = paymentMethodAccountCodes();
   if (journalCode === 'CA') {
     return (
-      counterparts.find((a) => a.code === '552601') ||
-      counterparts.find((a) => a.code === '531000') ||
+      counterparts.find((a) => a.code === pm[0]) ||
+      counterparts.find((a) => isIfrsAccounting() ? a.code === '230100' : a.code === '531000') ||
       counterparts.find((a) => isTreasury(a.code)) ||
       counterparts[0]
     );
   }
   if (journalCode === 'BQ') {
     return (
-      counterparts.find((a) => a.code === '552604') ||
-      counterparts.find((a) => a.code === '512000') ||
+      counterparts.find((a) => a.code === (pm[1] || pm[3] || pm[0])) ||
+      counterparts.find((a) => isIfrsAccounting() ? a.code === '230300' : a.code === '512000') ||
       counterparts.find((a) => isTreasury(a.code)) ||
       counterparts[0]
     );
   }
   if (journalCode === 'VTE') {
     return (
-      counterparts.find((a) => a.code === '552601') ||
+      counterparts.find((a) => a.code === pm[0]) ||
       counterparts.find((a) => isPaymentMethodAccountCode(a.code)) ||
       counterparts.find((a) => isTreasury(a.code)) ||
       counterparts[0]
@@ -244,6 +288,9 @@ export function pickDefaultCounterpart(counterparts, journalCode) {
 export function counterpartHint(sourceAccount, sourceSide) {
   if (!sourceAccount?.code || !sourceSide) return '';
   if (sourceSide === 'credit' && isRevenue(sourceAccount)) {
+    if (isIfrsAccounting()) {
+      return 'Payment method — Cash, Bank, POS, Mobile Money, or Wallet (debit side)';
+    }
     return 'Payment method — Cash, OM, MOMO, Bank, BetterPay, or Wallet (debit side)';
   }
   if (sourceSide === 'debit' && (isTreasury(sourceAccount.code) || isReceivable(sourceAccount.code))) {

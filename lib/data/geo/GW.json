@@ -1,0 +1,56 @@
+{
+  "code": "GW",
+  "name": "Guinea-Bissau",
+  "regionLabel": "Region",
+  "subRegionLabel": "Sector",
+  "regions": [
+    "Bafatá",
+    "Biombo",
+    "Bissau",
+    "Bolama",
+    "Cacheu",
+    "Gabú",
+    "Leste",
+    "Norte",
+    "Oio",
+    "Quinara",
+    "Sul",
+    "Tombali"
+  ],
+  "subRegions": {
+    "Bafatá": [
+      "Bafatá",
+      "Contuboel Sector"
+    ],
+    "Biombo": [
+      "Quinhámel"
+    ],
+    "Bissau": [
+      "Bissau"
+    ],
+    "Bolama": [
+      "Bolama",
+      "Bubaque"
+    ],
+    "Cacheu": [
+      "Cacheu",
+      "Canchungo"
+    ],
+    "Gabú": [
+      "Gabú"
+    ],
+    "Oio": [
+      "Bissorã",
+      "Farim",
+      "Mansôa"
+    ],
+    "Quinara": [
+      "Buba"
+    ],
+    "Tombali": [
+      "Catió",
+      "Quebo"
+    ]
+  },
+  "source": "dr5hn/countries-states-cities-database"
+}

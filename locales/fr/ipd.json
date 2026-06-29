@@ -481,7 +481,10 @@
       "qr_code": "BetterPay",
       "momo": "MOMO",
       "om": "OM",
-      "bank": "Banque"
+      "bank": "Banque",
+      "pos": "POS",
+      "paystack": "Paystack",
+      "ussd": "USSD"
     }
   },
   "detail": {

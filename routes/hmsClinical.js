@@ -38,14 +38,27 @@ module.exports = function hmsClinicalRoutes(app, pool, requireAuth, requirePerm)
       }
       const { stats, todayVisits } = await hmsHub.loadHubPageData(pool);
       const hubTileCatalog = require('../lib/hubTileCatalog');
+      const aclLayout = require('../lib/aclLayout');
+      const { groupHubCatalogStats, groupHubCatalogModules } = require('../lib/hubLayoutGroups');
+      const perms = res.locals.userPerms || [];
+      const navOpts = {
+        viewerRole: role,
+        productSlices: aclLayout.getProductSlices(),
+        moduleOverrides: aclLayout.getModuleOverrides(),
+      };
+      const uiVisible = (code) => aclLayout.uiElementVisible(code, perms, role, navOpts);
+      const hubStats = hubTileCatalog.getHubStats();
+      const hubModules = hubTileCatalog.getHubModuleCards();
       res.render('hms-hub', {
         title: 'HMS Clinical — ZAIZENS',
         stats,
         todayVisits,
         hubCatalog: {
-          stats: hubTileCatalog.getHubStats(),
-          modules: hubTileCatalog.getHubModuleCards(),
+          stats: hubStats,
+          modules: hubModules,
         },
+        hubStatBands: groupHubCatalogStats(hubStats, uiVisible),
+        hubModuleBands: groupHubCatalogModules(hubModules, uiVisible),
         flash: req.query.msg || null,
         error: req.query.err || null,
       });

@@ -1,0 +1,63 @@
+{
+  "code": "GQ",
+  "name": "Equatorial Guinea",
+  "regionLabel": "Province",
+  "subRegionLabel": "District",
+  "regions": [
+    "Annobón",
+    "Bioko Norte",
+    "Bioko Sur",
+    "Centro Sur",
+    "Djibloho",
+    "Insular",
+    "Kié-Ntem",
+    "Litoral",
+    "Río Muni",
+    "Wele-Nzas"
+  ],
+  "subRegions": {
+    "Annobón": [
+      "San Antonio de Palé"
+    ],
+    "Bioko Norte": [
+      "Malabo",
+      "Rebola",
+      "Santiago de Baney"
+    ],
+    "Bioko Sur": [
+      "Luba"
+    ],
+    "Centro Sur": [
+      "Acurenam",
+      "Bicurga",
+      "Evinayong"
+    ],
+    "Djibloho": [
+      "Ciudad de la Paz",
+      "Mengomeyén"
+    ],
+    "Kié-Ntem": [
+      "Ebebiyin",
+      "Mikomeseng",
+      "Ncue",
+      "Nsang"
+    ],
+    "Litoral": [
+      "Bata",
+      "Bitica",
+      "Cogo",
+      "Machinda",
+      "Mbini",
+      "Río Campo"
+    ],
+    "Wele-Nzas": [
+      "Aconibe",
+      "Añisoc",
+      "Ayene",
+      "Mengomeyén",
+      "Mongomo",
+      "Nsok"
+    ]
+  },
+  "source": "dr5hn/countries-states-cities-database"
+}

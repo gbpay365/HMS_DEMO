@@ -164,12 +164,13 @@ export function accountGroupsForLine(hmsAccounts, lineIndex, hmsLines, journalCo
   };
 }
 
-export function postingSideForHmsLine(lineIndex, hmsLine, hmsAccounts, journalCode) {
+export function postingSideForHmsLine(lineIndex, hmsLine, hmsAccounts, journalCode, hmsLines = null) {
   const posting = buildPostingAccounts(hmsAccounts);
   const byCode = buildAccountsByCode(posting);
-  const cpLines = hmsLinesToCounterpartLines([hmsLine], hmsAccounts);
-  const cpLine = cpLines[0];
-  const ja = toJournalAccount(accountById(hmsAccounts, hmsLine.accountId));
+  const allLines = Array.isArray(hmsLines) && hmsLines.length ? hmsLines : [hmsLine];
+  const cpLines = hmsLinesToCounterpartLines(allLines, hmsAccounts);
+  const cpLine = cpLines[lineIndex];
+  const ja = toJournalAccount(accountById(hmsAccounts, hmsLine?.accountId || allLines[lineIndex]?.accountId));
   if (!ja?.code) return null;
   return resolveLinePostingSide(lineIndex, cpLine, journalCode, cpLines, byCode);
 }
@@ -244,7 +245,7 @@ export function mirrorCounterpartOnLines(hmsLines, hmsAccounts, index, journalCo
       if (counterpartIdx >= 0) {
         const cpAcct = accountById(hmsAccounts, next[counterpartIdx].accountId);
         const cpSide =
-          postingSideForHmsLine(counterpartIdx, next[counterpartIdx], hmsAccounts, journalCode) ||
+          postingSideForHmsLine(counterpartIdx, next[counterpartIdx], hmsAccounts, journalCode, next) ||
           counterpartSide(enteredSide);
         next = next.map((row, i) => (i === counterpartIdx ? applyCounterpartAmount(row, cpSide, abs) : row));
       }

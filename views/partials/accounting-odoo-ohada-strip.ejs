@@ -1,7 +1,14 @@
 <% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
-<div class="acc-ohada-strip" role="note" aria-label="<%= _t('ohada.aria_label', { ns: 'financials', defaultValue: 'OHADA accounting context' }) %>">
-  <span class="acc-ohada-pill"><i class="fa fa-book"></i> <%= _t('ohada.syscohada', { ns: 'financials', defaultValue: 'SYSCOHADA' }) %></span>
-  <span class="acc-ohada-pill"><i class="fa fa-money"></i> <%= _t('ohada.xaf_fcfa', { ns: 'financials', defaultValue: 'XAF / FCFA' }) %></span>
-  <span class="acc-ohada-pill"><i class="fa fa-flag"></i> <%= _t('ohada.cameroon_fiscal', { ns: 'financials', defaultValue: 'Cameroon fiscal' }) %></span>
+<% var hc = locals.hmsCountry || {}; %>
+<% var chartLabel = (hc.chartOfAccounts && hc.chartOfAccounts.label) || (hc.fiscalRegime || _t('ohada.syscohada', { ns: 'financials', defaultValue: 'Chart of accounts' })); %>
+<% var currencyCode = hc.currencyCode || locals.currencyCode || '—'; %>
+<% var currencySym = hc.currencySymbol || hc.currencyDisplaySuffix || currencyCode; %>
+<% var countryLabel = hc.name || hc.defaultCity || ''; %>
+<div class="acc-ohada-strip" role="note" aria-label="<%= _t('ohada.aria_label', { ns: 'financials', defaultValue: 'Accounting context' }) %>">
+  <span class="acc-ohada-pill"><i class="fa fa-book"></i> <%= chartLabel %></span>
+  <span class="acc-ohada-pill"><i class="fa fa-money"></i> <%= currencyCode %> / <%= currencySym %></span>
+  <% if (countryLabel) { %>
+  <span class="acc-ohada-pill"><i class="fa fa-flag"></i> <%= countryLabel %></span>
+  <% } %>
   <span class="text-muted"><%= _t('ohada.chart_hint_before', { ns: 'financials', defaultValue: 'Chart classes 1–7 · TVA & statutory exports via' }) %> <a href="/tax" class="font-weight-bold"><%= _t('ohada.tax_hub', { ns: 'financials', defaultValue: 'Tax hub' }) %></a></span>
 </div>

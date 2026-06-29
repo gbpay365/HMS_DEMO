@@ -12,15 +12,19 @@ import {
   prescriptionItemLabel,
   prescriptionItemTotal} from '../../lib/doctorPrescriptionPrint';
 import { formatMoney } from '../../lib/listUi';
+import { vatRateStandard } from '../../lib/hmsLocale';
 import { amountWordsForLocale, printPaymentMethodLabel } from '../../lib/printPaymentMethod';
 
 function fmt(n) {
-  return Number(n || 0).toLocaleString('fr-FR');
+  return formatMoney(n);
 }
 
-const DEFAULT_VAT_RATE = 19.25;
+function defaultVatRate() {
+  const v = vatRateStandard();
+  return v > 0 ? v : 19.25;
+}
 
-function calcVatTotals(subtotal, rate = DEFAULT_VAT_RATE) {
+function calcVatTotals(subtotal, rate = defaultVatRate()) {
   const base = Number(subtotal) || 0;
   const vatAmount = Math.round(base * (rate / 100));
   return {
@@ -93,10 +97,6 @@ export function PrintReceiptApp({
 
       <div className="mx-auto max-w-[820px] p-4 print:max-w-none print:p-0">
         <div className="hms-billing-print__sheet overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg print:rounded-none print:border-0 print:shadow-none">
-          <div className="hms-billing-print__letterhead px-6 pt-4 print:px-0 print:pt-0 print:pb-0">
-            <img src="/img/hms-letterhead.png?v=20260515" alt={t('letterhead_alt')} className="w-full print:max-h-[18mm] print:w-auto print:object-contain" />
-          </div>
-
           <div className="hms-billing-print__titlebar flex items-end justify-between gap-3 border-b-2 border-slate-900 px-6 pb-2 pt-2 print:gap-1 print:px-0 print:pb-0.5 print:pt-1">
             <div>
               <div className="text-4xl font-black tracking-tight print:text-xl print:leading-none">{t('receipt.title')}</div>
@@ -140,30 +140,30 @@ export function PrintReceiptApp({
                   <>
                     <tr>
                       <td className="px-2 py-1 text-slate-500 print:px-1 print:py-0.5">{t('receipt.total_charges')}</td>
-                      <td className="px-2 py-1 text-right font-bold print:px-1 print:py-0.5">{fmt(subtotal)} FCFA</td>
+                      <td className="px-2 py-1 text-right font-bold print:px-1 print:py-0.5">{fmt(subtotal)}</td>
                     </tr>
                     {deposit > 0 ? (
                       <tr>
                         <td className="px-2 py-1 text-slate-500 print:px-1 print:py-0.5">{t('receipt.deposit')}</td>
-                        <td className="px-2 py-1 text-right font-bold print:px-1 print:py-0.5">− {fmt(deposit)} FCFA</td>
+                        <td className="px-2 py-1 text-right font-bold print:px-1 print:py-0.5">− {fmt(deposit)}</td>
                       </tr>
                     ) : null}
                     {refund > 0 ? (
                       <tr>
                         <td className="px-2 py-1 text-slate-500 print:px-1 print:py-0.5">{t('receipt.deposit_refund')}</td>
-                        <td className="px-2 py-1 text-right font-bold print:px-1 print:py-0.5">− {fmt(refund)} FCFA</td>
+                        <td className="px-2 py-1 text-right font-bold print:px-1 print:py-0.5">− {fmt(refund)}</td>
                       </tr>
                     ) : null}
                   </>
                 ) : (
                   <tr>
                     <td className="px-2 py-1 text-slate-500 print:px-1 print:py-0.5">{t('receipt.subtotal')}</td>
-                    <td className="px-2 py-1 text-right font-bold print:px-1 print:py-0.5">{fmt(subtotal)} FCFA</td>
+                    <td className="px-2 py-1 text-right font-bold print:px-1 print:py-0.5">{fmt(subtotal)}</td>
                   </tr>
                 )}
                 <tr className="bg-slate-900 text-white print:bg-white print:text-black">
                   <td className="px-2 py-1 font-bold print:border print:border-black print:px-1 print:py-0.5">{t('receipt.total_received')}</td>
-                  <td className="px-2 py-1 text-right font-extrabold print:border print:border-black print:px-1 print:py-0.5">{fmt(grand)} FCFA</td>
+                  <td className="px-2 py-1 text-right font-extrabold print:border print:border-black print:px-1 print:py-0.5">{fmt(grand)}</td>
                 </tr>
               </tbody>
             </table>
@@ -199,7 +199,7 @@ export function PrintInvoiceApp({
   prescriptionItems = [],
   subtotal = 0,
   vatEnabled = false,
-  vatRateLabel = '19.25%',
+  vatRateLabel = `${defaultVatRate()}%`,
   vatAmount = 0,
   grandTotal = 0,
   paymentSettled = false,
@@ -209,7 +209,10 @@ export function PrintInvoiceApp({
   const payMethodLabel = printPaymentMethodLabel(doc.payment_method, t);
   const showServiceCodes = paymentSettled && hasPrintServiceCodes(sectionCodes);
   const baseSubtotal = Number(subtotal) || 0;
-  const vatTotals = calcVatTotals(baseSubtotal, parseFloat(String(vatRateLabel).replace('%', '')) || DEFAULT_VAT_RATE);
+  const vatTotals = calcVatTotals(
+    baseSubtotal,
+    parseFloat(String(vatRateLabel).replace('%', '')) || defaultVatRate()
+  );
   const showInvoice = hideToolbar || withVat;
 
   if (!showInvoice) {
@@ -240,9 +243,6 @@ export function PrintInvoiceApp({
 
       <div className="mx-auto max-w-[920px] p-4 print:max-w-none print:p-0">
         <div className="hms-billing-print__sheet overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg print:rounded-none print:border-0 print:shadow-none">
-          <div className="hms-billing-print__letterhead px-5 pt-3 print:px-0 print:pt-0 print:pb-0">
-            <img src="/img/hms-letterhead.png?v=20260515" alt={t('letterhead_alt')} className="w-full print:max-h-[18mm] print:w-auto print:object-contain" />
-          </div>
           <div className="hms-billing-print__titlebar mx-5 mt-1 flex items-center justify-between rounded-xl bg-slate-900 px-3 py-1.5 text-white print:mx-0 print:mt-0 print:rounded-none print:border print:border-black print:bg-white print:px-0 print:py-0.5 print:text-black">
             <div className="text-sm font-black uppercase tracking-widest print:text-[10pt]">{t('invoice.title')}</div>
             <div className="font-mono text-sm font-bold print:text-[9pt]">N° {doc.invoice_doc_number || doc.doc_number}</div>
@@ -285,17 +285,17 @@ export function PrintInvoiceApp({
             <div className="hms-billing-print__totals overflow-hidden rounded-xl border border-slate-200 print:rounded-none print:border-black">
               <div className="flex justify-between border-b border-slate-100 px-2 py-1 print:border-black print:px-1 print:py-0.5 print:text-[9pt]">
                 <span className="text-xs font-bold uppercase text-slate-500 print:text-black">{t('invoice.subtotal')}</span>
-                <span className="font-bold">{fmt(subtotal)} FCFA</span>
+                <span className="font-bold">{fmt(subtotal)}</span>
               </div>
               {vatEnabled || withVat || hideToolbar ? (
                 <div className="flex justify-between border-b border-slate-100 px-2 py-1 print:border-black print:px-1 print:py-0.5 print:text-[9pt]">
                   <span className="text-xs font-bold uppercase text-slate-500 print:text-black">{t('invoice.vat', { rate: vatRateLabel || vatTotals.vatRateLabel })}</span>
-                  <span className="font-bold">{fmt(vatAmount || vatTotals.vatAmount)} FCFA</span>
+                  <span className="font-bold">{fmt(vatAmount || vatTotals.vatAmount)}</span>
                 </div>
               ) : null}
               <div className="flex justify-between bg-slate-900 px-2 py-1 text-white print:border-t print:border-black print:bg-white print:px-1 print:py-0.5 print:text-[9pt] print:text-black">
                 <span className="text-xs font-bold uppercase">{t('invoice.total')}</span>
-                <span className="font-extrabold">{fmt(grandTotal || vatTotals.grandTotal)} FCFA</span>
+                <span className="font-extrabold">{fmt(grandTotal || vatTotals.grandTotal)}</span>
               </div>
             </div>
           </div>
@@ -360,12 +360,11 @@ export function PrintReceiptClassicApp({
       <ReceiptVatPreviewToolbar withVat={withVat} onVatChange={setWithVat} backLabel={t('back')} />
       <div className="flex justify-center p-4">
         <div className="w-full max-w-md border border-slate-300 p-4 shadow-lg print:shadow-none">
-          <img src="/img/hms-letterhead.png?v=20260515" alt="" className="mb-3 w-full" />
           <div className="text-center text-sm font-black tracking-widest">{t('receipt.title')}</div>
           <div className="my-3 rounded-xl border-2 border-dashed border-slate-400 p-3 text-center font-mono font-bold">{receipt.doc_number}</div>
           <ClassicRow k={t('classic.patient')} v={`${receipt.first_name} ${receipt.last_name}`} />
           <ClassicRow k={t('classic.service')} v={svc?.description || '—'} />
-          <ClassicRow k={t('classic.patient_due')} v={`${fmt(grandPaid)} FCFA`} />
+          <ClassicRow k={t('classic.patient_due')} v={`${fmt(grandPaid)}`} />
           <ClassicRow k={t('classic.payment_method')} v={printPaymentMethodLabel(receipt.payment_method, t)} />
           {showServiceCodes ? (
             <div className="w-full border-b border-slate-100 py-2">
@@ -464,7 +463,7 @@ function BatchReceiptCover({ bounds, patientLabel, summary = {}, count = 0 }) {
         </div>
         <div>
           <dt className="text-[10px] font-bold uppercase text-slate-400">{t('batch_receipts.total')}</dt>
-          <dd className="font-extrabold text-brand">{fmt(summary.totalCollected || 0)} FCFA</dd>
+          <dd className="font-extrabold text-brand">{fmt(summary.totalCollected || 0)}</dd>
         </div>
       </dl>
     </article>
@@ -566,7 +565,6 @@ export function PrintDoctorPrescriptionApp({ data = {}, verifyUrl = null, title 
 
       <div className="mx-auto max-w-3xl p-4 print:max-w-none print:p-0">
         <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg print:rounded-none print:border-0 print:shadow-none">
-          <img src="/img/hms-letterhead.png?v=20260515" alt="" className="w-full print:max-h-28 print:object-contain" />
           <div className="border-b border-slate-200 px-6 py-4">
             <h1 className="text-lg font-extrabold text-slate-900">{displayTitle}</h1>
             <p className="text-xs text-slate-500">
@@ -697,7 +695,6 @@ export function PrintEmergencyMlcApp({ visit = {}, mlc = {}, user = {} }) {
       {copies.map((copyLabel) => (
         <div key={copyLabel} className="break-after-page p-8">
           <div className="mb-2 text-right text-xs font-extrabold uppercase tracking-widest text-red-900">{copyLabel}</div>
-          <img src="/img/hms-letterhead.png?v=20260515" alt="" className="mb-4 w-full" />
           <h1 className="mb-4 text-lg font-extrabold">{t('mlc.title')}</h1>
           <div className="mb-4 grid grid-cols-2 gap-2 text-sm">
             <MlcField k={t('mlc.mlc_number')} v={mlc.mlc_number} />
