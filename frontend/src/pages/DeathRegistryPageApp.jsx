@@ -101,29 +101,34 @@ export function DeathRegistryPageApp({
   }
 
   return (
-    <div className="page-wrapper hms-surface-module">
-      <div className="content px-4 pb-10 pt-2 sm:px-6">
+    <div className="page-wrapper hms-surface-module hms-death-registry-page">
+      <div className="content px-4 pb-8 pt-2 sm:px-6">
         <FlashMessages flash={flash} error={error} />
 
-        <SurfaceHero icon="heart-o" badge="🕊" title={t('title')} subtitle={t('subtitle')}>
-          <div className="hms-surface-hero-actions mt-4">
+        <SurfaceHero icon="heart-o" badge="🕊" title={t('title')} subtitle={t('subtitle')} className="mb-3">
+          <div className="hms-staff-hero-toolbar mt-2 flex flex-wrap items-center gap-2">
             {MODULES.map((m) => (
-              <a key={m.key} href={MODULE_BACK[m.key]} className="hms-btn-secondary text-xs">
+              <a key={m.key} href={MODULE_BACK[m.key]} className="hms-staff-hero-tab">
                 ← {t(`back_${m.key}`)}
               </a>
             ))}
           </div>
         </SurfaceHero>
 
-        <div className="hms-compact-kpi-grid mb-4">
-          <StatCard label={t('kpi_total')} value={stats.total || 0} tone="danger" icon="list" />
-          <StatCard label={t('kpi_month')} value={stats.this_month || 0} tone="warning" icon="calendar" />
-          <StatCard label={t('kpi_pending')} value={pendingTotal} tone="default" icon="clock" />
-          <div className="hms-surface-card rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
-            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('col_module')}</div>
-            <div className="mt-2 flex flex-wrap gap-2">
+        <div className="hms-compact-kpi-grid mb-3">
+          <StatCard label={t('kpi_total')} value={stats.total || 0} tone="danger" icon="list" size="dense" />
+          <StatCard label={t('kpi_month')} value={stats.this_month || 0} tone="warning" icon="calendar" size="dense" />
+          <StatCard label={t('kpi_pending')} value={pendingTotal} tone="default" icon="clock" size="dense" />
+          <div className="hms-surface-card hms-death-module-kpi rounded-lg border border-slate-100 bg-white p-2 shadow-card">
+            <div className="hms-stat-card__label text-[10px] font-bold uppercase tracking-wide text-slate-600">
+              {t('col_module')}
+            </div>
+            <div className="mt-1 flex flex-wrap gap-1">
               {MODULES.map((m) => (
-                <span key={m.key} className="rounded-full bg-brand-light px-2.5 py-1 text-xs font-bold text-brand">
+                <span
+                  key={m.key}
+                  className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-tight ${moduleMeta(m.key).badge}`}
+                >
                   {moduleLabel(t, m.key)} {stats.by_module?.[m.key] || 0}
                 </span>
               ))}
@@ -131,7 +136,7 @@ export function DeathRegistryPageApp({
           </div>
         </div>
 
-        <div className="mb-4 flex flex-wrap gap-2">
+        <div className="mb-3 flex flex-wrap gap-1.5">
           {[
             ['register', t('tab_register')],
             ['records', t('tab_records')],
@@ -143,14 +148,14 @@ export function DeathRegistryPageApp({
         </div>
 
         {mainTab === 'register' ? (
-          <div className="grid gap-4 lg:grid-cols-5">
+          <div className="grid gap-3 lg:grid-cols-5">
             <div className="lg:col-span-2">
-              <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card">
-                <div className="border-b border-slate-100 px-4 py-3">
-                  <div className="font-bold text-ink">{t('pending_title')}</div>
-                  <p className="mt-1 text-xs text-slate-500">{t('pending_hint')}</p>
+              <div className="hms-death-panel overflow-hidden rounded-xl border border-slate-100 bg-white shadow-card">
+                <div className="hms-death-panel__head border-b border-slate-100 px-3 py-2">
+                  <div className="text-sm font-bold text-ink">{t('pending_title')}</div>
+                  <p className="mt-0.5 text-[11px] leading-snug text-slate-500">{t('pending_hint')}</p>
                 </div>
-                <div className="flex flex-wrap gap-2 border-b border-slate-100 p-3">
+                <div className="flex flex-wrap gap-1.5 border-b border-slate-100 p-2">
                   {MODULES.map((m) => {
                     const count = (pending[m.key] || []).length;
                     return (
@@ -169,9 +174,9 @@ export function DeathRegistryPageApp({
                     );
                   })}
                 </div>
-                <div className="max-h-[28rem] overflow-y-auto p-2">
+                <div className="max-h-80 overflow-y-auto p-1.5">
                   {pendingList.length === 0 ? (
-                    <div className="px-3 py-8 text-center text-sm text-slate-500">{t('pending_empty')}</div>
+                    <div className="px-2 py-6 text-center text-xs text-slate-500">{t('pending_empty')}</div>
                   ) : (
                     pendingList.map((row) => {
                       const meta = moduleMeta(row.source_module || moduleTab);
@@ -185,17 +190,17 @@ export function DeathRegistryPageApp({
                           key={`${row.source_module}-${row.admission_id || row.visit_id || row.maternity_patient_id}`}
                           type="button"
                           onClick={() => pickCase(row)}
-                          className={`mb-2 w-full rounded-xl border-2 p-3 text-left transition ${
+                          className={`mb-1.5 w-full rounded-lg border p-2 text-left transition ${
                             isSel ? `ring-2 ${meta.ring} border-rose-300 bg-rose-50/50` : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50'
                           }`}
                         >
                           <div className="flex items-center gap-2">
-                            <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg text-lg ${meta.bg}`}>
+                            <span className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-sm ${meta.bg}`}>
                               {meta.icon}
                             </span>
                             <div className="min-w-0 flex-1">
-                              <div className="truncate font-bold text-ink">{row.label}</div>
-                              <div className="truncate text-xs text-slate-500">{row.context}</div>
+                              <div className="truncate text-sm font-bold text-ink">{row.label}</div>
+                              <div className="truncate text-[11px] text-slate-500">{row.context}</div>
                             </div>
                           </div>
                         </button>
@@ -210,19 +215,19 @@ export function DeathRegistryPageApp({
               <form
                 method="POST"
                 action="/death-registry"
-                className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card"
+                className="hms-death-panel overflow-hidden rounded-xl border border-slate-100 bg-white shadow-card"
               >
-                <div className="border-b border-slate-100 bg-gradient-to-r from-rose-50 to-slate-50 px-4 py-3">
-                  <div className="font-bold text-ink">{t('form_title')}</div>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
-                    <span className={`rounded-full px-2 py-0.5 font-bold ${moduleMeta(moduleTab).badge}`}>
+                <div className="hms-death-panel__head border-b border-slate-100 bg-gradient-to-r from-rose-50 to-slate-50 px-3 py-2">
+                  <div className="text-sm font-bold text-ink">{t('form_title')}</div>
+                  <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500">
+                    <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${moduleMeta(moduleTab).badge}`}>
                       {moduleLabel(t, moduleTab)}
                     </span>
                     <span>{t(`module_desc.${moduleTab}`)}</span>
                   </div>
                 </div>
 
-                <div className="space-y-4 p-4">
+                <div className="space-y-3 p-3">
                   <input type="hidden" name="source_module" value={moduleTab} />
                   <input type="hidden" name="patient_id" value={patientId} />
                   {admissionId ? <input type="hidden" name="admission_id" value={admissionId} /> : null}
@@ -232,9 +237,9 @@ export function DeathRegistryPageApp({
                   ) : null}
 
                   <div>
-                    <label className="mb-1 block text-xs font-bold uppercase text-slate-600">{t('patient')}</label>
+                    <label className="mb-0.5 block text-[10px] font-bold uppercase text-slate-600">{t('patient')}</label>
                     <div
-                      className={`rounded-xl border px-3 py-3 text-sm font-semibold ${
+                      className={`rounded-lg border px-2.5 py-2 text-xs font-semibold ${
                         patientLabel ? 'border-slate-200 bg-slate-50 text-ink' : 'border-amber-200 bg-amber-50 text-amber-800'
                       }`}
                     >
@@ -242,9 +247,9 @@ export function DeathRegistryPageApp({
                     </div>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <label className="mb-1 block text-xs font-bold uppercase text-slate-600">{t('date_of_death')}</label>
+                      <label className="mb-0.5 block text-[10px] font-bold uppercase text-slate-600">{t('date_of_death')}</label>
                       <input
                         type="date"
                         name="date_of_death"
@@ -254,13 +259,13 @@ export function DeathRegistryPageApp({
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs font-bold uppercase text-slate-600">{t('time_of_death')}</label>
+                      <label className="mb-0.5 block text-[10px] font-bold uppercase text-slate-600">{t('time_of_death')}</label>
                       <input type="time" name="time_of_death" className="hms-input w-full" />
                     </div>
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-bold uppercase text-slate-600">{t('cause')}</label>
+                    <label className="mb-0.5 block text-[10px] font-bold uppercase text-slate-600">{t('cause')}</label>
                     <input
                       type="text"
                       name="cause_of_death"
@@ -271,7 +276,7 @@ export function DeathRegistryPageApp({
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-bold uppercase text-slate-600">{t('certifying_doctor')}</label>
+                    <label className="mb-0.5 block text-[10px] font-bold uppercase text-slate-600">{t('certifying_doctor')}</label>
                     <select name="certifying_doctor_id" className="hms-input w-full" required defaultValue="">
                       <option value="">{t('certifying_doctor_ph')}</option>
                       {doctorList.map((d) => (
@@ -284,18 +289,18 @@ export function DeathRegistryPageApp({
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-bold uppercase text-slate-600">{t('notes')}</label>
+                    <label className="mb-0.5 block text-[10px] font-bold uppercase text-slate-600">{t('notes')}</label>
                     <textarea
                       name="notes"
-                      className="hms-input w-full"
-                      rows={3}
+                      className="hms-input w-full text-sm"
+                      rows={2}
                       placeholder={t('notes_ph')}
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="hms-btn hms-btn-primary w-full font-bold"
+                    className="hms-btn hms-btn-primary w-full text-sm font-bold"
                     disabled={!patientId}
                   >
                     🕊 {t('save')}
@@ -305,24 +310,24 @@ export function DeathRegistryPageApp({
             </div>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card">
+          <div className="hms-death-panel overflow-hidden rounded-xl border border-slate-100 bg-white shadow-card">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-left text-sm">
-                <thead className="border-b border-slate-100 bg-slate-50 text-xs font-bold uppercase tracking-wide text-slate-500">
+              <table className="w-full min-w-[720px] text-left text-xs">
+                <thead className="border-b border-slate-100 bg-slate-50 text-[10px] font-bold uppercase tracking-wide text-slate-500">
                   <tr>
-                    <th className="px-4 py-3">{t('col_patient')}</th>
-                    <th className="px-4 py-3">{t('col_module')}</th>
-                    <th className="px-4 py-3">{t('col_context')}</th>
-                    <th className="px-4 py-3">{t('col_date')}</th>
-                    <th className="px-4 py-3">{t('col_time')}</th>
-                    <th className="px-4 py-3">{t('col_cause')}</th>
-                    <th className="px-4 py-3">{t('col_doctor')}</th>
+                    <th className="px-3 py-2">{t('col_patient')}</th>
+                    <th className="px-3 py-2">{t('col_module')}</th>
+                    <th className="px-3 py-2">{t('col_context')}</th>
+                    <th className="px-3 py-2">{t('col_date')}</th>
+                    <th className="px-3 py-2">{t('col_time')}</th>
+                    <th className="px-3 py-2">{t('col_cause')}</th>
+                    <th className="px-3 py-2">{t('col_doctor')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(rows || []).length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-10 text-center text-slate-500">
+                      <td colSpan={7} className="px-3 py-8 text-center text-slate-500">
                         {t('records_empty')}
                       </td>
                     </tr>
@@ -334,26 +339,26 @@ export function DeathRegistryPageApp({
                         (r.antenatal_number ? `ANC ${r.antenatal_number}` : '—');
                       return (
                         <tr key={r.id} className="border-b border-slate-50 hover:bg-slate-50/80">
-                          <td className="px-4 py-3">
-                            <div className="font-semibold text-ink">{r.patient_name}</div>
+                          <td className="px-3 py-2">
+                            <div className="text-sm font-semibold text-ink">{r.patient_name}</div>
                             {r.patient_code ? (
-                              <div className="text-xs text-slate-500">{r.patient_code}</div>
+                              <div className="text-[11px] text-slate-500">{r.patient_code}</div>
                             ) : null}
                           </td>
-                          <td className="px-4 py-3">
-                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${meta.badge}`}>
+                          <td className="px-3 py-2">
+                            <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${meta.badge}`}>
                               {meta.icon} {moduleLabel(t, r.source_module)}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-slate-600">{ctx}</td>
-                          <td className="px-4 py-3">{r.date_of_death || '—'}</td>
-                          <td className="px-4 py-3">
+                          <td className="px-3 py-2 text-slate-600">{ctx}</td>
+                          <td className="px-3 py-2">{r.date_of_death || '—'}</td>
+                          <td className="px-3 py-2">
                             {r.time_of_death ? String(r.time_of_death).slice(0, 5) : '—'}
                           </td>
-                          <td className="max-w-[12rem] truncate px-4 py-3 text-slate-600" title={r.cause_of_death || ''}>
+                          <td className="max-w-[12rem] truncate px-3 py-2 text-slate-600" title={r.cause_of_death || ''}>
                             {r.cause_of_death || '—'}
                           </td>
-                          <td className="px-4 py-3 text-slate-600">{r.certifying_doctor || '—'}</td>
+                          <td className="px-3 py-2 text-slate-600">{r.certifying_doctor || '—'}</td>
                         </tr>
                       );
                     })
