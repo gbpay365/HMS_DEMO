@@ -22,7 +22,6 @@ var _clinical = _menuByCode('topnav.clinical');
 var _operations = _menuByCode('topnav.operations');
 var _hr = _menuByCode('topnav.hr');
 var _settings = _menuByCode('topnav.configuration');
-var _sidebarCompactAdmin = !!(typeof isAdminOrSuper !== 'undefined' && isAdminOrSuper && !locals.previewRole);
 %>
 
 <% if (typeof canHospitalDashboard === 'function' && canHospitalDashboard()) { %>
@@ -77,7 +76,7 @@ var _sidebarCompactAdmin = !!(typeof isAdminOrSuper !== 'undefined' && isAdminOr
 </div>
 <% } %>
 
-<% if (_hr && (_hr.children || []).length && !_sidebarCompactAdmin) { %>
+<% if (_hr && (_hr.children || []).length) { %>
 <div class="sb-section"><%= _tNav('sidebar.section.people', { ns: 'nav', defaultValue: 'People & HR' }) %></div>
 <% var _hrId = 'sb-topnav-hr'; var _hrOpen = _groupActive(_hr.children); %>
 <div class="sb-item<%= _hrOpen ? ' open active' : '' %>" data-sub="<%= _hrId %>" data-label="<%= _navLbl(_hr.parent.code, _hr.parent.label) %>" role="button" tabindex="0">
@@ -99,7 +98,7 @@ var _sidebarCompactAdmin = !!(typeof isAdminOrSuper !== 'undefined' && isAdminOr
 </div>
 <% } %>
 
-<% if (_settings && (_settings.children || []).length && !_sidebarCompactAdmin) { %>
+<% if (_settings && (_settings.children || []).length) { %>
 <div class="sb-section"><%= _tNav('sidebar.section.admin', { ns: 'nav', defaultValue: 'Administration' }) %></div>
 <% var _setId = 'sb-topnav-configuration'; var _setOpen = _groupActive(_settings.children); %>
 <div class="sb-item<%= _setOpen ? ' open active' : '' %>" data-sub="<%= _setId %>" data-label="<%= _navLbl(_settings.parent.code, _settings.parent.label) %>" role="button" tabindex="0">
