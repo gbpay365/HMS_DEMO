@@ -241,6 +241,7 @@ const { enrichOpdVisitsRoomContext, enrichOpdVisitsDoctorFromPaymentTicket, paym
 const { canManageConsultationRooms } = require('./lib/consultationRoomsAccess');
 const hmsDoctorStaff = require('./lib/hmsDoctorStaff');
 const opdVisitCarryForward = require('./lib/opdVisitCarryForward');
+const opdVisitRegistry = require('./lib/opdVisitRegistry');
 const pagination = require('./lib/pagination');
 const hmsOnlineBooking = require('./lib/hmsOnlineBooking');
 
@@ -11503,6 +11504,34 @@ app.post('/clinical/accept-not-assigned', requireAuth, (req, res) => {
 });
 
 // OPD QUEUE & VISITS REGISTRY
+app.get(
+ '/api/opd-queue/registry',
+ requireAuth,
+ requirePerm('opd.read', 'clinical.read', 'clinical.write', 'scheduling.read', 'nursing.read', 'lab.read', 'radiology.read', 'pharmacy.read'),
+ async (req, res) => {
+  try {
+   const filters = opdVisitRegistry.parseRegistryFilters(req.query);
+   const page = Math.max(1, parseInt(String(req.query.p || ''), 10) || 1);
+   const fid = req.session.facilityId || 1;
+   const result = await opdVisitRegistry.fetchOpdVisitRegistry(pool, {
+    ...filters,
+    facilityId: fid,
+    page,
+   });
+   return res.json({
+    ok: true,
+    visits: result.visits,
+    pager: result.pager,
+    filters: { ...result.filters, total: result.total },
+    total: result.total,
+   });
+  } catch (err) {
+   console.error('OPD registry API:', err.message);
+   return res.status(500).json({ ok: false, error: err.message || 'Registry load failed' });
+  }
+ }
+);
+
 // VISITS & OPD QUEUE === Æ’ ===   Full legacy-parity
 app.get('/opd-queue', requireAuth, requirePerm('opd.read','clinical.read','clinical.write','scheduling.read','nursing.read','lab.read','radiology.read','pharmacy.read'), async (req, res) => {
  const q = (req.query.q || '').trim();
