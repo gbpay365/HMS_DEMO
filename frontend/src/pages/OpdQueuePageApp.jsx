@@ -426,46 +426,46 @@ export function OpdQueuePageApp({
   };
 
   return (
-    <div className="page-wrapper hms-surface-module">
-      <div className="content px-4 pb-8 pt-2 sm:px-6">
+    <div className="page-wrapper hms-surface-module hms-opd-queue-page">
+      <div className="content px-4 pb-6 pt-2 sm:px-6">
         <FlashMessages flash={flash} error={error} />
 
-        <SurfaceHero icon="stethoscope" title={t('opd.title')} subtitle={t('opd.subtitle')}>
-          <div className="hms-surface-hero-actions mt-4">
-            <a href="/doctor/schedule" className="hms-btn-secondary text-xs">
+        <SurfaceHero icon="stethoscope" title={t('opd.title')} subtitle={t('opd.subtitle')} className="mb-4">
+          <div className="hms-staff-hero-toolbar mt-3 flex flex-wrap items-center gap-2">
+            <a href="/doctor/schedule" className="hms-staff-hero-tab">
               <i className="fa fa-calendar" aria-hidden="true" />
               {t('doctorSchedule.title')}
             </a>
             {mayCallPatient ? (
-              <button type="button" className="hms-btn hms-btn-action-complete text-xs" onClick={callNextPatient}>
+              <button type="button" className="hms-staff-hero-tab hms-staff-hero-tab--active" onClick={callNextPatient}>
                 <i className="fa fa-bullhorn" aria-hidden="true" />
                 {t('doctorSchedule.call_next')}
               </button>
             ) : null}
-            <a href="/portal/call-queue/enter" target="_blank" rel="noopener noreferrer" className="hms-btn-secondary text-xs">
+            <a href="/portal/call-queue/enter" target="_blank" rel="noopener noreferrer" className="hms-staff-hero-tab">
               <i className="fa fa-desktop" aria-hidden="true" />
               {t('shared.lobby_screen')}
             </a>
-            <a href="/ipd/census" className="hms-btn-secondary text-xs">
+            <a href="/ipd/census" className="hms-staff-hero-tab">
               <i className="fa fa-hospital-o" aria-hidden="true" />
               {t('opd.ipd_census')}
             </a>
             <a
               href="/death-registry?source=opd"
-              className="hms-btn hms-btn-outline-danger text-xs"
+              className="hms-staff-hero-tab hms-opd-hero-tab--danger"
               title={t('opd.death_registry_hint')}
             >
               <i className="fa fa-heart-o" aria-hidden="true" />
               {t('opd.death_registry')}
             </a>
-            <a href="/hms" className="hms-btn-secondary text-xs">
+            <a href="/hms" className="hms-staff-hero-tab">
               {t('shared.hms_hub')}
             </a>
-            <a href="/opd-queue" className="hms-btn-secondary px-3 text-xs" title={t('shared.refresh')}>
+            <a href="/opd-queue" className="hms-staff-hero-tab hms-staff-hero-tab--refresh" title={t('shared.refresh')}>
               <i className="fa fa-refresh" aria-hidden="true" />
             </a>
             {canWrite ? (
-              <button type="button" className="hms-btn-primary text-xs" onClick={() => setAddOpen(true)}>
+              <button type="button" className="hms-staff-hero-tab hms-staff-hero-tab--active" onClick={() => setAddOpen(true)}>
                 <i className="fa fa-user-plus" aria-hidden="true" />
                 {t('opd.new_visit')}
               </button>
@@ -473,17 +473,17 @@ export function OpdQueuePageApp({
           </div>
         </SurfaceHero>
 
-        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label={t('opd.stat_active_today')} value={queueStats.active} tone="brand" icon="users" />
-          <StatCard label={t('opd.stat_waiting_doctor')} value={queueStats.waiting} tone="warning" icon="clock" />
-          <StatCard label={t('opd.stat_registry')} value={queueStats.registry} tone="default" icon="list" />
-          <StatCard label={t('opd.stat_rooms')} value={queueStats.rooms} tone="brand" icon="door-open" />
+        <div className="hms-opd-kpi-grid mb-3">
+          <StatCard label={t('opd.stat_active_today')} value={queueStats.active} tone="brand" icon="users" size="dense" />
+          <StatCard label={t('opd.stat_waiting_doctor')} value={queueStats.waiting} tone="warning" icon="clock" size="dense" />
+          <StatCard label={t('opd.stat_registry')} value={queueStats.registry} tone="default" icon="list" size="dense" />
+          <StatCard label={t('opd.stat_rooms')} value={queueStats.rooms} tone="brand" icon="door-open" size="dense" />
         </div>
 
         {!queueShowDoctorSplit ? <OpdWorkflowBanner /> : null}
 
         {!consultationRooms.length && canManageConsultationRooms ? (
-          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
             <strong>{t('opd.no_rooms_title')}</strong>{' '}
             {t('opd.no_rooms_body')}{' '}
             <a href="/admin/consultation-rooms" className="font-bold text-brand underline">
@@ -492,19 +492,19 @@ export function OpdQueuePageApp({
           </div>
         ) : null}
 
-        <div className="mb-6 rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500">{t('opd.registry_filters_title')}</h3>
-            <div className="flex flex-wrap items-center gap-2">
+        <div className="hms-opd-filter-panel mb-4 rounded-xl border border-slate-100 bg-white p-3 shadow-card">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{t('opd.registry_filters_title')}</h3>
+            <div className="flex flex-wrap items-center gap-1.5">
               {hasActiveFilters ? (
-                <button type="button" className="hms-btn-secondary px-3 py-1.5 text-xs" onClick={resetFilters}>
+                <button type="button" className="hms-btn-secondary px-2.5 py-1 text-[11px]" onClick={resetFilters}>
                   <i className="fa fa-times mr-1" aria-hidden="true" />
                   {t('opd.registry_reset')}
                 </button>
               ) : null}
               <button
                 type="button"
-                className="hms-btn-secondary px-3 py-1.5 text-xs"
+                className="hms-btn-secondary px-2.5 py-1 text-[11px]"
                 onClick={() => loadRegistry(registryPager?.page || 1)}
                 title={t('shared.refresh')}
               >
@@ -513,7 +513,7 @@ export function OpdQueuePageApp({
             </div>
           </div>
 
-          <div className="mb-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+          <div className="mb-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
             <div className="lg:col-span-2">
               <label className="hms-label">{t('shared.search')}</label>
               <SearchField
@@ -550,9 +550,9 @@ export function OpdQueuePageApp({
             </div>
           </div>
 
-          <div className="mb-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+          <div className="mb-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
             <div className="lg:col-span-2">
-              <label className="hms-label">{t('opd.filter_physician')}</label>
+              <label className="hms-label text-[10px]">{t('opd.filter_physician')}</label>
               <select
                 value={doctor || ''}
                 onChange={(e) => setDoctor(parseInt(e.target.value, 10) || 0)}
@@ -567,8 +567,8 @@ export function OpdQueuePageApp({
                 ))}
               </select>
             </div>
-            <div className="lg:col-span-4 flex flex-wrap items-end gap-2">
-              <span className="mb-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+            <div className="lg:col-span-4 flex flex-wrap items-end gap-1.5">
+              <span className="mb-1 text-[9px] font-bold uppercase tracking-wide text-slate-400">
                 {t('opd.filter_period')}
               </span>
               {DATE_PRESETS.map((p) => (
@@ -579,7 +579,7 @@ export function OpdQueuePageApp({
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {STATUS_FILTERS.map(({ key, labelKey }) => (
               <FilterChip key={key} active={status === key} onClick={() => setStatus(key)}>
                 {t(labelKey)}
@@ -600,18 +600,18 @@ export function OpdQueuePageApp({
           ) : null}
         </div>
 
-        <div className="mb-6 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card">
-          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-            <h2 className="text-sm font-bold text-ink">
+        <div className="mb-4 overflow-hidden rounded-xl border border-slate-100 bg-white shadow-card">
+          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
+            <h2 className="text-xs font-bold text-ink">
               {hasActiveFilters ? t('opd.active_queue_filtered') : t('opd.active_queue_today')}
             </h2>
-            <span className="rounded-full bg-brand px-3 py-0.5 text-xs font-bold text-white">
+            <span className="rounded-full bg-brand px-2.5 py-px text-[10px] font-bold text-white">
               {t('opd.active_count', { count: filteredTodayVisits.length })}
             </span>
           </div>
-          <div className="p-4">
+          <div className="p-3">
             {filteredTodayVisits.length === 0 ? (
-              <p className="py-8 text-center text-slate-500">
+              <p className="py-6 text-center text-sm text-slate-500">
                 {hasActiveFilters ? t('opd.queue_no_match') : t('opd.queue_clear')}
               </p>
             ) : (
@@ -631,7 +631,7 @@ export function OpdQueuePageApp({
                         </button>
                       ) : null}
                     </div>
-                    <div className="mb-4 grid grid-cols-[repeat(auto-fill,minmax(230px,260px))] gap-3">
+                    <div className="mb-3 grid grid-cols-[repeat(auto-fill,minmax(210px,240px))] gap-2">
                       {filteredTodayVisitsMine.map((v) => (
                         <OpdVisitCard
                           key={v.id}
@@ -651,7 +651,7 @@ export function OpdQueuePageApp({
                     <p className="mb-2 text-xs font-bold text-slate-500">{t('opd.other_physicians')}</p>
                   </>
                 ) : null}
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,260px))] gap-3">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(210px,240px))] gap-2">
                   {queueList.map((v) => (
                     <OpdVisitCard
                       key={v.id}
@@ -673,9 +673,9 @@ export function OpdQueuePageApp({
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card">
-          <div className="border-b border-slate-100 px-5 py-4">
-            <h2 className="text-sm font-bold text-ink">
+        <div className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-card">
+          <div className="border-b border-slate-100 px-4 py-2.5">
+            <h2 className="text-xs font-bold text-ink">
               {t('opd.visit_registry')}{' '}
               <span className="ml-2 rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-normal text-slate-600">
                 {registryTotal} {t('shared.records')}

@@ -27,6 +27,76 @@ body.hms-body--patients .hms-surface-hero {
   background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 48%, #047857 100%);
 }
 
+/* OPD queue — compact hero, KPI row, and filter panel */
+.hms-opd-queue-page .hms-surface-hero {
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.hms-opd-queue-page .hms-surface-hero-title {
+  font-size: 1.25rem;
+}
+
+.hms-opd-queue-page .hms-surface-hero p {
+  font-size: 0.8125rem;
+}
+
+.hms-opd-queue-page .hms-surface-hero-icon {
+  width: 40px;
+  height: 40px;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.hms-opd-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+@media (min-width: 1024px) {
+  .hms-opd-kpi-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.hms-opd-kpi-grid .hms-surface-card {
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.hms-opd-kpi-grid .hms-stat-card__label {
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+}
+
+.hms-opd-kpi-grid .font-extrabold.tabular-nums {
+  font-size: 1rem;
+}
+
+.hms-opd-filter-panel .hms-input,
+.hms-opd-filter-panel .hms-label + input,
+.hms-opd-filter-panel select {
+  font-size: 0.8125rem;
+  min-height: 2.125rem;
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+}
+
+.hms-opd-filter-panel button[role='tab'] {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.6875rem;
+}
+
+.hms-opd-hero-tab--danger {
+  border-color: rgba(254, 202, 202, 0.45);
+  color: #fecaca;
+}
+
+.hms-opd-hero-tab--danger:hover {
+  background: rgba(254, 202, 202, 0.15);
+  border-color: rgba(254, 202, 202, 0.65);
+}
+
 body.hms-body--emergency .hms-surface-hero {
   background: linear-gradient(135deg, #450a0a 0%, #991b1b 45%, #134e4a 100%);
 }
