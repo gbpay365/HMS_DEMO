@@ -1624,7 +1624,7 @@ module.exports = function(app, pool, requireAuth) {
                 if (['1', '99'].includes(role)) {
                     return res.json({ ok: false, error: 'Cannot modify core roles' });
                 }
-                const { ensureNavAccessSchema } = require('../lib/ensureNavAccessSchema');
+                const { ensureNavAccessSchema, upsertRoleNavGrant } = require('../lib/ensureNavAccessSchema');
                 const catalog = require('../lib/navAccessCatalog');
                 await ensureNavAccessSchema(pool);
                 const codes =
@@ -1635,12 +1635,7 @@ module.exports = function(app, pool, requireAuth) {
                 let uiUnhidden = 0;
                 for (const c of codes) {
                     if (grant) {
-                        await pool.query(
-                            `INSERT INTO tbl_acl_role_nav_grant (role, nav_code, granted)
-                             VALUES (?,?,1)
-                             ON DUPLICATE KEY UPDATE granted=1`,
-                            [role, c]
-                        );
+                        await upsertRoleNavGrant(pool, role, c, true);
                         const uiList = catalog.uiCodesForBundle(c);
                         if (uiList.length) {
                             const placeholders = uiList.map(() => '?').join(',');
@@ -1652,12 +1647,7 @@ module.exports = function(app, pool, requireAuth) {
                             uiUnhidden += del.affectedRows || 0;
                         }
                     } else {
-                        await pool.query(
-                            `INSERT INTO tbl_acl_role_nav_grant (role, nav_code, granted)
-                             VALUES (?,?,0)
-                             ON DUPLICATE KEY UPDATE granted=0`,
-                            [role, c]
-                        );
+                        await upsertRoleNavGrant(pool, role, c, false);
                     }
                 }
                 try {
