@@ -473,7 +473,7 @@ export function OpdQueuePageApp({
           </div>
         </SurfaceHero>
 
-        <div className="hms-opd-kpi-grid mb-3">
+        <div className="hms-compact-kpi-grid mb-3">
           <StatCard label={t('opd.stat_active_today')} value={queueStats.active} tone="brand" icon="users" size="dense" />
           <StatCard label={t('opd.stat_waiting_doctor')} value={queueStats.waiting} tone="warning" icon="clock" size="dense" />
           <StatCard label={t('opd.stat_registry')} value={queueStats.registry} tone="default" icon="list" size="dense" />

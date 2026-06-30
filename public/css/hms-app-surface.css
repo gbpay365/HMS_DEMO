@@ -27,27 +27,32 @@ body.hms-body--patients .hms-surface-hero {
   background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 48%, #047857 100%);
 }
 
-/* OPD queue — compact hero, KPI row, and filter panel */
-.hms-opd-queue-page .hms-surface-hero {
+/* Clinical pages — compact hero and KPI row (OPD queue, IPD census, …) */
+.hms-opd-queue-page .hms-surface-hero,
+.hms-ipd-census-page .hms-surface-hero {
   padding: 1rem 1.25rem;
   margin-bottom: 0.75rem;
 }
 
-.hms-opd-queue-page .hms-surface-hero-title {
+.hms-opd-queue-page .hms-surface-hero-title,
+.hms-ipd-census-page .hms-surface-hero-title {
   font-size: 1.25rem;
 }
 
-.hms-opd-queue-page .hms-surface-hero p {
+.hms-opd-queue-page .hms-surface-hero p,
+.hms-ipd-census-page .hms-surface-hero p {
   font-size: 0.8125rem;
 }
 
-.hms-opd-queue-page .hms-surface-hero-icon {
+.hms-opd-queue-page .hms-surface-hero-icon,
+.hms-ipd-census-page .hms-surface-hero-icon {
   width: 40px;
   height: 40px;
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
 }
 
+.hms-compact-kpi-grid,
 .hms-opd-kpi-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -55,20 +60,24 @@ body.hms-body--patients .hms-surface-hero {
 }
 
 @media (min-width: 1024px) {
+  .hms-compact-kpi-grid,
   .hms-opd-kpi-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
+.hms-compact-kpi-grid .hms-surface-card,
 .hms-opd-kpi-grid .hms-surface-card {
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
 }
 
+.hms-compact-kpi-grid .hms-stat-card__label,
 .hms-opd-kpi-grid .hms-stat-card__label {
   font-size: 0.625rem;
   letter-spacing: 0.06em;
 }
 
+.hms-compact-kpi-grid .font-extrabold.tabular-nums,
 .hms-opd-kpi-grid .font-extrabold.tabular-nums {
   font-size: 1rem;
 }
