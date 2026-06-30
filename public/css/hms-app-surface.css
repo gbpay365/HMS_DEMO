@@ -594,16 +594,16 @@ html.hms-nav-pending body {
 
 /* ── Stat sections (grouped KPI rows) ── */
 .hms-stat-section {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .hms-stat-section__title {
-  font-size: 0.68rem;
+  font-size: 0.625rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--hms-ink-muted);
-  margin: 0 0 0.65rem 0.15rem;
+  margin: 0 0 0.45rem 0.15rem;
 }
 
 /* ── Clickable stat tile (EJS + mirrors SurfaceStatLink) ── */

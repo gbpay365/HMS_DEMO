@@ -6,33 +6,27 @@
   matOdooTitle: _t('maternity_dashboard.title', { ns: 'legacy', defaultValue: 'Maternity module' }),
   matOdooActions: '<a href="/maternity/register" class="o_btn_primary"><i class="fa fa-plus"></i> ' + _t('maternity_dashboard.new_anc', { ns: 'legacy', defaultValue: 'New ANC booking' }) + '</a>'
 }) %>
-<div class="o_content">
-
-<div class="hms-surface-hero mb-4">
- <div class="hms-icon-chip mb-2"><i class="fa fa-heart" aria-hidden="true"></i> <%= _t('maternity_dashboard.module_label', { ns: 'legacy', defaultValue: 'Obstetrics & gynaecology' }) %></div>
- <h1 class="hms-surface-hero-title"><%= _t('maternity_dashboard.title', { ns: 'legacy', defaultValue: 'Maternity module' }) %></h1>
- <p><%= _t('maternity_dashboard.subtitle', { ns: 'legacy', defaultValue: 'ANC registry · labor ward · partograph · delivery & postnatal' }) %></p>
-</div>
+<div class="o_content mat-dashboard">
 
 <% const s = stats || {}; %>
-<section class="hms-stat-section">
+<section class="hms-stat-section mat-dashboard__stats">
  <h2 class="hms-stat-section__title"><%= _t('maternity_dashboard.overview', { ns: 'legacy', defaultValue: 'Overview' }) %></h2>
- <div class="hms-stat-grid">
-  <%- include('partials/hms-stat-link', { href: '/maternity/patients', label: _t('maternity_dashboard.stat_registered', { ns: 'legacy', defaultValue: 'Registered' }), value: s.total_registered || 0, icon: 'fa-users', color: '#ec4899' }) %>
-  <%- include('partials/hms-stat-link', { href: '/maternity/patients?filter=active', label: _t('maternity_dashboard.stat_active_anc', { ns: 'legacy', defaultValue: 'Active ANC' }), value: s.active_anc || 0, icon: 'fa-female', color: '#9d174d' }) %>
-  <%- include('partials/hms-stat-link', { href: '/maternity/labor', label: _t('maternity_dashboard.stat_in_labor', { ns: 'legacy', defaultValue: 'In labor' }), value: s.currently_in_labor || 0, icon: 'fa-heartbeat', color: '#ef4444' }) %>
-  <%- include('partials/hms-stat-link', { href: '/maternity/register', label: _t('maternity_dashboard.stat_deliveries_today', { ns: 'legacy', defaultValue: 'Deliveries today' }), value: s.deliveries_today || 0, icon: 'fa-child', color: '#10b981' }) %>
+ <div class="hms-stat-grid hms-stat-grid--compact">
+  <%- include('partials/hms-stat-link', { href: '/maternity/patients', label: _t('maternity_dashboard.stat_registered', { ns: 'legacy', defaultValue: 'Registered' }), value: s.total_registered || 0, icon: 'fa-users', color: '#ec4899', compact: true }) %>
+  <%- include('partials/hms-stat-link', { href: '/maternity/patients?filter=active', label: _t('maternity_dashboard.stat_active_anc', { ns: 'legacy', defaultValue: 'Active ANC' }), value: s.active_anc || 0, icon: 'fa-female', color: '#9d174d', compact: true }) %>
+  <%- include('partials/hms-stat-link', { href: '/maternity/labor', label: _t('maternity_dashboard.stat_in_labor', { ns: 'legacy', defaultValue: 'In labor' }), value: s.currently_in_labor || 0, icon: 'fa-heartbeat', color: '#ef4444', compact: true }) %>
+  <%- include('partials/hms-stat-link', { href: '/maternity/register', label: _t('maternity_dashboard.stat_deliveries_today', { ns: 'legacy', defaultValue: 'Deliveries today' }), value: s.deliveries_today || 0, icon: 'fa-child', color: '#10b981', compact: true }) %>
  </div>
 </section>
 
-<div class="row">
- <div class="col-lg-6 mb-4">
-  <div class="hms-surface-card">
-   <div class="p-3 border-bottom font-weight-bold d-flex justify-content-between"><span><%= _t('maternity_dashboard.high_risk_anc', { ns: 'legacy', defaultValue: 'High-risk ANC' }) %></span><span class="badge badge-danger"><%= s.high_risk_patients || 0 %></span></div>
-   <div class="p-3">
+<div class="row mat-dashboard__panels">
+ <div class="col-lg-6 mb-3">
+  <div class="hms-surface-card mat-panel-card">
+   <div class="mat-panel-card__head d-flex justify-content-between align-items-center"><span><%= _t('maternity_dashboard.high_risk_anc', { ns: 'legacy', defaultValue: 'High-risk ANC' }) %></span><span class="badge badge-danger"><%= s.high_risk_patients || 0 %></span></div>
+   <div class="mat-panel-card__body">
     <% if (!highRisk || !highRisk.length) { %><p class="text-muted small mb-0"><%= _t('maternity_dashboard.no_high_risk', { ns: 'legacy', defaultValue: 'No high-risk active pregnancies.' }) %></p><% } %>
     <% (highRisk || []).forEach(function(r){ %>
-    <a href="/maternity/chart/<%= r.id %>" class="d-block py-2 border-bottom text-dark">
+    <a href="/maternity/chart/<%= r.id %>" class="mat-panel-card__row d-block text-dark">
      <strong><%= r.antenatal_number %></strong> — <%= r.first_name %> <%= r.last_name %>
      <span class="risk-pill <%= r.risk_level %> float-right"><%= r.risk_level %></span>
     </a>
@@ -40,13 +34,13 @@
    </div>
   </div>
  </div>
- <div class="col-lg-6 mb-4">
-  <div class="hms-surface-card">
-   <div class="p-3 border-bottom font-weight-bold"><%= _t('maternity_dashboard.labor_ward_active', { ns: 'legacy', defaultValue: 'Labor ward (active)' }) %></div>
-   <div class="p-3">
+ <div class="col-lg-6 mb-3">
+  <div class="hms-surface-card mat-panel-card">
+   <div class="mat-panel-card__head"><%= _t('maternity_dashboard.labor_ward_active', { ns: 'legacy', defaultValue: 'Labor ward (active)' }) %></div>
+   <div class="mat-panel-card__body">
     <% if (!labor || !labor.length) { %><p class="text-muted small mb-0"><%= _t('maternity_dashboard.no_in_labor', { ns: 'legacy', defaultValue: 'No patients in active labor.' }) %></p><% } %>
     <% (labor || []).forEach(function(r){ %>
-    <a href="/maternity/labor?labor_id=<%= r.id %>" class="d-block py-2 border-bottom text-dark">
+    <a href="/maternity/labor?labor_id=<%= r.id %>" class="mat-panel-card__row d-block text-dark">
      <strong><%= r.antenatal_number %></strong> — <%= r.first_name %> <%= r.last_name %>
      <span class="small text-muted float-right"><%= fmtDate(r.admission_date) %></span>
     </a>

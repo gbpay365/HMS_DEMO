@@ -18,10 +18,10 @@
   background: linear-gradient(135deg, var(--hms-dept-maternity), #db2777);
   color: #fff;
   border: none;
-  padding: 8px 16px;
+  padding: 0.4rem 0.75rem;
   border-radius: 6px;
   font-weight: 600;
-  font-size: 0.88rem;
+  font-size: 0.8125rem;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -31,4 +31,47 @@
 .maternity-odoo-app .o_btn_primary:hover {
   color: #fff;
   opacity: 0.92;
+}
+
+/* Maternity dashboard — compact KPI + panels */
+.mat-dashboard__stats {
+  margin-bottom: 0.75rem;
+}
+
+.maternity-odoo-app .mat-dashboard .hms-stat-section__title {
+  font-size: 0.625rem;
+  margin-bottom: 0.4rem;
+}
+
+.maternity-odoo-app .mat-panel-card {
+  border-radius: 0.65rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.maternity-odoo-app .mat-panel-card__head {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #9d174d;
+  background: #fdf2f8;
+}
+
+.maternity-odoo-app .mat-panel-card__body {
+  padding: 0.55rem 0.75rem;
+}
+
+.maternity-odoo-app .mat-panel-card__row {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+.maternity-odoo-app .mat-panel-card__row:last-child {
+  border-bottom: none;
+}
+
+.maternity-odoo-app .mat-panel-card__row .small {
+  font-size: 0.7rem;
 }

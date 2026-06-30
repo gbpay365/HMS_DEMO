@@ -118,24 +118,46 @@ a.hms-hub-module-tile--compact .small {
   display: none;
 }
 
-.hms-stat-link--compact {
-  padding: 0.65rem 0.75rem;
-  gap: 0.55rem;
+.hms-stat-grid--compact {
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
-.hms-stat-link--compact .hms-stat-link__icon {
-  width: 2.25rem;
-  height: 2.25rem;
-  font-size: 0.95rem;
+@media (min-width: 768px) {
+  .hms-stat-grid--compact {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.hms-stat-link--compact {
+  padding: 0.5rem 0.65rem;
+  gap: 0.5rem;
   border-radius: 0.65rem;
 }
 
+.hms-stat-link--compact .hms-stat-link__orb {
+  width: 3rem;
+  height: 3rem;
+  top: -0.5rem;
+  right: -0.5rem;
+}
+
+.hms-stat-link--compact .hms-stat-link__icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 0.8rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--hms-stat-accent) 30%, transparent);
+}
+
 .hms-stat-link--compact .hms-stat-link__value {
-  font-size: 1.35rem;
+  font-size: 1.05rem;
+  margin-top: 0.1rem;
 }
 
 .hms-stat-link--compact .hms-stat-link__label {
-  font-size: 0.62rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.05em;
 }
 
 .hms-stat-link--compact .hms-stat-link__shortcut,
