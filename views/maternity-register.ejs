@@ -9,18 +9,52 @@
 <div class="row">
  <div class="col-lg-5 mb-3">
   <div class="mat-card p-3">
-   <p class="small text-muted"><%= _t('maternity_register.link_hint', { ns: 'legacy', defaultValue: 'Link an existing HMS patient. Find them in' }) %> <a href="/patients?from=maternity&action=new"><%= _t('maternity_register.patient_directory', { ns: 'legacy', defaultValue: 'Patient directory' }) %></a> <%= _t('maternity_register.link_hint_suffix_short', { ns: 'legacy', defaultValue: 'to register a new mother, or enter ID below.' }) %></p>
+   <p class="small text-muted mb-3"><%= _t('maternity_register.search_hint', { ns: 'legacy', defaultValue: 'Find an existing HMS patient by ID, name, or phone. If not found, create a new patient record first.' }) %></p>
+   <form method="get" action="/maternity/register" class="mb-0">
+    <div class="form-group mb-2">
+     <label class="small font-weight-bold mb-1" for="mat_patient_id"><%= _t('maternity_register.patient_id_ph', { ns: 'legacy', defaultValue: 'Patient ID' }) %></label>
+     <input type="number" id="mat_patient_id" name="patient_id" class="hms-input w-full" placeholder="<%= _t('maternity_register.patient_id_ph', { ns: 'legacy', defaultValue: 'Patient ID' }) %>" value="<%= patient ? patient.id : (typeof searchPatientId !== 'undefined' ? searchPatientId : '') %>" min="1">
+    </div>
+    <div class="form-group mb-2">
+     <label class="small font-weight-bold mb-1" for="mat_patient_name"><%= _t('maternity_register.patient_name_ph', { ns: 'legacy', defaultValue: 'Patient name' }) %></label>
+     <input type="text" id="mat_patient_name" name="patient_name" class="hms-input w-full" placeholder="<%= _t('maternity_register.patient_name_ph', { ns: 'legacy', defaultValue: 'Patient name' }) %>" value="<%= typeof searchPatientName !== 'undefined' ? searchPatientName : '' %>">
+    </div>
+    <div class="form-group mb-3">
+     <label class="small font-weight-bold mb-1" for="mat_patient_phone"><%= _t('maternity_register.patient_phone_ph', { ns: 'legacy', defaultValue: 'Phone number' }) %></label>
+     <input type="text" id="mat_patient_phone" name="patient_phone" class="hms-input w-full" placeholder="<%= _t('maternity_register.patient_phone_ph', { ns: 'legacy', defaultValue: 'Phone number' }) %>" value="<%= typeof searchPatientPhone !== 'undefined' ? searchPatientPhone : '' %>">
+    </div>
+    <button type="submit" class="hms-btn hms-btn-secondary w-full"><i class="fa fa-search mr-1" aria-hidden="true"></i><%= _t('maternity_register.search', { ns: 'legacy', defaultValue: 'Search patient' }) %></button>
+   </form>
+
+   <% if (patient) { %>
+   <div class="hms-flash hms-flash--success mt-3 mb-0">
+    <strong><%= patient.first_name %> <%= patient.last_name %></strong> (#<%= patient.id %>)<% if (patient.phone) { %> · <%= patient.phone %><% } %>
+   </div>
+   <% } else if (patientMatches && patientMatches.length) { %>
+   <div class="mt-3">
+    <p class="small font-weight-bold mb-2"><%= _t('maternity_register.multiple_matches', { ns: 'legacy', defaultValue: 'Multiple patients found — select one:' }) %></p>
+    <ul class="list-unstyled mb-0">
+     <% patientMatches.forEach(function(m) { %>
+     <li class="mb-2">
+      <a href="/maternity/register?patient_id=<%= m.id %>" class="d-block rounded border px-3 py-2 text-decoration-none" style="border-color:#fbcfe8!important;background:#fff;">
+       <strong><%= m.first_name %> <%= m.last_name %></strong>
+       <span class="text-muted small">#<%= m.id %><% if (m.phone) { %> · <%= m.phone %><% } %></span>
+      </a>
+     </li>
+     <% }); %>
+    </ul>
+   </div>
+   <% } else if (searched && searchNotFound) { %>
+   <div class="hms-flash hms-flash--warning mt-3 mb-2"><%= _t('maternity_register.no_patient_found', { ns: 'legacy', defaultValue: 'No patient found for this search.' }) %></div>
    <% if (uiVisible('mat.btn.register_new_anc')) { %>
-   <a href="/patients?from=maternity&action=new" class="hms-btn hms-btn-primary mb-3">
-    <i class="fa fa-user-plus mr-1" aria-hidden="true"></i><%= _t('maternity_register.register_new_anc', { ns: 'legacy', defaultValue: 'Register New ANC' }) %>
+   <a href="<%= createPatientUrl || '/patients?from=maternity&action=new' %>" class="hms-btn hms-btn-primary w-full">
+    <i class="fa fa-user-plus mr-1" aria-hidden="true"></i><%= _t('maternity_register.create_patient', { ns: 'legacy', defaultValue: 'Create patient' }) %>
    </a>
    <% } %>
-   <form method="get" action="/maternity/register" class="form-inline mb-0">
-    <input type="number" name="patient_id" class="hms-input w-full mr-2" placeholder="<%= _t('maternity_register.patient_id_ph', { ns: 'legacy', defaultValue: 'Patient ID' }) %>" value="<%= patient ? patient.id : '' %>" required>
-    <button class="hms-btn hms-btn-secondary"><%= _t('maternity_register.load', { ns: 'legacy', defaultValue: 'Load' }) %></button>
-   </form>
-   <% if (patient) { %>
-   <div class="hms-flash hms-flash--success mt-3 mb-0"><strong><%= patient.first_name %> <%= patient.last_name %></strong> (#<%= patient.id %>) · <%= patient.phone || '' %></div>
+   <% } else if (uiVisible('mat.btn.register_new_anc')) { %>
+   <a href="/patients?from=maternity&action=new" class="hms-btn hms-btn-secondary w-full mt-3">
+    <i class="fa fa-user-plus mr-1" aria-hidden="true"></i><%= _t('maternity_register.create_patient', { ns: 'legacy', defaultValue: 'Create patient' }) %>
+   </a>
    <% } %>
   </div>
  </div>

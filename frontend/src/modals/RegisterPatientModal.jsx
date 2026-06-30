@@ -52,7 +52,13 @@ function resolveAddressMode(mode, geo) {
   return mode || 'profile';
 }
 
-export function RegisterPatientModal({ open, onClose, fromMaternity = false }) {
+export function RegisterPatientModal({
+  open,
+  onClose,
+  fromMaternity = false,
+  prefillName = '',
+  prefillPhone = '',
+}) {
   const { t } = useTranslation(['ops', 'clinical']);
   const datePh = t('modals.registerPatient.date_ph');
   const patientReg = patientRegistrationFromBoot();
@@ -73,7 +79,8 @@ export function RegisterPatientModal({ open, onClose, fromMaternity = false }) {
 
     let cancelled = false;
     const defaultPhone = defaultPhoneWithDial();
-    setState({ ...INITIAL, phone: defaultPhone });
+    const phoneSeed = String(prefillPhone || '').trim() || defaultPhone;
+    setState({ ...INITIAL, phone: phoneSeed });
 
     const geoApi =
       (typeof window !== 'undefined' && window.HMS && window.HMS.geoApi) ||
@@ -122,7 +129,11 @@ export function RegisterPatientModal({ open, onClose, fromMaternity = false }) {
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [open, prefillPhone]);
+
+  const prefillParts = String(prefillName || '').trim().split(/\s+/).filter(Boolean);
+  const prefillFirstName = prefillParts[0] || '';
+  const prefillLastName = prefillParts.length > 1 ? prefillParts.slice(1).join(' ') : '';
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -251,10 +262,10 @@ export function RegisterPatientModal({ open, onClose, fromMaternity = false }) {
           <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-brand">{t('modals.registerPatient.section_identity')}</h3>
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField label={t('modals.registerPatient.first_name')} htmlFor="rp-fn" required>
-              <input id="rp-fn" name="first_name" required className="hms-input" autoComplete="given-name" />
+              <input id="rp-fn" name="first_name" required className="hms-input" autoComplete="given-name" defaultValue={prefillFirstName} key={`${formKey}-fn`} />
             </FormField>
             <FormField label={t('modals.registerPatient.last_name')} htmlFor="rp-ln">
-              <input id="rp-ln" name="last_name" className="hms-input" autoComplete="family-name" />
+              <input id="rp-ln" name="last_name" className="hms-input" autoComplete="family-name" defaultValue={prefillLastName} key={`${formKey}-ln`} />
             </FormField>
             <FormField
               label={patientReg.identityIdLabel || t('modals.registerPatient.national_id', { defaultValue: 'National ID' })}

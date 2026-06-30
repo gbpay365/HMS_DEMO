@@ -32,6 +32,47 @@ module.exports = function (app, pool, requireAuth, requirePerm) {
     return Object.assign({ maternityOdooApp: true }, extra || {});
   }
 
+  async function searchMaternityPatients(name, phone, limit = 25) {
+    const nameQ = String(name || '').trim();
+    const phoneQ = String(phone || '').trim();
+    if (!nameQ && !phoneQ) return [];
+
+    const params = [];
+    const parts = ['COALESCE(status, 1) = 1'];
+    if (nameQ) {
+      const like = `%${nameQ.toLowerCase()}%`;
+      parts.push(
+        `(LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ? OR LOWER(CONCAT(first_name, ' ', last_name)) LIKE ? OR LOWER(CONCAT(last_name, ' ', first_name)) LIKE ?)`
+      );
+      params.push(like, like, like, like);
+    }
+    if (phoneQ) {
+      const digits = phoneQ.replace(/\D/g, '');
+      const phoneLike = `%${digits || phoneQ}%`;
+      parts.push(`(REPLACE(REPLACE(REPLACE(COALESCE(phone, ''), ' ', ''), '-', ''), '+', '') LIKE ? OR phone LIKE ?)`);
+      params.push(phoneLike, `%${phoneQ}%`);
+    }
+
+    const [rows] = await pool.query(
+      `SELECT id, first_name, last_name, phone, dob
+         FROM tbl_patient
+        WHERE ${parts.join(' AND ')}
+        ORDER BY last_name, first_name, id
+        LIMIT ?`,
+      [...params, Math.min(50, Math.max(1, limit))]
+    );
+    return rows || [];
+  }
+
+  function buildMaternityCreatePatientUrl(name, phone) {
+    const q = new URLSearchParams({ from: 'maternity', action: 'new' });
+    const nameQ = String(name || '').trim();
+    const phoneQ = String(phone || '').trim();
+    if (nameQ) q.set('prefill_name', nameQ);
+    if (phoneQ) q.set('prefill_phone', phoneQ);
+    return `/patients?${q.toString()}`;
+  }
+
   /** Chart forms post to /maternity/chart/:id/* — bind id before validators run. */
   function bindChartMaternityPatientId(req, res, next) {
     const id = parseInt(req.params.id, 10) || 0;
@@ -130,16 +171,40 @@ module.exports = function (app, pool, requireAuth, requirePerm) {
 
   app.get('/maternity/register', requireAuth, mutate, async (req, res) => {
     const patientId = parseInt(req.query.patient_id, 10) || 0;
+    const patientName = String(req.query.patient_name || '').trim();
+    const patientPhone = String(req.query.patient_phone || '').trim();
+    const searched = !!(patientId || patientName || patientPhone);
+
     let patient = null;
+    let patientMatches = [];
+    let searchNotFound = false;
+
     if (patientId > 0) {
       const [p] = await pool.query('SELECT id, first_name, last_name, phone, dob FROM tbl_patient WHERE id = ?', [
         patientId,
       ]);
       patient = p[0] || null;
+      if (!patient) searchNotFound = true;
+    } else if (patientName || patientPhone) {
+      patientMatches = await searchMaternityPatients(patientName, patientPhone);
+      if (patientMatches.length === 1) {
+        patient = patientMatches[0];
+        patientMatches = [];
+      } else if (!patientMatches.length) {
+        searchNotFound = true;
+      }
     }
+
     res.render('maternity-register', matPage({
       title: 'ANC booking — Maternity',
       patient,
+      patientMatches,
+      searchNotFound,
+      searched,
+      searchPatientName: patientName,
+      searchPatientPhone: patientPhone,
+      searchPatientId: patientId > 0 && !patient ? String(patientId) : '',
+      createPatientUrl: buildMaternityCreatePatientUrl(patientName, patientPhone),
       flash: req.query.msg,
       error: req.query.err,
     }));

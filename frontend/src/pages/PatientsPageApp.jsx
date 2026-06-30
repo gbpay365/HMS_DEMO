@@ -42,9 +42,16 @@ export function PatientsPageApp({
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState(null);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [registerPrefill, setRegisterPrefill] = useState({ name: '', phone: '' });
 
   useEffect(() => {
-    if (/[\?&]action=new(?:&|$)/.test(window.location.search || '') || fromMaternity) {
+    const params = new URLSearchParams(window.location.search || '');
+    const fromMat = fromMaternity || String(params.get('from') || '').toLowerCase() === 'maternity';
+    setRegisterPrefill({
+      name: String(params.get('prefill_name') || '').trim(),
+      phone: String(params.get('prefill_phone') || '').trim(),
+    });
+    if (/[\?&]action=new(?:&|$)/.test(window.location.search || '') || fromMat) {
       setRegisterOpen(true);
     }
   }, [fromMaternity]);
@@ -264,7 +271,13 @@ export function PatientsPageApp({
         </div>
       </div>
 
-      <RegisterPatientModal open={registerOpen} onClose={() => setRegisterOpen(false)} fromMaternity={fromMaternity} />
+      <RegisterPatientModal
+        open={registerOpen}
+        onClose={() => setRegisterOpen(false)}
+        fromMaternity={fromMaternity}
+        prefillName={registerPrefill.name}
+        prefillPhone={registerPrefill.phone}
+      />
       <EditPatientModal
         open={editOpen}
         onClose={() => {
