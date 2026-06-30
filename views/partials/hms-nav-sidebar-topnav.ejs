@@ -24,7 +24,7 @@ var _hr = _menuByCode('topnav.hr');
 var _settings = _menuByCode('topnav.configuration');
 %>
 
-<% if (typeof canHospitalDashboard === 'function' && canHospitalDashboard()) { %>
+<% if (typeof uiVisible === 'function' ? uiVisible('sb.dashboard') : (typeof canHospitalDashboard === 'function' && canHospitalDashboard())) { %>
 <div class="sb-section"><%= _tNav('sidebar.section.overview', { ns: 'nav', defaultValue: 'Overview' }) %></div>
 <a href="/dashboard" class="sb-item<%= _path === '/dashboard' || _path.indexOf('/dashboard/') === 0 ? ' active' : '' %>" data-label="<%= _tNav('hospital_dashboard', { ns: 'nav', defaultValue: 'Dashboard' }) %>">
   <i class="fa fa-dashboard sb-item-icon"></i>
