@@ -70,18 +70,18 @@ export function PortalQuickActionCard({
       <a
         href={href || '#'}
         onClick={handleClick}
-        className="hms-staff-action-card group flex cursor-pointer items-center gap-2.5 rounded-xl border border-slate-100 bg-white p-2.5 shadow-card transition duration-300 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-lg"
+        className="hms-staff-action-card group flex h-full min-h-[4.5rem] cursor-pointer items-center gap-3 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
         style={{ animationDelay: `${animationDelay}ms` }}
       >
         <FaTileIcon icon={tile.icon} color={color} dense animated />
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-bold text-ink transition duration-300 group-hover:text-brand">
+          <div className="text-sm font-extrabold leading-snug text-slate-800 transition duration-300 group-hover:text-brand">
             {label}
           </div>
-          <div className="truncate text-xs leading-snug text-slate-500">{hint}</div>
+          <div className="mt-0.5 line-clamp-2 text-xs leading-snug text-slate-500">{hint}</div>
         </div>
         <span
-          className="shrink-0 text-slate-300 transition duration-300 group-hover:translate-x-1 group-hover:text-brand"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm text-slate-400 transition duration-300 group-hover:bg-brand/10 group-hover:text-brand"
           aria-hidden="true"
         >
           →
@@ -135,7 +135,7 @@ export function PortalQuickActions({ tiles = [], accentColor = '#714b67', dense 
 
   const compact = !dense && tiles.length > 6;
   const gridClass = dense
-    ? 'grid gap-2 sm:grid-cols-2 lg:grid-cols-3'
+    ? 'grid gap-3 sm:grid-cols-2 xl:grid-cols-4'
     : compact
       ? 'grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
       : tiles.length <= 3
@@ -143,10 +143,10 @@ export function PortalQuickActions({ tiles = [], accentColor = '#714b67', dense 
         : 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
   return (
-    <section className={dense ? 'mb-4' : 'mb-6'}>
-      <div className={`flex items-end justify-between gap-3 ${dense ? 'mb-2' : 'mb-4'}`}>
+    <section className={dense ? 'hms-staff-shortcuts-section' : 'mb-6'}>
+      <div className={`flex items-end justify-between gap-3 ${dense ? 'mb-3' : 'mb-4'}`}>
         <div>
-          <h2 className={`font-extrabold text-ink ${dense ? 'text-xs uppercase tracking-wider text-slate-500' : 'text-lg'}`}>
+          <h2 className={dense ? 'hms-staff-section-title' : 'text-lg font-extrabold text-ink'}>
             {t('portalQuick.title')}
           </h2>
           {!dense ? <p className="text-xs text-slate-500">{t('portalQuick.subtitle')}</p> : null}

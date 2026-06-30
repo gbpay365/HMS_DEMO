@@ -34,22 +34,45 @@ export function StatCard({
   const dense = size === 'dense';
   const compact = size === 'compact' || dense;
   const useGradient = !!accentColor;
+  const horizontalStaff = compact && useGradient;
 
   return (
     <div
-      className={`hms-surface-card border border-slate-100 bg-white shadow-card transition duration-300 ${
-        dense ? 'rounded-lg p-2' : compact ? 'rounded-xl p-2.5' : 'rounded-2xl p-4'
+      className={`hms-surface-card border bg-white shadow-card transition duration-300 ${
+        horizontalStaff
+          ? 'hms-staff-kpi-card--horizontal rounded-2xl border-slate-200/80 p-3.5'
+          : dense
+            ? 'rounded-lg border-slate-100 p-2'
+            : compact
+              ? 'rounded-xl border-slate-100 p-2.5'
+              : 'rounded-2xl border-slate-100 p-4'
       } ${animated ? 'hms-staff-kpi-card group' : ''}`}
-      style={animated ? { animationDelay: `${animationDelay}ms` } : undefined}
+      style={
+        horizontalStaff && accentColor
+          ? {
+              borderColor: `${accentColor}28`,
+              background: `linear-gradient(135deg, ${accentColor}0c 0%, #fff 52%, #fff 100%)`,
+              ...(animated ? { animationDelay: `${animationDelay}ms` } : {}),
+            }
+          : animated
+            ? { animationDelay: `${animationDelay}ms` }
+            : undefined
+      }
     >
-      <div className={`flex items-start gap-2 ${compact ? '' : 'flex-col'}`}>
+      <div
+        className={`flex items-center gap-3 ${
+          horizontalStaff ? 'flex-row' : compact ? 'items-start gap-2' : 'flex-col items-start'
+        }`}
+      >
         {iconCls ? (
           <div
-            className={`inline-flex shrink-0 items-center justify-center rounded-lg transition duration-300 ${
+            className={`inline-flex shrink-0 items-center justify-center rounded-xl transition duration-300 ${
               dense
                 ? 'h-7 w-7 text-[10px]'
                 : compact
-                  ? 'h-8 w-8 text-xs'
+                  ? horizontalStaff
+                    ? 'h-11 w-11 text-base'
+                    : 'h-8 w-8 text-xs'
                   : 'mb-2 h-9 w-9 text-sm'
             } ${animated ? 'hms-staff-kpi-card__icon group-hover:scale-110' : ''}`}
             style={
@@ -71,16 +94,25 @@ export function StatCard({
               dense
                 ? 'text-[10px] font-bold leading-tight text-slate-800'
                 : compact
-                  ? 'text-[13px] font-bold leading-snug text-slate-800'
+                  ? horizontalStaff
+                    ? 'text-[11px] font-extrabold leading-snug text-slate-600'
+                    : 'text-[13px] font-bold leading-snug text-slate-800'
                   : 'text-xs font-bold text-slate-700'
             }`}
           >
             {label}
           </div>
           <div
-            className={`font-bold leading-tight ${TONES[tone] || TONES.default} ${
-              dense ? 'mt-0.5 text-xs' : compact ? 'mt-0.5 text-sm' : 'mt-1 text-2xl'
+            className={`font-extrabold leading-none tabular-nums ${TONES[tone] || TONES.default} ${
+              dense
+                ? 'mt-0.5 text-xs'
+                : compact
+                  ? horizontalStaff
+                    ? 'mt-1 text-2xl'
+                    : 'mt-0.5 text-sm'
+                  : 'mt-1 text-2xl'
             } ${animated ? 'transition duration-300 group-hover:translate-x-0.5' : ''}`}
+            style={horizontalStaff && accentColor ? { color: accentColor } : undefined}
           >
             {value}
           </div>

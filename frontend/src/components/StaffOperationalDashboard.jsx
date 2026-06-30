@@ -50,12 +50,47 @@ function formatKpiValue(kpi, data) {
   return String(val);
 }
 
-function PanelCard({ title, children }) {
+function PanelCard({ title, children, accent }) {
   return (
-    <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-card">
-      <h3 className="mb-3 text-sm font-bold text-ink">{title}</h3>
-      {children}
+    <div
+      className="hms-staff-panel-card overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
+      style={accent ? { borderTopWidth: 3, borderTopColor: accent } : undefined}
+    >
+      <div className="hms-staff-panel-card__header border-b border-slate-100 bg-slate-50/80 px-4 py-3">
+        <h3 className="text-sm font-extrabold tracking-tight text-slate-800">{title}</h3>
+      </div>
+      <div className="p-4">{children}</div>
     </div>
+  );
+}
+
+function QuickActionButton({ action }) {
+  const iconCls = String(action.icon || 'fa-circle')
+    .replace(/^fa\s+/, '')
+    .replace(/^fa-/, '');
+  const color = action.color || '#047857';
+  return (
+    <a
+      href={action.url}
+      className="hms-staff-quick-btn group no-underline"
+      style={{
+        '--hms-quick-accent': color,
+      }}
+    >
+      <span
+        className="hms-staff-quick-btn__icon"
+        style={{
+          background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+          boxShadow: `0 4px 12px ${color}35`,
+        }}
+      >
+        <i className={`fa fa-${iconCls}`} aria-hidden="true" />
+      </span>
+      <span className="hms-staff-quick-btn__label">{action.label}</span>
+      <span className="hms-staff-quick-btn__arrow" aria-hidden="true">
+        →
+      </span>
+    </a>
   );
 }
 
@@ -65,20 +100,9 @@ function renderPanel(panel, data, t) {
 
   if (panel.id === 'quick_actions' && Array.isArray(rows)) {
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="hms-staff-quick-btn-grid">
         {rows.map((a) => (
-          <a
-            key={a.code}
-            href={a.url}
-            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold no-underline"
-            style={{
-              background: `${a.color}18`,
-              color: a.color,
-              border: `1px solid ${a.color}44`,
-            }}
-          >
-            {a.label}
-          </a>
+          <QuickActionButton key={a.code} action={a} />
         ))}
       </div>
     );
@@ -110,7 +134,12 @@ function renderPanel(panel, data, t) {
   }
 
   if (!Array.isArray(rows) || !rows.length) {
-    return <div className="text-sm text-slate-500">{t('staffDashboard.no_data')}</div>;
+    return (
+      <div className="flex min-h-[88px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-6 text-center">
+        <i className="fa fa-inbox mb-2 text-lg text-slate-300" aria-hidden="true" />
+        <div className="text-sm font-medium text-slate-500">{t('staffDashboard.no_data')}</div>
+      </div>
+    );
   }
 
   return (
@@ -135,10 +164,14 @@ function renderPanel(panel, data, t) {
   );
 }
 
-function KpiGrid({ kpis, data }) {
+function KpiGrid({ kpis, data, profile }) {
   if (!kpis.length) return null;
+  const gridClass =
+    kpis.length <= 4
+      ? 'hms-staff-kpi-grid hms-staff-kpi-grid--4'
+      : 'grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-8';
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-8">
+    <div className={gridClass}>
       {kpis.map((kpi, idx) => (
         <StatCard
           key={kpi.id}
@@ -201,20 +234,16 @@ export function StaffOperationalDashboard({
   }[profile] || 'bar-chart';
 
   return (
-    <div className="hms-staff-operational-dashboard">
+    <div className={`hms-staff-operational-dashboard hms-staff-operational-dashboard--${profile}`}>
       <SurfaceHero icon={profileIcon} title={t(meta.titleKey)} subtitle={t(meta.subtitleKey)}>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="hms-staff-hero-toolbar mt-4 flex flex-wrap items-center gap-2">
           {tabs.length > 1
             ? tabs.map((tb) => (
                 <button
                   key={tb.id}
                   type="button"
                   onClick={() => setTab(tb.id)}
-                  className={`rounded-full px-3 py-1 text-xs font-bold transition ${
-                    tab === tb.id
-                      ? 'bg-brand text-white shadow-sm'
-                      : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'
-                  }`}
+                  className={`hms-staff-hero-tab${tab === tb.id ? ' hms-staff-hero-tab--active' : ''}`}
                 >
                   {tb.label}
                 </button>
@@ -224,7 +253,7 @@ export function StaffOperationalDashboard({
             type="button"
             onClick={load}
             disabled={loading}
-            className="ml-auto inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-60"
+            className="hms-staff-hero-tab hms-staff-hero-tab--refresh ml-auto"
           >
             <i className={`fa fa-refresh${loading ? ' fa-spin' : ''}`} aria-hidden="true" />
             {t('staffDashboard.refresh')}
@@ -241,20 +270,22 @@ export function StaffOperationalDashboard({
       {!loading && data ? (
         <>
           {tabKpis.length > 0 ? (
-            <div className="mb-5">
-              <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
-                {t('staffDashboard.summary_heading')}
-              </h2>
-              <KpiGrid kpis={tabKpis} data={data} />
+            <div className="mb-6">
+              <h2 className="hms-staff-section-title">{t('staffDashboard.summary_heading')}</h2>
+              <KpiGrid kpis={tabKpis} data={data} profile={profile} />
             </div>
           ) : (
             <div className="mb-4 text-sm text-slate-500">{t('staffDashboard.no_data')}</div>
           )}
 
           {tabPanels.length > 0 ? (
-            <div className="grid gap-3 lg:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-2">
               {tabPanels.map((panel) => (
-                <PanelCard key={panel.id} title={panel.label}>
+                <PanelCard
+                  key={panel.id}
+                  title={panel.label}
+                  accent={panel.id === 'payment_codes' ? '#10b981' : panel.id === 'quick_actions' ? '#0c8b8b' : undefined}
+                >
                   {renderPanel(panel, data, t)}
                 </PanelCard>
               ))}

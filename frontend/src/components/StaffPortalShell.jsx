@@ -22,7 +22,7 @@ export function StaffPortalShell({
       ) : null}
 
       {tiles.length > 0 ? (
-        <section className={showStaffDashboard ? 'mt-5 border-t border-slate-200 pt-5' : ''}>
+        <section className={showStaffDashboard ? 'hms-staff-shortcuts-wrap mt-8 border-t border-slate-200/80 pt-6' : ''}>
           <PortalQuickActions tiles={tiles} accentColor={portalColor} dense={showStaffDashboard} />
         </section>
       ) : null}
