@@ -5,6 +5,7 @@
 const bcrypt = require('bcryptjs');
 const ensureHrPayrollSchema = require('../lib/ensureHrPayrollSchema');
 const ensureEmployeeHrSchema = require('../lib/ensureEmployeeHrSchema');
+const { normalizeEmployeePhone } = ensureEmployeeHrSchema;
 
 async function replicateEmployeeOut(pool, employeeId, event = 'upsert') {
     try {
@@ -524,6 +525,7 @@ module.exports = function(app, pool, requireAuth) {
             if (!eid) eid = await nextAutoEmployeeStaffId();
             const profileEmoji = resolveProfileEmoji(req.body.profile_emoji, gender);
             const photoPath = uploadedStaffPhotoPath(req.file) || null;
+            const phoneNorm = normalizeEmployeePhone(phone);
             const [insertResult] = await pool.query(
                 `INSERT INTO tbl_employee (
                   first_name,last_name,username,emailid,password,dob,employee_id,joining_date,gender,address,phone,bio,
@@ -531,7 +533,7 @@ module.exports = function(app, pool, requireAuth) {
                   primary_department,specialisation,profile_emoji,photo_path,role,status)
                  VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
                 [first_name, last_name, username, emailid, hash, dob||null,
-                 eid, joining_date||null, gender, address||'', phone,
+                 eid, joining_date||null, gender, address||'', phoneNorm,
                  bio||'', hr.job_title, hr.cnps_number, hr.tax_niu, hr.nic_number, hr.bank_name, hr.bank_account_no,
                  resolvedPrimaryDepartment, specialisation || null, profileEmoji, photoPath, parseInt(role)||2, parseInt(status??1)]
             );
@@ -782,6 +784,7 @@ module.exports = function(app, pool, requireAuth) {
             const hash = await bcrypt.hash(pwd || 'changeme', 10);
             const profileEmoji = resolveProfileEmoji(req.body.profile_emoji, gender);
             const photoPath = uploadedStaffPhotoPath(req.file) || null;
+            const phoneNorm = normalizeEmployeePhone(phone);
             const [insertResult] = await pool.query(
                 `INSERT INTO tbl_employee (
                   first_name,last_name,username,emailid,password,dob,employee_id,joining_date,gender,address,phone,bio,
@@ -798,7 +801,7 @@ module.exports = function(app, pool, requireAuth) {
                     joining_date || null,
                     gender,
                     address || '',
-                    phone,
+                    phoneNorm,
                     bio || 'System user account',
                     profileEmoji,
                     photoPath,
@@ -882,6 +885,7 @@ module.exports = function(app, pool, requireAuth) {
             const profileEmoji = resolveProfileEmoji(req.body.profile_emoji, gender);
             const uploadedPhotoPath = uploadedStaffPhotoPath(req.file);
             const removePhoto = String(req.body.remove_photo || '') === '1';
+            const phoneNorm = normalizeEmployeePhone(phone);
             let photoSql = '';
             const photoParams = [];
             if (uploadedPhotoPath) {
@@ -903,7 +907,7 @@ module.exports = function(app, pool, requireAuth) {
                     joining_date || null,
                     gender,
                     address || '',
-                    phone,
+                    phoneNorm,
                     bio || '',
                     profileEmoji,
                     ...photoParams,

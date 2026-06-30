@@ -3736,12 +3736,15 @@ app.post('/staff/add', requireAuth, requirePerm('employee.write'), hmsStaffProfi
  }
  try {
  const { resolveProfileEmoji } = require('./lib/hmsEmployeeProfile');
+ const { ensureEmployeeHrSchema, normalizeEmployeePhone } = require('./lib/ensureEmployeeHrSchema');
+ await ensureEmployeeHrSchema(pool);
  const profileEmoji = resolveProfileEmoji(profile_emoji, gender || 'Male');
 const photoPath = hmsUploadedStaffPhotoPath(req.file) || null;
  const hashedPassword = await bcrypt.hash(password, 10);
+ const phoneNorm = normalizeEmployeePhone(phone);
  const [insertResult] = await pool.query(
 'INSERT INTO tbl_employee (first_name, last_name, username, password, emailid, phone, gender, profile_emoji, photo_path, role, status, joining_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW())',
-[first_name, last_name, username, hashedPassword, emailid, phone, gender || 'Male', profileEmoji, photoPath, role]
+[first_name, last_name, username, hashedPassword, emailid, phoneNorm, gender || 'Male', profileEmoji, photoPath, role]
  );
  try {
   const { ensureCashierOnEmployeeSave } = require('./lib/cashierIdentity');
