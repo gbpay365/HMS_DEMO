@@ -1110,7 +1110,8 @@
     "hiv_positive": "Positive",
     "pmtct_enrolled": "PMTCT enrolled",
     "edd_hint": "EDD is calculated automatically from LMP (Naegele's rule). ANC number is assigned on save.",
-    "register_open": "Register & open chart"
+    "register_open": "Register & open chart",
+    "register_new_anc": "Register New ANC"
   },
   "lims_config": {
     "breadcrumb": "Configuration",

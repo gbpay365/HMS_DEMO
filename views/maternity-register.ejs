@@ -10,6 +10,11 @@
  <div class="col-lg-5 mb-3">
   <div class="mat-card p-3">
    <p class="small text-muted"><%= _t('maternity_register.link_hint', { ns: 'legacy', defaultValue: 'Link an existing HMS patient. Find them in' }) %> <a href="/patients?from=maternity&action=new"><%= _t('maternity_register.patient_directory', { ns: 'legacy', defaultValue: 'Patient directory' }) %></a> <%= _t('maternity_register.link_hint_suffix_short', { ns: 'legacy', defaultValue: 'to register a new mother, or enter ID below.' }) %></p>
+   <% if (uiVisible('mat.btn.register_new_anc')) { %>
+   <a href="/patients?from=maternity&action=new" class="hms-btn hms-btn-primary mb-3">
+    <i class="fa fa-user-plus mr-1" aria-hidden="true"></i><%= _t('maternity_register.register_new_anc', { ns: 'legacy', defaultValue: 'Register New ANC' }) %>
+   </a>
+   <% } %>
    <form method="get" action="/maternity/register" class="form-inline mb-0">
     <input type="number" name="patient_id" class="hms-input w-full mr-2" placeholder="<%= _t('maternity_register.patient_id_ph', { ns: 'legacy', defaultValue: 'Patient ID' }) %>" value="<%= patient ? patient.id : '' %>" required>
     <button class="hms-btn hms-btn-secondary"><%= _t('maternity_register.load', { ns: 'legacy', defaultValue: 'Load' }) %></button>

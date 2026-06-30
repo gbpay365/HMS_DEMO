@@ -1099,7 +1099,8 @@
     "hiv_positive": "Positif",
     "pmtct_enrolled": "Inscrite PTME",
     "edd_hint": "La DPA est calculée automatiquement à partir de la DDR (règle de Naegele). Le n° CPN est attribué à l'enregistrement.",
-    "register_open": "Inscrire et ouvrir le dossier"
+    "register_open": "Inscrire et ouvrir le dossier",
+    "register_new_anc": "Inscrire nouvelle CPN"
   },
   "lims_config": {
     "breadcrumb": "Configuration",
