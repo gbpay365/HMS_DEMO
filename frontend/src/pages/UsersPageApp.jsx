@@ -84,7 +84,7 @@ export function UsersPageApp({
           </div>
         </SurfaceHero>
 
-        <div className="mb-4 grid gap-3 sm:grid-cols-2">
+        <div className="hms-compact-kpi-grid mb-3">
           <StatCard label={t('users.stat_total')} value={users.length} tone="brand" icon="users" />
           <StatCard label={t('users.stat_showing')} value={filtered.length} tone="default" icon="search" />
         </div>

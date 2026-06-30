@@ -189,7 +189,7 @@ export function DoctorErInboxPageApp({ unacked = [], recent = [], flash, error }
           </div>
         </SurfaceHero>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-2">
+        <div className="hms-compact-kpi-grid mb-4">
           <StatCard label={t('doctor_er_inbox.needs_attention')} value={unacked.length} tone="danger" icon="exclamation-circle" />
           <StatCard label={t('doctor_er_inbox.recent')} value={recent.length} tone="default" icon="history" />
         </div>

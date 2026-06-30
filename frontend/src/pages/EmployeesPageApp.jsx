@@ -176,7 +176,7 @@ export function EmployeesPageApp({
           </div>
         </SurfaceHero>
 
-        <div className="mb-4 grid gap-3 sm:grid-cols-2">
+        <div className="hms-compact-kpi-grid mb-3">
           <StatCard label={t('employees.stat_total')} value={employeeRows.length} tone="brand" icon="users" />
           <StatCard label={t('employees.stat_showing')} value={filtered.length} tone="default" icon="search" />
         </div>

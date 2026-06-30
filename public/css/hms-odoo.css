@@ -989,7 +989,7 @@ body.hms-body--odoo .hms-dashboard-page .row {
   background: var(--o-surface);
   border: 1px solid var(--o-border);
   border-radius: 6px;
-  padding: 16px;
+  padding: 10px 12px;
   text-decoration: none;
   color: inherit;
 }
@@ -1001,7 +1001,7 @@ body.hms-body--odoo .hms-dashboard-page .row {
 }
 
 .hms-odoo-app .o_stat_value {
-  font-size: 1.6rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: var(--o-brand);
 }

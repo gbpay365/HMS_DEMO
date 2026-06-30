@@ -118,11 +118,11 @@
   background: var(--o-surface);
   border: 1px solid var(--o-border);
   border-radius: 8px;
-  padding: 14px 16px;
+  padding: 10px 12px;
 }
 
 .laboratory-odoo-app .o_stat_card .n {
-  font-size: 1.5rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: var(--o-brand);
 }

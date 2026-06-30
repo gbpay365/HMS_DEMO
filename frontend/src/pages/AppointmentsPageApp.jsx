@@ -71,7 +71,7 @@ export function AppointmentsPageApp({
           </div>
         </SurfaceHero>
 
-        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="hms-compact-kpi-grid mb-3">
           <StatCard label={t('appointments.stat_total')} value={stats.total} tone="brand" icon="calendar" />
           <StatCard label={t('appointments.stat_on_page')} value={stats.onPage} tone="default" icon="list" />
           <StatCard label={t('appointments.stat_pending')} value={stats.pending} tone="warning" icon="clock" />

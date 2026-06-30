@@ -27,7 +27,7 @@ export function IpdHubPageApp({ stats = {}, bedStats = {}, flash = null, error =
 
         <SurfaceHero icon="hospital-o" title={t('hub.title')} subtitle={t('hub.subtitle')} />
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="hms-compact-kpi-grid mb-4">
           <StatCard label={t('hub.kpi_active')} value={stats.active_count || 0} tone="brand" icon="bed" />
           <StatCard label={t('hub.kpi_beds')} value={bedStats.avail || 0} tone="brand" icon="check-circle" />
           <StatCard label={t('hub.kpi_awaiting')} value={stats.awaiting_financial || 0} tone="warning" icon="clock" />
@@ -35,7 +35,7 @@ export function IpdHubPageApp({ stats = {}, bedStats = {}, flash = null, error =
         </div>
 
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">{t('hub.menus_title')}</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="hms-compact-kpi-grid">
           {MENU_KEYS.map((m) => (
             <a
               key={m.href}

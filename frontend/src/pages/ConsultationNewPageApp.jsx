@@ -362,7 +362,7 @@ export function ConsultationNewPageApp({
         ) : null}
       </SurfaceHero>
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-3">
+      <div className="hms-compact-kpi-grid hms-compact-kpi-grid--3 mb-3">
         <StatCard label={t('consultation.stat_visit')} value={visitId} tone="brand" icon="ticket" />
         <StatCard
           label={t('consultation.stat_vitals')}

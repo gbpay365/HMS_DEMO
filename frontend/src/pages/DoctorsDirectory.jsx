@@ -120,7 +120,7 @@ export function DoctorsDirectory({ doctors = [], canAddDoctor = false, onAddDoct
         ) : null}
       </SurfaceHero>
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-2">
+      <div className="hms-compact-kpi-grid mb-4">
         <StatCard label={t('doctors.stat_total')} value={doctors.length} tone="brand" icon="users" />
         <StatCard label={t('doctors.stat_active')} value={activeCount} tone="brand" icon="check-circle" />
       </div>

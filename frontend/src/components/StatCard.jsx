@@ -24,7 +24,7 @@ export function StatCard({
   hint,
   tone = 'default',
   icon = null,
-  size = 'default',
+  size = 'dense',
   accentColor = null,
   animated = false,
   animationDelay = 0,

@@ -86,13 +86,13 @@ function ValidateDetailShell({ kind, code, patient, doctor, flash, error, childr
           </div>
         </SurfaceHero>
         {stats.length ? (
-          <div className={`mb-4 grid gap-3 ${stats.length > 2 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+          <div className={`hms-compact-kpi-grid mb-3 ${stats.length > 2 ? 'hms-compact-kpi-grid--3' : ''}`}>
             {stats.map((s) => (
               <StatCard key={s.label} {...s} />
             ))}
           </div>
         ) : null}
-        <div className="mb-4 grid gap-3 sm:grid-cols-2">
+        <div className="hms-compact-kpi-grid mb-3">
           <StatCard
             label={t('labWorkflow.patient')}
             value={`${patient.first_name || ''} ${patient.last_name || ''}`.trim() || '—'}
@@ -492,7 +492,7 @@ function OrderAlertsView({ dept = 'laboratory', deptLabel: deptLabelProp = '', u
           </div>
         </SurfaceHero>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-2">
+        <div className="hms-compact-kpi-grid mb-4">
           <StatCard label={t('labWorkflow.needs_attention')} value={unacked.length} tone={isPharmacy ? 'default' : 'warning'} icon="bell" accentColor={isPharmacy ? '#d4537e' : undefined} />
           <StatCard label={t('labWorkflow.recent')} value={recent.length} tone="default" icon="history" />
         </div>

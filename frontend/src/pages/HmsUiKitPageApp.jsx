@@ -31,7 +31,7 @@ export function HmsUiKitPageApp() {
 
         <SurfaceHero icon="paint-brush" title={t('uiKit.hero_title')} subtitle={t('uiKit.hero_subtitle')} />
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-3">
+        <div className="hms-compact-kpi-grid hms-compact-kpi-grid--3 mb-4">
           <StatCard label={t('uiKit.stat_buttons')} value={6} tone="brand" icon="hand-pointer" />
           <StatCard label={t('uiKit.stat_fields')} value={4} tone="default" icon="edit" />
           <StatCard label={t('uiKit.stat_modals')} value={3} tone="brand" icon="window-maximize" />

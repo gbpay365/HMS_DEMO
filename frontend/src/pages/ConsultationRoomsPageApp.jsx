@@ -114,7 +114,7 @@ export function ConsultationRoomsPageApp({
           </div>
         </SurfaceHero>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="hms-compact-kpi-grid mb-4">
           <StatCard
             label={t('admin_consultation_rooms.stat_total')}
             value={stats.total}

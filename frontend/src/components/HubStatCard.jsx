@@ -11,7 +11,7 @@ function normalizeIcon(icon) {
   return cls.startsWith('fa-') ? cls : `fa-${cls}`;
 }
 
-export function HubStatCard({ label, value, icon = 'fa-bar-chart', color = '#475569', compact = false }) {
+export function HubStatCard({ label, value, icon = 'fa-bar-chart', color = '#475569', compact = true }) {
   const rgb = hexToRgb(color);
   const iconCls = normalizeIcon(icon);
   const bgGradient = rgb

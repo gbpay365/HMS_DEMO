@@ -408,7 +408,7 @@ export function EmergencyVisitPageApp({
         </div>
       </SurfaceHero>
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-3">
+      <div className="hms-compact-kpi-grid hms-compact-kpi-grid--3 mb-3">
         <StatCard label={t('emergencyVisit.stat_orders')} value={orders.length} tone="brand" icon="list-alt" />
         <StatCard
           label={t('emergencyVisit.stat_charges')}

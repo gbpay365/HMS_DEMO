@@ -169,7 +169,7 @@ export function PatientsPageApp({
           <p className="mb-4 text-xs text-slate-500">{t('patients.delete_hint')}</p>
         ) : null}
 
-        <div className="mb-4 grid gap-3 sm:grid-cols-3">
+        <div className="hms-compact-kpi-grid hms-compact-kpi-grid--3 mb-3">
           <StatCard label={t('patients.stat_total')} value={patientTotal || patients.length} tone="brand" icon="users" />
           <StatCard label={t('patients.stat_filtered')} value={rows.length} tone="default" icon="search" />
           <StatCard label={t('patients.stat_on_page')} value={pageRows.length} tone="brand" icon="list" />

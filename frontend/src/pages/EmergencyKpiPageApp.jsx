@@ -73,7 +73,7 @@ export function EmergencyKpiPageApp({
           </div>
         </SurfaceHero>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="hms-compact-kpi-grid mb-4">
           <StatCard
             label={t('emergencyKpi.total_visits')}
             value={totV.toLocaleString()}
@@ -131,7 +131,7 @@ export function EmergencyKpiPageApp({
           </div>
         </div>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="hms-compact-kpi-grid mb-4">
           <StatCard label={t('emergencyKpi.mlc_cases')} value={Number(summary.mlc || 0)} tone="default" icon="gavel" />
           <StatCard label={t('emergencyKpi.by_ambulance')} value={Number(summary.by_ambulance || 0)} tone="danger" icon="ambulance" />
           <StatCard label={t('emergencyKpi.walk_in')} value={Number(summary.by_walk_in || 0)} tone="brand" icon="walking" />

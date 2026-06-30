@@ -115,7 +115,7 @@ export function DeathRegistryPageApp({
           </div>
         </SurfaceHero>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="hms-compact-kpi-grid mb-4">
           <StatCard label={t('kpi_total')} value={stats.total || 0} tone="danger" icon="list" />
           <StatCard label={t('kpi_month')} value={stats.this_month || 0} tone="warning" icon="calendar" />
           <StatCard label={t('kpi_pending')} value={pendingTotal} tone="default" icon="clock" />

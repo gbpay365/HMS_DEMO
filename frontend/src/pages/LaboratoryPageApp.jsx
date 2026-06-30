@@ -94,7 +94,7 @@ export function LaboratoryPageApp({
           </div>
         </SurfaceHero>
 
-        <div className="mb-4 grid gap-3 sm:grid-cols-3">
+        <div className="hms-compact-kpi-grid hms-compact-kpi-grid--3 mb-3">
           <StatCard label={t('laboratory.kpi_total')} value={labTotal || results.length} tone="brand" icon="flask" />
           <StatCard label={t('laboratory.kpi_showing')} value={filtered.length} tone="default" icon="search" />
           <StatCard label={t('laboratory.kpi_revision')} value={revisionCount} tone="warning" icon="undo" />

@@ -92,7 +92,7 @@ export function PrescriptionsPageApp({
           </div>
         </SurfaceHero>
 
-        <div className="mb-4 grid gap-3 sm:grid-cols-2">
+        <div className="hms-compact-kpi-grid mb-3">
           <StatCard label={t('prescriptions.stat_total')} value={pager?.total ?? prescriptions.length} tone="brand" icon="list" />
           <StatCard label={t('prescriptions.stat_page')} value={prescriptions.length} tone="default" icon="file" />
         </div>

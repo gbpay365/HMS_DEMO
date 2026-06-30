@@ -78,7 +78,7 @@ export function NursingSupplyRequestsPageApp({
           </div>
         </SurfaceHero>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-3">
+        <div className="hms-compact-kpi-grid hms-compact-kpi-grid--3 mb-4">
           <StatCard label={t('supply.stat_requests')} value={requests.length} tone="brand" icon="history" />
           <StatCard label={t('supply.stat_catalog')} value={inventoryItems.length} tone="default" icon="cube" />
           <StatCard label={t('supply.stat_pending')} value={pendingCount} tone="warning" icon="clock" />

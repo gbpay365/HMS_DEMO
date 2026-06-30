@@ -493,7 +493,7 @@ function DashboardView({ metrics = {}, recentJournals = [], topAccounts = [] }) 
   const netTone = (m.netIncomeMtd || 0) >= 0 ? 'brand' : 'danger';
   return (
     <>
-      <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="hms-compact-kpi-grid mb-3">
         <StatCard label={t('dashboard.income_mtd')} value={fmt(m.revenueMtd)} tone="brand" icon="arrow-up" />
         <StatCard label={t('dashboard.expenses_mtd')} value={fmt(m.expensesMtd)} tone="default" icon="arrow-down" />
         <StatCard label={t('dashboard.net_income_mtd')} value={fmt(m.netIncomeMtd)} tone={netTone} icon="line-chart" />
@@ -778,7 +778,7 @@ export function FinancialsPageApp({
       <FinNav active={finNavActive || pageKey} />
 
       {stats.length ? (
-        <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="hms-compact-kpi-grid mb-3">
           {stats.map((s) => (
             <StatCard
               key={s.label}

@@ -142,7 +142,7 @@ export function ClinicalDeptSupplyRequestsPageApp({
           </div>
         </SurfaceHero>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-3">
+        <div className="hms-compact-kpi-grid hms-compact-kpi-grid--3 mb-4">
           <StatCard label="My requests" value={requests.length} tone="brand" icon="history" />
           <StatCard label="Catalog items" value={catalogCount} tone="default" icon="cube" />
           <StatCard label="With procurement" value={pendingCount} tone="info" icon="paper-plane" />
@@ -156,7 +156,7 @@ export function ClinicalDeptSupplyRequestsPageApp({
                 New procurement request
               </h2>
 
-              <div className="mb-4 grid gap-3 sm:grid-cols-2">
+              <div className="hms-compact-kpi-grid mb-3">
                 <div>
                   <label className="hms-label" htmlFor="needed-by">
                     Needed by (optional)

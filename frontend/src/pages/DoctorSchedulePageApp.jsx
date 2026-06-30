@@ -216,7 +216,7 @@ export function DoctorSchedulePageApp({ hub = {}, staffEmpId = 0, userPerms = []
           </div>
         </SurfaceHero>
 
-        <div className="mb-4 grid gap-3 sm:grid-cols-3">
+        <div className="hms-compact-kpi-grid hms-compact-kpi-grid--3 mb-3">
           <StatCard
             label={t('doctorSchedule.tab_today')}
             value={(localHub.appointments || []).length}

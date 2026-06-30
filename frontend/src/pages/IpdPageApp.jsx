@@ -115,7 +115,7 @@ function WardRoundsView({ admissions = [], staffRole = '' }) {
         </div>
       </SurfaceHero>
 
-      <div className="mb-2 grid gap-3 sm:grid-cols-2">
+      <div className="hms-compact-kpi-grid mb-2">
         <StatCard label={t('pages.stat_active_patients')} value={admissions.length} tone="brand" icon="users" />
         <StatCard
           label={t('pages.stat_clinical_dc')}

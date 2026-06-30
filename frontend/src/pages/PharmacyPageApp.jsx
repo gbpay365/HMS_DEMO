@@ -335,7 +335,7 @@ export function PharmacyPageApp({
 
       {view === 'overview' ? (
         <>
-          <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="hms-compact-kpi-grid hms-compact-kpi-grid--5 mb-4">
             <StatCard label={t('pharmacy.kpi_total_drugs')} value={stats.total || 0} />
             <StatCard label={t('pharmacy.kpi_pending')} value={pendingDispense.length || queue.length} tone="warning" />
             <StatCard label={t('pharmacy.kpi_dispensed_today')} value={dispensedToday} tone="brand" />
@@ -343,7 +343,7 @@ export function PharmacyPageApp({
             <StatCard label={t('pharmacy.kpi_active_rx')} value={rxStats.active || 0} />
             <StatCard label={t('pharmacy.kpi_rx_today')} value={rxStats.today || 0} />
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="hms-compact-kpi-grid">
             {quickLinks.map((l) => (
               <a key={l.href} href={l.href} className="rounded-2xl border border-slate-100 bg-white p-4 font-semibold text-brand shadow-card hover:bg-brand/5">
                 {t(l.labelKey)} →

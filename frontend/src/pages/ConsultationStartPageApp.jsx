@@ -48,7 +48,7 @@ export function ConsultationStartPageApp({ visits = [], flash = null, error = nu
           </div>
         </SurfaceHero>
 
-        <div className="mb-4 grid gap-3 sm:grid-cols-2">
+        <div className="hms-compact-kpi-grid mb-3">
           <StatCard label={t('consultationStart.stat_ready')} value={visits.length} tone="brand" icon="users" />
           <StatCard label={t('consultationStart.stat_filtered')} value={filtered.length} tone="default" icon="search" />
         </div>

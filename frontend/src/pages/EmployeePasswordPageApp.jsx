@@ -70,7 +70,7 @@ export function EmployeePasswordPageApp({
 
         <SurfaceHero icon="lock" title={t('employee_password.title')} subtitle={t('employee_password.subtitle')} />
 
-        <div className="mb-4 grid gap-3 sm:grid-cols-2">
+        <div className="hms-compact-kpi-grid mb-3">
           <StatCard label={t('employee_password.stat_total')} value={employees.length} tone="brand" icon="users" />
           <StatCard label={t('employee_password.stat_showing')} value={filtered.length} tone="default" icon="search" />
         </div>

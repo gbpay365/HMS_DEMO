@@ -163,7 +163,7 @@ export function RadiologyWorkflowPageApp({
         </div>
       </SurfaceHero>
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-3">
+      <div className="hms-compact-kpi-grid hms-compact-kpi-grid--3 mb-3">
         <StatCard label={t('radiologyWorkflow.pending')} value={pending.length} tone="warning" icon="clock-o" />
         <StatCard label={t('radiologyWorkflow.in_progress')} value={inProgress.length} tone="brand" icon="spinner" />
         <StatCard label={t('radiologyWorkflow.completed')} value={completed.length} tone="brand" icon="check-circle" />

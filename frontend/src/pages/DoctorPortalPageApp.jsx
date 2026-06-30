@@ -119,14 +119,14 @@ export function DoctorPortalPageApp({
           </div>
         </SurfaceHero>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="hms-compact-kpi-grid mb-4">
           <StatCard label={t('doctorPortal.stat_appts_today')} value={stats.appts || 0} tone="brand" icon="calendar-check" />
           <StatCard label={t('doctorPortal.stat_consultations')} value={stats.consults || 0} tone="brand" icon="stethoscope" />
           <StatCard label={t('doctorPortal.stat_opd_queue')} value={stats.pending || 0} tone="warning" icon="clock" />
           <StatCard label={t('doctorPortal.stat_patients')} value={stats.patients || 0} tone="default" icon="users" />
         </div>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="hms-compact-kpi-grid hms-compact-kpi-grid--6 mb-4">
           {quickLinks.map((link) => (
             <a
               key={link.href}

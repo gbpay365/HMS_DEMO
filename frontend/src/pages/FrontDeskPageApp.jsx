@@ -40,7 +40,7 @@ export function FrontDeskPageApp({ stats = {}, emergencies = [], appointments = 
           </div>
         </SurfaceHero>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-3">
+        <div className="hms-compact-kpi-grid hms-compact-kpi-grid--3 mb-4">
           <StatCard label={t('frontDesk.stat_scheduled')} value={stats.appts || 0} hint={t('frontDesk.stat_scheduled_hint')} tone="brand" icon="calendar-check" />
           <StatCard label={t('frontDesk.stat_new_regs')} value={stats.newPats || 0} hint={t('frontDesk.stat_new_regs_hint')} tone="brand" icon="user-plus" />
           <StatCard label={t('frontDesk.stat_active')} value={stats.totalPats || 0} hint={t('frontDesk.stat_active_hint')} tone="brand" icon="users" />

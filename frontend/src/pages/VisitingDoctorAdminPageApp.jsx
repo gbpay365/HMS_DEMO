@@ -90,7 +90,7 @@ export function VisitingDoctorAdminPageApp({
           </div>
         </SurfaceHero>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="hms-compact-kpi-grid mb-4">
           <StatCard label={t('admin.stat_total')} value={stats.total} tone="brand" icon="users" />
           <StatCard label={t('admin.stat_in_use')} value={stats.inUse} tone="danger" icon="user-md" />
           <StatCard label={t('admin.stat_available')} value={stats.available} tone="brand" icon="check-circle" />

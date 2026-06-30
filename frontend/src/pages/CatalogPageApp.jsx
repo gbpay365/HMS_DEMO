@@ -125,7 +125,7 @@ export function CatalogPageApp({ services = [], flash = null, error = null, cata
 
         {access.canImportAny ? <CatalogImportPanel access={access} activeCat={activeCat} /> : null}
 
-        <div className="mb-4 grid gap-3 sm:grid-cols-3">
+        <div className="hms-compact-kpi-grid hms-compact-kpi-grid--3 mb-3">
           <StatCard label={t('catalog.stat_active')} value={services.length} />
           <StatCard label={t('catalog.stat_categories')} value={categories.length} />
           <StatCard label={t('catalog.stat_filtered')} value={filtered.length} />

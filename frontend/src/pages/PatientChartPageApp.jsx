@@ -155,7 +155,7 @@ export function PatientChartPageApp({
         </div>
       </SurfaceHero>
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="hms-compact-kpi-grid mb-3">
         <StatCard label={t('patientChart.tab_consult')} value={consultations.length} tone="brand" icon="stethoscope" />
         <StatCard label={t('patientChart.tab_lab')} value={labResults.length} tone="default" icon="flask" />
         <StatCard label={t('patientChart.tab_rad')} value={radResults.length} tone="default" icon="film" />

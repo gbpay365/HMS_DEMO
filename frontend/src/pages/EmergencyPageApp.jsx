@@ -167,7 +167,7 @@ export function EmergencyPageApp({
           </div>
         </SurfaceHero>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="hms-compact-kpi-grid hms-compact-kpi-grid--6 mb-4">
           <StatCard label={t('emergency.stat_active')} value={stats.total} tone="danger" icon="users" />
           <StatCard label={t('emergency.stat_awaiting_triage')} value={stats.untriaged} tone="warning" icon="clock" />
           <StatCard label="L1 + L2" value={(stats.l1 || 0) + (stats.l2 || 0)} tone="danger" icon="exclamation-triangle" />

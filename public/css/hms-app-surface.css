@@ -27,33 +27,45 @@ body.hms-body--patients .hms-surface-hero {
   background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 48%, #047857 100%);
 }
 
-/* Clinical pages — compact hero and KPI row (OPD queue, IPD census, …) */
-.hms-opd-queue-page .hms-surface-hero,
-.hms-ipd-census-page .hms-surface-hero,
-.hms-wards-page .hms-surface-hero {
+/* All module pages — compact hero */
+.hms-surface-module .hms-surface-hero {
   padding: 1rem 1.25rem;
   margin-bottom: 0.75rem;
 }
 
-.hms-opd-queue-page .hms-surface-hero-title,
-.hms-ipd-census-page .hms-surface-hero-title,
-.hms-wards-page .hms-surface-hero-title {
+.hms-surface-module .hms-surface-hero-title {
   font-size: 1.25rem;
 }
 
-.hms-opd-queue-page .hms-surface-hero p,
-.hms-ipd-census-page .hms-surface-hero p,
-.hms-wards-page .hms-surface-hero p {
+.hms-surface-module .hms-surface-hero p {
   font-size: 0.8125rem;
 }
 
-.hms-opd-queue-page .hms-surface-hero-icon,
-.hms-ipd-census-page .hms-surface-hero-icon,
-.hms-wards-page .hms-surface-hero-icon {
+.hms-surface-module .hms-surface-hero-icon {
   width: 40px;
   height: 40px;
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
+}
+
+.hms-surface-module .hms-surface-hero-actions {
+  gap: 0.5rem;
+}
+
+.hms-surface-module .hms-surface-hero-actions .hms-btn-primary,
+.hms-surface-module .hms-surface-hero-actions .hms-btn-secondary {
+  min-height: 2.25rem;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8125rem;
+  line-height: 1.1rem;
+}
+
+.hms-surface-module .grid:has(> .hms-surface-card .hms-stat-card__label) {
+  gap: 0.5rem;
+}
+
+.hms-surface-module .shadow-card.rounded-2xl {
+  border-radius: 0.75rem;
 }
 
 .hms-compact-kpi-grid,
@@ -63,10 +75,24 @@ body.hms-body--patients .hms-surface-hero {
   gap: 0.5rem;
 }
 
+@media (min-width: 640px) {
+  .hms-compact-kpi-grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (min-width: 1024px) {
   .hms-compact-kpi-grid,
   .hms-opd-kpi-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .hms-compact-kpi-grid--5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .hms-compact-kpi-grid--6 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
 

@@ -165,7 +165,7 @@ export function PortalPageApp({
         </SurfaceHero>
 
         {statCards.length > 0 ? (
-          <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="hms-compact-kpi-grid mb-4">
             {statCards.map((s) => (
               <StatCard key={s.label} label={s.label} value={s.value} tone={s.tone} />
             ))}
