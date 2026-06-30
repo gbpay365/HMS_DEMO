@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PortalQuickActions } from './PortalQuickActionCard';
 import { StatCard } from './StatCard';
 import { SurfaceHero } from './SurfaceHero';
 import {
@@ -194,6 +195,9 @@ export function StaffOperationalDashboard({
   dashboardTabs = [],
   dashboardKpis = [],
   dashboardPanels = [],
+  portalTiles = [],
+  portalColor = '#047857',
+  hideQuickActionsPanel = false,
 }) {
   const { t } = useTranslation('clinical');
   const meta = staffDashboardMeta(profile);
@@ -224,7 +228,10 @@ export function StaffOperationalDashboard({
   }, [load]);
 
   const tabKpis = kpisForTab(dashboardKpis, tab);
-  const tabPanels = panelsForTab(dashboardPanels, tab);
+  const tabPanels = panelsForTab(dashboardPanels, tab).filter(
+    (panel) => !(hideQuickActionsPanel && panel.id === 'quick_actions')
+  );
+  const panelsGridClass = tabPanels.length === 1 ? 'grid gap-4' : 'grid gap-4 lg:grid-cols-2';
 
   const profileIcon = {
     cashier: 'money',
@@ -278,8 +285,14 @@ export function StaffOperationalDashboard({
             <div className="mb-4 text-sm text-slate-500">{t('staffDashboard.no_data')}</div>
           )}
 
+          {portalTiles.length > 0 ? (
+            <div className="mb-6">
+              <PortalQuickActions tiles={portalTiles} accentColor={portalColor} dense />
+            </div>
+          ) : null}
+
           {tabPanels.length > 0 ? (
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className={panelsGridClass}>
               {tabPanels.map((panel) => (
                 <PanelCard
                   key={panel.id}
