@@ -11771,6 +11771,7 @@ app.get('/opd-queue', requireAuth, requirePerm('opd.read','clinical.read','clini
  }
 
  const aclKeys = [
+  'am.opd_queue.new_visit',
   'am.opd_queue.chart',
   'am.opd_queue.triage',
   'am.opd_queue.consultation',
@@ -15783,7 +15784,7 @@ app.get('/api/payment/validate', requireAuth, async (req, res) => {
 });
 
 // VISITS: REGISTER NEW VISIT === Æ’ ===   with dept-doc validation, reuse check & EMERGENCY bypass
-app.post('/opd-queue/add', requireAuth, requirePerm('opd.write'), async (req, res) => {
+app.post('/opd-queue/add', requireAuth, requirePerm('front_desk.visit.create'), async (req, res) => {
  const {
  patient_id, department_name, assigned_doctor_id,
  reason, priority, payment_code, visit_date, visit_time,

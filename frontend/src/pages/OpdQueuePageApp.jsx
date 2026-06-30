@@ -159,7 +159,7 @@ export function OpdQueuePageApp({
 
   const skipFetchRef = useRef(true);
 
-  const canWrite = hasPerm(userPerms, ['opd.write']);
+  const canCreateVisit = aclOk(aclMenu, 'am.opd_queue.new_visit');
   const mayCallPatient = hasPerm(userPerms, ['clinical.write', 'prescription.write']);
   const hasVitals = (id) => visitIdInVitalsList(visitIdsWithVitals, id);
 
@@ -464,7 +464,7 @@ export function OpdQueuePageApp({
             <a href="/opd-queue" className="hms-staff-hero-tab hms-staff-hero-tab--refresh" title={t('shared.refresh')}>
               <i className="fa fa-refresh" aria-hidden="true" />
             </a>
-            {canWrite ? (
+            {canCreateVisit ? (
               <button type="button" className="hms-staff-hero-tab hms-staff-hero-tab--active" onClick={() => setAddOpen(true)}>
                 <i className="fa fa-user-plus" aria-hidden="true" />
                 {t('opd.new_visit')}
@@ -790,7 +790,7 @@ export function OpdQueuePageApp({
         </div>
       </div>
 
-      {canWrite ? <OpdAddVisitModal open={addOpen} onClose={() => setAddOpen(false)} doctors={doctors} /> : null}
+      {canCreateVisit ? <OpdAddVisitModal open={addOpen} onClose={() => setAddOpen(false)} doctors={doctors} /> : null}
       <OpdTriageModal open={!!triageVisit} onClose={() => setTriageVisit(null)} visit={triageVisit} />
       <OpdAssignRoomModal
         open={roomState.open}
