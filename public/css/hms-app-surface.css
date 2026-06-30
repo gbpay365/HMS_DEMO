@@ -29,23 +29,27 @@ body.hms-body--patients .hms-surface-hero {
 
 /* Clinical pages — compact hero and KPI row (OPD queue, IPD census, …) */
 .hms-opd-queue-page .hms-surface-hero,
-.hms-ipd-census-page .hms-surface-hero {
+.hms-ipd-census-page .hms-surface-hero,
+.hms-wards-page .hms-surface-hero {
   padding: 1rem 1.25rem;
   margin-bottom: 0.75rem;
 }
 
 .hms-opd-queue-page .hms-surface-hero-title,
-.hms-ipd-census-page .hms-surface-hero-title {
+.hms-ipd-census-page .hms-surface-hero-title,
+.hms-wards-page .hms-surface-hero-title {
   font-size: 1.25rem;
 }
 
 .hms-opd-queue-page .hms-surface-hero p,
-.hms-ipd-census-page .hms-surface-hero p {
+.hms-ipd-census-page .hms-surface-hero p,
+.hms-wards-page .hms-surface-hero p {
   font-size: 0.8125rem;
 }
 
 .hms-opd-queue-page .hms-surface-hero-icon,
-.hms-ipd-census-page .hms-surface-hero-icon {
+.hms-ipd-census-page .hms-surface-hero-icon,
+.hms-wards-page .hms-surface-hero-icon {
   width: 40px;
   height: 40px;
   font-size: 1.1rem;

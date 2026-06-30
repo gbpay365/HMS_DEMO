@@ -16446,6 +16446,7 @@ app.get('/wards', requireAuth, requirePerm('adt.read','adt.write','nursing.read'
       flash: req.query.msg || null,
       error: req.query.err || null,
       userRole: String(req.session.user?.role || ''),
+      aclUi: buildAclUiVis(res, ['ward.hero.ipd_settle', 'ward.hero.manage_beds']),
     },
   });
  } catch (err) {
@@ -16455,7 +16456,7 @@ app.get('/wards', requireAuth, requirePerm('adt.read','adt.write','nursing.read'
 });
 
 // Minimal ward actions used by wards.ejs (avoid 404s)
-app.post('/wards/bed-add', requireAuth, async (req, res) => {
+app.post('/wards/bed-add', requireAuth, requirePerm('adt.write', 'facility.admin'), async (req, res) => {
  const ward_name = (req.body.ward_name || '').trim();
  const bed_label = (req.body.bed_label || '').trim();
  if (!ward_name || !bed_label) return res.redirect('/wards?err=' + encodeURIComponent(flashT(res, 'flash.ward_and_bed_label_are_required')))
@@ -16475,7 +16476,7 @@ app.post('/wards/bed-add', requireAuth, async (req, res) => {
  }
 });
 
-app.post('/wards/bed-delete', requireAuth, async (req, res) => {
+app.post('/wards/bed-delete', requireAuth, requirePerm('adt.write', 'facility.admin'), async (req, res) => {
  const bed_id = parseInt(req.body.bed_id, 10) || 0;
  if (bed_id < 1) return res.redirect('/wards?err=' + encodeURIComponent(flashT(res, 'flash.invalid_bed')))
  try {
