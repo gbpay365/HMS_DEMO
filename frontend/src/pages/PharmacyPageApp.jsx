@@ -311,17 +311,17 @@ export function PharmacyPageApp({
   const viewTitle = t(VIEW_KEYS.find((v) => v.id === view)?.labelKey || 'pharmacy.tab_overview');
 
   return (
-    <div className="page-wrapper hms-surface-module hms-ui">
+    <div className="page-wrapper hms-surface-module hms-ui hms-pharmacy-hub-page">
       <FlashMessages flash={flash} error={error} />
 
       <SurfaceHero icon="medkit" title={viewTitle} subtitle={t('pharmacy.dashboard_subtitle')} />
 
-      <div className="ph-hub-view-tabs mb-4 flex flex-wrap gap-2">
+      <div className="ph-hub-view-tabs mb-2 flex flex-wrap gap-1.5">
         {TAB_VIEW_KEYS.map((v) => (
           <FilterChip
             key={v.id}
             active={view === v.id}
-            className="!text-sm !px-4 !py-2"
+            className="!text-xs !px-3 !py-1.5"
             onClick={() => {
               setView(v.id);
               setSearch('');
@@ -335,7 +335,7 @@ export function PharmacyPageApp({
 
       {view === 'overview' ? (
         <>
-          <div className="hms-compact-kpi-grid hms-compact-kpi-grid--5 mb-4">
+          <div className="hms-compact-kpi-grid hms-compact-kpi-grid--6 mb-3">
             <StatCard label={t('pharmacy.kpi_total_drugs')} value={stats.total || 0} />
             <StatCard label={t('pharmacy.kpi_pending')} value={pendingDispense.length || queue.length} tone="warning" />
             <StatCard label={t('pharmacy.kpi_dispensed_today')} value={dispensedToday} tone="brand" />
@@ -345,7 +345,7 @@ export function PharmacyPageApp({
           </div>
           <div className="hms-compact-kpi-grid">
             {quickLinks.map((l) => (
-              <a key={l.href} href={l.href} className="rounded-2xl border border-slate-100 bg-white p-4 font-semibold text-brand shadow-card hover:bg-brand/5">
+              <a key={l.href} href={l.href} className="rounded-xl border border-slate-100 bg-white p-3 text-sm font-semibold text-brand shadow-card hover:bg-brand/5">
                 {t(l.labelKey)} →
               </a>
             ))}

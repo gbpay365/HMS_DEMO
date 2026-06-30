@@ -26,8 +26,8 @@
 .ph-rx-kpi-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 @media (min-width: 640px) {
@@ -45,23 +45,25 @@
 .ph-rx-kpi-card {
   background: #fff;
   border: 0.5px solid var(--pha-soft-border, #f4c0d1);
-  border-radius: 10px;
-  border-top-width: 3px;
-  padding: 14px 16px;
-  box-shadow: 0 1px 3px rgba(75, 21, 40, 0.06);
+  border-radius: 0.5rem;
+  border-top-width: 2px;
+  padding: 0.5rem 0.625rem;
+  box-shadow: 0 1px 2px rgba(75, 21, 40, 0.05);
 }
 
 .ph-rx-kpi-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #475569;
-  margin-bottom: 4px;
-  line-height: 1.35;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 2px;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .ph-rx-kpi-value {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
 }
@@ -75,50 +77,54 @@
 .ph-rx-panel {
   background: #fff;
   border: 0.5px solid var(--pha-soft-border, #f4c0d1);
-  border-radius: 12px;
+  border-radius: 0.75rem;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(75, 21, 40, 0.06);
+  box-shadow: 0 1px 2px rgba(75, 21, 40, 0.05);
 }
 
 .ph-rx-panel-head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 14px 16px;
+  gap: 6px;
+  padding: 0.5rem 0.75rem;
   border-bottom: 0.5px solid var(--pha-soft-border, #f4c0d1);
-  font-size: 16px;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: var(--pha-primary, #4b1528);
 }
 
 .ph-rx-panel-head i {
   color: var(--pha-accent, #d4537e);
+  font-size: 0.75rem;
 }
 
 .ph-rx-filter-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 0.5rem;
   align-items: center;
-  padding: 12px 16px;
+  padding: 0.5rem 0.75rem;
   border-bottom: 0.5px solid var(--pha-soft-border, #f4c0d1);
 }
 
 .ph-rx-filter-bar .hms-input,
 .ph-rx-filter-bar select {
-  height: 38px;
-  font-size: 14px;
+  height: 2rem;
+  font-size: 0.75rem;
+  min-height: 2rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
 }
 
 .ph-rx-filter-bar .ph-rx-tab-toggle {
-  font-size: 14px;
+  font-size: 0.75rem;
 }
 
 .ph-rx-count {
   margin-left: auto;
-  font-size: 14px;
+  font-size: 0.6875rem;
   color: #64748b;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .ph-rx-table-wrap {
@@ -128,23 +134,23 @@
 .ph-rx-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 0.75rem;
 }
 
 .ph-rx-table th {
-  padding: 12px 16px;
+  padding: 0.4rem 0.625rem;
   text-align: left;
-  font-size: 13px;
+  font-size: 0.625rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: #475569;
+  letter-spacing: 0.04em;
+  color: #64748b;
   background: #fdf2f7;
   border-bottom: 0.5px solid var(--pha-soft-border, #f4c0d1);
 }
 
 .ph-rx-table td {
-  padding: 12px 16px;
+  padding: 0.4rem 0.625rem;
   border-bottom: 0.5px solid #f3f4f6;
   vertical-align: middle;
   color: #1e293b;
@@ -165,12 +171,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: var(--pha-rx-label-bg, #fce4ec);
   color: var(--pha-primary, #4b1528);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -178,21 +184,22 @@
 .ph-rx-patient-cell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .ph-rx-patient-name {
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 0.75rem;
   color: var(--pha-primary, #4b1528);
 }
 
 .ph-rx-patient-id {
-  font-size: 11px;
+  font-size: 10px;
   color: #9ca3af;
 }
 
 .ph-rx-sub {
-  font-size: 13px;
+  font-size: 0.6875rem;
   color: #64748b;
 }
 
@@ -213,12 +220,12 @@
 
 .ph-rx-badge {
   display: inline-block;
-  border-radius: 20px;
-  font-size: 12px;
+  border-radius: 999px;
+  font-size: 10px;
   font-weight: 600;
-  padding: 3px 11px;
+  padding: 2px 8px;
   border: 0.5px solid;
-  line-height: 20px;
+  line-height: 1.35;
   white-space: nowrap;
 }
 
@@ -458,14 +465,25 @@ body.hms-body--pharmacy-odoo .hms-modal-header--pharmacy + * .hms-input:focus,
   }
 }
 
-/* Pharmacy hub view tabs — larger than default FilterChip */
+/* Pharmacy hub view tabs — compact */
 .pharmacy-odoo-app .ph-hub-view-tabs button[role='tab'] {
-  font-size: 14px !important;
-  padding: 0.5rem 1rem !important;
+  font-size: 0.6875rem !important;
+  padding: 0.3rem 0.65rem !important;
+}
+
+.hms-pharmacy-rx-page .hms-compact-kpi-grid .hms-surface-card,
+.hms-pharmacy-hub-page .hms-compact-kpi-grid .hms-surface-card {
+  border-color: rgba(244, 192, 209, 0.65);
+}
+
+.hms-pharmacy-rx-page .ph-rx-panel .pha-btn-primary,
+.hms-pharmacy-rx-page .ph-rx-panel .pha-btn-secondary {
+  font-size: 11px !important;
+  padding: 0.25rem 0.5rem !important;
 }
 
 .pharmacy-odoo-app .ph-rx-panel .pha-btn-primary,
 .pharmacy-odoo-app .ph-rx-panel .pha-btn-secondary {
-  font-size: 13px !important;
-  padding: 0.4rem 0.75rem !important;
+  font-size: 11px !important;
+  padding: 0.3rem 0.55rem !important;
 }

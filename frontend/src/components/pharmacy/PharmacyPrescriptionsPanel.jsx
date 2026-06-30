@@ -4,19 +4,20 @@ import { Modal } from '../Modal';
 import { ModalCancelButton } from '../ModalActions';
 import { Pager } from '../Pager';
 import { SearchField } from '../SearchField';
+import { StatCard } from '../StatCard';
 import { hasPerm } from '../../lib/listUi';
 import { DEFAULT_PAGE_SIZE } from '../../lib/pagination';
 import { useClientPagination } from '../../hooks/useClientPagination';
 import { NewPrescriptionModal } from '../../modals/NewPrescriptionModal';
 import { PharmacyRxBadge, rxStatusStep } from './PharmacyRxBadge';
 
-const KPI_COLORS = {
-  total: 'var(--pha-primary, #4b1528)',
-  new: 'var(--ph-rx-new-text, #1e3a8a)',
-  preparing: 'var(--ph-rx-prep-text, #854d0e)',
-  ready: 'var(--ph-rx-ready-text, #14532d)',
-  dispensed: 'var(--pha-accent, #d4537e)',
-};
+const KPI_ITEMS = [
+  { key: 'today', labelKey: 'pharmacy.rx_kpi_today', tone: 'default', accentColor: '#4b1528', icon: 'calendar' },
+  { key: 'new', labelKey: 'pharmacy.rx_kpi_new', tone: 'brand', accentColor: '#2563eb', icon: 'inbox' },
+  { key: 'preparing', labelKey: 'pharmacy.rx_kpi_preparing', tone: 'warning', accentColor: '#d97706', icon: 'flask' },
+  { key: 'ready', labelKey: 'pharmacy.rx_kpi_ready', tone: 'success', accentColor: '#059669', icon: 'check-circle' },
+  { key: 'dispensed', labelKey: 'pharmacy.rx_kpi_dispensed', tone: 'brand', accentColor: '#d4537e', icon: 'medkit' },
+];
 
 const WORKFLOW_STEPS = [
   'pharmacy.rx_step_received',
@@ -85,13 +86,7 @@ export function PharmacyPrescriptionsPanel({
     resetKeys: [search, statusFilter, pageSize],
   });
 
-  const kpis = [
-    { key: 'today', labelKey: 'pharmacy.rx_kpi_today', color: KPI_COLORS.total },
-    { key: 'new', labelKey: 'pharmacy.rx_kpi_new', color: KPI_COLORS.new },
-    { key: 'preparing', labelKey: 'pharmacy.rx_kpi_preparing', color: KPI_COLORS.preparing },
-    { key: 'ready', labelKey: 'pharmacy.rx_kpi_ready', color: KPI_COLORS.ready },
-    { key: 'dispensed', labelKey: 'pharmacy.rx_kpi_dispensed', color: KPI_COLORS.dispensed },
-  ];
+  const kpis = KPI_ITEMS;
 
   const canDispense =
     selected &&
@@ -100,24 +95,27 @@ export function PharmacyPrescriptionsPanel({
     canWrite;
 
   return (
-    <>
-      <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
+    <div className="hms-pharmacy-rx-page">
+      <div className="mb-2 flex flex-wrap items-center justify-end gap-2">
         {canWrite ? (
-          <button type="button" className="pha-btn-primary text-xs" onClick={() => setRxOpen(true)}>
+          <button type="button" className="pha-btn-primary px-3 py-1.5 text-[11px]" onClick={() => setRxOpen(true)}>
             <i className="fa fa-plus mr-1" aria-hidden="true" />
             {t('pharmacy.rx_new')}
           </button>
         ) : null}
       </div>
 
-      <div className="ph-rx-kpi-row">
+      <div className="hms-compact-kpi-grid hms-compact-kpi-grid--5 mb-3">
         {kpis.map((k) => (
-          <div key={k.key} className="ph-rx-kpi-card" style={{ borderTopColor: k.color }}>
-            <div className="ph-rx-kpi-label">{t(k.labelKey)}</div>
-            <div className="ph-rx-kpi-value" style={{ color: k.color }}>
-              {rxStats[k.key] ?? 0}
-            </div>
-          </div>
+          <StatCard
+            key={k.key}
+            label={t(k.labelKey)}
+            value={rxStats[k.key] ?? 0}
+            size="dense"
+            tone={k.tone}
+            accentColor={k.accentColor}
+            icon={k.icon}
+          />
         ))}
       </div>
 
@@ -168,7 +166,7 @@ export function PharmacyPrescriptionsPanel({
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-sm text-slate-500">
+                  <td colSpan={7} className="py-6 text-center text-xs text-slate-500">
                     {t('pharmacy.rx_empty')}
                   </td>
                 </tr>
@@ -328,6 +326,6 @@ export function PharmacyPrescriptionsPanel({
       </Modal>
 
       <NewPrescriptionModal open={rxOpen} onClose={() => setRxOpen(false)} patients={patients} theme="pharmacy" returnUrl="/pharmacy?view=prescriptions" />
-    </>
+    </div>
   );
 }
