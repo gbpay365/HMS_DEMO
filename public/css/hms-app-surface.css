@@ -27,37 +27,13 @@ body.hms-body--patients .hms-surface-hero {
   background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 48%, #047857 100%);
 }
 
-/* All module pages — compact hero */
+/* All module pages — compact hero (inherits base grid layout) */
 .hms-surface-module .hms-surface-hero {
-  padding: 1rem 1.25rem;
-  margin-bottom: 0.75rem;
-}
-
-.hms-surface-module .hms-surface-hero-title {
-  font-size: 1.25rem;
-}
-
-.hms-surface-module .hms-surface-hero p {
-  font-size: 0.8125rem;
-}
-
-.hms-surface-module .hms-surface-hero-icon {
-  width: 40px;
-  height: 40px;
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.65rem;
 }
 
 .hms-surface-module .hms-surface-hero-actions {
   gap: 0.5rem;
-}
-
-.hms-surface-module .hms-surface-hero-actions .hms-btn-primary,
-.hms-surface-module .hms-surface-hero-actions .hms-btn-secondary {
-  min-height: 2.25rem;
-  padding: 0.4rem 0.9rem;
-  font-size: 0.8125rem;
-  line-height: 1.1rem;
 }
 
 .hms-surface-module .grid:has(> .hms-surface-card .hms-stat-card__label) {
@@ -291,10 +267,10 @@ body.hms-body--assets .hms-surface-hero {
 .hms-surface-hero-actions .hms-btn-secondary {
   border-radius: 999px;
   font-weight: 800;
-  font-size: 1rem;
-  line-height: 1.25rem;
-  min-height: 3rem;
-  padding: 0.75rem 1.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.1rem;
+  min-height: 2.25rem;
+  padding: 0.4rem 0.9rem;
   letter-spacing: 0.01em;
 }
 
@@ -331,11 +307,50 @@ body.hms-body--assets .hms-surface-hero {
   background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #134e4a 100%);
   color: #fff;
   border-radius: var(--hms-surface-radius);
-  padding: 1.5rem 1.75rem;
-  margin-bottom: 1.25rem;
+  padding: 0.65rem 1rem;
+  margin-bottom: 0.75rem;
   box-shadow: var(--hms-surface-shadow);
   position: relative;
   overflow: hidden;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.65rem;
+  row-gap: 0.15rem;
+  align-items: center;
+}
+
+.hms-surface-hero > .hms-surface-hero-icon,
+.hms-surface-hero > .hms-icon-chip {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  margin-bottom: 0;
+  align-self: center;
+}
+
+.hms-surface-hero > .hms-surface-hero-title,
+.hms-surface-hero > h1 {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+}
+
+.hms-surface-hero > p {
+  grid-column: 2;
+  grid-row: 2;
+  margin: 0;
+}
+
+.hms-surface-hero:not(:has(> .hms-surface-hero-icon)):not(:has(> .hms-icon-chip)) > .hms-surface-hero-title,
+.hms-surface-hero:not(:has(> .hms-surface-hero-icon)):not(:has(> .hms-icon-chip)) > h1,
+.hms-surface-hero:not(:has(> .hms-surface-hero-icon)):not(:has(> .hms-icon-chip)) > p {
+  grid-column: 1 / -1;
+}
+
+.hms-surface-hero > .hms-surface-hero-actions,
+.hms-surface-hero > .hms-surface-hero-chips,
+.hms-surface-hero > .hms-staff-hero-toolbar {
+  grid-column: 1 / -1;
+  margin-top: 0.45rem;
 }
 
 .hms-surface-hero::before {
@@ -348,17 +363,16 @@ body.hms-body--assets .hms-surface-hero {
 
 .hms-surface-hero h1,
 .hms-surface-hero .hms-surface-hero-title {
-  font-size: 1.5rem;
+  font-size: 1.0625rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  margin: 0 0 0.35rem;
   position: relative;
 }
 
 .hms-surface-hero p {
-  margin: 0;
   opacity: 0.88;
-  font-size: 0.92rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
   position: relative;
 }
 
@@ -368,15 +382,15 @@ html.hms-nav-pending body {
 }
 
 .hms-surface-hero-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.15);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.35rem;
-  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  margin-bottom: 0;
   backdrop-filter: blur(8px);
 }
 
@@ -994,7 +1008,7 @@ body.hms-body--odoo .hms-staff-dashboard-content {
 }
 
 .hms-staff-operational-dashboard--front_desk .hms-surface-hero {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 /* Cashier page — compact KPI rows (8 payment methods + summary cards) */

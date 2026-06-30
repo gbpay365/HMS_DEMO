@@ -8,7 +8,7 @@ export function SurfaceHero({ icon, badge, title, subtitle, children, className 
   const iconCls = normalizeFa(icon);
 
   return (
-    <div className={`hms-surface-hero mb-6 ${className}`.trim()}>
+    <div className={`hms-surface-hero ${className}`.trim()}>
       {badge ? (
         <div className="hms-icon-chip mb-2">
           {iconCls ? <i className={`fa ${iconCls}`} aria-hidden="true" /> : null}

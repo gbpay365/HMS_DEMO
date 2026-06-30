@@ -49,25 +49,25 @@
 .hms-dash-hero__inner {
   position: relative;
   z-index: 1;
-  padding: 1.25rem 1.35rem 1.25rem 1.5rem;
+  padding: 0.85rem 1rem 0.85rem 1.15rem;
 }
 
 @media (min-width: 992px) {
   .hms-dash-hero__inner {
-    padding: 1.35rem 1.65rem 1.35rem 1.85rem;
+    padding: 0.95rem 1.25rem 0.95rem 1.35rem;
   }
 }
 
 .hms-dash-hero__head {
   display: grid;
-  gap: 1.15rem;
+  gap: 0.75rem;
   align-items: start;
 }
 
 @media (min-width: 900px) {
   .hms-dash-hero__head {
-    grid-template-columns: minmax(0, 1fr) minmax(560px, auto);
-    gap: 1.75rem;
+    grid-template-columns: minmax(0, 1fr) minmax(480px, auto);
+    gap: 1rem;
     align-items: center;
   }
 
@@ -109,8 +109,8 @@
 }
 
 .hms-dash-hero__title {
-  margin: 0.55rem 0 0.25rem;
-  font-size: clamp(1.45rem, 2.4vw, 1.85rem);
+  margin: 0.35rem 0 0.15rem;
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.025em;
@@ -120,7 +120,7 @@
 .hms-dash-hero__subtitle {
   margin: 0;
   max-width: 32rem;
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   line-height: 1.45;
   color: var(--hms-theme-muted, #5a7184);
 }
