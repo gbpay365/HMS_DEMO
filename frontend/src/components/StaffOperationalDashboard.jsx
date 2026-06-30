@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { PortalQuickActions } from './PortalQuickActionCard';
 import { StatCard } from './StatCard';
 import { SurfaceHero } from './SurfaceHero';
+import { mergeStaffQuickActions } from '../lib/mergeStaffQuickActions';
 import {
   formatStaffMoney,
   kpisForTab,
@@ -134,6 +135,19 @@ function renderPanel(panel, data, t) {
     );
   }
 
+  if (panel.id === 'payment_codes' && (!Array.isArray(rows) || !rows.length)) {
+    return (
+      <div className="flex min-h-[120px] flex-col items-center justify-center rounded-xl border border-dashed border-emerald-200 bg-emerald-50/40 px-4 py-6 text-center">
+        <i className="fa fa-check-circle mb-2 text-2xl text-emerald-500" aria-hidden="true" />
+        <div className="text-sm font-medium text-slate-600">{t('staffDashboard.no_payment_codes')}</div>
+        <a href="/front-desk/validate-payment-code" className="hms-btn-primary mt-4 text-xs no-underline">
+          <i className="fa fa-key mr-1" aria-hidden="true" />
+          {t('staffDashboard.validate_payment_code')}
+        </a>
+      </div>
+    );
+  }
+
   if (!Array.isArray(rows) || !rows.length) {
     return (
       <div className="flex min-h-[88px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-6 text-center">
@@ -232,6 +246,10 @@ export function StaffOperationalDashboard({
     (panel) => !(hideQuickActionsPanel && panel.id === 'quick_actions')
   );
   const panelsGridClass = tabPanels.length === 1 ? 'grid gap-4' : 'grid gap-4 lg:grid-cols-2';
+  const mergedQuickActions = mergeStaffQuickActions(
+    portalTiles,
+    data?.panels?.quickActions || []
+  );
 
   const profileIcon = {
     cashier: 'money',
@@ -285,9 +303,9 @@ export function StaffOperationalDashboard({
             <div className="mb-4 text-sm text-slate-500">{t('staffDashboard.no_data')}</div>
           )}
 
-          {portalTiles.length > 0 ? (
+          {mergedQuickActions.length > 0 ? (
             <div className="mb-6">
-              <PortalQuickActions tiles={portalTiles} accentColor={portalColor} dense />
+              <PortalQuickActions tiles={mergedQuickActions} accentColor={portalColor} dense />
             </div>
           ) : null}
 

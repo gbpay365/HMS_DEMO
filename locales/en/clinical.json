@@ -1940,6 +1940,8 @@
     "load_error": "Could not load dashboard.",
     "refresh": "Refresh",
     "no_data": "No data for this period.",
+    "no_payment_codes": "No pending payment codes right now.",
+    "validate_payment_code": "Validate payment code",
     "validate": "Validate",
     "assistant_director": {
       "title": "Assistant Director Dashboard",

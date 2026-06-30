@@ -10,7 +10,7 @@ export function StaffPortalShell({
   tiles = [],
   portalColor = '#0ea5e9',
 }) {
-  const useMergedQuickActions = showStaffDashboard && tiles.length > 0;
+  const useMergedQuickActions = showStaffDashboard;
 
   return (
     <div className="hms-staff-portal-shell">
@@ -20,7 +20,7 @@ export function StaffPortalShell({
           dashboardTabs={staffDashboardTabs}
           dashboardKpis={staffDashboardKpis}
           dashboardPanels={staffDashboardPanels}
-          portalTiles={useMergedQuickActions ? tiles : []}
+          portalTiles={tiles}
           portalColor={portalColor}
           hideQuickActionsPanel={useMergedQuickActions}
         />
