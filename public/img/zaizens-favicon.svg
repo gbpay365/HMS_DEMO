@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Zaizens">
   <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="zaizens-favicon-g" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0d9488"/>
       <stop offset="100%" stop-color="#1e40af"/>
     </linearGradient>
   </defs>
-  <rect width="32" height="32" rx="7" fill="url(#g)"/>
-  <text x="16" y="22" text-anchor="middle" fill="#fff" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="700">Z</text>
+  <circle cx="16" cy="16" r="16" fill="url(#zaizens-favicon-g)"/>
+  <text x="16" y="22" text-anchor="middle" fill="#ffffff" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18" font-weight="700">Z</text>
 </svg>

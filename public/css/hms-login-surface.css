@@ -44,9 +44,8 @@ body.login-page.hms-body--login {
 }
 
 .login-card--surface .login-brand__icon {
-  box-shadow:
-    0 4px 14px rgba(4, 120, 87, 0.25),
-    0 0 0 3px #fff;
+  box-shadow: none;
+  background: transparent;
 }
 
 .login-submit:hover:not(:disabled) {

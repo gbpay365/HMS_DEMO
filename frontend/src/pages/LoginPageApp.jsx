@@ -15,7 +15,7 @@ export function LoginPageApp({ error = null, msg = null, brand = {}, loginLabels
   const [loading, setLoading] = useState(false);
 
   const b = brand || {};
-  const favicon = b.faviconPath || '/img/zaizens-favicon.svg';
+  const mark = b.markPath || '/img/zaizens-mark.svg';
   const name = b.name || 'ZAIZENS';
   const subtitle = tx('default_subtitle');
   const copyright = String(labels.copyright_line || t('copyright_line')).replace(
@@ -36,12 +36,9 @@ export function LoginPageApp({ error = null, msg = null, brand = {}, loginLabels
           <div className="login-card__body">
             <header className="login-brand">
               <div className="login-brand__mark" aria-hidden="true">
-                <div className="login-brand__icon">
-                  <img src={favicon} alt="" />
+                <div className="login-brand__icon hms-brand-mark hms-brand-mark--lg">
+                  <img src={mark} alt="" />
                 </div>
-                <span className="login-brand__badge">
-                  <img src="/img/zaizens-medical-badge.png" alt="" />
-                </span>
               </div>
               <h1 className="login-brand__name">{name}</h1>
               <p className="login-brand__tagline">{subtitle}</p>

@@ -10,7 +10,7 @@ var _pendingBadge = parseInt(locals.pendingCount, 10) || 0;
 var _billingBadge = parseInt(locals.billingPendingCount, 10) || 0;
 var _brand = locals.brand || {};
 var _brandName = _brand.name || 'ZAIZENS';
-var _logoLetter = String(_brandName).trim().charAt(0).toUpperCase() || 'Z';
+var _brandMark = _brand.markPath || '/img/zaizens-mark.svg';
 var _userName = locals.userDisplayName || (locals.user && locals.user.name) || 'Cashier';
 var _userRole = locals.cashierUserRole || _top('cashier_odoo.module', 'Cashier');
 var _initials = locals.cashierUserInitials || 'ZA';
@@ -18,8 +18,8 @@ function _navActive(p) { return _page === p ? ' active' : ''; }
 %>
 <nav class="cs-sidebar" role="navigation" aria-label="<%= _top('cashier_odoo.module', 'Cashier') %>">
   <div class="cs-logo">
-    <div class="cs-logo-icon cs-logo-icon--zaizens" aria-hidden="true">
-      <span class="cs-logo-letter"><%= _logoLetter %></span>
+    <div class="cs-logo-icon cs-logo-icon--zaizens hms-brand-mark hms-brand-mark--md" aria-hidden="true">
+      <img src="<%= _brandMark %>" alt="" width="40" height="40" />
     </div>
     <div>
       <div class="cs-logo-name"><%= _brandName %></div>

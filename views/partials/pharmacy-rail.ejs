@@ -10,7 +10,7 @@ var _phaSub = locals.phaOdooSub || '';
 var _nursingBadge = parseInt(locals.nursingSupplyPending, 10) || 0;
 var _expiryBadge = parseInt(locals.expiryAlertCount, 10) || 0;
 var _brand = locals.brand || {};
-var _brandLogo = _brand.faviconPath || '/img/zaizens-favicon.svg';
+var _brandLogo = _brand.markPath || '/img/zaizens-mark.svg';
 var _brandName = _brand.name || 'ZAIZENS';
 function _phaActive(m) { return _phaMenu === m ? ' active' : ''; }
 function _phaSubActive(s) { return _phaSub === s ? ' active' : ''; }
@@ -36,8 +36,8 @@ function _phaOpenAttr(key) { return _phaGroupOpen(key) ? ' open' : ''; }
 %>
 <aside class="pha-rail" role="navigation" aria-label="<%= _brandName %>">
   <div class="pha-rail-brand">
-    <span class="pha-rail-brand__icon pha-rail-brand__logo" aria-hidden="true">
-      <img src="<%= _brandLogo %>" alt="" width="38" height="38" />
+    <span class="pha-rail-brand__icon pha-rail-brand__logo hms-brand-mark hms-brand-mark--md" aria-hidden="true">
+      <img src="<%= _brandLogo %>" alt="" width="40" height="40" />
     </span>
     <div class="pha-rail-brand__text">
       <strong><%= _brandName %></strong>

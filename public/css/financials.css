@@ -821,7 +821,9 @@
 }
 
 #hms-sidebar.hms-sidebar--finance .sb-logo-mark {
-  background: #fff;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 #hms-sidebar.hms-sidebar--finance .sb-logo-name {

@@ -33,8 +33,7 @@ export function VisitingDoctorClaimPageApp({ flash = null, error = null, brand =
   }, []);
 
   const b = brand || {};
-  const favicon = b.faviconPath || '/img/zaizens-favicon.svg';
-  const name = b.name || 'ZAIZENS';
+  const mark = b.markPath || '/img/zaizens-mark.svg';
 
   const onPick = (account) => {
     if (!account.available) {
@@ -59,8 +58,8 @@ export function VisitingDoctorClaimPageApp({ flash = null, error = null, brand =
         <div className="login-card__body">
         <header className="login-brand">
           <div className="login-brand__mark" aria-hidden="true">
-            <div className="login-brand__icon">
-              <img src={favicon} alt="" />
+            <div className="login-brand__icon hms-brand-mark hms-brand-mark--lg">
+              <img src={mark} alt="" />
             </div>
           </div>
           <h1 className="login-brand__name">{t('title')}</h1>

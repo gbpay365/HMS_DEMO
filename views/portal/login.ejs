@@ -23,8 +23,8 @@
   body { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0f4c81 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Segoe UI', sans-serif; }
   .pp-wrap { width: 100%; max-width: 420px; padding: 20px; }
   .pp-card { background: rgba(255,255,255,0.06); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 40px 36px 32px; box-shadow: 0 24px 60px rgba(0,0,0,0.4); }
-  .pp-icon { width: 88px; height: 88px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4); border: 3px solid rgba(255,255,255,0.4); }
-  .pp-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pp-icon { width: 56px; height: 56px; background: transparent; border-radius: 0; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; overflow: visible; box-shadow: none; border: none; }
+  .pp-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .pp-title { color: #fff; font-size: 1.6rem; font-weight: 700; text-align: center; margin-bottom: 6px; }
   .pp-sub { color: rgba(255,255,255,0.55); font-size: .82rem; text-align: center; margin-bottom: 28px; line-height: 1.5; }
   .pp-label { color: rgba(255,255,255,0.75); font-size: .8rem; font-weight: 600; letter-spacing: .04em; margin-bottom: 6px; display: block; }
@@ -54,7 +54,7 @@
    <button type="submit" name="lang" value="fr" class="<%= _lang === 'fr' ? 'is-active' : '' %>"><%= _t('language.short_fr', { ns: 'common', defaultValue: 'Fr' }) %></button>
   </form>
   <% } %>
-  <div class="pp-icon"><img src="<%= b.faviconPath || '/img/zaizens-favicon.svg' %>" alt="Zaizens"/></div>
+  <div class="pp-icon"><img src="<%= b.markPath || '/img/zaizens-mark.svg' %>" alt="Zaizens"/></div>
   <h1 class="pp-title"><%= b.name || 'ZAIZENS' %> · <%= _tp('login.title_suffix', 'Patient Portal') %></h1>
   <p class="pp-sub"><%= _tp('login.subtitle', 'Sign in with the email we have on file and the portal password your clinic provided.') %></p>
 
