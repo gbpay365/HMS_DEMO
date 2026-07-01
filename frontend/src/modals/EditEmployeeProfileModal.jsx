@@ -178,8 +178,7 @@ export function EditEmployeeProfileModal({ open, employeeId, onClose, onSaved })
             ))}
           </div>
 
-          {activeTab === 'profile' ? (
-            <section className="emp-edit-profile-section">
+          <section className="emp-edit-profile-section" hidden={activeTab !== 'profile'} aria-hidden={activeTab !== 'profile'}>
               <SectionTitle icon="user">{tLegacy('employee_edit.profile', { defaultValue: 'Profile' })}</SectionTitle>
               <div className="emp-edit-profile-grid">
                 <Field label={tLegacy('employee_edit.first_name', { defaultValue: 'First Name' })} required htmlFor="emp-fn">
@@ -277,11 +276,9 @@ export function EditEmployeeProfileModal({ open, employeeId, onClose, onSaved })
                 initialPhotoPath={emp.photo_path || ''}
                 compact
               />
-            </section>
-          ) : null}
+          </section>
 
-          {activeTab === 'employment' ? (
-            <section className="emp-edit-profile-section">
+          <section className="emp-edit-profile-section" hidden={activeTab !== 'employment'} aria-hidden={activeTab !== 'employment'}>
               <SectionTitle icon="briefcase">{tLegacy('employee_edit.employment', { defaultValue: 'Employment' })}</SectionTitle>
               <div className="emp-edit-profile-grid">
                 <Field label={tLegacy('employee_edit.employee_id', { defaultValue: 'Employee ID' })} htmlFor="emp-eid">
@@ -362,11 +359,9 @@ export function EditEmployeeProfileModal({ open, employeeId, onClose, onSaved })
                   />
                 </Field>
               </div>
-            </section>
-          ) : null}
+          </section>
 
-          {activeTab === 'account' ? (
-            <section className="emp-edit-profile-section">
+          <section className="emp-edit-profile-section" hidden={activeTab !== 'account'} aria-hidden={activeTab !== 'account'}>
               <SectionTitle icon="toggle-on">{tLegacy('employee_edit.account_status', { defaultValue: 'Account Status' })}</SectionTitle>
               <div className="emp-edit-profile-radios emp-edit-profile-radios--status">
                 <label className="emp-edit-profile-radio emp-edit-profile-radio--active">
@@ -397,8 +392,7 @@ export function EditEmployeeProfileModal({ open, employeeId, onClose, onSaved })
                   {tLegacy('employee_edit.open_access_control', { defaultValue: 'Open Access Control for this role' })}
                 </a>
               </div>
-            </section>
-          ) : null}
+          </section>
         </form>
       ) : null}
     </Modal>
