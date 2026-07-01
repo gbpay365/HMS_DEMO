@@ -3161,6 +3161,22 @@ app.get('/api/patients/directory', requireAuth, requirePerm('patient.read', 'pat
  }
 });
 
+// API: patient search (cashier POS, modals — must be before /api/patients/:id)
+app.get('/api/patients/search', requireAuth, async (req, res) => {
+ try {
+  const q = String(req.query.q || req.query.term || '').trim();
+  if (!q) return res.json([]);
+  const { normalizeSearchTerm } = require('./lib/hmsCaseInsensitiveSearch');
+  if (!normalizeSearchTerm(q)) return res.json([]);
+  const { searchPatientsForPicker } = require('./lib/patientDirectory');
+  const rows = await searchPatientsForPicker(pool, q, 25);
+  res.json(rows);
+ } catch (err) {
+  console.error('Search error:', err.message);
+  res.status(500).json({ error: err.message });
+ }
+});
+
 // API: single patient lookup (directory row shape — used after registration)
 app.get('/api/patients/:id', requireAuth, requirePerm('patient.read', 'patient.write'), async (req, res) => {
  try {
@@ -10539,22 +10555,6 @@ app.get('/access-control/manage/:roleId', requireAuth, requireAdminOrSuper, (req
  const roleId = String(req.params.roleId || '');
  const q = roleId ? `?role=${encodeURIComponent(roleId)}#section-modules` : '';
  return res.redirect(301, '/hms-admin/access' + q);
-});
-
-// API: PATIENT SEARCH (FOR MODALS)
-app.get('/api/patients/search', requireAuth, async (req, res) => {
- const q = String(req.query.q || req.query.term || '').trim();
- try {
-  if (!q) return res.json([]);
-  const { normalizeSearchTerm } = require('./lib/hmsCaseInsensitiveSearch');
-  if (!normalizeSearchTerm(q)) return res.json([]);
-  const { searchPatientsForPicker } = require('./lib/patientDirectory');
-  const rows = await searchPatientsForPicker(pool, q, 25);
-  res.json(rows);
- } catch (err) {
-  console.error('Search error:', err.message);
-  res.status(500).json({ error: err.message });
- }
 });
 
 // CASHIER: ISSUE TICKET
