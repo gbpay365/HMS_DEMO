@@ -83,6 +83,7 @@ export function PatientsPageApp({
       const pid = String(patientId || '').trim();
       if (term) apiUrl.searchParams.set('q', term);
       if (pid && pinHighlight) apiUrl.searchParams.set('patient_id', pid);
+      apiUrl.searchParams.set('_ts', String(Date.now()));
 
       const res = await fetch(apiUrl.toString(), {
         credentials: 'same-origin',
@@ -182,23 +183,12 @@ export function PatientsPageApp({
   const can = (keys) => hasPerm(userPerms, keys);
 
   const rows = useMemo(() => {
-    const q = search.trim().toLowerCase();
     const pool = [...patients];
     if (pinnedPatient?.id && !pool.some((p) => String(p.id) === String(pinnedPatient.id))) {
       pool.unshift(pinnedPatient);
     }
-    if (!q) return pool;
-    return pool.filter((p) => {
-      if (pinnedPatientId && String(p.id) === String(pinnedPatientId)) return true;
-      if (selectedId) return String(p.id) === String(selectedId);
-      const code = (p.patient_code || `#P-${p.id}`).toLowerCase();
-      if (code === q || code.replace(/\s+/g, '') === q.replace(/\s+/g, '')) return true;
-      const hay = [p.first_name, p.last_name, p.phone, p.email, code, p.id, p.gender, p.patient_type]
-        .join(' ')
-        .toLowerCase();
-      return hay.includes(q);
-    });
-  }, [patients, search, selectedId, pinnedPatientId, pinnedPatient]);
+    return pool;
+  }, [patients, pinnedPatient]);
 
   const { setPage, pager, rows: pageRows } = useClientPagination(rows, {
     pageSize,
@@ -406,6 +396,28 @@ export function PatientsPageApp({
         fromMaternity={fromMaternity}
         prefillName={registerPrefill.name}
         prefillPhone={registerPrefill.phone}
+        onRegistered={(payload) => {
+          const id = String(payload.patientId || payload.patient?.id || '').trim();
+          const patient = payload.patient;
+          setRegisterOpen(false);
+          setSearch('');
+          setSelectedId(null);
+          if (patient?.id) {
+            setPinnedPatient(patient);
+            setPinnedPatientId(id);
+            setPatients([patient]);
+            try {
+              sessionStorage.setItem(`hms-new-patient-${id}`, JSON.stringify(patient));
+            } catch (_) {
+              /* ignore */
+            }
+          }
+          const url = id ? `/patients?patient_id=${encodeURIComponent(id)}` : '/patients';
+          window.history.replaceState({}, '', url);
+          refreshDirectory({ patientId: id, pinHighlight: Boolean(id) }).then((data) => {
+            if (data?.total != null) setPatientTotal(data.total);
+          });
+        }}
       />
       <EditPatientModal
         open={editOpen}

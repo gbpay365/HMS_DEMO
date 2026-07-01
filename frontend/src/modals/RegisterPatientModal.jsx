@@ -55,6 +55,7 @@ function resolveAddressMode(mode, geo) {
 export function RegisterPatientModal({
   open,
   onClose,
+  onRegistered,
   fromMaternity = false,
   prefillName = '',
   prefillPhone = '',
@@ -271,6 +272,16 @@ export function RegisterPatientModal({
       }
       if (json.redirect) {
         window.location.assign(json.redirect);
+        return;
+      }
+      if (typeof onRegistered === 'function') {
+        onRegistered({
+          patientId: registeredId,
+          patientCode: json.patientCode || patientPayload?.patient_code || '',
+          patient: patientPayload,
+          message: json.message || 'Patient registered.',
+        });
+        onClose();
         return;
       }
       const q = json.patientCode ? `&q=${encodeURIComponent(json.patientCode)}` : '';
