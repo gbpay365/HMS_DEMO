@@ -2278,7 +2278,10 @@ app.get('/patients', requireAuth, requirePerm('patient.read','patient.write'), a
    console.warn('ensurePatientCodeSchema:', e.message);
   });
   const { loadPatientDirectory } = require('./lib/patientDirectory');
-  const { patients: list, patientTotal } = await loadPatientDirectory(pool);
+  const { patients: list, patientTotal } = await loadPatientDirectory(pool, {
+   q: req.query.q,
+   patientId: req.query.patient_id,
+  });
   const perms = res.locals.userPerms || [];
   const canWrite = perms.includes('*') || perms.includes('patient.write');
   const hmsStaffAccountGuard = require('./lib/hmsStaffAccountGuard');
