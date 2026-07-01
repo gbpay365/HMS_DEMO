@@ -51,6 +51,8 @@
     "service": "Service",
     "total": "TOTAL:",
     "refund": "REFUND:",
+    "cash_tendered": "Cash tendered:",
+    "change_given": "Change:",
     "footer": "Present this code at the service desk.",
     "thanks": "*** THANK YOU ***"
   },
@@ -74,6 +76,8 @@
     "deposit_refund": "Deposit refund",
     "subtotal": "Subtotal",
     "total_received": "Total received",
+    "cash_tendered": "Cash tendered",
+    "change_given": "Change given",
     "received_by": "Received by:",
     "amount_words": "Amount in words:",
     "method": "Method",

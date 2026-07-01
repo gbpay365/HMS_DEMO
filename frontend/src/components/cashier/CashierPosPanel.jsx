@@ -565,6 +565,9 @@ export function CashierPosPanel({
         prepay_lines: buildPrepayLines(),
       };
       if (cardMeta) payload.prepay_card_meta = cardMeta;
+      if (payMethod === 'cash' && tenderedNum > 0) {
+        payload.prepay_cash_tendered = String(tenderedNum);
+      }
       if (payMethod === 'insurance' || (patient.coverage && parseInt(patient.coverage, 10) > 0)) {
         payload.manual_insurance_check = 'on';
         payload.manual_insurance_pct = String(parseInt(patient.coverage, 10) || 0);

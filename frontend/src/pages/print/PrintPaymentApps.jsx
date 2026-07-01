@@ -10,6 +10,53 @@ import { printPaymentMethodLabel } from '../../lib/printPaymentMethod';
 import { PrintToolbar } from '../../components/PrintToolbar';
 import { formatDate, formatMoney } from '../../lib/listUi';
 
+function isCashPayment(method) {
+  return String(method || '').trim().toLowerCase() === 'cash';
+}
+
+function CashPaymentDetails({ ticket, t, compact = false }) {
+  const tendered = Number(ticket?.cash_tendered);
+  const change = Number(ticket?.change_amount);
+  if (!isCashPayment(ticket?.payment_method)) return null;
+  if (!Number.isFinite(tendered) || tendered <= 0) return null;
+
+  if (compact) {
+    return (
+      <div className="mt-2 space-y-0.5 text-xs">
+        <div className="flex justify-between gap-3">
+          <span>{t('ticket.cash_tendered')}</span>
+          <span className="font-bold">{formatMoney(tendered)}</span>
+        </div>
+        {Number.isFinite(change) && change > 0 ? (
+          <div className="flex justify-between gap-3">
+            <span>{t('ticket.change_given')}</span>
+            <span className="font-bold">{formatMoney(change)}</span>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <dl className="mt-3 space-y-2 border-t border-slate-200 pt-3 text-sm print:border-black">
+      <div className="flex items-start justify-between gap-3">
+        <dt className="shrink-0 font-bold uppercase text-[10px] tracking-wide text-slate-500 print:text-black">
+          {t('ticket.cash_tendered')}
+        </dt>
+        <dd className="text-right font-semibold text-slate-900">{formatMoney(tendered)}</dd>
+      </div>
+      {Number.isFinite(change) && change > 0 ? (
+        <div className="flex items-start justify-between gap-3">
+          <dt className="shrink-0 font-bold uppercase text-[10px] tracking-wide text-slate-500 print:text-black">
+            {t('ticket.change_given')}
+          </dt>
+          <dd className="text-right font-semibold text-emerald-800 print:text-black">{formatMoney(change)}</dd>
+        </div>
+      ) : null}
+    </dl>
+  );
+}
+
 function SlipValidityBlock({ validityInfo }) {
   const { t } = useTranslation('print');
 
@@ -112,6 +159,8 @@ export function PrintPaymentSlipApp({
 
             <PaymentGroupedServicesList lines={lines} t={t} />
 
+            <CashPaymentDetails ticket={ticket} t={t} />
+
             {showServicePanel ? (
               <ServiceCodesPanel sectionCodes={sectionCodes} prescriptionItems={prescriptionItems} compact className="mt-4" />
             ) : null}
@@ -189,6 +238,7 @@ export function PrintPaymentTicketApp({
             compact
           />
           <div className="mt-3 text-right text-sm font-extrabold">{t('ticket.total')} {formatMoney(ticket.total_amount || 0)}</div>
+          <CashPaymentDetails ticket={ticket} t={t} compact />
           {refundLine && Number(refundLine.unit_price || 0) < 0 ? (
             <div className="text-right text-sm font-extrabold">
               {t('ticket.refund')} {formatMoney(Math.abs(Number(refundLine.unit_price || 0)))}

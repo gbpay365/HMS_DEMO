@@ -51,6 +51,8 @@
     "service": "Prestation",
     "total": "TOTAL :",
     "refund": "REMBOURSEMENT :",
+    "cash_tendered": "Espèces remises :",
+    "change_given": "Monnaie rendue :",
     "footer": "Présentez ce code au guichet de service.",
     "thanks": "*** MERCI ***"
   },
@@ -74,6 +76,8 @@
     "deposit_refund": "Remboursement d'acompte",
     "subtotal": "Sous-total",
     "total_received": "Total encaissé",
+    "cash_tendered": "Espèces remises",
+    "change_given": "Monnaie rendue",
     "received_by": "Encaissé par :",
     "amount_words": "Montant en lettres :",
     "method": "Mode",

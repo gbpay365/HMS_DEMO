@@ -165,6 +165,20 @@ export function PrintReceiptApp({
                   <td className="px-2 py-1 font-bold print:border print:border-black print:px-1 print:py-0.5">{t('receipt.total_received')}</td>
                   <td className="px-2 py-1 text-right font-extrabold print:border print:border-black print:px-1 print:py-0.5">{fmt(grand)}</td>
                 </tr>
+                {Number(receipt.cash_tendered) > 0 ? (
+                  <>
+                    <tr>
+                      <td className="px-2 py-1 text-slate-500 print:px-1 print:py-0.5">{t('receipt.cash_tendered')}</td>
+                      <td className="px-2 py-1 text-right font-bold print:px-1 print:py-0.5">{fmt(Number(receipt.cash_tendered))}</td>
+                    </tr>
+                    {Number(receipt.change_amount) > 0 ? (
+                      <tr>
+                        <td className="px-2 py-1 text-slate-500 print:px-1 print:py-0.5">{t('receipt.change_given')}</td>
+                        <td className="px-2 py-1 text-right font-bold print:px-1 print:py-0.5">{fmt(Number(receipt.change_amount))}</td>
+                      </tr>
+                    ) : null}
+                  </>
+                ) : null}
               </tbody>
             </table>
           </div>
