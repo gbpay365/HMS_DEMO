@@ -27,8 +27,8 @@ function postAction(url) {
 }
 
 export function PatientsPageApp({
-  patients = [],
-  patientTotal = 0,
+  patients: initialPatients = [],
+  patientTotal: initialPatientTotal = 0,
   flash = null,
   error = null,
   userPerms = [],
@@ -36,6 +36,8 @@ export function PatientsPageApp({
   canDeletePatient = false,
   fromMaternity = false}) {
   const { t } = useTranslation('ops');
+  const [patients, setPatients] = useState(initialPatients);
+  const [patientTotal, setPatientTotal] = useState(initialPatientTotal);
   const [registerOpen, setRegisterOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -47,6 +49,8 @@ export function PatientsPageApp({
   useEffect(() => {
     const params = new URLSearchParams(window.location.search || '');
     const fromMat = fromMaternity || String(params.get('from') || '').toLowerCase() === 'maternity';
+    const q = String(params.get('q') || '').trim();
+    if (q) setSearch(q);
     setRegisterPrefill({
       name: String(params.get('prefill_name') || '').trim(),
       phone: String(params.get('prefill_phone') || '').trim(),
@@ -55,6 +59,24 @@ export function PatientsPageApp({
       setRegisterOpen(true);
     }
   }, [fromMaternity]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/patients/directory', {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('directory fetch failed'))))
+      .then((data) => {
+        if (cancelled || !data?.ok) return;
+        if (Array.isArray(data.patients)) setPatients(data.patients);
+        if (data.total != null) setPatientTotal(data.total);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const can = (keys) => hasPerm(userPerms, keys);
 

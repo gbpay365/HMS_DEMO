@@ -2277,17 +2277,8 @@ app.get('/patients', requireAuth, requirePerm('patient.read','patient.write'), a
   await ensurePatientCodeSchema(pool).catch((e) => {
    console.warn('ensurePatientCodeSchema:', e.message);
   });
-  const [[countRow]] = await pool.query(
-   'SELECT COUNT(*) AS total FROM tbl_patient WHERE COALESCE(status, 1) = 1'
-  ).catch(() => [[{ total: 0 }]]);
-  const patientTotal = parseInt(String(countRow?.total ?? 0), 10) || 0;
-  const PATIENT_LIST_CAP = 2500;
-  const [patients] = await pool.query(
-   `SELECT id, patient_code, first_name, last_name, email, phone, gender, patient_type, created_at
-    FROM tbl_patient WHERE COALESCE(status, 1) = 1 ORDER BY id DESC LIMIT ?`,
-   [PATIENT_LIST_CAP]
-  ).catch(() => [[]]);
-  const list = Array.isArray(patients) ? patients : [];
+  const { loadPatientDirectory } = require('./lib/patientDirectory');
+  const { patients: list, patientTotal } = await loadPatientDirectory(pool);
   const perms = res.locals.userPerms || [];
   const canWrite = perms.includes('*') || perms.includes('patient.write');
   const hmsStaffAccountGuard = require('./lib/hmsStaffAccountGuard');
@@ -3152,9 +3143,23 @@ app.post('/appointments/online-booking/doctor/:doctorId/schedule/clear', require
  }
 });
 
+// API: patient directory (fresh list for React after registration)
+app.get('/api/patients/directory', requireAuth, requirePerm('patient.read', 'patient.write'), async (req, res) => {
+ try {
+  const { loadPatientDirectory } = require('./lib/patientDirectory');
+  const { patients, patientTotal } = await loadPatientDirectory(pool);
+  res.json({ ok: true, patients, total: patientTotal });
+ } catch (err) {
+  console.error('Patient directory API:', err.message);
+  res.status(500).json({ ok: false, error: err.message || 'Could not load patients.' });
+ }
+});
+
 // ADD PATIENT POST
 
 app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req, res) => {
+  const { syncPatientIdSequence, respondPatientAdd } = require('./lib/patientDirectory');
+  const failAdd = (error, status = 400) => respondPatientAdd(req, res, { ok: false, error, status });
   const {
     first_name, last_name, gender, dob, phone, email, address, patient_type,
     cni_number, cni_issue_date,
@@ -3175,18 +3180,18 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
   if (genderNorm !== 'Male' && genderNorm !== 'Female') genderNorm = 'Male';
 
   if (portalOn && !emailNorm) {
-    return res.redirect('/patients?err=' + encodeURIComponent(flashT(res, 'flash.email_is_required_when_portal_access_is_enabled')))
+    return failAdd(flashT(res, 'flash.email_is_required_when_portal_access_is_enabled'));
   }
 
   if (emailNorm && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNorm)) {
-    return res.redirect('/patients?err=' + encodeURIComponent(flashT(res, 'flash.invalid_email_format')))
+    return failAdd(flashT(res, 'flash.invalid_email_format'));
   }
 
   const cniDateNorm = cni_issue_date != null && String(cni_issue_date).trim()
     ? hmsFormatDate.toIsoDatePart(cni_issue_date)
     : null;
   if (cni_issue_date != null && String(cni_issue_date).trim() && !cniDateNorm) {
-    return res.redirect('/patients?err=' + encodeURIComponent(flashT(res, 'flash.invalid_date_format')))
+    return failAdd(flashT(res, 'flash.invalid_date_format'));
   }
 
   await ensurePatientInsuranceTables();
@@ -3215,7 +3220,7 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
     if (!phoneNorm) {
       await conn.rollback();
       conn.release();
-      return res.redirect('/patients?err=' + encodeURIComponent(flashT(res, 'flash.a_valid_phone_number_is_required')));
+      return failAdd(flashT(res, 'flash.a_valid_phone_number_is_required'));
     }
 
     const resolved = resolvePatientDobAgeFromBody(req.body, 'ap_dob_mode');
@@ -3228,7 +3233,7 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
     if (!hasDob && !hasAge) {
       await conn.rollback();
       conn.release();
-      return res.redirect('/patients?err=' + encodeURIComponent(flashT(res, 'flash.date_of_birth_or_age_is_required')));
+      return failAdd(flashT(res, 'flash.date_of_birth_or_age_is_required'));
     }
 
     const duplicate = await findDuplicatePatient(conn, {
@@ -3242,11 +3247,18 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
     if (duplicate) {
       await conn.rollback();
       conn.release();
-      return res.redirect('/patients?err=' + encodeURIComponent(flashT(res, 'flash.duplicate_patient', { id: duplicate.id, name: ((duplicate.first_name||'')+' '+(duplicate.last_name||'')).trim() || flashT(res, 'flash.patient') })));
+      return failAdd(
+        flashT(res, 'flash.duplicate_patient', {
+          id: duplicate.id,
+          name: ((duplicate.first_name || '') + ' ' + (duplicate.last_name || '')).trim() || flashT(res, 'flash.patient'),
+        }),
+        409
+      );
     }
 
     const ensurePatientCodeSchema = require('./lib/ensurePatientCodeSchema');
     await ensurePatientCodeSchema(conn).catch(() => {});
+    await syncPatientIdSequence(conn);
     const { allocateNextPatientCodeLocked } = require('./lib/hmsPatientCode');
     const patientCode = await allocateNextPatientCodeLocked(conn);
 
@@ -3315,29 +3327,36 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
     }
 
     await conn.commit();
+    const successMessage =
+      'Patient registered (' +
+      patientCode +
+      ') with wallet' +
+      (open_credit_line ? ' and credit line' : '') +
+      '.';
     const fromMaternity = String(req.body.from || '').toLowerCase() === 'maternity';
     if (fromMaternity && newPid > 0) {
-      return res.redirect(
-        '/maternity/register?patient_id=' +
+      return respondPatientAdd(req, res, {
+        ok: true,
+        patientId: newPid,
+        patientCode,
+        message: 'Patient registered — continue ANC booking',
+        redirect:
+          '/maternity/register?patient_id=' +
           newPid +
           '&msg=' +
-          encodeURIComponent('Patient registered — continue ANC booking')
-      );
+          encodeURIComponent('Patient registered — continue ANC booking'),
+      });
     }
-    res.redirect(
-      '/patients?msg=' +
-        encodeURIComponent(
-          'Patient registered (' +
-            patientCode +
-            ') with wallet' +
-            (open_credit_line ? ' and credit line' : '') +
-            '.'
-        )
-    );
+    return respondPatientAdd(req, res, {
+      ok: true,
+      patientId: newPid,
+      patientCode,
+      message: successMessage,
+    });
   } catch (err) {
     await conn.rollback();
     console.error('ADD PATIENT ERROR:', err.message);
-    res.redirect('/patients?err=' + encodeURIComponent(flashT(res, 'flash.registration_failed', { message: err.message })));
+    return failAdd(flashT(res, 'flash.registration_failed', { message: err.message }), 500);
   } finally {
     conn.release();
   }

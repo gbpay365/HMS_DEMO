@@ -67,6 +67,7 @@ export function RegisterPatientModal({
   const [addressMode, setAddressMode] = useState(() => addressComponentFromBoot());
   const [carriers, setCarriers] = useState([]);
   const [formKey, setFormKey] = useState(0);
+  const [busy, setBusy] = useState(false);
   const dobHiddenRef = useRef(null);
   const cniDateHiddenRef = useRef(null);
 
@@ -135,8 +136,9 @@ export function RegisterPatientModal({
   const prefillFirstName = prefillParts[0] || '';
   const prefillLastName = prefillParts.length > 1 ? prefillParts.slice(1).join(' ') : '';
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (busy) return;
     setState((s) => ({ ...s, formError: '' }));
     const form = e.currentTarget;
     const fd = new FormData(form);
@@ -226,7 +228,40 @@ export function RegisterPatientModal({
       return;
     }
 
-    form.submit();
+    const body = new URLSearchParams();
+    for (const [key, value] of fd.entries()) {
+      body.append(key, typeof value === 'string' ? value : String(value));
+    }
+
+    setBusy(true);
+    try {
+      const res = await fetch('/patients/add', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        },
+        body,
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.ok) {
+        throw new Error(json.error || 'Could not register patient.');
+      }
+      if (json.redirect) {
+        window.location.assign(json.redirect);
+        return;
+      }
+      const q = json.patientCode ? `&q=${encodeURIComponent(json.patientCode)}` : '';
+      window.location.assign(`/patients?msg=${encodeURIComponent(json.message || 'Patient registered.')}${q}`);
+    } catch (err) {
+      setState((s) => ({
+        ...s,
+        formError: err.message || String(err),
+      }));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -238,8 +273,12 @@ export function RegisterPatientModal({
       size="xl"
       footer={
         <>
-          <ModalCancelButton onClick={onClose} />
-          <ModalSubmitButton form="hms-register-patient-form" label={t('modals.registerPatient.register')} />
+          <ModalCancelButton onClick={onClose} disabled={busy} />
+          <ModalSubmitButton
+            form="hms-register-patient-form"
+            label={busy ? t('modals.registerPatient.registering', { defaultValue: 'Registering…' }) : t('modals.registerPatient.register')}
+            disabled={busy}
+          />
         </>
       }
     >
