@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionMenu } from '../components/ActionMenu';
 import { FlashMessages } from '../components/FlashMessages';
@@ -70,6 +70,57 @@ export function PatientsPageApp({
   const [registerPrefill, setRegisterPrefill] = useState({ name: '', phone: '' });
   const [pinnedPatientId, setPinnedPatientId] = useState(initialPinnedId);
   const [pinnedPatient, setPinnedPatient] = useState(() => readStoredNewPatient(initialPinnedId));
+  const [directoryBusy, setDirectoryBusy] = useState(false);
+  const searchFetchRef = useRef(0);
+  const skipInitialSearchFetchRef = useRef(true);
+
+  const refreshDirectory = useCallback(async ({ q = '', patientId = '', pinHighlight = false } = {}) => {
+    const reqId = ++searchFetchRef.current;
+    setDirectoryBusy(true);
+    try {
+      const apiUrl = new URL('/api/patients/directory', window.location.origin);
+      const term = String(q || '').trim();
+      const pid = String(patientId || '').trim();
+      if (term) apiUrl.searchParams.set('q', term);
+      if (pid && pinHighlight) apiUrl.searchParams.set('patient_id', pid);
+
+      const res = await fetch(apiUrl.toString(), {
+        credentials: 'same-origin',
+        headers: { Accept: 'application/json' },
+      });
+      if (!res.ok) throw new Error('directory fetch failed');
+      const data = await res.json();
+      if (reqId !== searchFetchRef.current || !data?.ok) return null;
+
+      let list = Array.isArray(data.patients) ? data.patients : [];
+      if (data.total != null) setPatientTotal(data.total);
+
+      if (pid && pinHighlight) {
+        try {
+          const lookupUrl = new URL(`/api/patients/${encodeURIComponent(pid)}`, window.location.origin);
+          if (term) lookupUrl.searchParams.set('patient_code', term);
+          const oneRes = await fetch(lookupUrl.toString(), {
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json' },
+          });
+          const oneData = await oneRes.json().catch(() => ({}));
+          if (oneData?.ok && oneData.patient?.id) {
+            setPinnedPatient(oneData.patient);
+            list = [oneData.patient, ...list.filter((p) => String(p.id) !== String(oneData.patient.id))];
+          }
+        } catch (_) {
+          /* pinned lookup failed */
+        }
+      }
+
+      setPatients(list);
+      return data;
+    } catch (_) {
+      return null;
+    } finally {
+      if (reqId === searchFetchRef.current) setDirectoryBusy(false);
+    }
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search || '');
@@ -86,76 +137,47 @@ export function PatientsPageApp({
       setRegisterOpen(true);
     }
 
-    let cancelled = false;
-
-    const loadPinnedPatient = async () => {
-      if (!patientId) return null;
-      try {
-        const lookupUrl = new URL(`/api/patients/${encodeURIComponent(patientId)}`, window.location.origin);
-        if (q) lookupUrl.searchParams.set('patient_code', q);
-        const oneRes = await fetch(lookupUrl.toString(), {
-          credentials: 'same-origin',
-          headers: { Accept: 'application/json' },
-        });
-        const oneData = await oneRes.json().catch(() => ({}));
-        if (oneData?.ok && oneData.patient) return oneData.patient;
-      } catch (_) {
-        /* fallback lookup failed */
+    refreshDirectory({ q, patientId, pinHighlight: Boolean(patientId) }).then((data) => {
+      if (!data || !patientId) return;
+      if (Array.isArray(data.patients) && data.patients.some((p) => String(p.id) === patientId)) {
+        try {
+          sessionStorage.removeItem(`hms-new-patient-${patientId}`);
+        } catch (_) {
+          /* ignore */
+        }
       }
-      return readStoredNewPatient(patientId);
-    };
-
-    if (patientId) {
-      loadPinnedPatient().then((row) => {
-        if (cancelled || !row?.id) return;
-        setPinnedPatient(row);
-        setPatients((prev) => {
-          const out = [row, ...prev.filter((p) => String(p.id) !== String(row.id))];
-          return out;
-        });
-      });
-    }
-
-    const apiUrl = new URL('/api/patients/directory', window.location.origin);
-    if (q) apiUrl.searchParams.set('q', q);
-    if (patientId) apiUrl.searchParams.set('patient_id', patientId);
-
-    fetch(apiUrl.toString(), {
-      credentials: 'same-origin',
-      headers: { Accept: 'application/json' },
-    })
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('directory fetch failed'))))
-      .then(async (data) => {
-        if (cancelled || !data?.ok) return;
-        if (data.total != null) setPatientTotal(data.total);
-        let list = Array.isArray(data.patients) ? data.patients : [];
-        const pinned = await loadPinnedPatient();
-        if (pinned?.id) {
-          setPinnedPatient(pinned);
-          list = [pinned, ...list.filter((p) => String(p.id) !== String(pinned.id))];
-        }
-        if (list.length > 0) {
-          setPatients(list);
-          if (patientId && list.some((p) => String(p.id) === patientId)) {
-            setSelectedId(null);
-            try {
-              sessionStorage.removeItem(`hms-new-patient-${patientId}`);
-            } catch (_) {
-              /* ignore */
-            }
-          }
-          return;
-        }
-        if ((data.total || 0) === 0) {
-          setPatients([]);
-        }
-      })
-      .catch(() => {});
+    });
 
     return () => {
-      cancelled = true;
+      searchFetchRef.current += 1;
     };
-  }, [fromMaternity]);
+  }, [fromMaternity, refreshDirectory]);
+
+  useEffect(() => {
+    if (skipInitialSearchFetchRef.current) {
+      skipInitialSearchFetchRef.current = false;
+      return undefined;
+    }
+
+    const q = search.trim();
+    const urlQ = String(new URLSearchParams(window.location.search || '').get('q') || '').trim();
+    const urlPatientId = String(new URLSearchParams(window.location.search || '').get('patient_id') || '').trim();
+
+    if (q === urlQ && urlPatientId && q) return undefined;
+
+    const timer = setTimeout(() => {
+      if (!q) {
+        refreshDirectory();
+        return;
+      }
+      refreshDirectory({ q, pinHighlight: false });
+      if (q !== urlQ) {
+        setPinnedPatientId(null);
+        setPinnedPatient(null);
+      }
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [search, refreshDirectory]);
 
   const can = (keys) => hasPerm(userPerms, keys);
 
@@ -165,10 +187,10 @@ export function PatientsPageApp({
     if (pinnedPatient?.id && !pool.some((p) => String(p.id) === String(pinnedPatient.id))) {
       pool.unshift(pinnedPatient);
     }
+    if (!q) return pool;
     return pool.filter((p) => {
       if (pinnedPatientId && String(p.id) === String(pinnedPatientId)) return true;
       if (selectedId) return String(p.id) === String(selectedId);
-      if (!q) return true;
       const code = (p.patient_code || `#P-${p.id}`).toLowerCase();
       if (code === q || code.replace(/\s+/g, '') === q.replace(/\s+/g, '')) return true;
       const hay = [p.first_name, p.last_name, p.phone, p.email, code, p.id, p.gender, p.patient_type]
