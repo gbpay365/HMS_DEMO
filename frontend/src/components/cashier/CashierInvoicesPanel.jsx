@@ -76,7 +76,7 @@ function InvoiceRowActions({ ticketCode, isPaid }) {
       <button
         type="button"
         className="inv-icon-btn"
-        onClick={() => openTab(isPaid ? urls.receipt : urls.ticket)}
+        onClick={() => openTab(urls.invoice || urls.view)}
         title={tOps('cashier_odoo.invoices_print', { defaultValue: 'Print' })}
         aria-label={tOps('cashier_odoo.invoices_print', { defaultValue: 'Print' })}
       >

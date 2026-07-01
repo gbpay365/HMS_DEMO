@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 export function cashierInvoiceUrls(code) {
   const c = encodeURIComponent(code || '');
   return {
-    view: `/cashier/print-ticket/${c}`,
+    view: `/cashier/print-hospital-invoice/${c}`,
+    invoice: `/cashier/print-hospital-invoice/${c}`,
     ticket: `/cashier/print-slip/${c}`,
     receipt: `/cashier/print-receipt-classic-by-code/${c}`};
 }
@@ -38,6 +39,7 @@ export function CashierInvoiceActions({ ticketCode }) {
   }, [open]);
 
   const printItems = [
+    { key: 'invoice', label: tp('link_invoice'), href: urls.invoice || urls.view },
     { key: 'ticket', label: tp('link_ticket'), href: urls.ticket },
     { key: 'receipt', label: tp('link_receipt'), href: urls.receipt },
   ];

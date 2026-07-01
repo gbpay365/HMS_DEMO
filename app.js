@@ -11300,6 +11300,24 @@ app.get('/cashier/print-invoice-by-code/:code', requireAuth, async (req, res) =>
  }
 });
 
+// CASHIER: Premium hospital invoice (Invoices tab — paid or pending)
+app.get('/cashier/print-hospital-invoice/:code', requireAuth, async (req, res) => {
+ try {
+  const { buildHospitalInvoicePageData } = require('./lib/hospitalInvoicePrintPayload');
+  const pageData = await buildHospitalInvoicePageData(pool, req.params.code);
+  if (!pageData) return res.status(404).send('Invoice not found.');
+  const invNo = pageData.invoice?.invoice_number || pageData.invoice?.ticket_code || req.params.code;
+  res.render('print-hospital-invoice', {
+   title: pageTitle(res, 'document_titles.invoice', 'Invoice — {{num}}', { num: invNo }),
+   layout: false,
+   pageData,
+  });
+ } catch (err) {
+  console.error('print-hospital-invoice:', err.message);
+  res.status(500).send('Print error.');
+ }
+});
+
 // CASHIER: PRINT TICKET VIEW
 app.get('/cashier/print-ticket/:code', requireAuth, async (req, res) => {
  try {

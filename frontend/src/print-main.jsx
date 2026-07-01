@@ -7,6 +7,7 @@ import { PrintPatientsListApp } from './pages/print/PrintPatientsListApp';
 import { PrintEmployeesListApp } from './pages/print/PrintEmployeesListApp';
 import { PrintPaymentSlipApp, PrintPaymentTicketApp, PrintPaymentSlipBatchApp } from './pages/print/PrintPaymentApps';
 import { PrintReceiptApp, PrintInvoiceApp, PrintReceiptClassicApp, PrintReceiptPremiumApp, PrintReceiptBatchApp, PrintDoctorPrescriptionApp, PrintEmergencyMlcApp } from './pages/print/PrintBillingApps';
+import { PrintHospitalInvoiceApp } from './pages/print/PrintHospitalInvoiceApp';
 import { PrintMedicalPassportApp } from './pages/print/PrintMedicalPassportApp';
 import { parsePageData } from './lib/parsePageData';
 import { initI18n, localeFromPageData, i18n } from './i18n';
@@ -19,6 +20,7 @@ const APPS = {
   'print-payment-ticket': PrintPaymentTicketApp,
   'print-receipt': PrintReceiptApp,
   'print-invoice': PrintInvoiceApp,
+  'print-hospital-invoice': PrintHospitalInvoiceApp,
   'print-receipt-classic': PrintReceiptClassicApp,
   'print-receipt-premium': PrintReceiptPremiumApp,
   'print-receipt-batch': PrintReceiptBatchApp,
