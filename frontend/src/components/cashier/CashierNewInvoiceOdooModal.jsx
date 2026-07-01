@@ -99,9 +99,11 @@ export function CashierNewInvoiceOdooModal({
 }) {
   const { t: tOps } = useTranslation('ops');
   const { t: tClinical } = useTranslation('clinical');
-  const [billTo, setBillTo] = useState('');
-  const [contact, setContact] = useState('');
+  const [patientQ, setPatientQ] = useState('');
   const [patientId, setPatientId] = useState('');
+  const [patientLabel, setPatientLabel] = useState('');
+  const [companyDetails, setCompanyDetails] = useState('');
+  const [contact, setContact] = useState('');
   const [issueDate, setIssueDate] = useState(todayIso);
   const [dueDate, setDueDate] = useState(dueDefaultIso);
   const [lines, setLines] = useState([emptyLine()]);
@@ -142,9 +144,11 @@ export function CashierNewInvoiceOdooModal({
   );
 
   const reset = useCallback(() => {
-    setBillTo('');
-    setContact('');
+    setPatientQ('');
     setPatientId('');
+    setPatientLabel('');
+    setCompanyDetails('');
+    setContact('');
     setIssueDate(todayIso());
     setDueDate(dueDefaultIso());
     setLines([emptyLine()]);
@@ -165,7 +169,7 @@ export function CashierNewInvoiceOdooModal({
       setSuggestions([]);
       return undefined;
     }
-    const q = billTo.trim();
+    const q = patientQ.trim();
     if (q.length < 2) {
       setSuggestions([]);
       return undefined;
@@ -180,14 +184,24 @@ export function CashierNewInvoiceOdooModal({
         .catch(() => setSuggestions([]));
     }, 280);
     return () => clearTimeout(timer);
-  }, [billTo, open, patientId]);
+  }, [patientQ, open, patientId]);
 
   const pickPatient = (p) => {
     const name = `${p.first_name || ''} ${p.last_name || ''}`.trim();
-    setBillTo(name);
+    const code = p.patient_code ? ` · ${p.patient_code}` : '';
+    const phone = p.phone ? ` · ${p.phone}` : '';
+    setPatientLabel(`${name}${code}${phone}`.trim());
     setPatientId(String(p.id));
+    setPatientQ('');
     if (!contact.trim() && p.phone) setContact(String(p.phone));
     setSuggestions([]);
+    setFormError('');
+  };
+
+  const clearPatient = () => {
+    setPatientId('');
+    setPatientLabel('');
+    setPatientQ('');
     setFormError('');
   };
 
@@ -241,9 +255,14 @@ export function CashierNewInvoiceOdooModal({
 
   const submit = async (mode) => {
     setFormError('');
-    const name = billTo.trim();
-    if (!name) {
-      setFormError(tOps('cashier_odoo.invoice_err_bill_to', { defaultValue: 'Bill to is required.' }));
+    const company = companyDetails.trim();
+    const hasPatient = !!patientId;
+    if (!hasPatient && !company) {
+      setFormError(
+        tOps('cashier_odoo.invoice_err_patient_or_company', {
+          defaultValue: 'Select a patient or enter company billing details.',
+        }),
+      );
       return;
     }
     if (!dueDate) {
@@ -264,7 +283,10 @@ export function CashierNewInvoiceOdooModal({
         credentials: 'same-origin',
         body: JSON.stringify({
           patient_id: patientId || undefined,
-          bill_to_name: name,
+          bill_to_name: company
+            ? company.split(/\r?\n/)[0].trim()
+            : patientLabel.split('·')[0].trim(),
+          bill_to_company: company || null,
           bill_to_contact: contact.trim() || null,
           issue_date: issueDate || todayIso(),
           due_date: dueDate,
@@ -317,38 +339,71 @@ export function CashierNewInvoiceOdooModal({
 
           <div className="inv-new-grid">
             <label className="inv-new-field">
-              <span>
-                {tOps('cashier_odoo.invoice_bill_to', { defaultValue: 'Bill to (patient / corp)' })}
-                <span className="inv-new-req">*</span>
-              </span>
+              <span>{tOps('cashier_odoo.invoice_patient', { defaultValue: 'Patient' })}</span>
               <div className="inv-new-billto-wrap">
-                <input
-                  className="cs-input inv-new-input"
-                  value={billTo}
-                  onChange={(e) => {
-                    setBillTo(e.target.value);
-                    setPatientId('');
-                    setFormError('');
-                  }}
-                  placeholder={tOps('cashier_odoo.invoice_bill_to_ph', { defaultValue: 'Name or company' })}
-                  autoComplete="off"
-                />
-                {suggestions.length > 0 ? (
-                  <ul className="inv-new-suggest">
-                    {suggestions.map((p) => (
-                      <li key={p.id}>
-                        <button type="button" onClick={() => pickPatient(p)}>
-                          {p.first_name} {p.last_name}
-                          {p.phone ? <span className="inv-new-suggest-meta">{p.phone}</span> : null}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
+                {patientId ? (
+                  <div className="inv-new-patient-pick">
+                    <span className="inv-new-patient-pick__label">{patientLabel}</span>
+                    <button type="button" className="inv-new-patient-pick__clear" onClick={clearPatient}>
+                      {tOps('cashier_odoo.invoice_clear_patient', { defaultValue: 'Clear' })}
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      className="cs-input inv-new-input"
+                      value={patientQ}
+                      onChange={(e) => {
+                        setPatientQ(e.target.value);
+                        setFormError('');
+                      }}
+                      placeholder={tOps('cashier_odoo.invoice_patient_ph', {
+                        defaultValue: 'Search name, phone, or patient code…',
+                      })}
+                      autoComplete="off"
+                    />
+                    {suggestions.length > 0 ? (
+                      <ul className="inv-new-suggest">
+                        {suggestions.map((p) => (
+                          <li key={p.id}>
+                            <button type="button" onClick={() => pickPatient(p)}>
+                              {p.first_name} {p.last_name}
+                              {p.patient_code ? (
+                                <span className="inv-new-suggest-meta">{p.patient_code}</span>
+                              ) : null}
+                              {p.phone ? <span className="inv-new-suggest-meta">{p.phone}</span> : null}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </>
+                )}
               </div>
               <p className="inv-new-hint">
-                {tOps('cashier_odoo.invoice_bill_to_hint', {
-                  defaultValue: 'Pick a registered patient from suggestions, or type a company / walk-in name.',
+                {tOps('cashier_odoo.invoice_patient_hint', {
+                  defaultValue: 'Search and select a registered patient.',
+                })}
+              </p>
+            </label>
+
+            <label className="inv-new-field">
+              <span>{tOps('cashier_odoo.invoice_company', { defaultValue: 'Company / corporate billing' })}</span>
+              <textarea
+                className="cs-input inv-new-input inv-new-textarea"
+                value={companyDetails}
+                onChange={(e) => {
+                  setCompanyDetails(e.target.value);
+                  setFormError('');
+                }}
+                placeholder={tOps('cashier_odoo.invoice_company_ph', {
+                  defaultValue: 'Company name, address, tax ID, billing contact…',
+                })}
+                rows={4}
+              />
+              <p className="inv-new-hint">
+                {tOps('cashier_odoo.invoice_company_hint', {
+                  defaultValue: 'For corporate invoices — enter the company name and billing details.',
                 })}
               </p>
             </label>

@@ -3718,6 +3718,40 @@ body.hms-body--cashier-odoo .inv-new-hint {
   color: #6b7280;
 }
 
+body.hms-body--cashier-odoo .inv-new-patient-pick {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 0.5px solid rgba(16, 185, 129, 0.35);
+  border-radius: 8px;
+  background: #f0fdf9;
+}
+
+body.hms-body--cashier-odoo .inv-new-patient-pick__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f766e;
+  line-height: 1.35;
+}
+
+body.hms-body--cashier-odoo .inv-new-patient-pick__clear {
+  border: none;
+  background: transparent;
+  color: var(--cs-primary, #0d9488);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 4px;
+  white-space: nowrap;
+}
+
+body.hms-body--cashier-odoo .inv-new-patient-pick__clear:hover {
+  text-decoration: underline;
+}
+
 body.hms-body--cashier-odoo .inv-new-suggest {
   position: absolute;
   top: calc(100% + 4px);
