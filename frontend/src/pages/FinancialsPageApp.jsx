@@ -407,7 +407,7 @@ function SettingsForm({ section = 'general', tax = {}, betterpay = {}, canWrite 
             <input
               name="settings[betterpay_pay_base_url]"
               className="hms-input w-full font-mono text-sm"
-              defaultValue={betterpay.pay_base_url || 'https://pay.betterpay.online/pay'}
+              defaultValue={betterpay.pay_base_url || 'https://betterpayme.com/pay'}
               readOnly={!canWrite}
             />
           </div>
