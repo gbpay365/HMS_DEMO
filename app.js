@@ -3302,7 +3302,7 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
        portalOn, statusVal, facilityId]
     );
     const { finalizePatientRegistration, resolveInsertPatientId } = require('./lib/patientDirectory');
-    const newPid = await resolveInsertPatientId(conn, result, patientCode);
+    const newPid = await resolveInsertPatientId(conn, result);
     const { refreshPatientIdentityKey } = require('./lib/ensurePatientIdentitySchema');
     await refreshPatientIdentityKey(conn, newPid).catch(() => {});
     const savedPatient = await finalizePatientRegistration(conn, newPid, patientCode, statusVal);

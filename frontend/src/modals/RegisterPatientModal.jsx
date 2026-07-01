@@ -249,16 +249,19 @@ export function RegisterPatientModal({
         throw new Error(json.error || 'Could not register patient.');
       }
       const registeredId = json.patientId || json.patient?.id;
-      const patientPayload =
-        json.patient ||
-        (registeredId
+      const patientPayload = json.patient
+        ? { ...json.patient, patient_code: json.patient.patient_code || json.patientCode || '' }
+        : registeredId
           ? {
               id: registeredId,
               patient_code: json.patientCode || '',
-              first_name: '',
-              last_name: '',
+              first_name: String(fd.get('first_name') || '').trim(),
+              last_name: String(fd.get('last_name') || '').trim(),
+              phone: String(fd.get('phone') || '').trim(),
+              gender: String(fd.get('gender') || '').trim(),
+              patient_type: String(fd.get('patient_type') || '').trim(),
             }
-          : null);
+          : null;
       if (registeredId && patientPayload) {
         try {
           sessionStorage.setItem(`hms-new-patient-${registeredId}`, JSON.stringify(patientPayload));

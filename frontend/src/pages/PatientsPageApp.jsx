@@ -69,6 +69,7 @@ export function PatientsPageApp({
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [registerPrefill, setRegisterPrefill] = useState({ name: '', phone: '' });
   const [pinnedPatientId, setPinnedPatientId] = useState(initialPinnedId);
+  const [pinnedPatient, setPinnedPatient] = useState(() => readStoredNewPatient(initialPinnedId));
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search || '');
@@ -87,9 +88,8 @@ export function PatientsPageApp({
 
     let cancelled = false;
 
-    const loadPinnedPatient = async (list) => {
-      if (!patientId) return list;
-      if (list.some((p) => String(p.id) === String(patientId))) return list;
+    const loadPinnedPatient = async () => {
+      if (!patientId) return null;
       try {
         const lookupUrl = new URL(`/api/patients/${encodeURIComponent(patientId)}`, window.location.origin);
         if (q) lookupUrl.searchParams.set('patient_code', q);
@@ -98,21 +98,21 @@ export function PatientsPageApp({
           headers: { Accept: 'application/json' },
         });
         const oneData = await oneRes.json().catch(() => ({}));
-        if (oneData?.ok && oneData.patient) {
-          return [oneData.patient, ...list.filter((p) => String(p.id) !== String(patientId))];
-        }
+        if (oneData?.ok && oneData.patient) return oneData.patient;
       } catch (_) {
         /* fallback lookup failed */
       }
-      const stored = readStoredNewPatient(patientId);
-      if (stored) return [stored, ...list.filter((p) => String(p.id) !== String(patientId))];
-      return list;
+      return readStoredNewPatient(patientId);
     };
 
     if (patientId) {
-      loadPinnedPatient(patients).then((list) => {
-        if (cancelled || !list.length) return;
-        setPatients(list);
+      loadPinnedPatient().then((row) => {
+        if (cancelled || !row?.id) return;
+        setPinnedPatient(row);
+        setPatients((prev) => {
+          const out = [row, ...prev.filter((p) => String(p.id) !== String(row.id))];
+          return out;
+        });
       });
     }
 
@@ -129,7 +129,11 @@ export function PatientsPageApp({
         if (cancelled || !data?.ok) return;
         if (data.total != null) setPatientTotal(data.total);
         let list = Array.isArray(data.patients) ? data.patients : [];
-        list = await loadPinnedPatient(list);
+        const pinned = await loadPinnedPatient();
+        if (pinned?.id) {
+          setPinnedPatient(pinned);
+          list = [pinned, ...list.filter((p) => String(p.id) !== String(pinned.id))];
+        }
         if (list.length > 0) {
           setPatients(list);
           if (patientId && list.some((p) => String(p.id) === patientId)) {
@@ -157,7 +161,11 @@ export function PatientsPageApp({
 
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return patients.filter((p) => {
+    const pool = [...patients];
+    if (pinnedPatient?.id && !pool.some((p) => String(p.id) === String(pinnedPatient.id))) {
+      pool.unshift(pinnedPatient);
+    }
+    return pool.filter((p) => {
       if (pinnedPatientId && String(p.id) === String(pinnedPatientId)) return true;
       if (selectedId) return String(p.id) === String(selectedId);
       if (!q) return true;
@@ -168,7 +176,7 @@ export function PatientsPageApp({
         .toLowerCase();
       return hay.includes(q);
     });
-  }, [patients, search, selectedId, pinnedPatientId]);
+  }, [patients, search, selectedId, pinnedPatientId, pinnedPatient]);
 
   const { setPage, pager, rows: pageRows } = useClientPagination(rows, {
     pageSize,
