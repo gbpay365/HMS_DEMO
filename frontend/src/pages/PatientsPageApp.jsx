@@ -50,6 +50,7 @@ export function PatientsPageApp({
     const params = new URLSearchParams(window.location.search || '');
     const fromMat = fromMaternity || String(params.get('from') || '').toLowerCase() === 'maternity';
     const q = String(params.get('q') || '').trim();
+    const patientId = String(params.get('patient_id') || '').trim();
     if (q) setSearch(q);
     setRegisterPrefill({
       name: String(params.get('prefill_name') || '').trim(),
@@ -58,25 +59,35 @@ export function PatientsPageApp({
     if (/[\?&]action=new(?:&|$)/.test(window.location.search || '') || fromMat) {
       setRegisterOpen(true);
     }
-  }, [fromMaternity]);
 
-  useEffect(() => {
     let cancelled = false;
-    fetch('/api/patients/directory', {
+    const apiUrl = new URL('/api/patients/directory', window.location.origin);
+    if (q) apiUrl.searchParams.set('q', q);
+    if (patientId) apiUrl.searchParams.set('patient_id', patientId);
+
+    fetch(apiUrl.toString(), {
       credentials: 'same-origin',
       headers: { Accept: 'application/json' },
     })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error('directory fetch failed'))))
       .then((data) => {
         if (cancelled || !data?.ok) return;
-        if (Array.isArray(data.patients)) setPatients(data.patients);
         if (data.total != null) setPatientTotal(data.total);
+        if (!Array.isArray(data.patients)) return;
+        if (data.patients.length > 0) {
+          setPatients(data.patients);
+          return;
+        }
+        if ((data.total || 0) === 0) {
+          setPatients([]);
+        }
       })
       .catch(() => {});
+
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [fromMaternity]);
 
   const can = (keys) => hasPerm(userPerms, keys);
 
@@ -85,7 +96,8 @@ export function PatientsPageApp({
     return patients.filter((p) => {
       if (selectedId) return String(p.id) === String(selectedId);
       if (!q) return true;
-      const code = p.patient_code || `#P-${p.id}`;
+      const code = (p.patient_code || `#P-${p.id}`).toLowerCase();
+      if (code === q || code.replace(/\s+/g, '') === q.replace(/\s+/g, '')) return true;
       const hay = [p.first_name, p.last_name, p.phone, p.email, code, p.id, p.gender, p.patient_type]
         .join(' ')
         .toLowerCase();

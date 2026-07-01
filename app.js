@@ -3147,8 +3147,11 @@ app.post('/appointments/online-booking/doctor/:doctorId/schedule/clear', require
 app.get('/api/patients/directory', requireAuth, requirePerm('patient.read', 'patient.write'), async (req, res) => {
  try {
   const { loadPatientDirectory } = require('./lib/patientDirectory');
-  const { patients, patientTotal } = await loadPatientDirectory(pool);
-  res.json({ ok: true, patients, total: patientTotal });
+  const { patients, patientTotal, queryError } = await loadPatientDirectory(pool, {
+   q: req.query.q,
+   patientId: req.query.patient_id,
+  });
+  res.json({ ok: true, patients, total: patientTotal, queryError });
  } catch (err) {
   console.error('Patient directory API:', err.message);
   res.status(500).json({ ok: false, error: err.message || 'Could not load patients.' });

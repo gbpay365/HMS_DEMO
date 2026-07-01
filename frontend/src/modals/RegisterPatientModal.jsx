@@ -253,7 +253,8 @@ export function RegisterPatientModal({
         return;
       }
       const q = json.patientCode ? `&q=${encodeURIComponent(json.patientCode)}` : '';
-      window.location.assign(`/patients?msg=${encodeURIComponent(json.message || 'Patient registered.')}${q}`);
+      const pid = json.patientId ? `&patient_id=${encodeURIComponent(String(json.patientId))}` : '';
+      window.location.assign(`/patients?msg=${encodeURIComponent(json.message || 'Patient registered.')}${q}${pid}`);
     } catch (err) {
       setState((s) => ({
         ...s,
