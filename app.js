@@ -3284,6 +3284,7 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
     await syncPatientIdSequence(conn);
     const { allocateNextPatientCodeLocked } = require('./lib/hmsPatientCode');
     const patientCode = await allocateNextPatientCodeLocked(conn);
+    const facilityId = await ensureFacilityRow(conn, req.session.facilityId || 1);
 
     // 1. Create Patient
     const [result] = await conn.query(
@@ -3292,20 +3293,20 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
         cni_number, cni_issue_date,
         next_of_kin_name, next_of_kin_phone, next_of_kin_relationship,
         emergency_contact_name, emergency_contact_phone,
-        portal_enabled, status, created_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW())`,
+        portal_enabled, status, facility_id, created_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW())`,
       [patientCode, first_name, last_name ?? '', genderNorm, dobFinal, ageYearsFinal, ageOnlyFinal, phoneNorm, emailNorm, normalizePatientAddress(address),
        patient_type, cni_number||null, cniDateNorm,
        next_of_kin_name||null, nokPhoneNorm || null, next_of_kin_relationship||null,
        emergency_contact_name||null, emergPhoneNorm || null,
-       portalOn, statusVal]
+       portalOn, statusVal, facilityId]
     );
-    const newPid = result.insertId;
+    const { finalizePatientRegistration, resolveInsertPatientId } = require('./lib/patientDirectory');
+    const newPid = await resolveInsertPatientId(conn, result, patientCode);
     const { refreshPatientIdentityKey } = require('./lib/ensurePatientIdentitySchema');
-    const { finalizePatientRegistration } = require('./lib/patientDirectory');
     await refreshPatientIdentityKey(conn, newPid).catch(() => {});
     const savedPatient = await finalizePatientRegistration(conn, newPid, patientCode, statusVal);
-    if (!savedPatient) {
+    if (!savedPatient?.id) {
       await conn.rollback();
       conn.release();
       return failAdd('Patient record could not be saved. Please try again.', 500);
@@ -3357,12 +3358,6 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
     }
 
     await conn.commit();
-    const { fetchPatientById } = require('./lib/patientDirectory');
-    const verifiedPatient = await fetchPatientById(pool, newPid);
-    if (!verifiedPatient) {
-      console.error('[patients/add] patient missing after commit:', newPid, patientCode);
-      return failAdd('Patient record could not be verified. Please search again or contact support.', 500);
-    }
     const successMessage =
       'Patient registered (' +
       patientCode +
@@ -3375,7 +3370,7 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
         ok: true,
         patientId: newPid,
         patientCode,
-        patient: verifiedPatient,
+        patient: savedPatient,
         message: 'Patient registered — continue ANC booking',
         redirect:
           '/maternity/register?patient_id=' +
@@ -3388,7 +3383,7 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
       ok: true,
       patientId: newPid,
       patientCode,
-      patient: verifiedPatient,
+      patient: savedPatient,
       message: successMessage,
     });
   } catch (err) {
