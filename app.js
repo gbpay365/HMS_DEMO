@@ -7555,7 +7555,9 @@ app.get('/cashier', requireAuth, requirePerm('cashier.read','cashier.write'), as
  const today = new Date().toISOString().split('T')[0];
  let patients = [];
  try {
-  const { patientActiveWhere } = require('./lib/patientDirectory');
+  const { patientActiveWhere, ensurePatientDirectoryColumns, repairRecentMisclassifiedPatients } = require('./lib/patientDirectory');
+  await ensurePatientDirectoryColumns(pool).catch(() => {});
+  await repairRecentMisclassifiedPatients(pool).catch(() => {});
   const patientActive = patientActiveWhere('p', pool);
   const [pRows] = await pool.query(`
  SELECT p.id, p.first_name, p.last_name, COALESCE(p.phone,'') AS phone, COALESCE(p.patient_code,'') AS patient_code,
