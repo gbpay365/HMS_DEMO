@@ -81,6 +81,7 @@ export function CashierPageApp({
   doctors = [],
   specialistSpecialisations = [],
   paymentMethods = [],
+  patients = [],
   flash = null,
   error = null,
   cashierIdentity = null,
@@ -508,6 +509,7 @@ export function CashierPageApp({
             doctors={doctors}
             specialistSpecialisations={specialistSpecialisations}
             paymentMethods={paymentMethods}
+            patients={patients}
             patientSeed={posPatientSeed}
             onSaveAsBill={() => setBillingOpen(true)}
             onNeedsPrepayModal={(defaults) => {

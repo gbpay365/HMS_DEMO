@@ -138,6 +138,46 @@ function resolveHmsPayMethod(posMethod, mobileSubMethod, paymentMethods) {
   return resolveHmsPayMethodForPos(posMethod, mobileSubMethod, paymentMethods);
 }
 
+function filterPatientsForPos(list, q, limit = 12) {
+  const term = String(q || '').trim().toLowerCase();
+  if (!term) return [];
+  const out = [];
+  for (const p of list || []) {
+    if (!p || p.id == null) continue;
+    const first = String(p.first_name || '').toLowerCase();
+    const last = String(p.last_name || '').toLowerCase();
+    const full = `${first} ${last}`.trim();
+    const rev = `${last} ${first}`.trim();
+    const code = String(p.patient_code || '').toLowerCase();
+    const phone = String(p.phone || '').toLowerCase();
+    const id = String(p.id || '');
+    const hit =
+      full.includes(term) ||
+      rev.includes(term) ||
+      first.includes(term) ||
+      last.includes(term) ||
+      code.includes(term) ||
+      phone.includes(term) ||
+      id.includes(term);
+    if (hit) out.push(p);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+function mergePatientResults(primary = [], secondary = [], limit = 12) {
+  const seen = new Set();
+  const out = [];
+  for (const p of [...primary, ...secondary]) {
+    const id = parseInt(p?.id, 10) || 0;
+    if (id < 1 || seen.has(id)) continue;
+    seen.add(id);
+    out.push(p);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
 export function CashierPosPanel({
   consultCatalog = [],
   labCatalog = [],
@@ -149,6 +189,7 @@ export function CashierPosPanel({
   doctors = [],
   specialistSpecialisations = [],
   paymentMethods = [],
+  patients = [],
   patientSeed = null,
   onSaveAsBill,
   onNeedsPrepayModal,
@@ -274,7 +315,11 @@ export function CashierPosPanel({
       setPatientSearchBusy(false);
       return undefined;
     }
-    setPatientSearchBusy(true);
+
+    const localHits = filterPatientsForPos(patients, q, 12);
+    setPatientResults(localHits);
+    setPatientSearchBusy(localHits.length === 0);
+
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(`/api/patients/search?q=${encodeURIComponent(q)}`, {
@@ -283,15 +328,15 @@ export function CashierPosPanel({
         });
         const data = await res.json().catch(() => []);
         const rows = Array.isArray(data) ? data : [];
-        setPatientResults(rows.slice(0, 8));
+        setPatientResults(mergePatientResults(localHits, rows, 12));
       } catch {
-        setPatientResults([]);
+        setPatientResults(localHits);
       } finally {
         setPatientSearchBusy(false);
       }
-    }, 280);
+    }, 180);
     return () => clearTimeout(timer);
-  }, [patientQ, patient]);
+  }, [patientQ, patient, patients]);
 
   useEffect(() => {
     if (!patientSeed?.id) return;
@@ -583,7 +628,7 @@ export function CashierPosPanel({
                 <FaIcon name="search" className="cs-search-icon" />
                 <input
                   className="cs-search"
-                  placeholder={tOps('cashier_odoo.pos_patient_ph', { defaultValue: 'Search by name or patient ID…' })}
+                  placeholder={tOps('cashier_odoo.pos_patient_ph', { defaultValue: 'Search name, phone, or patient code…' })}
                   value={patient ? `${patient.first_name} ${patient.last_name}` : patientQ}
                   onChange={(e) => {
                     const next = e.target.value;
@@ -601,7 +646,7 @@ export function CashierPosPanel({
                 />
                 {!patient && patientSearchOpen && patientQ.trim() ? (
                   <ul className="pos-patient-results" role="listbox">
-                    {patientSearchBusy ? (
+                    {patientSearchBusy && patientResults.length === 0 ? (
                       <li className="pos-patient-results__empty">
                         {tOps('cashier_odoo.pos_patient_searching', { defaultValue: 'Searching…' })}
                       </li>

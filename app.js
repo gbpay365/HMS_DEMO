@@ -3172,14 +3172,12 @@ app.get('/api/patients/search', requireAuth, async (req, res) => {
  try {
   const q = String(req.query.q || req.query.term || '').trim();
   if (!q) return res.json([]);
-  const { normalizeSearchTerm } = require('./lib/hmsCaseInsensitiveSearch');
-  if (!normalizeSearchTerm(q)) return res.json([]);
   const { searchPatientsForPicker } = require('./lib/patientDirectory');
   const rows = await searchPatientsForPicker(pool, q, 25);
   res.json(rows);
  } catch (err) {
   console.error('Search error:', err.message);
-  res.status(500).json({ error: err.message });
+  res.status(500).json([]);
  }
 });
 
@@ -7557,8 +7555,10 @@ app.get('/cashier', requireAuth, requirePerm('cashier.read','cashier.write'), as
  const today = new Date().toISOString().split('T')[0];
  let patients = [];
  try {
- const [pRows] = await pool.query(`
- SELECT p.id, p.first_name, p.last_name, COALESCE(p.phone,'') AS phone,
+  const { patientActiveWhere } = require('./lib/patientDirectory');
+  const patientActive = patientActiveWhere('p', pool);
+  const [pRows] = await pool.query(`
+ SELECT p.id, p.first_name, p.last_name, COALESCE(p.phone,'') AS phone, COALESCE(p.patient_code,'') AS patient_code,
  COALESCE((
   SELECT COALESCE(pi.insurer_covered_percent, 0)
   FROM tbl_patient_insurance pi
@@ -7570,16 +7570,19 @@ app.get('/cashier', requireAuth, requirePerm('cashier.read','cashier.write'), as
   LIMIT 1
  ), 0) AS coverage
  FROM tbl_patient p
- WHERE p.status = 1
+ WHERE ${patientActive}
  ORDER BY p.last_name, p.first_name
  LIMIT 2500
  `, [today, today]);
- patients = Array.isArray(pRows) ? pRows : [];
+  patients = Array.isArray(pRows) ? pRows : [];
  } catch (e) {
- const [pRows] = await pool.query(
- 'SELECT id, first_name, last_name, COALESCE(phone,"") AS phone, 0 AS coverage FROM tbl_patient WHERE status = 1 ORDER BY last_name, first_name LIMIT 2500'
- ).catch(() => [[]]);
- patients = Array.isArray(pRows) ? pRows : [];
+  const { patientActiveWhere } = require('./lib/patientDirectory');
+  const patientActive = patientActiveWhere('p', pool);
+  const [pRows] = await pool.query(
+   `SELECT id, first_name, last_name, COALESCE(phone,'') AS phone, COALESCE(patient_code,'') AS patient_code, 0 AS coverage
+    FROM tbl_patient p WHERE ${patientActive} ORDER BY last_name, first_name LIMIT 2500`
+  ).catch(() => [[]]);
+  patients = Array.isArray(pRows) ? pRows : [];
  }
 
  const hmsDoctorStaff = require('./lib/hmsDoctorStaff');
@@ -8097,6 +8100,13 @@ app.get('/cashier', requireAuth, requirePerm('cashier.read','cashier.write'), as
   refundMonthLabel,
   serviceCatalogForInvoice: fixCatalogLabels(serviceCatalogForInvoice),
   pharmacyCatalogForInvoice: fixCatalogLabels(pharmacyCatalog),
+  patients: (patients || []).map((p) => ({
+   id: p.id,
+   first_name: p.first_name,
+   last_name: p.last_name,
+   phone: p.phone || '',
+   patient_code: p.patient_code || '',
+  })),
   kpi: kpi || { today_revenue: 0, pending_count: 0, today_count: 0, today_wallet: 0 },
   overviewKpi,
   overviewRevenueChart,
