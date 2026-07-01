@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaIcon } from '../FaIcon';
+import { CashierBillingCompanyFormModal } from './CashierBillingCompanyFormModal';
 import { formatAmount } from '../../lib/hmsLocale';
 import { notifySuccess } from '../../lib/notifyBridge';
 
@@ -99,10 +100,16 @@ export function CashierNewInvoiceOdooModal({
 }) {
   const { t: tOps } = useTranslation('ops');
   const { t: tClinical } = useTranslation('clinical');
+  const [billToType, setBillToType] = useState('patient');
   const [patientQ, setPatientQ] = useState('');
   const [patientId, setPatientId] = useState('');
   const [patientLabel, setPatientLabel] = useState('');
-  const [companyDetails, setCompanyDetails] = useState('');
+  const [companyQ, setCompanyQ] = useState('');
+  const [companyId, setCompanyId] = useState('');
+  const [companyLabel, setCompanyLabel] = useState('');
+  const [companySuggestions, setCompanySuggestions] = useState([]);
+  const [companyFormOpen, setCompanyFormOpen] = useState(false);
+  const [companyFormSeed, setCompanyFormSeed] = useState('');
   const [contact, setContact] = useState('');
   const [issueDate, setIssueDate] = useState(todayIso);
   const [dueDate, setDueDate] = useState(dueDefaultIso);
@@ -144,10 +151,16 @@ export function CashierNewInvoiceOdooModal({
   );
 
   const reset = useCallback(() => {
+    setBillToType('patient');
     setPatientQ('');
     setPatientId('');
     setPatientLabel('');
-    setCompanyDetails('');
+    setCompanyQ('');
+    setCompanyId('');
+    setCompanyLabel('');
+    setCompanySuggestions([]);
+    setCompanyFormOpen(false);
+    setCompanyFormSeed('');
     setContact('');
     setIssueDate(todayIso());
     setDueDate(dueDefaultIso());
@@ -165,8 +178,8 @@ export function CashierNewInvoiceOdooModal({
   }, [open, reset]);
 
   useEffect(() => {
-    if (!open || patientId) {
-      setSuggestions([]);
+    if (!open || billToType !== 'patient' || patientId) {
+      if (billToType !== 'patient') setSuggestions([]);
       return undefined;
     }
     const q = patientQ.trim();
@@ -184,7 +197,45 @@ export function CashierNewInvoiceOdooModal({
         .catch(() => setSuggestions([]));
     }, 280);
     return () => clearTimeout(timer);
-  }, [patientQ, open, patientId]);
+  }, [patientQ, open, patientId, billToType]);
+
+  useEffect(() => {
+    if (!open || billToType !== 'company' || companyId) {
+      if (billToType !== 'company') setCompanySuggestions([]);
+      return undefined;
+    }
+    const q = companyQ.trim();
+    if (q.length < 1) {
+      setCompanySuggestions([]);
+      return undefined;
+    }
+    const timer = setTimeout(() => {
+      fetch(`/api/cashier/billing-companies?q=${encodeURIComponent(q)}`, {
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin',
+      })
+        .then((r) => r.json())
+        .then((data) => setCompanySuggestions(Array.isArray(data.companies) ? data.companies.slice(0, 8) : []))
+        .catch(() => setCompanySuggestions([]));
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [companyQ, open, companyId, billToType]);
+
+  const switchBillToType = (type) => {
+    setBillToType(type);
+    setFormError('');
+    if (type === 'patient') {
+      setCompanyId('');
+      setCompanyLabel('');
+      setCompanyQ('');
+      setCompanySuggestions([]);
+    } else {
+      setPatientId('');
+      setPatientLabel('');
+      setPatientQ('');
+      setSuggestions([]);
+    }
+  };
 
   const pickPatient = (p) => {
     const name = `${p.first_name || ''} ${p.last_name || ''}`.trim();
@@ -203,6 +254,37 @@ export function CashierNewInvoiceOdooModal({
     setPatientLabel('');
     setPatientQ('');
     setFormError('');
+  };
+
+  const pickCompany = (c) => {
+    const tax = c.tax_id ? ` · ${c.tax_id}` : '';
+    const phone = c.phone ? ` · ${c.phone}` : '';
+    setCompanyLabel(`${c.name || ''}${tax}${phone}`.trim());
+    setCompanyId(String(c.id));
+    setCompanyQ('');
+    if (!contact.trim()) {
+      setContact(String(c.email || c.phone || '').trim());
+    }
+    setCompanySuggestions([]);
+    setFormError('');
+  };
+
+  const clearCompany = () => {
+    setCompanyId('');
+    setCompanyLabel('');
+    setCompanyQ('');
+    setFormError('');
+  };
+
+  const openCompanyForm = (seed = '') => {
+    setCompanyFormSeed(seed || companyQ.trim());
+    setCompanyFormOpen(true);
+    setCompanySuggestions([]);
+  };
+
+  const onCompanySaved = (company) => {
+    pickCompany(company);
+    setCompanyFormOpen(false);
   };
 
   const updateLine = (index, patch) => {
@@ -255,12 +337,19 @@ export function CashierNewInvoiceOdooModal({
 
   const submit = async (mode) => {
     setFormError('');
-    const company = companyDetails.trim();
-    const hasPatient = !!patientId;
-    if (!hasPatient && !company) {
+    if (billToType === 'patient') {
+      if (!patientId) {
+        setFormError(
+          tOps('cashier_odoo.invoice_err_patient', {
+            defaultValue: 'Select a registered patient.',
+          }),
+        );
+        return;
+      }
+    } else if (!companyId) {
       setFormError(
-        tOps('cashier_odoo.invoice_err_patient_or_company', {
-          defaultValue: 'Select a patient or enter company billing details.',
+        tOps('cashier_odoo.invoice_err_company', {
+          defaultValue: 'Select a company or add a new company profile.',
         }),
       );
       return;
@@ -282,11 +371,12 @@ export function CashierNewInvoiceOdooModal({
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         credentials: 'same-origin',
         body: JSON.stringify({
-          patient_id: patientId || undefined,
-          bill_to_name: company
-            ? company.split(/\r?\n/)[0].trim()
-            : patientLabel.split('·')[0].trim(),
-          bill_to_company: company || null,
+          patient_id: billToType === 'patient' ? patientId : undefined,
+          billing_company_id: billToType === 'company' ? companyId : undefined,
+          bill_to_name:
+            billToType === 'company'
+              ? companyLabel.split('·')[0].trim()
+              : patientLabel.split('·')[0].trim(),
           bill_to_contact: contact.trim() || null,
           issue_date: issueDate || todayIso(),
           due_date: dueDate,
@@ -338,7 +428,34 @@ export function CashierNewInvoiceOdooModal({
           {formError ? <div className="inv-new-error">{formError}</div> : null}
 
           <div className="inv-new-grid">
-            <label className="inv-new-field">
+            <div className="inv-new-field inv-new-field--full">
+              <span>{tOps('cashier_odoo.invoice_bill_to_type', { defaultValue: 'Bill to' })}</span>
+              <div className="inv-new-billto-toggle" role="radiogroup" aria-label="Bill to">
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={billToType === 'patient'}
+                  className={`inv-new-billto-opt${billToType === 'patient' ? ' is-active' : ''}`}
+                  onClick={() => switchBillToType('patient')}
+                >
+                  <FaIcon name="user" />
+                  {tOps('cashier_odoo.invoice_patient', { defaultValue: 'Patient' })}
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={billToType === 'company'}
+                  className={`inv-new-billto-opt${billToType === 'company' ? ' is-active' : ''}`}
+                  onClick={() => switchBillToType('company')}
+                >
+                  <FaIcon name="building" />
+                  {tOps('cashier_odoo.invoice_company', { defaultValue: 'Company' })}
+                </button>
+              </div>
+            </div>
+
+            {billToType === 'patient' ? (
+            <label className="inv-new-field inv-new-field--full">
               <span>{tOps('cashier_odoo.invoice_patient', { defaultValue: 'Patient' })}</span>
               <div className="inv-new-billto-wrap">
                 {patientId ? (
@@ -386,27 +503,60 @@ export function CashierNewInvoiceOdooModal({
                 })}
               </p>
             </label>
-
-            <label className="inv-new-field">
-              <span>{tOps('cashier_odoo.invoice_company', { defaultValue: 'Company / corporate billing' })}</span>
-              <textarea
-                className="cs-input inv-new-input inv-new-textarea"
-                value={companyDetails}
-                onChange={(e) => {
-                  setCompanyDetails(e.target.value);
-                  setFormError('');
-                }}
-                placeholder={tOps('cashier_odoo.invoice_company_ph', {
-                  defaultValue: 'Company name, address, tax ID, billing contact…',
-                })}
-                rows={4}
-              />
+            ) : (
+            <label className="inv-new-field inv-new-field--full">
+              <span>{tOps('cashier_odoo.invoice_company', { defaultValue: 'Company' })}</span>
+              <div className="inv-new-billto-wrap">
+                {companyId ? (
+                  <div className="inv-new-patient-pick">
+                    <span className="inv-new-patient-pick__label">{companyLabel}</span>
+                    <button type="button" className="inv-new-patient-pick__clear" onClick={clearCompany}>
+                      {tOps('cashier_odoo.invoice_clear_company', { defaultValue: 'Clear' })}
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      className="cs-input inv-new-input"
+                      value={companyQ}
+                      onChange={(e) => {
+                        setCompanyQ(e.target.value);
+                        setFormError('');
+                      }}
+                      placeholder={tOps('cashier_odoo.invoice_company_search_ph', {
+                        defaultValue: 'Search company name, tax ID, email…',
+                      })}
+                      autoComplete="off"
+                    />
+                    {(companySuggestions.length > 0 || companyQ.trim().length > 0) ? (
+                      <ul className="inv-new-suggest">
+                        {companySuggestions.map((c) => (
+                          <li key={c.id}>
+                            <button type="button" onClick={() => pickCompany(c)}>
+                              {c.name}
+                              {c.tax_id ? <span className="inv-new-suggest-meta">{c.tax_id}</span> : null}
+                              {c.phone ? <span className="inv-new-suggest-meta">{c.phone}</span> : null}
+                            </button>
+                          </li>
+                        ))}
+                        <li>
+                          <button type="button" className="inv-new-suggest-add" onClick={() => openCompanyForm(companyQ)}>
+                            <FaIcon name="plus" />
+                            {tOps('cashier_odoo.invoice_add_company', { defaultValue: 'Add new company…' })}
+                          </button>
+                        </li>
+                      </ul>
+                    ) : null}
+                  </>
+                )}
+              </div>
               <p className="inv-new-hint">
-                {tOps('cashier_odoo.invoice_company_hint', {
-                  defaultValue: 'For corporate invoices — enter the company name and billing details.',
+                {tOps('cashier_odoo.invoice_company_search_hint', {
+                  defaultValue: 'Search saved companies or add a new corporate billing profile.',
                 })}
               </p>
             </label>
+            )}
 
             <label className="inv-new-field">
               <span>{tOps('cashier_odoo.invoice_contact', { defaultValue: 'Contact / email' })}</span>
@@ -595,6 +745,13 @@ export function CashierNewInvoiceOdooModal({
           </button>
         </div>
       </div>
+
+      <CashierBillingCompanyFormModal
+        open={companyFormOpen}
+        initialName={companyFormSeed}
+        onClose={() => setCompanyFormOpen(false)}
+        onSaved={onCompanySaved}
+      />
     </div>
   );
 }

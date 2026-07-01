@@ -10003,6 +10003,31 @@ app.post('/api/cashier/invoices', requireAuth, requirePerm('cashier.write'), asy
  }
 });
 
+app.get('/api/cashier/billing-companies', requireAuth, requirePerm('cashier.read', 'cashier.write'), async (req, res) => {
+ try {
+  const { searchBillingCompanies } = require('./lib/billingCompanies');
+  const fid = parseInt(req.session.facilityId, 10) || 1;
+  const companies = await searchBillingCompanies(pool, fid, req.query.q, req.query.limit);
+  return res.json({ ok: true, companies });
+ } catch (e) {
+  console.error('billing-companies search:', e.message);
+  return res.status(500).json({ ok: false, error: e.message, companies: [] });
+ }
+});
+
+app.post('/api/cashier/billing-companies', requireAuth, requirePerm('cashier.write'), async (req, res) => {
+ try {
+  const { createBillingCompany } = require('./lib/billingCompanies');
+  const fid = parseInt(req.session.facilityId, 10) || 1;
+  const out = await createBillingCompany(pool, fid, req.body || {});
+  if (!out.ok) return res.status(out.status || 400).json(out);
+  return res.json(out);
+ } catch (e) {
+  console.error('billing-companies create:', e.message);
+  return res.status(500).json({ ok: false, error: e.message });
+ }
+});
+
 app.get('/api/cashier/prepay/betterpay/retry-info', requireAuth, async (req, res) => {
  try {
   const ref = String(req.query.ref || '').trim();
