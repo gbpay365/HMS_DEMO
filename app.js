@@ -3358,6 +3358,11 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
     }
 
     await conn.commit();
+    const { repairHighlightedPatientFromQuery } = require('./lib/patientDirectory');
+    await repairHighlightedPatientFromQuery(pool, newPid, patientCode);
+    if (savedPatient && patientCode && !savedPatient.patient_code) {
+      savedPatient.patient_code = patientCode;
+    }
     const successMessage =
       'Patient registered (' +
       patientCode +

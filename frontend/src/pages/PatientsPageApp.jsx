@@ -26,6 +26,18 @@ function postAction(url) {
   f.submit();
 }
 
+function readStoredNewPatient(patientId) {
+  if (!patientId) return null;
+  try {
+    const raw = sessionStorage.getItem(`hms-new-patient-${patientId}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.id ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 export function PatientsPageApp({
   patients: initialPatients = [],
   patientTotal: initialPatientTotal = 0,
@@ -36,16 +48,27 @@ export function PatientsPageApp({
   canDeletePatient = false,
   fromMaternity = false}) {
   const { t } = useTranslation('ops');
-  const [patients, setPatients] = useState(initialPatients);
+  const initialPinnedId = (() => {
+    if (typeof window === 'undefined') return null;
+    return String(new URLSearchParams(window.location.search || '').get('patient_id') || '').trim() || null;
+  })();
+  const [patients, setPatients] = useState(() => {
+    const stored = readStoredNewPatient(initialPinnedId);
+    if (stored) return [stored];
+    return initialPatients;
+  });
   const [patientTotal, setPatientTotal] = useState(initialPatientTotal);
   const [registerOpen, setRegisterOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return String(new URLSearchParams(window.location.search || '').get('q') || '').trim();
+  });
   const [selectedId, setSelectedId] = useState(null);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [registerPrefill, setRegisterPrefill] = useState({ name: '', phone: '' });
-  const [pinnedPatientId, setPinnedPatientId] = useState(null);
+  const [pinnedPatientId, setPinnedPatientId] = useState(initialPinnedId);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search || '');
@@ -63,6 +86,36 @@ export function PatientsPageApp({
     }
 
     let cancelled = false;
+
+    const loadPinnedPatient = async (list) => {
+      if (!patientId) return list;
+      if (list.some((p) => String(p.id) === String(patientId))) return list;
+      try {
+        const lookupUrl = new URL(`/api/patients/${encodeURIComponent(patientId)}`, window.location.origin);
+        if (q) lookupUrl.searchParams.set('patient_code', q);
+        const oneRes = await fetch(lookupUrl.toString(), {
+          credentials: 'same-origin',
+          headers: { Accept: 'application/json' },
+        });
+        const oneData = await oneRes.json().catch(() => ({}));
+        if (oneData?.ok && oneData.patient) {
+          return [oneData.patient, ...list.filter((p) => String(p.id) !== String(patientId))];
+        }
+      } catch (_) {
+        /* fallback lookup failed */
+      }
+      const stored = readStoredNewPatient(patientId);
+      if (stored) return [stored, ...list.filter((p) => String(p.id) !== String(patientId))];
+      return list;
+    };
+
+    if (patientId) {
+      loadPinnedPatient(patients).then((list) => {
+        if (cancelled || !list.length) return;
+        setPatients(list);
+      });
+    }
+
     const apiUrl = new URL('/api/patients/directory', window.location.origin);
     if (q) apiUrl.searchParams.set('q', q);
     if (patientId) apiUrl.searchParams.set('patient_id', patientId);
@@ -76,43 +129,16 @@ export function PatientsPageApp({
         if (cancelled || !data?.ok) return;
         if (data.total != null) setPatientTotal(data.total);
         let list = Array.isArray(data.patients) ? data.patients : [];
-        const hasPinned =
-          patientId && list.some((p) => String(p.id) === String(patientId));
-        if (patientId && !hasPinned) {
-          try {
-            const lookupUrl = new URL(`/api/patients/${encodeURIComponent(patientId)}`, window.location.origin);
-            if (q) lookupUrl.searchParams.set('patient_code', q);
-            const oneRes = await fetch(lookupUrl.toString(), {
-              credentials: 'same-origin',
-              headers: { Accept: 'application/json' },
-            });
-            const oneData = await oneRes.json().catch(() => ({}));
-            if (oneData?.ok && oneData.patient) {
-              list = [
-                oneData.patient,
-                ...list.filter((p) => String(p.id) !== String(patientId)),
-              ];
-            }
-          } catch (_) {
-            /* fallback lookup failed */
-          }
-        }
-        if (!list.length && patientId) {
-          try {
-            const raw = sessionStorage.getItem(`hms-new-patient-${patientId}`);
-            if (raw) {
-              const stored = JSON.parse(raw);
-              if (stored?.id) list = [stored];
-              sessionStorage.removeItem(`hms-new-patient-${patientId}`);
-            }
-          } catch (_) {
-            /* ignore bad session payload */
-          }
-        }
+        list = await loadPinnedPatient(list);
         if (list.length > 0) {
           setPatients(list);
           if (patientId && list.some((p) => String(p.id) === patientId)) {
             setSelectedId(null);
+            try {
+              sessionStorage.removeItem(`hms-new-patient-${patientId}`);
+            } catch (_) {
+              /* ignore */
+            }
           }
           return;
         }
