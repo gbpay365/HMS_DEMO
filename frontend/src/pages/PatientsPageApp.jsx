@@ -45,6 +45,7 @@ export function PatientsPageApp({
   const [selectedId, setSelectedId] = useState(null);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [registerPrefill, setRegisterPrefill] = useState({ name: '', phone: '' });
+  const [pinnedPatientId, setPinnedPatientId] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search || '');
@@ -52,6 +53,7 @@ export function PatientsPageApp({
     const q = String(params.get('q') || '').trim();
     const patientId = String(params.get('patient_id') || '').trim();
     if (q) setSearch(q);
+    if (patientId) setPinnedPatientId(patientId);
     setRegisterPrefill({
       name: String(params.get('prefill_name') || '').trim(),
       phone: String(params.get('prefill_phone') || '').trim(),
@@ -70,13 +72,46 @@ export function PatientsPageApp({
       headers: { Accept: 'application/json' },
     })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error('directory fetch failed'))))
-      .then((data) => {
+      .then(async (data) => {
         if (cancelled || !data?.ok) return;
         if (data.total != null) setPatientTotal(data.total);
-        if (!Array.isArray(data.patients)) return;
-        if (data.patients.length > 0) {
-          setPatients(data.patients);
-          if (patientId && data.patients.some((p) => String(p.id) === patientId)) {
+        let list = Array.isArray(data.patients) ? data.patients : [];
+        const hasPinned =
+          patientId && list.some((p) => String(p.id) === String(patientId));
+        if (patientId && !hasPinned) {
+          try {
+            const lookupUrl = new URL(`/api/patients/${encodeURIComponent(patientId)}`, window.location.origin);
+            if (q) lookupUrl.searchParams.set('patient_code', q);
+            const oneRes = await fetch(lookupUrl.toString(), {
+              credentials: 'same-origin',
+              headers: { Accept: 'application/json' },
+            });
+            const oneData = await oneRes.json().catch(() => ({}));
+            if (oneData?.ok && oneData.patient) {
+              list = [
+                oneData.patient,
+                ...list.filter((p) => String(p.id) !== String(patientId)),
+              ];
+            }
+          } catch (_) {
+            /* fallback lookup failed */
+          }
+        }
+        if (!list.length && patientId) {
+          try {
+            const raw = sessionStorage.getItem(`hms-new-patient-${patientId}`);
+            if (raw) {
+              const stored = JSON.parse(raw);
+              if (stored?.id) list = [stored];
+              sessionStorage.removeItem(`hms-new-patient-${patientId}`);
+            }
+          } catch (_) {
+            /* ignore bad session payload */
+          }
+        }
+        if (list.length > 0) {
+          setPatients(list);
+          if (patientId && list.some((p) => String(p.id) === patientId)) {
             setSelectedId(null);
           }
           return;
@@ -97,6 +132,7 @@ export function PatientsPageApp({
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
     return patients.filter((p) => {
+      if (pinnedPatientId && String(p.id) === String(pinnedPatientId)) return true;
       if (selectedId) return String(p.id) === String(selectedId);
       if (!q) return true;
       const code = (p.patient_code || `#P-${p.id}`).toLowerCase();
@@ -106,7 +142,7 @@ export function PatientsPageApp({
         .toLowerCase();
       return hay.includes(q);
     });
-  }, [patients, search, selectedId]);
+  }, [patients, search, selectedId, pinnedPatientId]);
 
   const { setPage, pager, rows: pageRows } = useClientPagination(rows, {
     pageSize,

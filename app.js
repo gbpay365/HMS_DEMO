@@ -3161,6 +3161,23 @@ app.get('/api/patients/directory', requireAuth, requirePerm('patient.read', 'pat
  }
 });
 
+// API: single patient lookup (directory row shape — used after registration)
+app.get('/api/patients/:id', requireAuth, requirePerm('patient.read', 'patient.write'), async (req, res) => {
+ try {
+  const { fetchPatientById, repairHighlightedPatientFromQuery } = require('./lib/patientDirectory');
+  const id = parseInt(req.params.id, 10) || 0;
+  if (id < 1) return res.status(400).json({ ok: false, error: 'Invalid patient id.' });
+  const code = String(req.query.patient_code || req.query.q || '').trim();
+  if (code) await repairHighlightedPatientFromQuery(pool, id, code);
+  const patient = await fetchPatientById(pool, id);
+  if (!patient) return res.status(404).json({ ok: false, error: 'Patient not found.' });
+  res.json({ ok: true, patient });
+ } catch (err) {
+  console.error('Patient lookup API:', err.message);
+  res.status(500).json({ ok: false, error: err.message || 'Could not load patient.' });
+ }
+});
+
 // ADD PATIENT POST
 
 app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req, res) => {
@@ -3277,7 +3294,7 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
         emergency_contact_name, emergency_contact_phone,
         portal_enabled, status, created_at)
        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW())`,
-      [patientCode, first_name, last_name||null, genderNorm, dobFinal, ageYearsFinal, ageOnlyFinal, phoneNorm, emailNorm, normalizePatientAddress(address),
+      [patientCode, first_name, last_name ?? '', genderNorm, dobFinal, ageYearsFinal, ageOnlyFinal, phoneNorm, emailNorm, normalizePatientAddress(address),
        patient_type, cni_number||null, cniDateNorm,
        next_of_kin_name||null, nokPhoneNorm || null, next_of_kin_relationship||null,
        emergency_contact_name||null, emergPhoneNorm || null,
@@ -3285,9 +3302,14 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
     );
     const newPid = result.insertId;
     const { refreshPatientIdentityKey } = require('./lib/ensurePatientIdentitySchema');
-    const { ensurePatientActiveOnRegister } = require('./lib/patientDirectory');
+    const { finalizePatientRegistration } = require('./lib/patientDirectory');
     await refreshPatientIdentityKey(conn, newPid).catch(() => {});
-    await ensurePatientActiveOnRegister(conn, newPid, statusVal);
+    const savedPatient = await finalizePatientRegistration(conn, newPid, patientCode, statusVal);
+    if (!savedPatient) {
+      await conn.rollback();
+      conn.release();
+      return failAdd('Patient record could not be saved. Please try again.', 500);
+    }
 
     if (newPid > 0) {
       // 2. Auto-wallet
@@ -3335,6 +3357,12 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
     }
 
     await conn.commit();
+    const { fetchPatientById } = require('./lib/patientDirectory');
+    const verifiedPatient = await fetchPatientById(pool, newPid);
+    if (!verifiedPatient) {
+      console.error('[patients/add] patient missing after commit:', newPid, patientCode);
+      return failAdd('Patient record could not be verified. Please search again or contact support.', 500);
+    }
     const successMessage =
       'Patient registered (' +
       patientCode +
@@ -3347,6 +3375,7 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
         ok: true,
         patientId: newPid,
         patientCode,
+        patient: verifiedPatient,
         message: 'Patient registered — continue ANC booking',
         redirect:
           '/maternity/register?patient_id=' +
@@ -3359,6 +3388,7 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
       ok: true,
       patientId: newPid,
       patientCode,
+      patient: verifiedPatient,
       message: successMessage,
     });
   } catch (err) {
@@ -3366,7 +3396,7 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
     console.error('ADD PATIENT ERROR:', err.message);
     return failAdd(flashT(res, 'flash.registration_failed', { message: err.message }), 500);
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 

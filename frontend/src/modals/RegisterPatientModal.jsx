@@ -248,6 +248,13 @@ export function RegisterPatientModal({
       if (!res.ok || !json.ok) {
         throw new Error(json.error || 'Could not register patient.');
       }
+      if (json.patient?.id) {
+        try {
+          sessionStorage.setItem(`hms-new-patient-${json.patient.id}`, JSON.stringify(json.patient));
+        } catch (_) {
+          /* storage unavailable */
+        }
+      }
       if (json.redirect) {
         window.location.assign(json.redirect);
         return;
