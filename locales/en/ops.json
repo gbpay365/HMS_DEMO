@@ -1066,6 +1066,7 @@
     "invoices_print": "Print",
     "invoice_bill_to": "Bill to (patient / corp)",
     "invoice_bill_to_ph": "Name or company",
+    "invoice_bill_to_hint": "Pick a registered patient from suggestions, or type a company / walk-in name.",
     "invoice_contact": "Contact / email",
     "invoice_contact_ph": "email or phone",
     "invoice_issue_date": "Issue date",

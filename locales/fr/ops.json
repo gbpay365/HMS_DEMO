@@ -891,6 +891,7 @@
     "invoices_print": "Imprimer",
     "invoice_bill_to": "Facturer à (patient / société)",
     "invoice_bill_to_ph": "Nom ou société",
+    "invoice_bill_to_hint": "Choisissez un patient enregistré dans les suggestions, ou saisissez un nom d'entreprise / passage.",
     "invoice_contact": "Contact / e-mail",
     "invoice_contact_ph": "e-mail ou téléphone",
     "invoice_issue_date": "Date d'émission",

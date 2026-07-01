@@ -3711,6 +3711,13 @@ body.hms-body--cashier-odoo .inv-new-billto-wrap {
   position: relative;
 }
 
+body.hms-body--cashier-odoo .inv-new-hint {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #6b7280;
+}
+
 body.hms-body--cashier-odoo .inv-new-suggest {
   position: absolute;
   top: calc(100% + 4px);

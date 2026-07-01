@@ -271,6 +271,7 @@ export function CashierNewInvoiceOdooModal({
           discount_pct: parseFloat(discountPct) || 0,
           tax_pct: parseFloat(taxPct) || 0,
           lines: normalized,
+          service_category: normalized[0]?.kind || 'consultation',
           invoice_status: mode === 'draft' ? 'draft' : 'sent',
         }),
       });
@@ -345,6 +346,11 @@ export function CashierNewInvoiceOdooModal({
                   </ul>
                 ) : null}
               </div>
+              <p className="inv-new-hint">
+                {tOps('cashier_odoo.invoice_bill_to_hint', {
+                  defaultValue: 'Pick a registered patient from suggestions, or type a company / walk-in name.',
+                })}
+              </p>
             </label>
 
             <label className="inv-new-field">
