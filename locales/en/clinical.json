@@ -41,6 +41,7 @@
     "no_rooms_body": "Patient cards show \"Not assigned\" until you create rooms and link doctors.",
     "configure_rooms": "Configure consultation rooms",
     "new_visit": "+ New Visit",
+    "create_new_visit": "Create New Visit",
     "ipd_census": "IPD Census",
     "death_registry": "Death registry",
     "death_registry_hint": "Record in-hospital death",

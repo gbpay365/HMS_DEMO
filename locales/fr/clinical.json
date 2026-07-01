@@ -41,6 +41,7 @@
     "no_rooms_body": "Les fiches patient affichent « Non assigné » tant que les salles et les médecins ne sont pas liés.",
     "configure_rooms": "Configurer les salles de consultation",
     "new_visit": "+ Nouvelle visite",
+    "create_new_visit": "Créer une nouvelle visite",
     "ipd_census": "Effectifs hospitaliers",
     "death_registry": "Registre des décès",
     "death_registry_hint": "Enregistrer un décès hospitalier",

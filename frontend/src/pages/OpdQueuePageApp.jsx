@@ -159,7 +159,9 @@ export function OpdQueuePageApp({
 
   const skipFetchRef = useRef(true);
 
-  const canCreateVisit = aclOk(aclMenu, 'am.opd_queue.new_visit');
+  const canCreateVisit =
+    hasPerm(userPerms, ['front_desk.visit.create', 'opd.write', 'scheduling.write']) ||
+    aclOk(aclMenu, 'am.opd_queue.new_visit');
   const mayCallPatient = hasPerm(userPerms, ['clinical.write', 'prescription.write']);
   const hasVitals = (id) => visitIdInVitalsList(visitIdsWithVitals, id);
 
@@ -167,6 +169,14 @@ export function OpdQueuePageApp({
     const timer = setTimeout(() => setDebouncedQ(q.trim()), 350);
     return () => clearTimeout(timer);
   }, [q]);
+
+  useEffect(() => {
+    if (!canCreateVisit) return;
+    const params = new URLSearchParams(window.location.search || '');
+    if (String(params.get('action') || '').toLowerCase() === 'new') {
+      setAddOpen(true);
+    }
+  }, [canCreateVisit]);
 
   const activeFilterState = useMemo(
     () => ({ q: debouncedQ, dept, doctor, status }),
@@ -465,9 +475,13 @@ export function OpdQueuePageApp({
               <i className="fa fa-refresh" aria-hidden="true" />
             </a>
             {canCreateVisit ? (
-              <button type="button" className="hms-staff-hero-tab hms-staff-hero-tab--active" onClick={() => setAddOpen(true)}>
-                <i className="fa fa-user-plus" aria-hidden="true" />
-                {t('opd.new_visit')}
+              <button
+                type="button"
+                className="hms-btn-primary ml-auto shrink-0 px-4 py-2 text-xs shadow-sm"
+                onClick={() => setAddOpen(true)}
+              >
+                <i className="fa fa-plus-circle mr-1.5" aria-hidden="true" />
+                {t('opd.create_new_visit')}
               </button>
             ) : null}
           </div>
