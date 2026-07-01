@@ -10545,29 +10545,15 @@ app.get('/access-control/manage/:roleId', requireAuth, requireAdminOrSuper, (req
 app.get('/api/patients/search', requireAuth, async (req, res) => {
  const q = String(req.query.q || req.query.term || '').trim();
  try {
- if (!q) return res.json([]);
- const {
-  normalizeSearchTerm,
-  patientSearchWhere,
-  patientSearchBindings,
- } = require('./lib/hmsCaseInsensitiveSearch');
- if (!normalizeSearchTerm(q)) return res.json([]);
- const [rows] = await pool.query(
-  `SELECT id, first_name, last_name, phone, patient_code
-     FROM tbl_patient
-    WHERE status = 1
-      AND ${patientSearchWhere('')}
-    ORDER BY last_name, first_name
-    LIMIT 25`,
-  patientSearchBindings(q)
- );
- // #region agent log
- fetch('http://127.0.0.1:7824/ingest/7799ec2f-1013-4dae-a65a-dcfd2e3f62ad',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'968473'},body:JSON.stringify({sessionId:'968473',location:'app.js:/api/patients/search',message:'patient search',data:{q,resultCount:rows.length,sample:rows.slice(0,3).map(r=>r.first_name)},timestamp:Date.now(),hypothesisId:'CI1',runId:'case-insensitive-search'})}).catch(()=>{});
- // #endregion
- res.json(rows);
+  if (!q) return res.json([]);
+  const { normalizeSearchTerm } = require('./lib/hmsCaseInsensitiveSearch');
+  if (!normalizeSearchTerm(q)) return res.json([]);
+  const { searchPatientsForPicker } = require('./lib/patientDirectory');
+  const rows = await searchPatientsForPicker(pool, q, 25);
+  res.json(rows);
  } catch (err) {
- console.error('Search error:', err.message);
- res.status(500).json({ error: err.message });
+  console.error('Search error:', err.message);
+  res.status(500).json({ error: err.message });
  }
 });
 
