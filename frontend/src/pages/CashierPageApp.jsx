@@ -634,6 +634,11 @@ export function CashierPageApp({
         onCreated={() => setInvoicesRefreshToken((n) => n + 1)}
         serviceCatalog={serviceCatalogForInvoice}
         pharmacyCatalog={pharmacyCatalogForInvoice}
+        consultCatalog={consultCatalog}
+        labCatalog={labCatalog}
+        imagingCatalog={imagingCatalog}
+        surgeryCatalog={surgeryCatalog}
+        svcCatalog={svcCatalog}
       />
       <CashierBillingModal
         open={billingOpen}

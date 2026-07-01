@@ -3855,6 +3855,18 @@ body.hms-body--cashier-odoo .inv-new-line-select {
   font-size: 12px;
 }
 
+body.hms-body--cashier-odoo .inv-new-line-service-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+}
+
+body.hms-body--cashier-odoo .inv-new-line-cat {
+  font-weight: 600;
+  color: var(--cs-primary, #0d9488);
+}
+
 body.hms-body--cashier-odoo .inv-new-line-service,
 body.hms-body--cashier-odoo .inv-new-line-num,
 body.hms-body--cashier-odoo .inv-new-line-qty {

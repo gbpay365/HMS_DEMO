@@ -4,6 +4,15 @@ import { FaIcon } from '../FaIcon';
 import { formatAmount } from '../../lib/hmsLocale';
 import { notifySuccess } from '../../lib/notifyBridge';
 
+const INVOICE_CATEGORIES = [
+  'consultation',
+  'laboratory',
+  'radiology',
+  'pharmacy',
+  'surgery',
+  'other',
+];
+
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -18,14 +27,15 @@ function lineKey() {
   return `ln-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function emptyLine() {
-  return { key: lineKey(), description: '', unit_price: '', quantity: '1', catalog_id: '' };
-}
-
-function lineTotal(ln) {
-  const qty = parseFloat(ln.quantity) || 0;
-  const unit = parseFloat(ln.unit_price) || 0;
-  return Math.round(qty * unit * 100) / 100;
+function emptyLine(serviceCategory = 'consultation') {
+  return {
+    key: lineKey(),
+    service_category: serviceCategory,
+    description: '',
+    unit_price: '',
+    quantity: '1',
+    catalog_id: '',
+  };
 }
 
 function normalizeCatalog(catalog) {
@@ -39,14 +49,56 @@ function normalizeCatalog(catalog) {
     .filter((c) => c.name);
 }
 
+function catalogForCategory(cat, bundles) {
+  const {
+    consultCatalog,
+    labCatalog,
+    imagingCatalog,
+    surgeryCatalog,
+    pharmacyCatalog,
+    svcCatalog,
+    serviceCatalog,
+  } = bundles;
+  if (cat === 'consultation') return consultCatalog;
+  if (cat === 'laboratory') return labCatalog;
+  if (cat === 'radiology') return imagingCatalog;
+  if (cat === 'pharmacy') return pharmacyCatalog;
+  if (cat === 'surgery') return surgeryCatalog;
+  if (cat === 'other') {
+    const merged = [...svcCatalog];
+    const seen = new Set(merged.map((c) => c.id));
+    for (const c of serviceCatalog) {
+      if (!seen.has(c.id)) merged.push(c);
+    }
+    return merged;
+  }
+  return serviceCatalog;
+}
+
+function lineKindForCategory(cat) {
+  return cat === 'other' ? 'service' : cat;
+}
+
+function lineTotal(ln) {
+  const qty = parseFloat(ln.quantity) || 0;
+  const unit = parseFloat(ln.unit_price) || 0;
+  return Math.round(qty * unit * 100) / 100;
+}
+
 export function CashierNewInvoiceOdooModal({
   open,
   onClose,
   onCreated,
   serviceCatalog = [],
   pharmacyCatalog = [],
+  consultCatalog = [],
+  labCatalog = [],
+  imagingCatalog = [],
+  surgeryCatalog = [],
+  svcCatalog = [],
 }) {
   const { t: tOps } = useTranslation('ops');
+  const { t: tClinical } = useTranslation('clinical');
   const [billTo, setBillTo] = useState('');
   const [contact, setContact] = useState('');
   const [patientId, setPatientId] = useState('');
@@ -59,18 +111,30 @@ export function CashierNewInvoiceOdooModal({
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState('');
 
-  const catalog = useMemo(
-    () => normalizeCatalog([...serviceCatalog, ...pharmacyCatalog]),
-    [serviceCatalog, pharmacyCatalog],
+  const catalogBundles = useMemo(
+    () => ({
+      consultCatalog: normalizeCatalog(consultCatalog),
+      labCatalog: normalizeCatalog(labCatalog),
+      imagingCatalog: normalizeCatalog(imagingCatalog),
+      surgeryCatalog: normalizeCatalog(surgeryCatalog),
+      pharmacyCatalog: normalizeCatalog(pharmacyCatalog),
+      svcCatalog: normalizeCatalog(svcCatalog),
+      serviceCatalog: normalizeCatalog(serviceCatalog),
+    }),
+    [consultCatalog, labCatalog, imagingCatalog, surgeryCatalog, pharmacyCatalog, svcCatalog, serviceCatalog],
   );
 
-  const catalogByName = useMemo(() => {
-    const map = new Map();
-    for (const c of catalog) {
-      map.set(c.name.toLowerCase(), c);
-    }
-    return map;
-  }, [catalog]);
+  const categoryOptions = useMemo(
+    () =>
+      INVOICE_CATEGORIES.map((id) => ({
+        id,
+        label:
+          id === 'other'
+            ? tOps('cashier_odoo.invoice_cat_other', { defaultValue: 'Other Services' })
+            : tClinical(`cashier.billing_cat_${id}`, { defaultValue: id }),
+      })),
+    [tOps, tClinical],
+  );
 
   const subtotal = useMemo(
     () => lines.reduce((sum, ln) => sum + lineTotal(ln), 0),
@@ -139,26 +203,28 @@ export function CashierNewInvoiceOdooModal({
     setLines((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== index)));
   };
 
-  const onServiceChange = (index, value) => {
-    const description = String(value || '');
-    const match = catalogByName.get(description.trim().toLowerCase());
+  const onCategoryChange = (index, category) => {
     updateLine(index, {
-      description,
-      catalog_id: match ? String(match.id) : '',
-      unit_price: match ? String(match.price) : lines[index]?.unit_price || '',
+      service_category: category,
+      catalog_id: '',
+      description: '',
+      unit_price: '',
     });
   };
 
   const onCatalogPick = (index, catalogId) => {
-    const item = catalog.find((c) => String(c.id) === String(catalogId));
+    const lineCategory = lines[index]?.service_category || 'consultation';
+    const lineCatalog = catalogForCategory(lineCategory, catalogBundles);
+    const item = lineCatalog.find((c) => String(c.id) === String(catalogId));
     if (!item) {
-      updateLine(index, { catalog_id: '', description: '' });
+      updateLine(index, { catalog_id: '', description: '', unit_price: '' });
       return;
     }
     updateLine(index, {
       catalog_id: String(item.id),
       description: item.name,
       unit_price: String(item.price),
+      service_category: lineCategory,
     });
   };
 
@@ -168,7 +234,7 @@ export function CashierNewInvoiceOdooModal({
         description: String(ln.description || '').trim(),
         quantity: Math.max(1, parseInt(ln.quantity, 10) || 1),
         unit_price: parseFloat(ln.unit_price) || 0,
-        kind: 'service',
+        kind: lineKindForCategory(ln.service_category || 'consultation'),
         catalog_id: ln.catalog_id ? parseInt(ln.catalog_id, 10) : null,
       }))
       .filter((ln) => ln.description && ln.unit_price > 0);
@@ -336,33 +402,41 @@ export function CashierNewInvoiceOdooModal({
                   </thead>
                   <tbody>
                     {lines.map((ln, idx) => {
+                      const lineCategory = ln.service_category || 'consultation';
+                      const lineCatalog = catalogForCategory(lineCategory, catalogBundles);
                       const total = lineTotal(ln);
                       return (
                         <tr key={ln.key}>
                           <td>
-                            {catalog.length > 0 ? (
+                            <div className="inv-new-line-service-stack">
+                              <select
+                                className="cs-input inv-new-input inv-new-line-select inv-new-line-cat"
+                                value={lineCategory}
+                                onChange={(e) => onCategoryChange(idx, e.target.value)}
+                                aria-label={tOps('cashier_odoo.invoice_pick_category', { defaultValue: 'Service type' })}
+                              >
+                                {categoryOptions.map((cat) => (
+                                  <option key={cat.id} value={cat.id}>
+                                    {cat.label}
+                                  </option>
+                                ))}
+                              </select>
                               <select
                                 className="cs-input inv-new-input inv-new-line-select"
                                 value={ln.catalog_id}
                                 onChange={(e) => onCatalogPick(idx, e.target.value)}
+                                aria-label={tOps('cashier_odoo.invoice_pick_item', { defaultValue: 'Service item' })}
                               >
                                 <option value="">
-                                  {tOps('cashier_odoo.invoice_pick_service', { defaultValue: 'Select or type below…' })}
+                                  {tOps('cashier_odoo.invoice_pick_item', { defaultValue: 'Select item…' })}
                                 </option>
-                                {catalog.map((c) => (
+                                {lineCatalog.map((c) => (
                                   <option key={c.id} value={c.id}>
                                     {c.name}
                                   </option>
                                 ))}
                               </select>
-                            ) : null}
-                            <input
-                              className="cs-input inv-new-input inv-new-line-service"
-                              list={catalog.length ? 'inv-new-catalog-list' : undefined}
-                              value={ln.description}
-                              onChange={(e) => onServiceChange(idx, e.target.value)}
-                              placeholder={tOps('cashier_odoo.invoice_service_ph', { defaultValue: 'Service name' })}
-                            />
+                            </div>
                           </td>
                           <td>
                             <input
@@ -402,13 +476,6 @@ export function CashierNewInvoiceOdooModal({
                     })}
                   </tbody>
                 </table>
-                {catalog.length > 0 ? (
-                  <datalist id="inv-new-catalog-list">
-                    {catalog.map((c) => (
-                      <option key={c.id} value={c.name} />
-                    ))}
-                  </datalist>
-                ) : null}
               </div>
 
               <div className="inv-new-lines-subtotal">
