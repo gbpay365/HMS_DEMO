@@ -3282,7 +3282,9 @@ app.post('/patients/add', requireAuth, requirePerm('patient.write'), async (req,
     );
     const newPid = result.insertId;
     const { refreshPatientIdentityKey } = require('./lib/ensurePatientIdentitySchema');
+    const { ensurePatientActiveOnRegister } = require('./lib/patientDirectory');
     await refreshPatientIdentityKey(conn, newPid).catch(() => {});
+    await ensurePatientActiveOnRegister(conn, newPid, statusVal);
 
     if (newPid > 0) {
       // 2. Auto-wallet

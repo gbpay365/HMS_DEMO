@@ -76,6 +76,9 @@ export function PatientsPageApp({
         if (!Array.isArray(data.patients)) return;
         if (data.patients.length > 0) {
           setPatients(data.patients);
+          if (patientId && data.patients.some((p) => String(p.id) === patientId)) {
+            setSelectedId(null);
+          }
           return;
         }
         if ((data.total || 0) === 0) {
