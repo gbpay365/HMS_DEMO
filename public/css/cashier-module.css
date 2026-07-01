@@ -1691,6 +1691,87 @@ body.hms-body--cashier-odoo .pos-payment-card .pos-save-bill-btn {
   font-size: 14px;
 }
 
+body.hms-body--cashier-odoo .pos-betterpay-panel {
+  margin: 0 0 14px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #a5f3fc;
+  background: #ecfeff;
+}
+
+body.hms-body--cashier-odoo .pos-betterpay-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #164e63;
+}
+
+body.hms-body--cashier-odoo .pos-betterpay-hint {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #155e75;
+}
+
+body.hms-body--cashier-odoo .pos-betterpay-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+body.hms-body--cashier-odoo .pos-betterpay-qr {
+  flex: 0 0 auto;
+  padding: 8px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 76, 92, 0.1);
+}
+
+body.hms-body--cashier-odoo .pos-betterpay-meta {
+  flex: 1 1 160px;
+  min-width: 0;
+  font-size: 12px;
+}
+
+body.hms-body--cashier-odoo .pos-betterpay-amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+body.hms-body--cashier-odoo .pos-betterpay-ref {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  word-break: break-all;
+  color: #155e75;
+}
+
+body.hms-body--cashier-odoo .pos-betterpay-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0891b2;
+  text-decoration: underline;
+}
+
+body.hms-body--cashier-odoo .pos-betterpay-print {
+  display: block;
+  margin-top: 8px;
+}
+
+body.hms-body--cashier-odoo .pos-betterpay-status {
+  margin: 8px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+body.hms-body--cashier-odoo .pos-betterpay-status--ok { color: #047857; }
+body.hms-body--cashier-odoo .pos-betterpay-status--timeout { color: #b91c1c; }
+body.hms-body--cashier-odoo .pos-betterpay-status--waiting { color: #b45309; }
+
 /* —— Patient bills tab —— */
 body.hms-body--cashier-odoo .bills-page {
   animation: csFadeIn 0.25s ease-out;

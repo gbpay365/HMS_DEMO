@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaIcon } from '../FaIcon';
 import { CsBadge } from './CashierReferenceShell';
 import { filterDoctorsForCashierService } from '../../lib/doctorClinicalFilter';
-import { resolveHmsPayMethodForPos, resolvePosMobileMethods, POS_GATEWAY_METHODS } from '../../lib/cashierPaymentMethods';
+import { resolveHmsPayMethodForPos, resolvePosMobileMethods } from '../../lib/cashierPaymentMethods';
 import { formatMoney, priceUnitLabel, isCameroonInstall } from '../../lib/hmsLocale';
 import {
   detectCardBrand,
@@ -13,6 +13,7 @@ import {
   cardBrandLabel,
 } from '../../lib/cardPaymentUtils';
 import { notifyError } from '../../lib/notifyBridge';
+import { ensureBetterPayQrScript, renderQrToCanvas } from '../../lib/cashierBetterPayQr';
 
 const CAT_COLORS = {
   Consultation: { bg: 'var(--cs-cat-cons-bg)', color: 'var(--cs-cat-cons)' },
@@ -54,8 +55,6 @@ const PAY_METHOD_KEYS = {
 };
 
 const NUMPAD_KEYS = ['7', '8', '9', '4', '5', '6', '1', '2', '3', '000', '0', '⌫'];
-
-const GATE_METHODS = POS_GATEWAY_METHODS;
 
 function payMethodDisplayLabel(method, tIpd) {
   const key = PAY_METHOD_KEYS[method];
@@ -234,6 +233,12 @@ export function CashierPosPanel({
   const [discount, setDiscount] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
+  const [betterPay, setBetterPay] = useState(null);
+  const [waitingPay, setWaitingPay] = useState(false);
+  const [bpUiStatus, setBpUiStatus] = useState('idle');
+  const qrHostRef = useRef(null);
+  const pollRef = useRef(null);
+  const timeoutRef = useRef(null);
   const [pendingConsult, setPendingConsult] = useState(null);
   const [consultDoctorId, setConsultDoctorId] = useState('');
   const [consultSpecialistSpec, setConsultSpecialistSpec] = useState('');
@@ -508,6 +513,152 @@ export function CashierPosPanel({
     });
   }, [cart, note, discPct]);
 
+  const resetBetterPay = useCallback(() => {
+    setBetterPay(null);
+    setWaitingPay(false);
+    setBpUiStatus('idle');
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (qrHostRef.current) qrHostRef.current.innerHTML = '';
+  }, []);
+
+  useEffect(() => {
+    if (payMethod === 'betterpay') return undefined;
+    resetBetterPay();
+    return undefined;
+  }, [payMethod, resetBetterPay]);
+
+  const buildPrepayPayload = useCallback((betterPayRef) => {
+    const payload = {
+      prepay_patient_id: String(patient.id),
+      prepay_payment_method: 'BetterPay',
+      prepay_lines: buildPrepayLines(),
+    };
+    if (patient?.coverage && parseInt(patient.coverage, 10) > 0) {
+      payload.manual_insurance_check = 'on';
+      payload.manual_insurance_pct = String(parseInt(patient.coverage, 10) || 0);
+    }
+    if (payMethod === 'insurance') {
+      payload.manual_insurance_check = 'on';
+      payload.manual_insurance_pct = String(parseInt(patient?.coverage, 10) || 0);
+    }
+    if (betterPayRef) payload.prepay_betterpay_ref = betterPayRef;
+    return payload;
+  }, [patient, buildPrepayLines, payMethod]);
+
+  const issueBetterPayTicket = useCallback(async (betterPayRef) => {
+    const res = await fetch('/api/cashier/prepay/issue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(buildPrepayPayload(betterPayRef)),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!data.ok) {
+      throw new Error(data.error || t('modals.cashierPrepay.payment_not_received'));
+    }
+    return data.ticketCode;
+  }, [buildPrepayPayload, t]);
+
+  const handleBetterPayTimeout = useCallback(async () => {
+    if (!betterPay?.ref) return;
+    try {
+      await fetch('/api/cashier/prepay/betterpay/timeout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ref: betterPay.ref }),
+      });
+    } catch {
+      /* still show timeout in UI */
+    }
+    setWaitingPay(false);
+    setBpUiStatus('timeout');
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = null;
+  }, [betterPay]);
+
+  useEffect(() => {
+    if (!betterPay?.paymentUrl) return undefined;
+    const draw = () => {
+      if (qrHostRef.current) renderQrToCanvas(qrHostRef.current, betterPay.paymentUrl);
+    };
+    return ensureBetterPayQrScript(draw);
+  }, [betterPay]);
+
+  useEffect(() => {
+    if (!waitingPay || !betterPay?.ref || bpUiStatus !== 'waiting') return undefined;
+
+    const timeoutMs = (betterPay.timeoutSec || 90) * 1000;
+    timeoutRef.current = setTimeout(() => {
+      handleBetterPayTimeout();
+    }, timeoutMs);
+
+    const check = async () => {
+      try {
+        const res = await fetch(`/api/cashier/prepay/betterpay/status?ref=${encodeURIComponent(betterPay.ref)}`);
+        const data = await res.json().catch(() => ({}));
+        if (data.status === 'timeout' || data.expired) {
+          handleBetterPayTimeout();
+          return;
+        }
+        if (data.paid) {
+          if (pollRef.current) clearInterval(pollRef.current);
+          pollRef.current = null;
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+          setWaitingPay(false);
+          setBpUiStatus('received');
+          setBusy(true);
+          try {
+            const code = await issueBetterPayTicket(betterPay.ref);
+            clearCart();
+            setDiscount('');
+            setNote('');
+            window.location.href = `/cashier/print-slip/${encodeURIComponent(code)}`;
+          } catch (e) {
+            notifyError(e.message || t('modals.cashierPrepay.payment_not_received'));
+            setBpUiStatus('waiting');
+            setWaitingPay(true);
+          } finally {
+            setBusy(false);
+          }
+        }
+      } catch {
+        /* retry on next poll */
+      }
+    };
+
+    check();
+    pollRef.current = setInterval(check, 2500);
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+      pollRef.current = null;
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    };
+  }, [waitingPay, betterPay, bpUiStatus, issueBetterPayTicket, t, handleBetterPayTimeout, clearCart]);
+
+  const chargeBtnLabel = useMemo(() => {
+    if (payMethod !== 'betterpay') {
+      return busy
+        ? t('modals.cashierPrepay.issuing')
+        : tOps('cashier_odoo.pos_charge', { defaultValue: 'Charge & print receipt' });
+    }
+    if (busy) return t('modals.cashierPrepay.issuing');
+    if (bpUiStatus === 'received') return t('modals.cashierPrepay.payment_received');
+    if (bpUiStatus === 'timeout') return t('modals.cashierPrepay.pay_with_betterpay');
+    if (waitingPay) return t('modals.cashierPrepay.waiting_payment');
+    if (!betterPay) return t('modals.cashierPrepay.pay_with_betterpay');
+    return t('modals.cashierPrepay.waiting_payment');
+  }, [payMethod, busy, waitingPay, betterPay, bpUiStatus, t, tOps]);
+
+  const chargeDisabled = busy || (payMethod === 'betterpay' && waitingPay && bpUiStatus === 'waiting');
+
   const processPayment = async () => {
     if (!patient?.id) {
       notifyError(tOps('cashier_odoo.pos_select_patient', { defaultValue: 'Please select a patient.' }));
@@ -548,12 +699,37 @@ export function CashierPosPanel({
     }
 
     const hmsMethod = resolveHmsPayMethod(payMethod, mobileSubMethod, paymentMethods);
-    if (payMethod === 'wallet' || payMethod === 'betterpay' || GATE_METHODS.has(hmsMethod)) {
+    if (payMethod === 'wallet') {
       onNeedsPrepayModal?.({
         patientId: patient.id,
         lines: buildPrepayLines(),
-        payMethod: payMethod === 'betterpay' ? 'BetterPay' : hmsMethod,
+        payMethod: 'Wallet',
       });
+      return;
+    }
+
+    if (payMethod === 'betterpay') {
+      if (waitingPay && bpUiStatus === 'waiting') return;
+      if (bpUiStatus === 'timeout') resetBetterPay();
+      setBusy(true);
+      try {
+        const res = await fetch('/api/cashier/prepay/betterpay/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(buildPrepayPayload()),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!data.ok) {
+          throw new Error(data.error || t('modals.cashierPrepay.betterpay_failed'));
+        }
+        setBetterPay(data);
+        setWaitingPay(true);
+        setBpUiStatus('waiting');
+      } catch (err) {
+        notifyError(err.message || t('modals.cashierPrepay.betterpay_failed'));
+      } finally {
+        setBusy(false);
+      }
       return;
     }
 
@@ -954,6 +1130,44 @@ export function CashierPosPanel({
               </p>
             ) : null}
 
+            {payMethod === 'betterpay' && betterPay ? (
+              <div className="pos-betterpay-panel">
+                <p className="pos-betterpay-title">{t('modals.cashierPrepay.betterpay_scan_title')}</p>
+                <p className="pos-betterpay-hint">{t('modals.cashierPrepay.betterpay_scan_hint')}</p>
+                <div className="pos-betterpay-body">
+                  <div ref={qrHostRef} className="pos-betterpay-qr" />
+                  <div className="pos-betterpay-meta">
+                    <div className="pos-betterpay-amount">{formatMoney(betterPay.amount || total)}</div>
+                    <code className="pos-betterpay-ref">{betterPay.ref}</code>
+                    <a
+                      href={betterPay.paymentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="pos-betterpay-link"
+                    >
+                      {t('modals.cashierPrepay.open_betterpay')}
+                    </a>
+                    <button
+                      type="button"
+                      className="cs-btn cs-btn-sm pos-betterpay-print"
+                      onClick={() => window.open(`/cashier/betterpay/print-qr/${encodeURIComponent(betterPay.ref)}`, '_blank', 'noopener')}
+                    >
+                      {t('modals.cashierPrepay.print_qr')}
+                    </button>
+                    {bpUiStatus === 'received' ? (
+                      <p className="pos-betterpay-status pos-betterpay-status--ok">{t('modals.cashierPrepay.payment_received')}</p>
+                    ) : null}
+                    {bpUiStatus === 'timeout' ? (
+                      <p className="pos-betterpay-status pos-betterpay-status--timeout">{t('modals.cashierPrepay.payment_timeout')}</p>
+                    ) : null}
+                    {waitingPay && bpUiStatus === 'waiting' ? (
+                      <p className="pos-betterpay-status pos-betterpay-status--waiting">{t('modals.cashierPrepay.waiting_payment')}</p>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             {payMethod === 'card' ? (
               <div className="pos-card-form">
                 <label className="pos-field pos-card-field">
@@ -1074,12 +1288,10 @@ export function CashierPosPanel({
               type="button"
               className="cs-btn cs-btn-primary pos-charge-btn"
               onClick={processPayment}
-              disabled={busy}
+              disabled={chargeDisabled}
             >
               <FaIcon name="check" />
-              {busy
-                ? t('modals.cashierPrepay.issuing')
-                : tOps('cashier_odoo.pos_charge', { defaultValue: 'Charge & print receipt' })}
+              {chargeBtnLabel}
             </button>
 
             <button
