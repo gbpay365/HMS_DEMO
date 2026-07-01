@@ -53,7 +53,7 @@ export function PrintHospitalInvoiceApp({
   const showServiceCodes = paymentSettled && hasPrintServiceCodes(sectionCodes);
   const patientName = `${invoice.first_name || ''} ${invoice.last_name || ''}`.trim() || '—';
   const billTo = invoice.bill_to_name || patientName;
-  const displayRef = invoice.invoice_number || invoice.ticket_code || '—';
+  const displayRef = invoice.invoice_number || '—';
 
   return (
     <div className="hi-root min-h-screen bg-slate-100 text-slate-900 print:min-h-0 print:bg-white">

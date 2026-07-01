@@ -26,7 +26,7 @@ function addDays(iso, days) {
 }
 
 function invoiceDisplayRef(inv) {
-  return String(inv.invoice_number || inv.invoice_ref || inv.ticket_code || '').trim() || '—';
+  return String(inv.invoice_number || inv.invoice_ref || '').trim() || '—';
 }
 
 function resolveInvoiceStatus(inv) {

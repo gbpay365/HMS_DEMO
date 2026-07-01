@@ -10883,7 +10883,8 @@ app.post('/cashier/collect', requireAuth, async (req, res) => {
 
  await conn.beginTransaction();
  const receipt_no = await nextReceiptNumber(conn, facilityId);
- const invoice_no = await nextInvoiceNumber(conn, facilityId);
+ const { resolveInvoiceNumberForTicket } = require('./lib/paymentTicketInvoiceNumber');
+ const invoice_no = await resolveInvoiceNumberForTicket(conn, ticket_id, facilityId);
 
  //  -  Æ’ ============================== Æ’ === ¬ WALLET PAYMENT === Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ ============================== Æ’ === ¬
  if (payment_method === 'Wallet') {
@@ -11228,7 +11229,7 @@ async function _ensureBillingDocumentForPaidTicket(conn, ticketCode, userId) {
  const c = String(ticketCode || '').trim();
  if (!c) return null;
  const [[t]] = await conn.query(
-  `SELECT id, facility_id, patient_id, total_amount, payment_method, status
+  `SELECT id, facility_id, patient_id, total_amount, payment_method, status, invoice_number
    FROM tbl_payment_ticket WHERE ticket_code=? LIMIT 1`,
   [c]
  ).catch(() => [[null]]);
@@ -11241,7 +11242,8 @@ async function _ensureBillingDocumentForPaidTicket(conn, ticketCode, userId) {
  if (existing && existing.id) return parseInt(existing.id, 10) || null;
  const fid = parseInt(String(t.facility_id || 1), 10) || 1;
  const receiptNo = await nextReceiptNumber(conn, fid);
- const invoiceNo = await nextInvoiceNumber(conn, fid);
+ const { resolveInvoiceNumberForTicket } = require('./lib/paymentTicketInvoiceNumber');
+ const invoiceNo = await resolveInvoiceNumberForTicket(conn, tid, fid);
  const [ins] = await conn.query(
   `INSERT INTO tbl_billing_document
    (facility_id, patient_id, doc_type, doc_number, invoice_doc_number, total_amount, payment_method,
