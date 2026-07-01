@@ -587,6 +587,12 @@ try {
   } catch (schemaErr) {
    bootStep('fin-accounting-schema', 'warn', schemaErr);
   }
+  try {
+   await ensureOpdOrderItemsSchema(pool);
+   bootStep('ensureOpdOrderItemsSchema', 'ok');
+  } catch (opdSchemaErr) {
+   bootStep('ensureOpdOrderItemsSchema', 'warn', opdSchemaErr);
+  }
   const localOnly = process.env.HMS_LOCAL_ONLY === '1';
   const coreSyncOn = String(process.env.CORE_ACCOUNT_SYNC_ENABLED || '0').trim() === '1';
   if (!localOnly && coreSyncOn) {
@@ -7886,8 +7892,8 @@ app.get('/cashier', requireAuth, requirePerm('cashier.read','cashier.write'), as
     SELECT
       oi.patient_id,
       oi.consultation_id,
-      p.first_name,
-      p.last_name,
+      MAX(p.first_name) AS first_name,
+      MAX(p.last_name) AS last_name,
       COUNT(*) AS pending_count,
       COALESCE(SUM(COALESCE(oi.unit_price,0) * COALESCE(oi.quantity,1)),0) AS pending_total,
       MAX(oi.created_at) AS last_created_at
@@ -7912,12 +7918,12 @@ app.get('/cashier', requireAuth, requirePerm('cashier.read','cashier.write'), as
    SELECT
     oi.consultation_id,
     oi.patient_id,
-    p.first_name AS p_first, p.last_name AS p_last,
-    c.created_at AS consult_at,
-    c.created_by AS doctor_id,
-    e.first_name AS d_first, e.last_name AS d_last,
-    COALESCE(NULLIF(TRIM(e.primary_department), ''), 'General') AS d_dept,
-    LEFT(COALESCE(c.chief_complaint, ''), 240) AS chief_complaint,
+    MAX(p.first_name) AS p_first, MAX(p.last_name) AS p_last,
+    MAX(c.created_at) AS consult_at,
+    MAX(c.created_by) AS doctor_id,
+    MAX(e.first_name) AS d_first, MAX(e.last_name) AS d_last,
+    MAX(COALESCE(NULLIF(TRIM(e.primary_department), ''), 'General')) AS d_dept,
+    MAX(LEFT(COALESCE(c.chief_complaint, ''), 240)) AS chief_complaint,
     GROUP_CONCAT(DISTINCT
      CONCAT(oi.item_type, '||', COALESCE(oi.service_code, ''), '||', COALESCE(oi.item_name, ''))
      SEPARATOR '~~'
@@ -9040,8 +9046,9 @@ app.get('/cashier/opd-orders/backfill', requireAuth, requireAdminOrSuper, async 
    const loadCatalog = async (ids) => {
     if (!ids.length) return new Map();
     const placeholders = ids.map(() => '?').join(',');
+    const { catalogActiveWhere } = require('./lib/catalogActiveWhere');
     const [rws] = await pool.query(
-     `SELECT id, name, price FROM tbl_service_catalog WHERE id IN (${placeholders}) AND status=1`,
+     `SELECT id, name, price FROM tbl_service_catalog WHERE id IN (${placeholders}) AND ${catalogActiveWhere('', pool)}`,
      ids
     ).catch(() => [[]]);
     const m = new Map();
@@ -12726,8 +12733,9 @@ app.post('/consultation-new', requireAuth, async (req, res) => {
     const loadCatalog = async (ids) => {
      if (!ids.length) return new Map();
      const placeholders = ids.map(() => '?').join(',');
+     const { catalogActiveWhere } = require('./lib/catalogActiveWhere');
      const [rows] = await pool.query(
-      `SELECT id, name, price FROM tbl_service_catalog WHERE id IN (${placeholders}) AND status=1`,
+      `SELECT id, name, price FROM tbl_service_catalog WHERE id IN (${placeholders}) AND ${catalogActiveWhere('', pool)}`,
       ids
      ).catch(() => [[]]);
      const m = new Map();
@@ -12822,7 +12830,10 @@ app.post('/consultation-new', requireAuth, async (req, res) => {
         VALUES (?,?,?,?,?,?,?,?,?,?,'pending',?,NOW())`,
        [fid, patientId, visitId, consultId, type, catId, invId, info.name, info.price, q, uid]
       )
-      .catch(() => [null]);
+      .catch((err) => {
+       console.error('CONSULTATION insert opd_order_item:', err.message);
+       return [null];
+      });
      if (insR && insR.insertId) orderItemsCreated += 1;
      return insR && insR.insertId ? insR.insertId : null;
     };
@@ -17685,6 +17696,15 @@ if (require.main === module && !underPassenger()) {
    if (pool.driver === 'postgres') {
     await require('./lib/ensureClinicalDeptRequisitionSchema')(pool);
     bootStep('ensureClinicalDeptRequisitionSchema', 'ok', 'postgres');
+    await ensureOpdOrderItemsSchema(pool);
+    bootStep('ensureOpdOrderItemsSchema', 'ok', 'postgres');
+    try {
+     const { repairOpdOrderItemsFromConsultations } = require('./lib/repairOpdOrderItemsFromConsultations');
+     const repair = await repairOpdOrderItemsFromConsultations(pool, { limit: 150 });
+     bootStep('repairOpdOrderItemsFromConsultations', 'ok', `created=${repair.created} skipped=${repair.skipped}`);
+    } catch (repairErr) {
+     bootStep('repairOpdOrderItemsFromConsultations', 'warn', repairErr);
+    }
     const { ensureProcurementExtendedSchema } = require('./lib/ensureProcurementExtendedSchema');
     await ensureProcurementExtendedSchema(pool);
     bootStep('ensureProcurementExtendedSchema', 'ok', 'postgres');
