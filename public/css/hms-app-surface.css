@@ -97,6 +97,15 @@ body.hms-body--patients .hms-surface-hero {
   padding-bottom: 0.35rem;
 }
 
+.hms-opd-filter-panel__head {
+  backdrop-filter: blur(4px);
+}
+
+.hms-opd-filter-panel__period,
+.hms-opd-filter-panel__status {
+  min-height: 0;
+}
+
 .hms-opd-filter-panel button[role='tab'] {
   padding: 0.3rem 0.65rem;
   font-size: 0.6875rem;

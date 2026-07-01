@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal } from '../components/Modal';
 import { ModalCancelButton } from '../components/ModalActions';
 import { HmsButton } from '../components/HmsButton';
 import { FormErrorBanner } from '../components/FormErrorBanner';
 import { notifyError } from '../lib/notifyBridge';
-import { formatMoney } from '../lib/listUi';
+import { formatMoney, hasPerm } from '../lib/listUi';
+import { readBootUserPerms } from '../lib/readBootUserPerms';
 
 export function HmsInvoiceModal({ open, visitId, onClose }) {
   const { t } = useTranslation('legacy');
@@ -13,6 +14,8 @@ export function HmsInvoiceModal({ open, visitId, onClose }) {
   const [error, setError] = useState('');
   const [data, setData] = useState(null);
   const [creating, setCreating] = useState(false);
+  const userPerms = useMemo(() => readBootUserPerms(), []);
+  const canSettle = hasPerm(userPerms, 'cashier.write');
 
   useEffect(() => {
     if (!open || !visitId) {
@@ -47,9 +50,9 @@ export function HmsInvoiceModal({ open, visitId, onClose }) {
   const visit = data?.visit;
   const items = data?.pendingItems || [];
   const pendingTotal = data?.pendingTotal || 0;
-  const showCashierLink = visit?.ticket_status === 'pending' && visit?.ticket_id;
+  const showCashierLink = canSettle && visit?.ticket_status === 'pending' && visit?.ticket_id;
   const showCreate =
-    items.length > 0 && !(visit?.ticket_status === 'pending' && visit?.ticket_id);
+    canSettle && items.length > 0 && !(visit?.ticket_status === 'pending' && visit?.ticket_id);
 
   const ticketPart = visit?.ticket_number ? ` · ${visit.ticket_number}` : '';
 

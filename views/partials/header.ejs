@@ -553,6 +553,7 @@ if (useFinanceSidebar && !locals.finNav) {
 (function(){
   // Define HMS first so page scripts (e.g. Patient Directory) always have alerts even if later UI init throws.
   window.HMS = Object.assign({}, <%- JSON.stringify(locals.hmsCountry || {}) %>, {
+    userPerms: <%- JSON.stringify(locals.user ? (locals.userPerms || []) : []) %>,
     toast: Swal.mixin({
       toast: true,
       position: 'top-end',

@@ -160,8 +160,7 @@ export function OpdQueuePageApp({
   const skipFetchRef = useRef(true);
 
   const canCreateVisit =
-    hasPerm(userPerms, ['front_desk.visit.create', 'opd.write', 'scheduling.write']) ||
-    aclOk(aclMenu, 'am.opd_queue.new_visit');
+    hasPerm(userPerms, 'front_desk.visit.create') || aclOk(aclMenu, 'am.opd_queue.new_visit');
   const mayCallPatient = hasPerm(userPerms, ['clinical.write', 'prescription.write']);
   const hasVitals = (id) => visitIdInVitalsList(visitIdsWithVitals, id);
 
@@ -280,6 +279,56 @@ export function OpdQueuePageApp({
     }
     return '';
   }, [dateFrom, dateTo]);
+
+  const activeFilterChips = useMemo(() => {
+    const chips = [];
+    if (debouncedQ) {
+      chips.push({
+        key: 'q',
+        label: debouncedQ,
+        onClear: () => {
+          setQ('');
+          setDebouncedQ('');
+        },
+      });
+    }
+    if (dateFrom !== defaultDateFrom || dateTo !== defaultDateTo) {
+      chips.push({
+        key: 'dates',
+        label: `${formatDate(dateFrom)} – ${formatDate(dateTo)}`,
+        onClear: () => {
+          setDateFrom(defaultDateFrom);
+          setDateTo(defaultDateTo);
+        },
+      });
+    }
+    if (dept) {
+      chips.push({ key: 'dept', label: dept, onClear: () => setDept('') });
+    }
+    if (doctor > 0) {
+      const doc = doctors.find((d) => parseInt(d.id, 10) === doctor);
+      const docLabel = doc
+        ? `Dr. ${doc.first_name || ''} ${doc.last_name || ''}`.trim()
+        : t('opd.filter_physician');
+      chips.push({ key: 'doctor', label: docLabel, onClear: () => setDoctor(0) });
+    }
+    if (status !== 'all') {
+      const statusRow = STATUS_FILTERS.find((s) => s.key === status);
+      chips.push({
+        key: 'status',
+        label: statusRow ? t(statusRow.labelKey) : status,
+        onClear: () => setStatus('all'),
+      });
+    }
+    if (sort !== 'newest') {
+      chips.push({
+        key: 'sort',
+        label: sort === 'oldest' ? t('shared.oldest') : sort,
+        onClear: () => setSort('newest'),
+      });
+    }
+    return chips;
+  }, [debouncedQ, dateFrom, dateTo, dept, doctor, status, sort, doctors, defaultDateFrom, defaultDateTo, t]);
 
   const filterTodayVisits = useCallback(
     (list) => {
@@ -412,7 +461,10 @@ export function OpdQueuePageApp({
         icon: menuIcon('check'),
         onClick: () => postForm('/opd-queue/status', { visit_id: v.id, new_status: 'completed' })});
     }
-    if (qs === 'completed' && hasPerm(userPerms, ['cashier.write', 'billing.write', 'clinical.write'])) {
+    if (
+      qs === 'completed' &&
+      hasPerm(userPerms, ['clinical.read', 'opd.read', 'cashier.read', 'billing.read', 'clinical.write'])
+    ) {
       items.push({
         label: t('opd.menu_final_invoice'),
         icon: menuIcon('file-text-o'),
@@ -506,9 +558,17 @@ export function OpdQueuePageApp({
           </div>
         ) : null}
 
-        <div className="hms-opd-filter-panel mb-4 rounded-xl border border-slate-100 bg-white p-3 shadow-card">
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{t('opd.registry_filters_title')}</h3>
+        <div className="hms-opd-filter-panel mb-4 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-card">
+          <div className="hms-opd-filter-panel__head flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/80 px-4 py-2.5">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
+                <i className="fa fa-filter text-xs" aria-hidden="true" />
+              </span>
+              <div>
+                <h3 className="text-xs font-bold text-ink">{t('opd.registry_filters_title')}</h3>
+                <p className="text-[10px] text-slate-500">{t('opd.registry_filters_hint')}</p>
+              </div>
+            </div>
             <div className="flex flex-wrap items-center gap-1.5">
               {hasActiveFilters ? (
                 <button type="button" className="hms-btn-secondary px-2.5 py-1 text-[11px]" onClick={resetFilters}>
@@ -527,91 +587,123 @@ export function OpdQueuePageApp({
             </div>
           </div>
 
-          <div className="mb-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
-            <div className="lg:col-span-2">
-              <label className="hms-label">{t('shared.search')}</label>
-              <SearchField
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder={t('opd.search_placeholder')}
-              />
+          <div className="space-y-3 p-4">
+            <div className="grid gap-3 lg:grid-cols-12">
+              <div className="lg:col-span-5">
+                <label className="hms-label">{t('shared.search')}</label>
+                <SearchField
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder={t('opd.search_placeholder')}
+                />
+              </div>
+              <div className="lg:col-span-4">
+                <label className="hms-label">{t('opd.filter_date_range')}</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <DateDmyInput name="date_from_display" value={dateFrom} onChange={setDateFrom} />
+                  <DateDmyInput name="date_to_display" value={dateTo} onChange={setDateTo} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 lg:col-span-3">
+                <div>
+                  <label className="hms-label">{t('shared.sort')}</label>
+                  <select value={sort} onChange={(e) => setSort(e.target.value)} className="hms-input w-full">
+                    <option value="newest">{t('shared.newest')}</option>
+                    <option value="oldest">{t('shared.oldest')}</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="hms-label">{t('opd.filter_department')}</label>
+                  <select value={dept} onChange={(e) => setDept(e.target.value)} className="hms-input w-full">
+                    <option value="">{t('opd.filter_all_departments')}</option>
+                    {departments.map((name) => (
+                      <option key={name} value={name}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="hms-label">{t('shared.from')}</label>
-              <DateDmyInput name="date_from_display" value={dateFrom} onChange={setDateFrom} />
+
+            <div className="grid gap-3 lg:grid-cols-12 lg:items-end">
+              <div className="lg:col-span-5">
+                <label className="hms-label">{t('opd.filter_physician')}</label>
+                <select
+                  value={doctor || ''}
+                  onChange={(e) => setDoctor(parseInt(e.target.value, 10) || 0)}
+                  className="hms-input w-full"
+                >
+                  <option value="">{t('opd.filter_all_physicians')}</option>
+                  {doctors.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      Dr. {d.first_name} {d.last_name}
+                      {d.primary_department ? ` — ${d.primary_department}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="lg:col-span-7">
+                <div className="hms-opd-filter-panel__period rounded-lg border border-slate-100 bg-slate-50/60 px-3 py-2">
+                  <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                    {t('opd.filter_period')}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {DATE_PRESETS.map((p) => (
+                      <FilterChip key={p.key} active={activePresetKey === p.key} onClick={() => applyDatePreset(p.days)}>
+                        {t(`opd.preset_${p.key}`)}
+                      </FilterChip>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="hms-label">{t('shared.to')}</label>
-              <DateDmyInput name="date_to_display" value={dateTo} onChange={setDateTo} />
-            </div>
-            <div>
-              <label className="hms-label">{t('shared.sort')}</label>
-              <select value={sort} onChange={(e) => setSort(e.target.value)} className="hms-input">
-                <option value="newest">{t('shared.newest')}</option>
-                <option value="oldest">{t('shared.oldest')}</option>
-              </select>
-            </div>
-            <div>
-              <label className="hms-label">{t('opd.filter_department')}</label>
-              <select value={dept} onChange={(e) => setDept(e.target.value)} className="hms-input">
-                <option value="">{t('opd.filter_all_departments')}</option>
-                {departments.map((name) => (
-                  <option key={name} value={name}>
-                    {name}
-                  </option>
+
+            <div className="hms-opd-filter-panel__status rounded-lg border border-slate-100 bg-slate-50/40 px-3 py-2.5">
+              <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                {t('opd.filter_status')}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {STATUS_FILTERS.map(({ key, labelKey }) => (
+                  <FilterChip key={key} active={status === key} onClick={() => setStatus(key)}>
+                    {t(labelKey)}
+                  </FilterChip>
                 ))}
-              </select>
+              </div>
             </div>
-          </div>
 
-          <div className="mb-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
-            <div className="lg:col-span-2">
-              <label className="hms-label text-[10px]">{t('opd.filter_physician')}</label>
-              <select
-                value={doctor || ''}
-                onChange={(e) => setDoctor(parseInt(e.target.value, 10) || 0)}
-                className="hms-input"
-              >
-                <option value="">{t('opd.filter_all_physicians')}</option>
-                {doctors.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    Dr. {d.first_name} {d.last_name}
-                    {d.primary_department ? ` — ${d.primary_department}` : ''}
-                  </option>
+            {activeFilterChips.length ? (
+              <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
+                <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                  {t('opd.registry_active_filters')}
+                </span>
+                {activeFilterChips.map((chip) => (
+                  <button
+                    key={chip.key}
+                    type="button"
+                    className="inline-flex max-w-[14rem] items-center gap-1 truncate rounded-full border border-brand/20 bg-brand/5 px-2.5 py-0.5 text-[11px] font-semibold text-brand hover:bg-brand/10"
+                    onClick={chip.onClear}
+                    title={t('opd.registry_clear_one')}
+                  >
+                    <span className="truncate">{chip.label}</span>
+                    <i className="fa fa-times text-[9px]" aria-hidden="true" />
+                  </button>
                 ))}
-              </select>
-            </div>
-            <div className="lg:col-span-4 flex flex-wrap items-end gap-1.5">
-              <span className="mb-1 text-[9px] font-bold uppercase tracking-wide text-slate-400">
-                {t('opd.filter_period')}
-              </span>
-              {DATE_PRESETS.map((p) => (
-                <FilterChip key={p.key} active={activePresetKey === p.key} onClick={() => applyDatePreset(p.days)}>
-                  {t(`opd.preset_${p.key}`)}
-                </FilterChip>
-              ))}
-            </div>
-          </div>
+              </div>
+            ) : null}
 
-          <div className="flex flex-wrap gap-1.5">
-            {STATUS_FILTERS.map(({ key, labelKey }) => (
-              <FilterChip key={key} active={status === key} onClick={() => setStatus(key)}>
-                {t(labelKey)}
-              </FilterChip>
-            ))}
+            {hasActiveFilters ? (
+              <p className="border-t border-slate-100 pt-2 text-xs text-slate-500">
+                {registryLoading
+                  ? t('opd.registry_loading')
+                  : t('opd.registry_active_hint', {
+                      shown: registryVisits.length,
+                      total: registryTotal,
+                      queue: filteredTodayVisits.length,
+                    })}
+              </p>
+            ) : null}
           </div>
-
-          {hasActiveFilters ? (
-            <p className="mt-3 text-xs text-slate-500">
-              {registryLoading
-                ? t('opd.registry_loading')
-                : t('opd.registry_active_hint', {
-                    shown: registryVisits.length,
-                    total: registryTotal,
-                    queue: filteredTodayVisits.length,
-                  })}
-            </p>
-          ) : null}
         </div>
 
         <div className="mb-4 overflow-hidden rounded-xl border border-slate-100 bg-white shadow-card">

@@ -24,7 +24,7 @@ module.exports = function hmsClinicalRoutes(app, pool, requireAuth, requirePerm)
     'billing.read'
   );
   const clinicalWrite = requirePerm('clinical.write', 'opd.write', 'cashier.write', 'billing.write');
-  const billingWrite = requirePerm('cashier.write', 'billing.write');
+  const cashierSettle = requirePerm('cashier.write');
 
   app.get('/hms', requireAuth, clinicalRead, async (req, res) => {
     try {
@@ -102,7 +102,7 @@ module.exports = function hmsClinicalRoutes(app, pool, requireAuth, requirePerm)
     res.json({ ok: true, ...data });
   });
 
-  app.post('/hms/api/visit/:id/create-ticket', requireAuth, billingWrite, async (req, res) => {
+  app.post('/hms/api/visit/:id/create-ticket', requireAuth, cashierSettle, async (req, res) => {
     const vid = parseInt(req.params.id, 10) || 0;
     const preview = await hmsHub.getVisitBillingPreview(pool, vid);
     if (!preview) {
