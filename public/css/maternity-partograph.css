@@ -1,0 +1,508 @@
+/* WHO partograph — premium screen, fullscreen, and print */
+
+:root {
+  --mat-who-primary: #9d174d;
+  --mat-who-primary-soft: #fdf2f8;
+  --mat-who-accent: #0ea5e9;
+  --mat-who-alert: #dc2626;
+  --mat-who-action: #d97706;
+  --mat-who-data: #2563eb;
+  --mat-who-border: #e2e8f0;
+  --mat-who-label-bg: #f8fafc;
+  --mat-who-col-w: 32px;
+  --mat-who-label-w: 148px;
+}
+
+.mat-who-partograph {
+  --mat-who-animate: 1;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #0f172a;
+}
+
+.mat-who-partograph.is-print,
+.mat-who-print-page .mat-who-partograph {
+  --mat-who-animate: 0;
+}
+
+.mat-who-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--mat-who-border);
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+}
+
+.mat-who-toolbar .hms-btn {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.mat-who-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px 18px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--mat-who-primary-soft) 0%, #fff 55%);
+  border-bottom: 2px solid var(--mat-who-primary);
+}
+
+.mat-who-meta__title {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--mat-who-primary);
+  letter-spacing: 0.02em;
+}
+
+.mat-who-meta__title i {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.mat-who-meta dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+  font-size: 0.78rem;
+}
+
+.mat-who-meta dt {
+  margin: 0;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.mat-who-meta dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.mat-who-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+  padding: 8px 16px 10px;
+  font-size: 0.72rem;
+  color: #475569;
+  border-bottom: 1px solid var(--mat-who-border);
+}
+
+.mat-who-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mat-who-legend i {
+  display: inline-block;
+  width: 22px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.mat-who-legend .is-alert i { background: var(--mat-who-alert); }
+.mat-who-legend .is-action i { background: var(--mat-who-action); }
+.mat-who-legend .is-data i { background: var(--mat-who-data); }
+
+.mat-who-sheet-wrap {
+  overflow: auto;
+  padding: 12px;
+  background: #fff;
+}
+
+.mat-who-sheet {
+  min-width: calc(var(--mat-who-label-w) + 24 * var(--mat-who-col-w) + 40px);
+  border: 2px solid #334155;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.mat-who-row {
+  display: grid;
+  grid-template-columns: var(--mat-who-label-w) repeat(24, var(--mat-who-col-w)) 36px;
+  border-bottom: 1px solid var(--mat-who-border);
+  min-height: 30px;
+}
+
+.mat-who-row:last-child {
+  border-bottom: none;
+}
+
+.mat-who-row--time {
+  background: #1e293b;
+  color: #f8fafc;
+  font-size: 0.62rem;
+  font-weight: 700;
+  min-height: 26px;
+}
+
+.mat-who-row--time .mat-who-label {
+  background: #0f172a;
+  color: #94a3b8;
+  font-size: 0.6rem;
+}
+
+.mat-who-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: var(--mat-who-label-bg);
+  border-right: 2px solid #cbd5e1;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #334155;
+}
+
+.mat-who-label i {
+  width: 14px;
+  text-align: center;
+  color: var(--mat-who-primary);
+  flex-shrink: 0;
+}
+
+.mat-who-scale {
+  border-right: 1px solid var(--mat-who-border);
+  background: #fafafa;
+  font-size: 0.58rem;
+  color: #94a3b8;
+  text-align: center;
+  padding-top: 2px;
+}
+
+.mat-who-cell {
+  position: relative;
+  border-right: 1px solid #e2e8f0;
+  min-height: inherit;
+  font-size: 0.62rem;
+  text-align: center;
+  padding: 2px 1px;
+  word-break: break-word;
+  line-height: 1.15;
+}
+
+.mat-who-cell.is-hour {
+  border-right-color: #94a3b8;
+}
+
+.mat-who-row--time .mat-who-cell {
+  border-right-color: #475569;
+  padding: 4px 0;
+}
+
+.mat-who-row--plot {
+  position: relative;
+}
+
+.mat-who-row--fhr {
+  min-height: 88px;
+}
+
+.mat-who-row--dilation {
+  min-height: 200px;
+}
+
+.mat-who-row--ctx {
+  min-height: 52px;
+}
+
+.mat-who-plot-layer {
+  position: absolute;
+  top: 0;
+  left: var(--mat-who-label-w);
+  right: 36px;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.mat-who-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.mat-who-grid-line {
+  stroke: #e2e8f0;
+  stroke-width: 1;
+}
+
+.mat-who-grid-line--major {
+  stroke: #cbd5e1;
+}
+
+.mat-who-axis {
+  fill: #64748b;
+  font-size: 9px;
+}
+
+.mat-who-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mat-who-line--alert {
+  stroke: var(--mat-who-alert);
+  stroke-dasharray: 6 4;
+}
+
+.mat-who-line--action {
+  stroke: var(--mat-who-action);
+  stroke-dasharray: 4 4;
+}
+
+.mat-who-line--data {
+  stroke: var(--mat-who-data);
+  stroke-width: 2.5;
+}
+
+.mat-who-point {
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.mat-who-point--fhr { fill: var(--mat-who-accent); }
+.mat-who-point--dilation { fill: var(--mat-who-data); }
+.mat-who-point--dilation.is-alert { fill: var(--mat-who-alert); }
+.mat-who-point--dilation.is-action { fill: var(--mat-who-action); }
+
+.mat-who-ctx-bar {
+  fill: #ec4899;
+  opacity: 0.8;
+}
+
+.mat-who-empty {
+  text-align: center;
+  padding: 16px;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+/* Entry animations (screen only) */
+@media screen {
+  .mat-who-partograph:not(.is-print) .mat-who-sheet {
+    animation: matWhoFadeUp 0.45s ease-out both;
+  }
+
+  .mat-who-partograph:not(.is-print) .mat-who-row--plot .mat-who-line--data {
+    stroke-dasharray: 1200;
+    stroke-dashoffset: 1200;
+    animation: matWhoDrawLine 1.2s ease-out 0.25s forwards;
+  }
+
+  .mat-who-partograph:not(.is-print) .mat-who-point {
+    opacity: 0;
+    transform-origin: center;
+    animation: matWhoPopIn 0.35s ease-out forwards;
+  }
+
+  .mat-who-partograph:not(.is-print) .mat-who-row:nth-child(n+3) {
+    animation: matWhoRowIn 0.4s ease-out both;
+  }
+
+  .mat-who-partograph:not(.is-print) .mat-who-row:nth-child(3) { animation-delay: 0.05s; }
+  .mat-who-partograph:not(.is-print) .mat-who-row:nth-child(4) { animation-delay: 0.08s; }
+  .mat-who-partograph:not(.is-print) .mat-who-row:nth-child(5) { animation-delay: 0.11s; }
+  .mat-who-partograph:not(.is-print) .mat-who-row:nth-child(6) { animation-delay: 0.14s; }
+  .mat-who-partograph:not(.is-print) .mat-who-row:nth-child(7) { animation-delay: 0.17s; }
+}
+
+@keyframes matWhoFadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes matWhoDrawLine {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes matWhoPopIn {
+  from { opacity: 0; transform: scale(0.3); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes matWhoRowIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Fullscreen modal */
+.mat-who-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  animation: matWhoFadeUp 0.2s ease-out;
+}
+
+.mat-who-fullscreen__inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.25);
+}
+
+.mat-who-fullscreen__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: linear-gradient(90deg, var(--mat-who-primary) 0%, #be185d 100%);
+  color: #fff;
+}
+
+.mat-who-fullscreen__bar h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.mat-who-fullscreen__body {
+  flex: 1;
+  overflow: auto;
+}
+
+.mat-who-fullscreen .mat-who-sheet {
+  min-width: calc(var(--mat-who-label-w) + 24 * 40px + 40px);
+}
+
+.mat-who-fullscreen .mat-who-partograph {
+  --mat-who-col-w: 40px;
+}
+
+/* Advanced entry form */
+.mat-who-advanced-toggle {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--mat-who-primary);
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 8px 0 4px;
+}
+
+.mat-who-advanced-toggle:hover {
+  text-decoration: underline;
+}
+
+.mat-who-advanced-fields {
+  border-top: 1px dashed var(--mat-who-border);
+  padding-top: 10px;
+  margin-top: 6px;
+}
+
+/* Timeline extended */
+.mat-who-timeline th,
+.mat-who-timeline td {
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+/* Print page */
+.mat-who-print-page {
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  font-family: Arial, sans-serif;
+}
+
+.mat-who-print-actions {
+  padding: 12px 16px;
+  background: #f1f5f9;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.mat-who-print-page .mat-who-partograph {
+  padding: 0;
+}
+
+.mat-who-print-page .mat-who-sheet-wrap {
+  padding: 8px 12px 16px;
+}
+
+.mat-who-print-page .mat-who-toolbar {
+  display: none;
+}
+
+.mat-who-details {
+  margin: 0 12px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.mat-who-details h3 {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  background: #f1f5f9;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+
+  .no-print,
+  .mat-who-toolbar,
+  .mat-who-print-actions {
+    display: none !important;
+  }
+
+  .mat-who-print-page,
+  .mat-who-partograph {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .mat-who-sheet {
+    box-shadow: none;
+    min-width: 100% !important;
+    --mat-who-col-w: 28px;
+  }
+
+  .mat-who-fullscreen {
+    position: static;
+    background: none;
+    padding: 0;
+  }
+
+  .mat-who-fullscreen__bar {
+    display: none;
+  }
+
+  .mat-who-fullscreen__inner {
+    border-radius: 0;
+    box-shadow: none;
+    max-height: none;
+  }
+
+  .mat-who-line--data,
+  .mat-who-point,
+  .mat-who-row {
+    animation: none !important;
+    opacity: 1 !important;
+    stroke-dashoffset: 0 !important;
+  }
+}

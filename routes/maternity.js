@@ -392,6 +392,41 @@ module.exports = function (app, pool, requireAuth, requirePerm) {
     }
   });
 
+  app.get('/maternity/labor/:laborId/partograph/print', requireAuth, view, async (req, res) => {
+    const hmsBrand = require('../lib/hmsBrand');
+    const laborId = parseInt(req.params.laborId, 10) || 0;
+    if (!laborId) {
+      return res.redirect('/maternity/labor?err=' + encodeURIComponent('Labor record not found'));
+    }
+    try {
+      const [lr] = await pool.query(
+        `SELECT lr.*, mp.*, p.first_name, p.last_name
+         FROM labor_records lr
+         JOIN maternity_patients mp ON mp.id = lr.maternity_patient_id
+         JOIN tbl_patient p ON p.id = mp.patient_id
+         WHERE lr.id = ?`,
+        [laborId]
+      );
+      const labor = lr[0] || null;
+      if (!labor) {
+        return res.redirect('/maternity/labor?err=' + encodeURIComponent('Labor record not found'));
+      }
+      const [pg] = await pool.query('SELECT * FROM partograph WHERE labor_record_id = ? ORDER BY recorded_at ASC', [
+        laborId,
+      ]);
+      res.render('maternity-partograph-print', {
+        layout: false,
+        title: hmsBrand.pageTitle('WHO Partograph'),
+        labor,
+        partograph: pg,
+        brand: res.locals.brand || hmsBrand,
+        autoPrint: req.query.print === '1',
+      });
+    } catch (e) {
+      res.status(500).render('error', { title: 'Error', message: e.message, status: 500, layout: false });
+    }
+  });
+
   app.post('/maternity/labor/:laborId/partograph', requireAuth, mutate, async (req, res) => {
     const chartUrl = '/maternity/labor?labor_id=' + req.params.laborId;
     try {

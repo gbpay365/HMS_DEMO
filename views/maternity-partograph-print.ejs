@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="<%= locals.lang || 'en' %>">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %></title>
+  <link rel="icon" type="image/png" href="/img/fransohh-logo.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/maternity-partograph.css?v=1">
+</head>
+<body class="mat-who-print-page">
+<%
+if (typeof _tl !== 'function') {
+  var _tl = function (key, fallback, opts) {
+    if (typeof t === 'function') return t('maternity_labor.' + key, Object.assign({ ns: 'legacy', defaultValue: fallback }, opts || {}));
+    return fallback;
+  };
+}
+var _brand = locals.brand || {};
+var _facility = _brand.facilityName || _brand.name || 'Hospital';
+var _admissionFmt = labor && labor.admission_date
+  ? new Date(labor.admission_date).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  : '—';
+var _pgData = {
+  laborId: labor && labor.id,
+  admissionDate: labor && labor.admission_date,
+  admissionFormatted: _admissionFmt,
+  facilityName: _facility,
+  patient: labor ? {
+    first_name: labor.first_name,
+    last_name: labor.last_name,
+    antenatal_number: labor.antenatal_number,
+    gravida: labor.gravida,
+    para: labor.para,
+    abortion: labor.abortion,
+    ega_at_admission: labor.ega_at_admission,
+    ega_at_booking: labor.ega_at_booking,
+    blood_group: labor.blood_group,
+    rhesus_factor: labor.rhesus_factor,
+    risk_level: labor.risk_level
+  } : {},
+  entries: partograph || [],
+  labels: {
+    chartTitle: _tl('print_chart_title', 'WHO Partograph — Medication Record'),
+    patient: _tl('print_patient', 'Patient'),
+    ancNo: _tl('print_anc', 'ANC #'),
+    gpa: _tl('print_gpa', 'G/P/A'),
+    admission: _tl('print_admission', 'Admitted'),
+    ega: _tl('print_ega', 'EGA'),
+    facility: _tl('print_facility', 'Facility'),
+    bloodGroup: _tl('print_blood', 'Blood group'),
+    risk: _tl('print_risk', 'Risk'),
+    fhr: _tl('row_fhr', 'Fetal heart rate'),
+    liquor: _tl('row_liquor', 'Amniotic fluid'),
+    moulding: _tl('row_moulding', 'Fetal moulding'),
+    dilation: _tl('graph_dilation', 'Cervical dilation (cm)'),
+    descent: _tl('row_descent', 'Descent of head'),
+    ctx: _tl('ctx', 'Contractions / 10 min'),
+    oxytocin: _tl('row_oxytocin', 'Oxytocin U/L · drops/min'),
+    drugs: _tl('row_drugs', 'Drugs & IV fluids'),
+    pulse: _tl('row_pulse', 'Pulse'),
+    bp: _tl('bp', 'Blood pressure'),
+    temperature: _tl('row_temp', 'Temperature °C'),
+    urine: _tl('row_urine', 'Urine (vol · protein · acetone)'),
+    alertLine: _tl('alert_line', 'Alert line'),
+    actionLine: _tl('action_line', 'Action line'),
+    recorded: _tl('recorded_line', 'Recorded'),
+    whoNote: _tl('who_note', '30-min intervals · WHO active phase monitoring'),
+    empty: _tl('graph_empty', 'Add partograph entries to plot the graph.')
+  }
+};
+%>
+<div class="mat-who-print-actions no-print">
+  <button type="button" class="hms-btn hms-btn-primary" onclick="window.print()"><i class="fa fa-print mr-1"></i> <%= _tl('print_btn', 'Print partograph') %></button>
+  <a href="/maternity/labor?labor_id=<%= labor.id %>" class="hms-btn hms-btn-outline-primary ml-2"><i class="fa fa-arrow-left mr-1"></i> <%= _tl('back_labor', 'Back to labor ward') %></a>
+</div>
+
+<div id="matPartographPrintRoot"></div>
+
+<% if (partograph && partograph.length) { %>
+<div class="mat-who-details">
+  <h3><i class="fa fa-list mr-1"></i> <%= _tl('details_title', 'Partograph entry details') %></h3>
+  <div class="table-responsive">
+    <table class="table table-sm table-bordered mb-0 mat-who-timeline">
+      <thead>
+        <tr>
+          <th><%= _tl('th_time', 'Time') %></th>
+          <th><%= _tl('th_dil', 'Dil.') %></th>
+          <th><%= _tl('th_station', 'Station') %></th>
+          <th><%= _tl('th_ctx', 'CTX') %></th>
+          <th><%= _tl('th_fhr', 'FHR') %></th>
+          <th><%= _tl('th_bp', 'BP') %></th>
+          <th><%= _tl('th_liquor', 'Liquor') %></th>
+          <th><%= _tl('th_moulding', 'Moulding') %></th>
+          <th><%= _tl('th_pulse', 'Pulse') %></th>
+          <th><%= _tl('th_temp', 'Temp') %></th>
+          <th><%= _tl('th_urine', 'Urine') %></th>
+          <th><%= _tl('th_drugs', 'Drugs') %></th>
+          <th><%= _tl('th_alert', 'Alert') %></th>
+          <th><%= _tl('th_action', 'Action') %></th>
+        </tr>
+      </thead>
+      <tbody>
+      <% partograph.forEach(function(e){ %>
+        <tr class="<%= e.alert_line_crossed || e.action_line_crossed ? 'partograph-alert':'' %>">
+          <td><%= e.time_label || new Date(e.recorded_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) %></td>
+          <td><%= e.cervical_dilation != null ? e.cervical_dilation : '' %></td>
+          <td><%= e.descent_station || '' %></td>
+          <td><%= e.contractions_in_10min != null ? e.contractions_in_10min : '' %></td>
+          <td><%= e.fhr != null ? e.fhr : '' %></td>
+          <td><%= e.bp_systolic != null ? e.bp_systolic + '/' + (e.bp_diastolic != null ? e.bp_diastolic : '—') : '' %></td>
+          <td><%= e.liquor || '' %></td>
+          <td><%= [e.moulding, e.caput].filter(Boolean).join('/') %></td>
+          <td><%= e.pulse != null ? e.pulse : '' %></td>
+          <td><%= e.temperature != null ? e.temperature : '' %></td>
+          <td><%= [e.urine_volume, e.urine_protein, e.urine_acetone].filter(function(x){ return x != null && x !== ''; }).join(' · ') %></td>
+          <td><%= e.drugs_given || '' %></td>
+          <td><%= e.alert_line_crossed ? '⚠' : '' %></td>
+          <td><%= e.action_line_crossed ? '‼' : '' %></td>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>
+
+<script id="mat-partograph-data" type="application/json"><%- JSON.stringify(_pgData).replace(/</g, '\\u003c') %></script>
+<input type="hidden" id="mat-who-auto-print" value="<%= locals.autoPrint ? '1' : '0' %>">
+<script src="/js/maternity-partograph.js?v=2" defer></script>
+<style>
+  .hms-btn { display:inline-block; padding:6px 14px; border-radius:6px; border:1px solid #cbd5e1; background:#fff; color:#334155; font-size:13px; font-weight:600; text-decoration:none; cursor:pointer; }
+  .hms-btn-primary { background:#9d174d; border-color:#9d174d; color:#fff; }
+  .hms-btn-outline-primary { border-color:#9d174d; color:#9d174d; }
+  .table { width:100%; border-collapse:collapse; }
+  .table th, .table td { border:1px solid #cbd5e1; padding:4px 6px; }
+  .table th { background:#f1f5f9; }
+  .partograph-alert { background:#fff1f2; }
+  .ml-2 { margin-left:8px; }
+  .mr-1 { margin-right:4px; }
+</style>
+</body>
+</html>
