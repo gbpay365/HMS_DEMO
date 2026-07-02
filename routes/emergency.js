@@ -457,7 +457,7 @@ module.exports = function (app, pool, requireAuth) {
       const ticket = prefix + String(seq).padStart(4, '0');
 
       const isMlc = parseInt(mlc_flag, 10) ? 1 : 0;
-      await pool.query(
+      const [visitIns] = await pool.query(
         `INSERT INTO tbl_opd_visit
            (facility_id, patient_id, ticket_number, department, visit_date,
             is_emergency, mlc_flag, arrival_mode, referral_source,
@@ -476,7 +476,15 @@ module.exports = function (app, pool, requireAuth) {
           uid,
         ]
       );
-      const vid = (await one('SELECT LAST_INSERT_ID() AS id')).id;
+      let vid = parseInt(visitIns && visitIns.insertId, 10) || 0;
+      if (!vid) {
+        const visitRow = await one('SELECT id FROM tbl_opd_visit WHERE ticket_number = ? AND patient_id = ? LIMIT 1', [
+          ticket,
+          pid,
+        ]);
+        vid = parseInt(visitRow && visitRow.id, 10) || 0;
+      }
+      if (!vid) throw new Error('Could not resolve emergency visit after registration');
       const assignedDoc = parseInt(assigned_doctor_id, 10) || 0;
       if (assignedDoc > 0) {
         await doctorErAlerts.enqueueFromVisit(pool, vid, 'patient_arrival', {
