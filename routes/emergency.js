@@ -408,14 +408,22 @@ module.exports = function (app, pool, requireAuth) {
         const fn = String(first_name || '').trim() || 'Unknown';
         const ln = String(last_name  || '').trim() || ('ER-' + Date.now().toString().slice(-6));
         const phoneNorm = String(phone ?? '').trim() || null;
+        const { dobFromAgeYears } = require('../lib/patientAge');
+        let ageYearsFinal = null;
+        let ageOnlyFinal = 0;
         let computedDob = String(dob ?? '').trim() || null;
         const ageStr = age === '' || age == null ? '' : String(age).trim();
         if (!computedDob && ageStr) {
           const yrs = parseInt(ageStr, 10);
           if (yrs > 0 && yrs < 130) {
-            const today = new Date();
-            computedDob = (today.getFullYear() - yrs) + '-01-01';
+            computedDob = dobFromAgeYears(yrs);
+            ageYearsFinal = yrs;
+            ageOnlyFinal = 1;
           }
+        }
+        if (!computedDob) {
+          computedDob = new Date().toISOString().slice(0, 10);
+          ageOnlyFinal = 1;
         }
         let g = String(gender || '').trim();
         if (g !== 'Male' && g !== 'Female') g = 'Male';
@@ -430,9 +438,9 @@ module.exports = function (app, pool, requireAuth) {
           const phoneForInsert = phoneNorm || '000000000';
           const ins = await conn.query(
             `INSERT INTO tbl_patient
-               (patient_code, first_name, last_name, gender, dob, phone, email, status, created_at)
-             VALUES (?,?,?,?,?,?,?,1,NOW())`,
-            [patientCode, fn, ln, g, computedDob, phoneForInsert, email]
+               (patient_code, first_name, last_name, gender, dob, age_years, age_only_registration, phone, email, status, created_at)
+             VALUES (?,?,?,?,?,?,?,?,?,1,NOW())`,
+            [patientCode, fn, ln, g, computedDob, ageYearsFinal, ageOnlyFinal, phoneForInsert, email]
           );
           const { resolveInsertPatientId } = require('../lib/patientDirectory');
           pid = await resolveInsertPatientId(conn, ins[0]);
