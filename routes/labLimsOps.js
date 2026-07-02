@@ -184,6 +184,7 @@ module.exports = function labLimsOpsRoutes(app, pool, requireAuth, requirePerm) 
 
   app.get('/lims/ops/walk-in', requireAuth, labWrite, async (req, res) => {
     try {
+      await require('../lib/ensureLabWalkinSchema')(pool);
       await require('../lib/ensureLabLimsPhaseSchema')(pool);
       await require('../lib/hmsCountryProfileService').ensureLoaded(pool).catch(() => {});
       const { listPendingWalkins, listLaboratoryServiceCatalog } = require('../lib/labWalkinCashier');
@@ -209,11 +210,18 @@ module.exports = function labLimsOpsRoutes(app, pool, requireAuth, requirePerm) 
   });
 
   app.post('/lims/ops/walk-in', requireAuth, labWrite, async (req, res) => {
-    const result = await ops.walkInRegister(pool, req.body, userId(req), facilityId(req));
-    if (!result.ok) {
-      return res.redirect('/lims/ops/walk-in?err=' + encodeURIComponent(result.error || 'Registration failed'));
+    try {
+      await require('../lib/ensureLabWalkinSchema')(pool);
+      const result = await ops.walkInRegister(pool, req.body, userId(req), facilityId(req));
+      if (!result.ok) {
+        return res.redirect('/lims/ops/walk-in?err=' + encodeURIComponent(result.error || 'Registration failed'));
+      }
+      const { redirectAfterWalkinRegister } = require('../lib/walkinRegisterRedirect');
+      const dest = redirectAfterWalkinRegister(res, result, '/lims/ops/walk-in');
+      return res.redirect(dest || '/lims/ops/walk-in');
+    } catch (e) {
+      return res.redirect('/lims/ops/walk-in?err=' + encodeURIComponent(e.message || 'Registration failed'));
     }
-    res.redirect(result.redirect || '/cashier?tab=lab_walkin');
   });
 
   app.get('/lims/ops/mis', requireAuth, labRead, async (req, res) => {

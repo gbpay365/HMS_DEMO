@@ -19,6 +19,7 @@ module.exports = function radWalkinOpsRoutes(app, pool, requireAuth, requirePerm
 
   app.get('/radiology/ops/walk-in', requireAuth, radWrite, async (req, res) => {
     try {
+      await require('../lib/ensureRadWalkinSchema')(pool);
       await require('../lib/ensureLabLimsPhaseSchema')(pool);
       await require('../lib/hmsCountryProfileService').ensureLoaded(pool).catch(() => {});
       const { listPendingWalkins, listRadiologyServiceCatalog } = require('../lib/radWalkinCashier');
@@ -44,11 +45,18 @@ module.exports = function radWalkinOpsRoutes(app, pool, requireAuth, requirePerm
   });
 
   app.post('/radiology/ops/walk-in', requireAuth, radWrite, async (req, res) => {
-    const { registerWalkin } = require('../lib/radWalkinCashier');
-    const result = await registerWalkin(pool, req.body, userId(req), facilityId(req));
-    if (!result.ok) {
-      return res.redirect('/radiology/ops/walk-in?err=' + encodeURIComponent(result.error || 'Registration failed'));
+    try {
+      await require('../lib/ensureRadWalkinSchema')(pool);
+      const { registerWalkin } = require('../lib/radWalkinCashier');
+      const result = await registerWalkin(pool, req.body, userId(req), facilityId(req));
+      if (!result.ok) {
+        return res.redirect('/radiology/ops/walk-in?err=' + encodeURIComponent(result.error || 'Registration failed'));
+      }
+      const { redirectAfterWalkinRegister } = require('../lib/walkinRegisterRedirect');
+      const dest = redirectAfterWalkinRegister(res, result, '/radiology/ops/walk-in');
+      return res.redirect(dest || '/radiology/ops/walk-in');
+    } catch (e) {
+      return res.redirect('/radiology/ops/walk-in?err=' + encodeURIComponent(e.message || 'Registration failed'));
     }
-    res.redirect(result.redirect || '/cashier?tab=rad_walkin');
   });
 };

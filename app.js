@@ -972,12 +972,9 @@ app.use(async (req, res, next) => {
  res.locals.userPerms = ['*'];
  return next();
  }
- // Return cached perms if already set (within same request chain)
+ // Return cached perms if already set within this request only. Session-level
+ // ACL caches hide newly granted buttons until logout, so refresh from DB.
  if (res.locals.userPerms) return next();
- if (Array.isArray(req.session.userPerms)) {
-  res.locals.userPerms = req.session.userPerms;
-  return next();
- }
  try {
  const [perms] = await pool.query(
  `SELECT p.code FROM tbl_acl_role_permission rp
