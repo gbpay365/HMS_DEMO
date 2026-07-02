@@ -39,24 +39,57 @@
    <button class="hms-btn hms-btn-primary hms-btn-sm"><i class="fa fa-plus mr-1"></i> <%= _tl('maternity_labor.add_entry', 'Add entry') %></button>
   </form>
 
-  <div class="mat-card">
-   <div class="mat-card-head"><%= _tl('maternity_labor.timeline', 'Partograph timeline') %></div>
-   <div class="table-responsive">
-    <table class="table table-sm mb-0">
-     <thead><tr><th><%= _tl('maternity_labor.th_time', 'Time') %></th><th><%= _tl('maternity_labor.th_dil', 'Dil.') %></th><th><%= _tl('maternity_labor.th_station', 'Station') %></th><th><%= _tl('maternity_labor.th_ctx', 'CTX') %></th><th><%= _tl('maternity_labor.th_fhr', 'FHR') %></th><th><%= _tl('maternity_labor.th_bp', 'BP') %></th><th><%= _tl('maternity_labor.th_alert', 'Alert') %></th><th><%= _tl('maternity_labor.th_action', 'Action') %></th></tr></thead>
-     <tbody>
-     <% (partograph||[]).forEach(function(e){ %>
-     <tr class="<%= e.alert_line_crossed || e.action_line_crossed ? 'partograph-alert':'' %>">
-      <td><%= e.time_label || new Date(e.recorded_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) %></td>
-      <td><%= e.cervical_dilation %></td><td><%= e.descent_station %></td><td><%= e.contractions_in_10min %></td>
-      <td><%= e.fhr %></td><td><%= e.bp_systolic %>/<%= e.bp_diastolic %></td>
-      <td><%= e.alert_line_crossed ? '⚠' : '' %></td><td><%= e.action_line_crossed ? '‼' : '' %></td>
-     </tr>
-     <% }) %>
-     </tbody>
-    </table>
+  <div class="mat-card mat-partograph-panel">
+   <div class="mat-card-head mat-partograph-panel__head">
+    <span><%= _tl('maternity_labor.graph_title', 'WHO partograph graph') %></span>
+    <div class="btn-group mat-partograph-view-toggle" role="group" aria-label="<%= _tl('maternity_labor.view_toggle', 'Partograph view') %>">
+     <button type="button" class="btn btn-sm btn-outline-secondary active" data-mat-partograph-view="graph"><%= _tl('maternity_labor.view_graph', 'Graph') %></button>
+     <button type="button" class="btn btn-sm btn-outline-secondary" data-mat-partograph-view="timeline"><%= _tl('maternity_labor.view_timeline', 'Timeline') %></button>
+    </div>
+   </div>
+
+   <div id="matPartographGraph" class="mat-partograph-graph"></div>
+
+   <div id="matPartographTimeline" class="d-none">
+    <div class="table-responsive">
+     <table class="table table-sm mb-0">
+      <thead><tr><th><%= _tl('maternity_labor.th_time', 'Time') %></th><th><%= _tl('maternity_labor.th_dil', 'Dil.') %></th><th><%= _tl('maternity_labor.th_station', 'Station') %></th><th><%= _tl('maternity_labor.th_ctx', 'CTX') %></th><th><%= _tl('maternity_labor.th_fhr', 'FHR') %></th><th><%= _tl('maternity_labor.th_bp', 'BP') %></th><th><%= _tl('maternity_labor.th_alert', 'Alert') %></th><th><%= _tl('maternity_labor.th_action', 'Action') %></th></tr></thead>
+      <tbody>
+      <% if (!partograph || !partograph.length) { %>
+      <tr><td colspan="8" class="text-muted text-center py-3"><%= _tl('maternity_labor.timeline_empty', 'No entries yet.') %></td></tr>
+      <% } %>
+      <% (partograph||[]).forEach(function(e){ %>
+      <tr class="<%= e.alert_line_crossed || e.action_line_crossed ? 'partograph-alert':'' %>">
+       <td><%= e.time_label || new Date(e.recorded_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) %></td>
+       <td><%= e.cervical_dilation %></td><td><%= e.descent_station %></td><td><%= e.contractions_in_10min %></td>
+       <td><%= e.fhr %></td><td><%= e.bp_systolic %>/<%= e.bp_diastolic %></td>
+       <td><%= e.alert_line_crossed ? '⚠' : '' %></td><td><%= e.action_line_crossed ? '‼' : '' %></td>
+      </tr>
+      <% }) %>
+      </tbody>
+     </table>
+    </div>
    </div>
   </div>
+
+  <%
+  var _pgData = {
+    admissionDate: labor.admission_date,
+    entries: partograph || [],
+    labels: {
+      graphAria: _tl('maternity_labor.graph_aria', 'WHO partograph graph'),
+      fhr: _tl('maternity_labor.fhr', 'FHR'),
+      dilation: _tl('maternity_labor.graph_dilation', 'Cervical dilation (cm)'),
+      ctx: _tl('maternity_labor.ctx', 'Contractions / 10 min'),
+      alertLine: _tl('maternity_labor.alert_line', 'Alert line'),
+      actionLine: _tl('maternity_labor.action_line', 'Action line'),
+      recorded: _tl('maternity_labor.recorded_line', 'Recorded'),
+      empty: _tl('maternity_labor.graph_empty', 'Add partograph entries to plot the graph.')
+    }
+  };
+  %>
+  <script id="mat-partograph-data" type="application/json"><%- JSON.stringify(_pgData).replace(/</g, '\\u003c') %></script>
+  <script src="/js/maternity-partograph.js?v=1" defer></script>
   <% } else { %>
   <div class="mat-card p-4">
    <p class="mb-3 text-muted"><%= _tl('maternity_labor.select_help', 'Select a patient from Active labors on the left, or admit from a maternity chart.') %></p>

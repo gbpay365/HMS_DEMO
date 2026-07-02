@@ -296,12 +296,20 @@ module.exports = function (app, pool, requireAuth, requirePerm) {
         partograph = pg;
       }
     }
-    const [active] = await pool.query(
-      `SELECT lr.id, lr.admission_date, mp.antenatal_number, p.first_name, p.last_name
+    const [activeRows] = await pool.query(
+      `SELECT lr.id, lr.admission_date, lr.maternity_patient_id, mp.antenatal_number, p.first_name, p.last_name
        FROM labor_records lr
        JOIN maternity_patients mp ON mp.id = lr.maternity_patient_id
        JOIN tbl_patient p ON p.id = mp.patient_id
-       WHERE lr.status = 'in_labor' ORDER BY lr.admission_date`
+       WHERE lr.status = 'in_labor' ORDER BY lr.admission_date DESC, lr.id DESC`
+    );
+    const activeByPatient = new Map();
+    for (const row of activeRows || []) {
+      const key = row.maternity_patient_id || row.id;
+      if (!activeByPatient.has(key)) activeByPatient.set(key, row);
+    }
+    const active = Array.from(activeByPatient.values()).sort(
+      (a, b) => new Date(a.admission_date) - new Date(b.admission_date)
     );
     res.render('maternity-labor', matPage({
       title: 'Labor ward — Maternity',

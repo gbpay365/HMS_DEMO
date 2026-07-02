@@ -79,3 +79,110 @@
   border-left: 4px solid var(--mat-risk-high);
   background: #fff1f2;
 }
+
+.mat-partograph-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mat-partograph-view-toggle .btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.mat-partograph-view-toggle .btn.active {
+  background: var(--mat-primary);
+  border-color: var(--mat-primary);
+  color: #fff;
+}
+
+.mat-partograph-graph {
+  padding: 12px 8px 8px;
+  overflow-x: auto;
+  background: #fff;
+}
+
+.mat-partograph-svg {
+  width: 100%;
+  min-width: 640px;
+  height: auto;
+  display: block;
+}
+
+.mat-partograph-grid {
+  stroke: #e2e8f0;
+  stroke-width: 1;
+}
+
+.mat-partograph-axis {
+  fill: #64748b;
+  font-size: 10px;
+  text-anchor: end;
+}
+
+.mat-partograph-section-title {
+  fill: #9d174d;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.mat-partograph-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.mat-partograph-line--alert {
+  stroke: #ef4444;
+  stroke-dasharray: 6 4;
+}
+
+.mat-partograph-line--action {
+  stroke: #f59e0b;
+  stroke-dasharray: 4 4;
+}
+
+.mat-partograph-line--data {
+  stroke: #2563eb;
+  stroke-width: 2.5;
+}
+
+.mat-partograph-point {
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.mat-partograph-point--fhr {
+  fill: #0ea5e9;
+}
+
+.mat-partograph-point--dilation {
+  fill: #2563eb;
+}
+
+.mat-partograph-point--dilation.is-alert {
+  fill: #ef4444;
+}
+
+.mat-partograph-point--dilation.is-action {
+  fill: #b45309;
+}
+
+.mat-partograph-ctx-bar {
+  fill: #ec4899;
+  opacity: 0.75;
+}
+
+.mat-partograph-legend {
+  fill: #475569;
+  font-size: 10px;
+}
+
+.mat-partograph-empty {
+  text-align: center;
+  padding: 8px 0 0;
+}
