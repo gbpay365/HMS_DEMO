@@ -403,7 +403,7 @@ module.exports = function (app, pool, requireAuth) {
     try {
       const { preparePatientRegistrationSchemas, ensurePatientWalletRow } = require('../lib/preparePatientRegistration');
       const { createErQuickPatient } = require('../lib/createErQuickPatient');
-      const { ensureFacilityRow } = require('../lib/ensureFacilityRow');
+      const ensureFacilityRow = require('../lib/ensureFacilityRow');
       await preparePatientRegistrationSchemas(pool);
 
       let pid = parseInt(patient_id, 10) || 0;
