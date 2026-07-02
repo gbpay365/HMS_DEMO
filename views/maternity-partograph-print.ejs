@@ -85,17 +85,18 @@ var _pgData = {
       <thead>
         <tr>
           <th><%= _tl('th_time', 'Time') %></th>
+          <th><%= _tl('th_fhr', 'FHR') %></th>
+          <th><%= _tl('th_liquor', 'Liquor') %></th>
+          <th><%= _tl('th_moulding', 'Moulding') %></th>
           <th><%= _tl('th_dil', 'Dil.') %></th>
           <th><%= _tl('th_station', 'Station') %></th>
           <th><%= _tl('th_ctx', 'CTX') %></th>
-          <th><%= _tl('th_fhr', 'FHR') %></th>
-          <th><%= _tl('th_bp', 'BP') %></th>
-          <th><%= _tl('th_liquor', 'Liquor') %></th>
-          <th><%= _tl('th_moulding', 'Moulding') %></th>
+          <th><%= _tl('th_oxytocin', 'Oxytocin') %></th>
+          <th><%= _tl('th_drugs', 'Drugs') %></th>
           <th><%= _tl('th_pulse', 'Pulse') %></th>
+          <th><%= _tl('th_bp', 'BP') %></th>
           <th><%= _tl('th_temp', 'Temp') %></th>
           <th><%= _tl('th_urine', 'Urine') %></th>
-          <th><%= _tl('th_drugs', 'Drugs') %></th>
           <th><%= _tl('th_alert', 'Alert') %></th>
           <th><%= _tl('th_action', 'Action') %></th>
         </tr>
@@ -104,17 +105,18 @@ var _pgData = {
       <% partograph.forEach(function(e){ %>
         <tr class="<%= e.alert_line_crossed || e.action_line_crossed ? 'partograph-alert':'' %>">
           <td><%= e.time_label || new Date(e.recorded_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) %></td>
-          <td><%= e.cervical_dilation != null ? e.cervical_dilation : '' %></td>
-          <td><%= e.descent_station || '' %></td>
-          <td><%= e.contractions_in_10min != null ? e.contractions_in_10min : '' %></td>
           <td><%= e.fhr != null ? e.fhr : '' %></td>
-          <td><%= e.bp_systolic != null ? e.bp_systolic + '/' + (e.bp_diastolic != null ? e.bp_diastolic : '—') : '' %></td>
           <td><%= e.liquor || '' %></td>
           <td><%= [e.moulding, e.caput].filter(Boolean).join('/') %></td>
+          <td><%= e.cervical_dilation != null ? e.cervical_dilation : '' %></td>
+          <td><%= e.descent_station || '' %></td>
+          <td><%= e.contractions_in_10min != null ? e.contractions_in_10min + (e.contraction_duration ? ' (' + e.contraction_duration + 's)' : '') : (e.contraction_duration ? e.contraction_duration + 's' : '') %></td>
+          <td><%= [e.oxytocin_units, e.oxytocin_drops].filter(function(x){ return x != null && x !== ''; }).join('/') %></td>
+          <td><%= e.drugs_given || '' %></td>
           <td><%= e.pulse != null ? e.pulse : '' %></td>
+          <td><%= e.bp_systolic != null ? e.bp_systolic + '/' + (e.bp_diastolic != null ? e.bp_diastolic : '—') : '' %></td>
           <td><%= e.temperature != null ? e.temperature : '' %></td>
           <td><%= [e.urine_volume, e.urine_protein, e.urine_acetone].filter(function(x){ return x != null && x !== ''; }).join(' · ') %></td>
-          <td><%= e.drugs_given || '' %></td>
           <td><%= e.alert_line_crossed ? '⚠' : '' %></td>
           <td><%= e.action_line_crossed ? '‼' : '' %></td>
         </tr>
@@ -127,7 +129,7 @@ var _pgData = {
 
 <script id="mat-partograph-data" type="application/json"><%- JSON.stringify(_pgData).replace(/</g, '\\u003c') %></script>
 <input type="hidden" id="mat-who-auto-print" value="<%= locals.autoPrint ? '1' : '0' %>">
-<script src="/js/maternity-partograph.js?v=2" defer></script>
+<script src="/js/maternity-partograph.js?v=3" defer></script>
 <style>
   .hms-btn { display:inline-block; padding:6px 14px; border-radius:6px; border:1px solid #cbd5e1; background:#fff; color:#334155; font-size:13px; font-weight:600; text-decoration:none; cursor:pointer; }
   .hms-btn-primary { background:#9d174d; border-color:#9d174d; color:#fff; }

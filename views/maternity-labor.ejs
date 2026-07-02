@@ -27,59 +27,113 @@
    <a href="/maternity/chart/<%= labor.maternity_patient_id %>?tab=delivery" class="hms-btn hms-btn-success hms-btn-sm mt-2"><i class="fa fa-medkit mr-1"></i> <%= _tl('maternity_labor.record_delivery', 'Record delivery') %></a>
   </div>
 
-  <form method="post" action="/maternity/labor/<%= labor.id %>/partograph" class="mat-card p-3 mb-3">
-   <h6 class="font-weight-bold"><%= _tl('maternity_labor.partograph_entry', 'WHO partograph entry') %></h6>
-   <div class="form-row">
-    <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.time', 'Time') %></label><input type="text" name="time_label" class="hms-input w-full" placeholder="<%= _tl('maternity_labor.time_placeholder', 'HHMM') %>"></div>
-    <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.dilation', 'Dilation') %></label><input type="number" name="cervical_dilation" class="hms-input w-full" min="0" max="10"></div>
-    <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.station', 'Station') %></label><input type="text" name="descent_station" class="hms-input w-full"></div>
-    <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.ctx', 'CTX /10min') %></label><input type="number" name="contractions_in_10min" class="hms-input w-full" min="0" max="10"></div>
-    <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.fhr', 'FHR') %></label><input type="number" name="fhr" class="hms-input w-full"></div>
-    <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.bp', 'BP') %></label><input type="number" name="bp_systolic" class="hms-input w-full mb-1" placeholder="<%= _tl('maternity_labor.bp_sys', 'sys') %>"><input type="number" name="bp_diastolic" class="hms-input w-full" placeholder="<%= _tl('maternity_labor.bp_dia', 'dia') %>"></div>
-   </div>
-   <button type="button" class="mat-who-advanced-toggle" data-mat-who-advanced-toggle aria-expanded="false">
-    <i class="fa fa-chevron-down mr-1"></i> <%= _tl('maternity_labor.advanced_who', 'WHO fields (liquor, moulding, vitals, urine)') %>
-   </button>
-   <div id="matWhoAdvancedFields" class="mat-who-advanced-fields d-none">
-    <div class="form-row">
-     <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.liquor', 'Amniotic fluid') %></label>
-      <select name="liquor" class="hms-input w-full">
-       <option value=""></option>
+  <form method="post" action="/maternity/labor/<%= labor.id %>/partograph" class="mat-card p-3 mb-3 mat-who-entry-card">
+   <h6 class="font-weight-bold mb-2"><%= _tl('maternity_labor.partograph_entry', 'WHO partograph entry') %></h6>
+   <p class="small text-muted mb-3"><%= _tl('maternity_labor.entry_who_hint', 'All parameters match the WHO partograph chart rows.') %></p>
+
+   <div class="mat-who-entry-list">
+    <div class="mat-who-entry-item">
+     <label class="mat-who-entry-label"><i class="fa fa-clock-o" aria-hidden="true"></i> <%= _tl('maternity_labor.time', 'Time') %></label>
+     <div class="mat-who-entry-inputs"><input type="text" name="time_label" class="hms-input" placeholder="<%= _tl('maternity_labor.time_placeholder', 'HHMM') %>"></div>
+    </div>
+
+    <div class="mat-who-entry-item">
+     <label class="mat-who-entry-label"><i class="fa fa-heartbeat" aria-hidden="true"></i> <%= _tl('maternity_labor.row_fhr', 'Fetal heart rate') %></label>
+     <div class="mat-who-entry-inputs"><input type="number" name="fhr" class="hms-input" min="60" max="220" placeholder="bpm"></div>
+    </div>
+
+    <div class="mat-who-entry-item">
+     <label class="mat-who-entry-label"><i class="fa fa-tint" aria-hidden="true"></i> <%= _tl('maternity_labor.row_liquor', 'Amniotic fluid') %></label>
+     <div class="mat-who-entry-inputs">
+      <select name="liquor" class="hms-input">
+       <option value=""><%= _tl('maternity_labor.select_option', '—') %></option>
        <option value="intact"><%= _tl('maternity_labor.liquor_intact', 'Intact') %></option>
        <option value="clear"><%= _tl('maternity_labor.liquor_clear', 'Clear') %></option>
        <option value="meconium"><%= _tl('maternity_labor.liquor_meconium', 'Meconium') %></option>
        <option value="absent"><%= _tl('maternity_labor.liquor_absent', 'Absent') %></option>
       </select>
      </div>
-     <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.moulding', 'Moulding') %></label>
-      <select name="moulding" class="hms-input w-full">
-       <option value=""></option>
+    </div>
+
+    <div class="mat-who-entry-item">
+     <label class="mat-who-entry-label"><i class="fa fa-compress" aria-hidden="true"></i> <%= _tl('maternity_labor.row_moulding', 'Fetal moulding') %></label>
+     <div class="mat-who-entry-inputs mat-who-entry-inputs--split">
+      <select name="moulding" class="hms-input" title="<%= _tl('maternity_labor.moulding', 'Moulding') %>">
+       <option value=""><%= _tl('maternity_labor.moulding', 'Moulding') %></option>
+       <option value="0">0</option><option value="+">+</option><option value="++">++</option><option value="+++">+++</option>
+      </select>
+      <select name="caput" class="hms-input" title="<%= _tl('maternity_labor.caput', 'Caput') %>">
+       <option value=""><%= _tl('maternity_labor.caput', 'Caput') %></option>
        <option value="0">0</option><option value="+">+</option><option value="++">++</option><option value="+++">+++</option>
       </select>
      </div>
-     <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.caput', 'Caput') %></label>
-      <select name="caput" class="hms-input w-full">
-       <option value=""></option>
-       <option value="0">0</option><option value="+">+</option><option value="++">++</option><option value="+++">+++</option>
-      </select>
+    </div>
+
+    <div class="mat-who-entry-item mat-who-entry-item--highlight">
+     <label class="mat-who-entry-label"><i class="fa fa-circle-o" aria-hidden="true"></i> <%= _tl('maternity_labor.graph_dilation', 'Cervical dilation (cm)') %></label>
+     <div class="mat-who-entry-inputs"><input type="number" name="cervical_dilation" class="hms-input" min="0" max="10" step="1"></div>
+    </div>
+
+    <div class="mat-who-entry-item mat-who-entry-item--highlight">
+     <label class="mat-who-entry-label"><i class="fa fa-arrow-down" aria-hidden="true"></i> <%= _tl('maternity_labor.row_descent', 'Descent of head') %></label>
+     <div class="mat-who-entry-inputs"><input type="text" name="descent_station" class="hms-input" placeholder="0 / + / ++ / +++"></div>
+    </div>
+
+    <div class="mat-who-entry-item">
+     <label class="mat-who-entry-label"><i class="fa fa-bar-chart" aria-hidden="true"></i> <%= _tl('maternity_labor.ctx', 'CTX /10min') %></label>
+     <div class="mat-who-entry-inputs mat-who-entry-inputs--split">
+      <input type="number" name="contractions_in_10min" class="hms-input" min="0" max="10" placeholder="/10 min">
+      <input type="number" name="contraction_duration" class="hms-input" min="0" max="120" placeholder="<%= _tl('maternity_labor.ctx_duration_short', 'dur (s)') %>">
      </div>
-     <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.ctx_duration', 'CTX duration (s)') %></label><input type="number" name="contraction_duration" class="hms-input w-full"></div>
-     <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.pulse', 'Pulse') %></label><input type="number" name="pulse" class="hms-input w-full"></div>
-     <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.temperature', 'Temp °C') %></label><input type="number" name="temperature" class="hms-input w-full" step="0.1"></div>
     </div>
-    <div class="form-row">
-     <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.oxytocin_units', 'Oxytocin U/L') %></label><input type="number" name="oxytocin_units" class="hms-input w-full"></div>
-     <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.oxytocin_drops', 'Drops/min') %></label><input type="number" name="oxytocin_drops" class="hms-input w-full"></div>
-     <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.urine_volume', 'Urine vol (ml)') %></label><input type="number" name="urine_volume" class="hms-input w-full"></div>
-     <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.urine_protein', 'Protein') %></label><input type="text" name="urine_protein" class="hms-input w-full"></div>
-     <div class="form-group col-md-2"><label class="small"><%= _tl('maternity_labor.urine_acetone', 'Acetone') %></label><input type="text" name="urine_acetone" class="hms-input w-full"></div>
-     <div class="form-group col-md-4"><label class="small"><%= _tl('maternity_labor.drugs_given', 'Drugs & IV fluids') %></label><input type="text" name="drugs_given" class="hms-input w-full"></div>
+
+    <div class="mat-who-entry-item">
+     <label class="mat-who-entry-label"><i class="fa fa-medkit" aria-hidden="true"></i> <%= _tl('maternity_labor.row_oxytocin', 'Oxytocin U/L · drops/min') %></label>
+     <div class="mat-who-entry-inputs mat-who-entry-inputs--split">
+      <input type="number" name="oxytocin_units" class="hms-input" placeholder="U/L">
+      <input type="number" name="oxytocin_drops" class="hms-input" placeholder="<%= _tl('maternity_labor.oxytocin_drops', 'Drops/min') %>">
+     </div>
     </div>
-    <div class="form-row">
-     <div class="form-group col-md-12"><label class="small"><%= _tl('maternity_labor.notes', 'Notes') %></label><input type="text" name="notes" class="hms-input w-full"></div>
+
+    <div class="mat-who-entry-item">
+     <label class="mat-who-entry-label"><i class="fa fa-flask" aria-hidden="true"></i> <%= _tl('maternity_labor.row_drugs', 'Drugs & IV fluids') %></label>
+     <div class="mat-who-entry-inputs"><input type="text" name="drugs_given" class="hms-input w-full"></div>
+    </div>
+
+    <div class="mat-who-entry-item">
+     <label class="mat-who-entry-label"><i class="fa fa-heart" aria-hidden="true"></i> <%= _tl('maternity_labor.row_pulse', 'Pulse') %></label>
+     <div class="mat-who-entry-inputs"><input type="number" name="pulse" class="hms-input" min="40" max="200" placeholder="/min"></div>
+    </div>
+
+    <div class="mat-who-entry-item">
+     <label class="mat-who-entry-label"><i class="fa fa-stethoscope" aria-hidden="true"></i> <%= _tl('maternity_labor.bp', 'BP') %></label>
+     <div class="mat-who-entry-inputs mat-who-entry-inputs--split">
+      <input type="number" name="bp_systolic" class="hms-input" placeholder="<%= _tl('maternity_labor.bp_sys', 'sys') %>">
+      <input type="number" name="bp_diastolic" class="hms-input" placeholder="<%= _tl('maternity_labor.bp_dia', 'dia') %>">
+     </div>
+    </div>
+
+    <div class="mat-who-entry-item">
+     <label class="mat-who-entry-label"><i class="fa fa-thermometer-half" aria-hidden="true"></i> <%= _tl('maternity_labor.row_temp', 'Temperature °C') %></label>
+     <div class="mat-who-entry-inputs"><input type="number" name="temperature" class="hms-input" step="0.1" min="34" max="42"></div>
+    </div>
+
+    <div class="mat-who-entry-item">
+     <label class="mat-who-entry-label"><i class="fa fa-filter" aria-hidden="true"></i> <%= _tl('maternity_labor.row_urine', 'Urine (vol · protein · acetone)') %></label>
+     <div class="mat-who-entry-inputs mat-who-entry-inputs--triple">
+      <input type="number" name="urine_volume" class="hms-input" placeholder="<%= _tl('maternity_labor.urine_vol_short', 'vol ml') %>">
+      <input type="text" name="urine_protein" class="hms-input" placeholder="<%= _tl('maternity_labor.urine_protein', 'Protein') %>">
+      <input type="text" name="urine_acetone" class="hms-input" placeholder="<%= _tl('maternity_labor.urine_acetone', 'Acetone') %>">
+     </div>
+    </div>
+
+    <div class="mat-who-entry-item mat-who-entry-item--notes">
+     <label class="mat-who-entry-label"><i class="fa fa-sticky-note-o" aria-hidden="true"></i> <%= _tl('maternity_labor.notes', 'Notes') %></label>
+     <div class="mat-who-entry-inputs"><input type="text" name="notes" class="hms-input w-full"></div>
     </div>
    </div>
-   <button class="hms-btn hms-btn-primary hms-btn-sm mt-2"><i class="fa fa-plus mr-1"></i> <%= _tl('maternity_labor.add_entry', 'Add entry') %></button>
+
+   <button class="hms-btn hms-btn-primary hms-btn-sm mt-3"><i class="fa fa-plus mr-1"></i> <%= _tl('maternity_labor.add_entry', 'Add entry') %></button>
   </form>
 
   <div class="mat-card mat-partograph-panel p-0">
@@ -98,36 +152,42 @@
      <table class="table table-sm mb-0 mat-who-timeline">
       <thead><tr>
        <th><%= _tl('maternity_labor.th_time', 'Time') %></th>
+       <th><%= _tl('maternity_labor.th_fhr', 'FHR') %></th>
+       <th><%= _tl('maternity_labor.th_liquor', 'Liquor') %></th>
+       <th><%= _tl('maternity_labor.th_moulding', 'Moulding') %></th>
        <th><%= _tl('maternity_labor.th_dil', 'Dil.') %></th>
        <th><%= _tl('maternity_labor.th_station', 'Station') %></th>
        <th><%= _tl('maternity_labor.th_ctx', 'CTX') %></th>
-       <th><%= _tl('maternity_labor.th_fhr', 'FHR') %></th>
-       <th><%= _tl('maternity_labor.th_bp', 'BP') %></th>
-       <th><%= _tl('maternity_labor.th_liquor', 'Liquor') %></th>
-       <th><%= _tl('maternity_labor.th_moulding', 'Moulding') %></th>
+       <th><%= _tl('maternity_labor.th_oxytocin', 'Oxytocin') %></th>
+       <th><%= _tl('maternity_labor.th_drugs', 'Drugs') %></th>
        <th><%= _tl('maternity_labor.th_pulse', 'Pulse') %></th>
+       <th><%= _tl('maternity_labor.th_bp', 'BP') %></th>
        <th><%= _tl('maternity_labor.th_temp', 'Temp') %></th>
        <th><%= _tl('maternity_labor.th_urine', 'Urine') %></th>
-       <th><%= _tl('maternity_labor.th_drugs', 'Drugs') %></th>
        <th><%= _tl('maternity_labor.th_alert', 'Alert') %></th>
        <th><%= _tl('maternity_labor.th_action', 'Action') %></th>
       </tr></thead>
       <tbody>
       <% if (!partograph || !partograph.length) { %>
-      <tr><td colspan="14" class="text-muted text-center py-3"><%= _tl('maternity_labor.timeline_empty', 'No entries yet.') %></td></tr>
+      <tr><td colspan="15" class="text-muted text-center py-3"><%= _tl('maternity_labor.timeline_empty', 'No entries yet.') %></td></tr>
       <% } %>
       <% (partograph||[]).forEach(function(e){ %>
       <tr class="<%= e.alert_line_crossed || e.action_line_crossed ? 'partograph-alert':'' %>">
        <td><%= e.time_label || new Date(e.recorded_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) %></td>
-       <td><%= e.cervical_dilation %></td><td><%= e.descent_station %></td><td><%= e.contractions_in_10min %></td>
-       <td><%= e.fhr %></td><td><%= e.bp_systolic %>/<%= e.bp_diastolic %></td>
+       <td><%= e.fhr != null ? e.fhr : '' %></td>
        <td><%= e.liquor || '' %></td>
        <td><%= [e.moulding, e.caput].filter(Boolean).join('/') %></td>
+       <td><%= e.cervical_dilation != null ? e.cervical_dilation : '' %></td>
+       <td><%= e.descent_station || '' %></td>
+       <td><%= e.contractions_in_10min != null ? e.contractions_in_10min + (e.contraction_duration ? ' (' + e.contraction_duration + 's)' : '') : (e.contraction_duration ? e.contraction_duration + 's' : '') %></td>
+       <td><%= [e.oxytocin_units, e.oxytocin_drops].filter(function(x){ return x != null && x !== ''; }).join('/') %></td>
+       <td><%= e.drugs_given || '' %></td>
        <td><%= e.pulse != null ? e.pulse : '' %></td>
+       <td><%= e.bp_systolic != null ? e.bp_systolic + '/' + (e.bp_diastolic != null ? e.bp_diastolic : '—') : '' %></td>
        <td><%= e.temperature != null ? e.temperature : '' %></td>
        <td><%= [e.urine_volume, e.urine_protein, e.urine_acetone].filter(function(x){ return x != null && x !== ''; }).join(' · ') %></td>
-       <td><%= e.drugs_given || '' %></td>
-       <td><%= e.alert_line_crossed ? '⚠' : '' %></td><td><%= e.action_line_crossed ? '‼' : '' %></td>
+       <td><%= e.alert_line_crossed ? '⚠' : '' %></td>
+       <td><%= e.action_line_crossed ? '‼' : '' %></td>
       </tr>
       <% }) %>
       </tbody>
@@ -180,7 +240,7 @@
       oxytocin: _tl('maternity_labor.row_oxytocin', 'Oxytocin U/L · drops/min'),
       drugs: _tl('maternity_labor.row_drugs', 'Drugs & IV fluids'),
       pulse: _tl('maternity_labor.row_pulse', 'Pulse'),
-      bp: _tl('maternity_labor.bp', 'Blood pressure'),
+      bp: _tl('maternity_labor.bp', 'BP'),
       temperature: _tl('maternity_labor.row_temp', 'Temperature °C'),
       urine: _tl('maternity_labor.row_urine', 'Urine (vol · protein · acetone)'),
       alertLine: _tl('maternity_labor.alert_line', 'Alert line'),
@@ -194,7 +254,7 @@
   };
   %>
   <script id="mat-partograph-data" type="application/json"><%- JSON.stringify(_pgData).replace(/</g, '\\u003c') %></script>
-  <script src="/js/maternity-partograph.js?v=2" defer></script>
+  <script src="/js/maternity-partograph.js?v=3" defer></script>
   <% } else { %>
   <div class="mat-card p-4">
    <p class="mb-3 text-muted"><%= _tl('maternity_labor.select_help', 'Select a patient from Active labors on the left, or admit from a maternity chart.') %></p>

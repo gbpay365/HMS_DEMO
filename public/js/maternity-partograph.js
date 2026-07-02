@@ -3,6 +3,12 @@
 
   var WHO_HOURS = 12;
   var SLOT_COUNT = WHO_HOURS * 2;
+  var plotUid = 0;
+
+  function nextPlotId() {
+    plotUid += 1;
+    return 'matWhoPlot_' + plotUid;
+  }
 
   function parseDate(value) {
     var d = new Date(value);
@@ -76,7 +82,7 @@
   }
 
   function slotIndexForHours(h) {
-    return Math.max(0, Math.min(SLOT_COUNT - 1, Math.round(h * 2)));
+    return Math.max(0, Math.min(SLOT_COUNT - 1, Math.floor(h * 2 + 0.0001)));
   }
 
   function mapEntriesToSlots(entries) {
@@ -86,6 +92,24 @@
       if (!slots[idx] || e.hours >= (slots[idx].hours || 0)) slots[idx] = e;
     });
     return slots;
+  }
+
+  function setCellValue(cell, text) {
+    if (!text) return;
+    cell.setAttribute('title', text);
+    var span = document.createElement('span');
+    span.className = 'mat-who-cell-value';
+    span.textContent = text;
+    cell.appendChild(span);
+  }
+
+  function formatCtx(e) {
+    var n = e.contractions_in_10min;
+    var d = e.contraction_duration;
+    if (n == null && d == null) return '';
+    if (n != null && d != null) return String(n) + '·' + d + 's';
+    if (n != null) return String(n);
+    return String(d) + 's';
   }
 
   function liquorShort(v) {
@@ -182,24 +206,30 @@
     for (var i = 0; i < SLOT_COUNT; i++) {
       var cell = el('div', 'mat-who-cell' + (i % 2 === 1 ? ' is-hour' : ''));
       var val = slots[i] ? getter(slots[i]) : '';
-      if (val) cell.textContent = val;
+      if (val) setCellValue(cell, val);
       row.appendChild(cell);
     }
     row.appendChild(el('div', 'mat-who-scale', ''));
     return row;
   }
 
-  function buildPlotRow(rowClass, icon, label, scaleLabel, plotId) {
+  function buildPlotRow(rowClass, icon, label, scaleLabel, slots, cellGetter) {
+    var plotId = nextPlotId();
     var row = el('div', 'mat-who-row mat-who-row--plot ' + rowClass);
     row.appendChild(el('div', 'mat-who-label', '<i class="fa ' + icon + '"></i> ' + label));
     for (var i = 0; i < SLOT_COUNT; i++) {
-      row.appendChild(el('div', 'mat-who-cell' + (i % 2 === 1 ? ' is-hour' : '')));
+      var cell = el('div', 'mat-who-cell' + (i % 2 === 1 ? ' is-hour' : ''));
+      if (slots[i] && cellGetter) {
+        var cellVal = cellGetter(slots[i]);
+        if (cellVal) setCellValue(cell, cellVal);
+      }
+      row.appendChild(cell);
     }
     row.appendChild(el('div', 'mat-who-scale', scaleLabel));
     var layer = el('div', 'mat-who-plot-layer');
-    layer.id = plotId;
+    layer.setAttribute('data-plot-layer', plotId);
     row.appendChild(layer);
-    return row;
+    return { row: row, plotId: plotId, layer: layer };
   }
 
   function plotGraph(layer, options) {
@@ -316,16 +346,33 @@
     var sheet = el('div', 'mat-who-sheet');
 
     sheet.appendChild(buildTimeRow(admission));
-    sheet.appendChild(buildPlotRow('mat-who-row--fhr', 'fa-heartbeat', labels.fhr || 'Fetal heart rate', 'bpm', 'matWhoPlotFhr'));
+
+    var fhrRow = buildPlotRow(
+      'mat-who-row--fhr', 'fa-heartbeat', labels.fhr || 'Fetal heart rate', 'bpm', slots,
+      function (e) { return e.fhr != null ? String(e.fhr) : ''; }
+    );
+    sheet.appendChild(fhrRow.row);
+
     sheet.appendChild(buildTextRow('fa-tint', labels.liquor || 'Amniotic fluid', slots, liquorShort));
     sheet.appendChild(buildTextRow('fa-compress', labels.moulding || 'Fetal moulding', slots, formatMoulding));
-    sheet.appendChild(buildPlotRow('mat-who-row--dilation', 'fa-circle-o', labels.dilation || 'Cervical dilation (cm)', 'cm', 'matWhoPlotDil'));
+
+    var dilRow = buildPlotRow(
+      'mat-who-row--dilation', 'fa-circle-o', labels.dilation || 'Cervical dilation (cm)', 'cm', slots,
+      function (e) { return e.cervical_dilation != null ? String(e.cervical_dilation) : ''; }
+    );
+    sheet.appendChild(dilRow.row);
+
     sheet.appendChild(buildTextRow('fa-arrow-down', labels.descent || 'Descent of head', slots, function (e) { return e.descent_station || ''; }));
-    sheet.appendChild(buildPlotRow('mat-who-row--ctx', 'fa-bar-chart', labels.ctx || 'Contractions / 10 min', '/10', 'matWhoPlotCtx'));
+
+    var ctxRow = buildPlotRow(
+      'mat-who-row--ctx', 'fa-bar-chart', labels.ctx || 'CTX /10min', '/10', slots, formatCtx
+    );
+    sheet.appendChild(ctxRow.row);
+
     sheet.appendChild(buildTextRow('fa-medkit', labels.oxytocin || 'Oxytocin U/L · drops/min', slots, formatOxytocin));
     sheet.appendChild(buildTextRow('fa-flask', labels.drugs || 'Drugs & IV fluids', slots, function (e) { return e.drugs_given || ''; }));
     sheet.appendChild(buildTextRow('fa-heart', labels.pulse || 'Pulse', slots, function (e) { return e.pulse != null ? String(e.pulse) : ''; }));
-    sheet.appendChild(buildTextRow('fa-stethoscope', labels.bp || 'Blood pressure', slots, formatBp));
+    sheet.appendChild(buildTextRow('fa-stethoscope', labels.bp || 'BP', slots, formatBp));
     sheet.appendChild(buildTextRow('fa-thermometer-half', labels.temperature || 'Temperature °C', slots, function (e) { return e.temperature != null ? String(e.temperature) : ''; }));
     sheet.appendChild(buildTextRow('fa-filter', labels.urine || 'Urine (vol · protein · acetone)', slots, formatUrine));
 
@@ -339,10 +386,7 @@
     container.appendChild(root);
 
     requestAnimationFrame(function () {
-      var fhrLayer = document.getElementById('matWhoPlotFhr');
-      var dilLayer = document.getElementById('matWhoPlotDil');
-      var ctxLayer = document.getElementById('matWhoPlotCtx');
-      if (!fhrLayer) return;
+      if (!fhrRow.layer) return;
 
       var fhrPts = entries
         .filter(function (e) { return e.fhr != null && !Number.isNaN(Number(e.fhr)); })
@@ -367,9 +411,9 @@
           return { slot: slotIndexForHours(e.hours), value: Number(e.contractions_in_10min) };
         });
 
-      plotGraph(fhrLayer, { min: 80, max: 200, points: fhrPts, pointClass: 'mat-who-point--fhr', radius: 4, animate: animate });
-      plotGraph(dilLayer, { min: 0, max: 10, alertAction: true, points: dilPts, pointClass: 'mat-who-point--dilation', animate: animate });
-      plotGraph(ctxLayer, { min: 0, max: 5, bars: ctxBars, barMax: 5, animate: animate });
+      plotGraph(fhrRow.layer, { min: 80, max: 200, points: fhrPts, pointClass: 'mat-who-point--fhr', radius: 4, animate: animate });
+      plotGraph(dilRow.layer, { min: 0, max: 10, alertAction: true, points: dilPts, pointClass: 'mat-who-point--dilation', animate: animate });
+      plotGraph(ctxRow.layer, { min: 0, max: 5, bars: ctxBars, barMax: 5, animate: animate });
     });
 
     return root;
@@ -437,16 +481,6 @@
     });
   }
 
-  function bindAdvancedToggle() {
-    var btn = document.querySelector('[data-mat-who-advanced-toggle]');
-    var panel = document.getElementById('matWhoAdvancedFields');
-    if (!btn || !panel) return;
-    btn.addEventListener('click', function () {
-      var open = panel.classList.toggle('d-none');
-      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
-    });
-  }
-
   function readPartographData() {
     var dataEl = document.getElementById('mat-partograph-data');
     if (!dataEl) return null;
@@ -472,7 +506,6 @@
     });
 
     bindViewToggle();
-    bindAdvancedToggle();
   }
 
   function initPrintPage() {
