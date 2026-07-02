@@ -426,13 +426,17 @@ module.exports = function (app, pool, requireAuth) {
           await conn.beginTransaction();
           await ensurePatientCodeSchema(conn).catch(() => {});
           const patientCode = await allocateNextPatientCodeLocked(conn);
+          const email = `er-${String(patientCode).toLowerCase()}@emergency.local`;
+          const phoneForInsert = phoneNorm || '000000000';
           const ins = await conn.query(
             `INSERT INTO tbl_patient
-               (patient_code, first_name, last_name, gender, dob, phone, status, created_at)
-             VALUES (?,?,?,?,?,?,1,NOW())`,
-            [patientCode, fn, ln, g, computedDob, phoneNorm]
+               (patient_code, first_name, last_name, gender, dob, phone, email, status, created_at)
+             VALUES (?,?,?,?,?,?,?,1,NOW())`,
+            [patientCode, fn, ln, g, computedDob, phoneForInsert, email]
           );
-          pid = ins[0].insertId;
+          const { resolveInsertPatientId } = require('../lib/patientDirectory');
+          pid = await resolveInsertPatientId(conn, ins[0]);
+          if (!pid) throw new Error('Could not create emergency patient record');
           await conn.commit();
         } catch (erIns) {
           await conn.rollback().catch(() => {});
