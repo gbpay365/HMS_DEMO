@@ -96,13 +96,7 @@ module.exports = function (app, pool, requireAuth, requirePerm) {
   // ── Pages ─────────────────────────────────────────────────────
   app.get('/maternity', requireAuth, view, async (req, res) => {
     try {
-      const stats = await new Promise((resolve, reject) => {
-        const mockRes = {
-          json: (b) => resolve(b.data),
-          status: () => mockRes,
-        };
-        ctrl.getDashboardStats(req, mockRes).catch(reject);
-      });
+      const stats = await mat.getDashboardStats(pool);
       const [highRisk] = await pool.query(
         `SELECT mp.*, p.first_name, p.last_name FROM maternity_patients mp
          JOIN tbl_patient p ON p.id = mp.patient_id

@@ -874,29 +874,7 @@ module.exports = function createMaternityController(pool) {
 
     async getDashboardStats(req, res) {
       try {
-        const [[t]] = await pool.query('SELECT COUNT(*) AS c FROM maternity_patients');
-        const [[a]] = await pool.query(`SELECT COUNT(*) AS c FROM maternity_patients WHERE status = 'active'`);
-        const [[l]] = await pool.query(`SELECT COUNT(*) AS c FROM labor_records WHERE status = 'in_labor'`);
-        const [[d]] = await pool.query(
-          `SELECT COUNT(*) AS c FROM delivery_records WHERE DATE(delivery_date_time) = CURDATE()`
-        );
-        const [[h]] = await pool.query(`SELECT COUNT(*) AS c FROM maternity_patients WHERE risk_level = 'high'`);
-        const [types] = await pool.query(
-          `SELECT delivery_type, COUNT(*) AS count FROM delivery_records
-           WHERE delivery_date_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY delivery_type`
-        );
-        const [[c]] = await pool.query(
-          `SELECT COUNT(*) AS c FROM maternal_complications WHERE complication_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)`
-        );
-        return ok(res, {
-          total_registered: parseInt(t.c, 10),
-          active_anc: parseInt(a.c, 10),
-          currently_in_labor: parseInt(l.c, 10),
-          deliveries_today: parseInt(d.c, 10),
-          high_risk_patients: parseInt(h.c, 10),
-          delivery_types_last_30_days: types,
-          complications_last_30_days: parseInt(c.c, 10),
-        });
+        return ok(res, await mat.getDashboardStats(pool));
       } catch (e) {
         return json(res, 500, { success: false, message: e.message });
       }

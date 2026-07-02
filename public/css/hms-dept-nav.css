@@ -47,7 +47,7 @@ body.hms-body--dept-odoo .page-wrapper > .content {
   position: sticky;
   top: 0;
   z-index: 1100;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .hms-dept-app .o_nav_home {
@@ -88,8 +88,14 @@ body.hms-body--dept-odoo .page-wrapper > .content {
   min-width: 0;
   height: 48px;
   flex-wrap: nowrap;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: hidden;
   gap: 0;
+  scrollbar-width: none;
+}
+
+.hms-dept-app .o_nav_menu::-webkit-scrollbar {
+  display: none;
 }
 
 .hms-dept-app .o_nav_link,
@@ -353,16 +359,14 @@ body.hms-body--dept-odoo .page-wrapper > .content {
   flex: 1;
 }
 
-/* Mobile: collapse nav into scroll row */
-@media (max-width: 992px) {
-  .hms-dept-app .o_nav_menu {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .hms-dept-app .o_nav_menu::-webkit-scrollbar {
+@media (max-width: 1200px) {
+  .hms-dept-app .o_nav_datetime {
     display: none;
   }
+}
+
+/* Mobile: collapse nav into scroll row */
+@media (max-width: 992px) {
   .hms-dept-app .o_nav_module {
     max-width: 120px;
     overflow: hidden;
