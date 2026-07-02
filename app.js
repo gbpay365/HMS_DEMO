@@ -12702,13 +12702,16 @@ app.post('/consultation-new', requireAuth, async (req, res) => {
   const advice = (req.body.advice || examination || '').toString().trim();
   const referralToRaw = (req.body.referral_to || req.body.referred_to_name || '').toString().trim();
   const referralTo = referralToRaw || billingMetaPost.doctorName || '';
-  const feeRaw = req.body.consult_fee_xaf ? parseFloat(req.body.consult_fee_xaf) : null;
-  const fee =
-    Number.isFinite(feeRaw) && feeRaw > 0
+  const feeRaw =
+    req.body.consult_fee_xaf != null && String(req.body.consult_fee_xaf).trim() !== ''
+      ? parseFloat(req.body.consult_fee_xaf)
+      : NaN;
+  let fee =
+    Number.isFinite(feeRaw) && feeRaw >= 0
       ? feeRaw
       : billingMetaPost.servicePrice > 0
         ? billingMetaPost.servicePrice
-        : null;
+        : 0;
 
   const observations_json = JSON.stringify({
    chief_complaint: chief,
