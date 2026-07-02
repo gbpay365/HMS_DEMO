@@ -4,12 +4,21 @@
   matOdooMenu: 'register',
   matOdooTitle: _t('maternity_register.title', { ns: 'legacy', defaultValue: 'ANC registration' })
 }) %>
+<%
+  var _canCreatePatient =
+    hasP('maternity.register.new_patient', 'patient.write', 'maternity.write') ||
+    (typeof uiVisible === 'function' && uiVisible('mat.btn.register_new_anc'));
+  var _createPatientHref =
+    (typeof createPatientUrl !== 'undefined' && createPatientUrl && searched && searchNotFound)
+      ? createPatientUrl
+      : '/patients?from=maternity&action=new';
+%>
 <div class="o_content">
 
 <div class="row">
  <div class="col-lg-5 mb-3">
   <div class="mat-card p-3">
-   <p class="small text-muted mb-3"><%= _t('maternity_register.search_hint', { ns: 'legacy', defaultValue: 'Find an existing HMS patient by ID, name, or phone. If not found, create a new patient record first.' }) %></p>
+   <p class="small text-muted mb-3"><%= _t('maternity_register.search_hint', { ns: 'legacy', defaultValue: 'Find an existing HMS patient by ID, name, or phone. If not found, register a new patient, then return here to complete ANC booking.' }) %></p>
    <form method="get" action="/maternity/register" class="mb-0">
     <div class="form-group mb-2">
      <label class="small font-weight-bold mb-1" for="mat_patient_id"><%= _t('maternity_register.patient_id_ph', { ns: 'legacy', defaultValue: 'Patient ID' }) %></label>
@@ -23,7 +32,16 @@
      <label class="small font-weight-bold mb-1" for="mat_patient_phone"><%= _t('maternity_register.patient_phone_ph', { ns: 'legacy', defaultValue: 'Phone number' }) %></label>
      <input type="text" id="mat_patient_phone" name="patient_phone" class="hms-input w-full" placeholder="<%= _t('maternity_register.patient_phone_ph', { ns: 'legacy', defaultValue: 'Phone number' }) %>" value="<%= typeof searchPatientPhone !== 'undefined' ? searchPatientPhone : '' %>">
     </div>
-    <button type="submit" class="hms-btn hms-btn-secondary w-full"><i class="fa fa-search mr-1" aria-hidden="true"></i><%= _t('maternity_register.search', { ns: 'legacy', defaultValue: 'Search patient' }) %></button>
+    <div class="mat-register-actions d-flex flex-wrap gap-2">
+     <button type="submit" class="hms-btn hms-btn-secondary flex-grow-1">
+      <i class="fa fa-search mr-1" aria-hidden="true"></i><%= _t('maternity_register.search', { ns: 'legacy', defaultValue: 'Search patient' }) %>
+     </button>
+     <% if (_canCreatePatient && !patient) { %>
+     <a href="<%= _createPatientHref %>" class="hms-btn hms-btn-primary flex-grow-1">
+      <i class="fa fa-user-plus mr-1" aria-hidden="true"></i><%= _t('maternity_register.create_new_registration', { ns: 'legacy', defaultValue: 'Create new registration' }) %>
+     </a>
+     <% } %>
+    </div>
    </form>
 
    <% if (patient) { %>
@@ -46,15 +64,14 @@
    </div>
    <% } else if (searched && searchNotFound) { %>
    <div class="hms-flash hms-flash--warning mt-3 mb-2"><%= _t('maternity_register.no_patient_found', { ns: 'legacy', defaultValue: 'No patient found for this search.' }) %></div>
-   <% if (uiVisible('mat.btn.register_new_anc')) { %>
-   <a href="<%= createPatientUrl || '/patients?from=maternity&action=new' %>" class="hms-btn hms-btn-primary w-full">
-    <i class="fa fa-user-plus mr-1" aria-hidden="true"></i><%= _t('maternity_register.create_patient', { ns: 'legacy', defaultValue: 'Create patient' }) %>
+   <% if (_canCreatePatient) { %>
+   <p class="small text-muted mb-2"><%= _t('maternity_register.create_new_registration_hint', { ns: 'legacy', defaultValue: 'Patient not in HMS? Register a new mother in the patient directory, then book ANC here.' }) %></p>
+   <a href="<%= _createPatientHref %>" class="hms-btn hms-btn-primary w-full">
+    <i class="fa fa-user-plus mr-1" aria-hidden="true"></i><%= _t('maternity_register.create_new_registration', { ns: 'legacy', defaultValue: 'Create new registration' }) %>
    </a>
    <% } %>
-   <% } else if (uiVisible('mat.btn.register_new_anc')) { %>
-   <a href="/patients?from=maternity&action=new" class="hms-btn hms-btn-secondary w-full mt-3">
-    <i class="fa fa-user-plus mr-1" aria-hidden="true"></i><%= _t('maternity_register.create_patient', { ns: 'legacy', defaultValue: 'Create patient' }) %>
-   </a>
+   <% } else if (_canCreatePatient) { %>
+   <p class="small text-muted mt-3 mb-0"><%= _t('maternity_register.create_new_registration_hint', { ns: 'legacy', defaultValue: 'Patient not in HMS? Register a new mother in the patient directory, then book ANC here.' }) %></p>
    <% } %>
   </div>
  </div>
