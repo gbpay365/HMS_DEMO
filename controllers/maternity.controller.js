@@ -1,6 +1,8 @@
 'use strict';
 
 const mat = require('../lib/hmsMaternity');
+const { invokeMaternityCtrl } = require('../lib/maternityRouteHelpers');
+const { optionalInTransaction } = require('../lib/pgTransaction');
 const matInt = require('../lib/maternityIntegration');
 const matBill = require('../lib/maternityBilling');
 const newbornFlow = require('../lib/maternityNewbornFlow');
@@ -196,16 +198,15 @@ module.exports = function createMaternityController(pool) {
           [id]
         );
         let newborns = [];
-        if (laborRows[0]?.delivery_id) {
-          const [nb] = await pool.query(
-            `SELECT nb.*, p.patient_code AS baby_patient_code
-             FROM newborn_records nb
-             LEFT JOIN tbl_patient p ON p.id = nb.patient_id
-             WHERE nb.delivery_record_id = ?`,
-            [laborRows[0].delivery_id]
-          );
-          newborns = nb;
-        }
+        const [nb] = await pool.query(
+          `SELECT nb.*, p.patient_code AS baby_patient_code
+           FROM newborn_records nb
+           LEFT JOIN tbl_patient p ON p.id = nb.patient_id
+           WHERE nb.maternity_patient_id = ?
+           ORDER BY nb.id DESC`,
+          [id]
+        );
+        newborns = nb;
 
         const patientFmt = formatObjectDates(patient, ['lmp', 'edd', 'booking_date']);
         const laborFmt = laborRows[0]
@@ -412,15 +413,17 @@ module.exports = function createMaternityController(pool) {
             [mid]
           );
           if (mp?.patient_id) {
-            ipdMeta = await matInt.createMaternityIpdAdmission(conn, {
-              patientId: mp.patient_id,
-              laborRecordId: laborId,
-              facilityId: mp.facility_id || facilityId,
-              userId: uid,
-              admittingDoctorId: b.admitting_doctor_id,
-              admittingDiagnosis: b.admitting_diagnosis,
-              payLater: b.ipd_pay_later !== '0' && b.ipd_pay_later !== 0 && b.ipd_pay_later !== false,
-            });
+            ipdMeta = await optionalInTransaction(conn, 'mat_ipd', () =>
+              matInt.createMaternityIpdAdmission(conn, {
+                patientId: mp.patient_id,
+                laborRecordId: laborId,
+                facilityId: mp.facility_id || facilityId,
+                userId: uid,
+                admittingDoctorId: b.admitting_doctor_id,
+                admittingDiagnosis: b.admitting_diagnosis,
+                payLater: b.ipd_pay_later !== '0' && b.ipd_pay_later !== 0 && b.ipd_pay_later !== false,
+              })
+            );
           }
         }
 
@@ -537,6 +540,17 @@ module.exports = function createMaternityController(pool) {
         const laborId = parseInt(b.labor_record_id, 10);
         const mid = parseInt(b.maternity_patient_id, 10);
         const uid = parseInt(req.session?.user?.id, 10) || null;
+        let deliveryWhen = b.delivery_date_time;
+        if (deliveryWhen instanceof Date) {
+          deliveryWhen = deliveryWhen.toISOString().slice(0, 19).replace('T', ' ');
+        } else if (deliveryWhen) {
+          const s = String(deliveryWhen).trim();
+          deliveryWhen = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)
+            ? s.replace('T', ' ').slice(0, 19)
+            : s;
+        } else {
+          deliveryWhen = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        }
         const [ins] = await conn.query(
           `INSERT INTO delivery_records (
             labor_record_id, maternity_patient_id, delivery_date_time, delivery_type,
@@ -550,7 +564,7 @@ module.exports = function createMaternityController(pool) {
           [
             laborId,
             mid,
-            b.delivery_date_time || new Date(),
+            deliveryWhen,
             b.delivery_type,
             b.cs_indication || null,
             b.cs_type || null,

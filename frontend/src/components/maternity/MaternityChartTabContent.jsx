@@ -25,7 +25,9 @@ export function MaternityChartTabContent({
   patientId,
   summary = {},
   billing,
-  deliveryId}) {
+  deliveryId,
+  laborId,
+}) {
   const { t } = useTranslation('legacy');
   const tc = (k, def) => t(`maternity_chart.${k}`, { defaultValue: def });
   const dash = tc('dash', '—');
@@ -240,6 +242,7 @@ export function MaternityChartTabContent({
     return (
       <>
         <form method="post" action={`/maternity/chart/${patientId}/labor`} className="mat-card p-3">
+          <input type="hidden" name="maternity_patient_id" value={patientId} />
           <h6 className="font-weight-bold">{tc('admit_labor', 'Admit to labor ward')}</h6>
           <div className="form-row">
             <div className="form-group col-md-3">
@@ -284,6 +287,15 @@ export function MaternityChartTabContent({
               {tc('latest_labor', 'Latest labor: {{status}} since {{date}}', { status: ld.status, date: formatDate(ld.admission_date) })}{' '}
               <a href={`/maternity/labor?labor_id=${ld.id}`}>{tc('open_partograph', 'Open partograph')}</a>
             </p>
+            {laborId ? (
+              <p className="mb-1 text-success">
+                <i className="fa fa-check-circle mr-1" aria-hidden="true" />
+                {tc('labor_admitted_open_partograph', 'Labor admission saved.')}{' '}
+                <a href={`/maternity/labor?labor_id=${laborId}`} className="font-weight-bold">
+                  {tc('open_partograph', 'Open partograph')}
+                </a>
+              </p>
+            ) : null}
             {ld.ipd_admission_id ? (
               <div className="hms-flash hms-flash--success py-2 px-3 mb-0">
                 <i className="fa fa-hospital-o mr-1" aria-hidden="true" />
@@ -330,6 +342,8 @@ export function MaternityChartTabContent({
     }
     return (
       <form method="post" action={`/maternity/labor/${ld.id}/delivery`} className="mat-card p-3">
+        <input type="hidden" name="maternity_patient_id" value={patientId} />
+        <input type="hidden" name="labor_record_id" value={ld.id} />
         <h6 className="font-weight-bold">{tc('record_delivery', 'Record delivery')}</h6>
         <input type="hidden" name="register_newborn" value="1" />
         <div className="form-row">
@@ -372,6 +386,7 @@ export function MaternityChartTabContent({
         <div className="col-lg-6 mb-3">
           {dId ? (
             <form method="post" action={`/maternity/chart/${patientId}/newborn`} className="mat-card p-3">
+              <input type="hidden" name="maternity_patient_id" value={patientId} />
               <input type="hidden" name="delivery_record_id" value={dId} />
               <h6 className="font-weight-bold mb-3">{tc('register_newborn', 'Register newborn')}</h6>
               <div className="form-row">
@@ -455,6 +470,7 @@ export function MaternityChartTabContent({
     return (
       <>
         <form method="post" action={`/maternity/chart/${patientId}/postnatal`} className="mat-card p-3">
+          <input type="hidden" name="maternity_patient_id" value={patientId} />
           <h6 className="font-weight-bold">{tc('postnatal_visit', 'Postnatal visit (EPDS)')}</h6>
           <div className="form-row">
             <div className="form-group col-md-3">
@@ -506,6 +522,7 @@ export function MaternityChartTabContent({
     return (
       <>
         <form method="post" action={`/maternity/chart/${patientId}/complication`} className="mat-card p-3 mb-3">
+          <input type="hidden" name="maternity_patient_id" value={patientId} />
           <h6 className="font-weight-bold">{tc('record_complication', 'Record complication')}</h6>
           <div className="form-row">
             <div className="form-group col-md-3">

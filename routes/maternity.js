@@ -7,6 +7,7 @@
 const createController = require('../controllers/maternity.controller');
 const v = require('../middleware/maternity.validator');
 const mat = require('../lib/hmsMaternity');
+const { invokeMaternityCtrl } = require('../lib/maternityRouteHelpers');
 
 module.exports = function (app, pool, requireAuth, requirePerm) {
   const ctrl = createController(pool);
@@ -250,6 +251,7 @@ module.exports = function (app, pool, requireAuth, requirePerm) {
         error: req.query.err,
         tab: req.query.tab || 'anc',
         delivery_id: parseInt(req.query.delivery_id, 10) || null,
+        labor_id: parseInt(req.query.labor_id, 10) || null,
       }));
     } catch (e) {
       res.status(500).render('error', { title: 'Error', message: e.message, status: 500 });
@@ -325,10 +327,14 @@ module.exports = function (app, pool, requireAuth, requirePerm) {
     if (req.body.risk_factors && typeof req.body.risk_factors === 'string') {
       req.body.risk_factors = req.body.risk_factors.split(',').map((s) => ({ code: s.trim() })).filter((x) => x.code);
     }
-    await ctrl.createRiskAssessment(req, {
-      status: () => ({ json: (b) => {} }),
-    });
-    return flashRedirect(req, res, '/maternity/chart/' + req.params.id + '?tab=risk', 'Risk assessment saved');
+    const chartUrl = '/maternity/chart/' + req.params.id + '?tab=risk';
+    try {
+      const result = await invokeMaternityCtrl((rq, rs) => ctrl.createRiskAssessment(rq, rs), req);
+      if (!result.ok) return flashRedirect(req, res, chartUrl, null, result.message);
+      return flashRedirect(req, res, chartUrl, 'Risk assessment saved');
+    } catch (e) {
+      return flashRedirect(req, res, chartUrl, null, e.message);
+    }
   });
 
   app.post('/maternity/chart/:id/labor', requireAuth, mutate, bindChartMaternityPatientId, v.validateLaborRecord, async (req, res) => {
@@ -353,9 +359,10 @@ module.exports = function (app, pool, requireAuth, requirePerm) {
       });
       if (errMsg) return flashRedirect(req, res, chartUrl, null, errMsg);
       if (!laborId) return flashRedirect(req, res, chartUrl, null, 'Could not admit to labor ward');
+      const msg = encodeURIComponent('Admitted to labor ward');
       return res.redirect(
         302,
-        '/maternity/labor?labor_id=' + laborId + '&msg=' + encodeURIComponent('Admitted to labor')
+        `/maternity/chart/${req.params.id}?tab=labor&labor_id=${laborId}&msg=${msg}`
       );
     } catch (e) {
       return flashRedirect(req, res, chartUrl, null, e.message);
@@ -363,9 +370,14 @@ module.exports = function (app, pool, requireAuth, requirePerm) {
   });
 
   app.post('/maternity/labor/:laborId/partograph', requireAuth, mutate, async (req, res) => {
-    req.params.laborId = req.params.laborId;
-    await ctrl.addPartographEntry(req, { status: () => ({ json: () => {} }) });
-    return flashRedirect(req, res, '/maternity/labor?labor_id=' + req.params.laborId, 'Partograph entry saved');
+    const chartUrl = '/maternity/labor?labor_id=' + req.params.laborId;
+    try {
+      const result = await invokeMaternityCtrl((rq, rs) => ctrl.addPartographEntry(rq, rs), req);
+      if (!result.ok) return flashRedirect(req, res, chartUrl, null, result.message);
+      return flashRedirect(req, res, chartUrl, 'Partograph entry saved');
+    } catch (e) {
+      return flashRedirect(req, res, chartUrl, null, e.message);
+    }
   });
 
   app.post('/maternity/labor/:laborId/delivery', requireAuth, mutate, bindLaborRecordId, v.validateDelivery, async (req, res) => {
@@ -416,27 +428,48 @@ module.exports = function (app, pool, requireAuth, requirePerm) {
 
   app.post('/maternity/chart/:id/postnatal', requireAuth, mutate, bindChartMaternityPatientId, v.validatePostnatal, async (req, res) => {
     req.body.attended_by = uid(req);
-    await ctrl.createPostnatalVisit(req, { status: () => ({ json: () => {} }) });
-    return flashRedirect(req, res, '/maternity/chart/' + req.params.id + '?tab=postnatal', 'Postnatal visit saved');
+    const chartUrl = '/maternity/chart/' + req.params.id + '?tab=postnatal';
+    try {
+      const result = await invokeMaternityCtrl((rq, rs) => ctrl.createPostnatalVisit(rq, rs), req);
+      if (!result.ok) return flashRedirect(req, res, chartUrl, null, result.message);
+      return flashRedirect(req, res, chartUrl, 'Postnatal visit saved');
+    } catch (e) {
+      return flashRedirect(req, res, chartUrl, null, e.message);
+    }
   });
 
-  app.post('/maternity/chart/:id/complication', requireAuth, mutate, async (req, res) => {
-    req.body.maternity_patient_id = req.params.id;
+  app.post('/maternity/chart/:id/complication', requireAuth, mutate, bindChartMaternityPatientId, async (req, res) => {
     req.body.reported_by = uid(req);
-    await ctrl.recordComplication(req, { status: () => ({ json: () => {} }) });
-    return flashRedirect(req, res, '/maternity/chart/' + req.params.id + '?tab=complications', 'Complication recorded');
+    const chartUrl = '/maternity/chart/' + req.params.id + '?tab=complications';
+    try {
+      const result = await invokeMaternityCtrl((rq, rs) => ctrl.recordComplication(rq, rs), req);
+      if (!result.ok) return flashRedirect(req, res, chartUrl, null, result.message);
+      return flashRedirect(req, res, chartUrl, 'Complication recorded');
+    } catch (e) {
+      return flashRedirect(req, res, chartUrl, null, e.message);
+    }
   });
 
-  app.post('/maternity/chart/:id/scan', requireAuth, mutate, async (req, res) => {
-    req.body.maternity_patient_id = req.params.id;
-    await ctrl.addUltrasoundScan(req, { status: () => ({ json: () => {} }) });
-    return flashRedirect(req, res, '/maternity/chart/' + req.params.id + '?tab=scans', 'Scan saved');
+  app.post('/maternity/chart/:id/scan', requireAuth, mutate, bindChartMaternityPatientId, async (req, res) => {
+    const chartUrl = '/maternity/chart/' + req.params.id + '?tab=scans';
+    try {
+      const result = await invokeMaternityCtrl((rq, rs) => ctrl.addUltrasoundScan(rq, rs), req);
+      if (!result.ok) return flashRedirect(req, res, chartUrl, null, result.message);
+      return flashRedirect(req, res, chartUrl, 'Scan saved');
+    } catch (e) {
+      return flashRedirect(req, res, chartUrl, null, e.message);
+    }
   });
 
-  app.post('/maternity/chart/:id/newborn', requireAuth, mutate, v.validateNewborn, async (req, res) => {
-    req.body.maternity_patient_id = req.params.id;
-    await ctrl.registerNewborn(req, { status: () => ({ json: () => {} }) });
-    return flashRedirect(req, res, '/maternity/chart/' + req.params.id + '?tab=newborn', 'Newborn registered');
+  app.post('/maternity/chart/:id/newborn', requireAuth, mutate, bindChartMaternityPatientId, v.validateNewborn, async (req, res) => {
+    const chartUrl = '/maternity/chart/' + req.params.id + '?tab=newborn';
+    try {
+      const result = await invokeMaternityCtrl((rq, rs) => ctrl.registerNewborn(rq, rs), req);
+      if (!result.ok) return flashRedirect(req, res, chartUrl, null, result.message);
+      return flashRedirect(req, res, chartUrl, result.message || 'Newborn registered');
+    } catch (e) {
+      return flashRedirect(req, res, chartUrl, null, e.message);
+    }
   });
 
   // ── REST API (mobile / integrations) ────────────────────────

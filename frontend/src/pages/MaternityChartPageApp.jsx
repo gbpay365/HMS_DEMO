@@ -19,6 +19,7 @@ export function MaternityChartPageApp({
   billing = null,
   tab = 'anc',
   deliveryId = null,
+  laborId = null,
   flash = null,
   error = null}) {
   const { t } = useTranslation('legacy');
@@ -60,6 +61,7 @@ export function MaternityChartPageApp({
         summary={summary}
         billing={billing}
         deliveryId={deliveryId}
+        laborId={laborId}
       />
     </div>
   );
