@@ -1,0 +1,196 @@
+<%
+  var _action = formAction || '/lims/ops/walk-in';
+  var _kind = walkinKind || 'laboratory';
+  var _isRad = _kind === 'radiology';
+  var _catalogItems = catalog || [];
+  var _providers = providers || [];
+  var _referrers = referrers || [];
+  var _pending = pendingWalkins || [];
+  var _typeOrder = ['walkin', 'hmo', 'social', 'mutual', 'insurance', 'corporate', 'other'];
+  var _typeLabels = {
+    walkin: 'Walk-in & self pay',
+    hmo: 'HMO & national scheme',
+    social: 'Social security',
+    mutual: 'Mutual & community',
+    insurance: 'Private insurance',
+    corporate: 'Corporate & credit',
+    other: 'Other payers'
+  };
+  var _byType = {};
+  _providers.forEach(function (p) {
+    var t = String(p.provider_type || 'other').toLowerCase();
+    if (!_byType[t]) _byType[t] = [];
+    _byType[t].push(p);
+  });
+%>
+<div class="walkin-page">
+  <% if (flash) { %><div class="walkin-flash walkin-flash--ok"><i class="fa fa-check-circle" aria-hidden="true"></i> <%= flash %></div><% } %>
+  <% if (error) { %><div class="walkin-flash walkin-flash--err"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> <%= error %></div><% } %>
+
+  <div class="walkin-layout">
+    <div class="walkin-layout__main">
+      <div class="walkin-card walkin-card--form">
+        <div class="walkin-card__head">
+          <div>
+            <h2 class="walkin-card__title"><%= _isRad ? 'Radiology walk-in' : 'Laboratory walk-in' %></h2>
+            <p class="walkin-card__hint"><%- introHtml || '' %></p>
+          </div>
+        </div>
+
+        <form method="post" action="<%= _action %>" id="walkinForm" data-walkin-kind="<%= _kind %>" class="walkin-form">
+          <section class="walkin-section">
+            <h3 class="walkin-section__title"><i class="fa fa-user" aria-hidden="true"></i> Patient</h3>
+            <div class="walkin-grid walkin-grid--2">
+              <div class="walkin-field">
+                <label class="walkin-label" for="walkin_first_name">First name <span class="walkin-req">*</span></label>
+                <input id="walkin_first_name" name="first_name" required class="walkin-input" autocomplete="given-name">
+              </div>
+              <div class="walkin-field">
+                <label class="walkin-label" for="walkin_last_name">Last name</label>
+                <input id="walkin_last_name" name="last_name" class="walkin-input" autocomplete="family-name">
+              </div>
+              <div class="walkin-field">
+                <label class="walkin-label" for="walkin_mobile">Mobile <span class="walkin-req">*</span></label>
+                <input id="walkin_mobile" name="mobile" required class="walkin-input" placeholder="e.g. 677 00 00 00" autocomplete="tel">
+              </div>
+              <div class="walkin-field">
+                <label class="walkin-label" for="walkin_visit_type">Visit type</label>
+                <select id="walkin_visit_type" name="visit_type" class="walkin-input walkin-select">
+                  <option value="OP">Outpatient (OP)</option>
+                  <option value="IP">Inpatient (IP)</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <section class="walkin-section">
+            <h3 class="walkin-section__title"><i class="fa fa-hospital-o" aria-hidden="true"></i> Referral &amp; billing</h3>
+            <div class="walkin-grid walkin-grid--2">
+              <div class="walkin-field">
+                <label class="walkin-label" for="walkinReferrerSearch">Referring physician / clinic</label>
+                <div class="walkin-search-wrap">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                  <input type="search" id="walkinReferrerSearch" class="walkin-input walkin-input--search" placeholder="Search referrer…" autocomplete="off">
+                </div>
+                <select name="referrer_id" id="walkinReferrerSelect" class="walkin-input walkin-select walkin-select--list">
+                  <option value="">— None / walk-in —</option>
+                  <% _referrers.forEach(function (r) { %>
+                  <option value="<%= r.id %>"><%= r.name %><% if (r.referrer_type) { %> (<%= r.referrer_type %>)<% } %></option>
+                  <% }); %>
+                </select>
+              </div>
+
+              <div class="walkin-field walkin-field--provider">
+                <label class="walkin-label" for="walkinProviderSearch">Credit provider / payer</label>
+                <div class="walkin-search-wrap">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                  <input type="search" id="walkinProviderSearch" class="walkin-input walkin-input--search" placeholder="Search HMO, insurance, corporate…" autocomplete="off">
+                </div>
+                <div class="walkin-provider-chips" id="walkinProviderChips" aria-label="Quick select credit provider"></div>
+                <select name="credit_provider_id" id="walkinCreditProvider" class="walkin-input walkin-select walkin-select--list">
+                  <% if (!_providers.length) { %>
+                  <option value="" selected>Walk-in (self pay)</option>
+                  <% } else { %>
+                  <% _typeOrder.forEach(function (t) {
+                    if (!_byType[t] || !_byType[t].length) return; %>
+                  <optgroup label="<%= _typeLabels[t] || t %>">
+                    <% _byType[t].forEach(function (p) { %>
+                    <option value="<%= p.id %>" data-type="<%= t %>" data-code="<%= p.code || '' %>"<% if (p.code === 'CP-SELF') { %> selected<% } %>><%= p.name %><% if (p.provider_type && !_typeLabels[t]) { %> (<%= p.provider_type %>)<% } %></option>
+                    <% }); %>
+                  </optgroup>
+                  <% }); %>
+                  <% } %>
+                </select>
+                <p class="walkin-field__help">Choose who will pay: self pay, NHIS/CNPS, HMO, insurance, or approved corporate credit.</p>
+              </div>
+            </div>
+
+            <div class="walkin-grid walkin-grid--2 walkin-grid--priority">
+              <div class="walkin-field">
+                <label class="walkin-label" for="walkin_priority">Priority</label>
+                <select id="walkin_priority" name="priority" class="walkin-input walkin-select">
+                  <option value="normal">Normal</option>
+                  <option value="emergency">Emergency / STAT</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <section class="walkin-section walkin-section--tests">
+            <h3 class="walkin-section__title">
+              <i class="fa fa-flask" aria-hidden="true"></i>
+              <%= catalogLabel || (_isRad ? 'Exams' : 'Tests') %>
+              <span class="walkin-req">*</span>
+            </h3>
+            <p class="walkin-section__sub"><%= catalogHint || '' %></p>
+            <% if (!_catalogItems.length) { %>
+            <p class="walkin-empty-catalog"><%= emptyCatalogMsg || 'No services in catalog yet.' %></p>
+            <% } else { %>
+            <div class="walkin-test-search-wrap">
+              <i class="fa fa-search" aria-hidden="true"></i>
+              <input type="search" id="walkinTestSearch" class="walkin-input walkin-input--search" placeholder="<%= searchPlaceholder || 'Type test name…' %>" autocomplete="off">
+            </div>
+            <div class="walkin-dept-filter" id="walkinDeptFilter"></div>
+            <div id="walkinSelectedTests" class="walkin-selected-tests"></div>
+            <div id="walkinTestList" class="walkin-test-list"></div>
+            <div class="walkin-test-total">
+              <span>Selected total</span>
+              <strong id="walkinSelectedTotal"><%= fmtMoney(0) %></strong>
+            </div>
+            <div id="walkinTestHiddenInputs"></div>
+            <script type="application/json" id="walkinCatalogJson"><%- JSON.stringify(_catalogItems).replace(/</g, '\\u003c') %></script>
+            <script type="application/json" id="walkinMoneyConfig"><%- JSON.stringify({
+              symbol: currencySymbol || '',
+              locale: (hmsCountry && hmsCountry.currencyLocale) || 'en-NG',
+              code: currencyCode || 'NGN'
+            }).replace(/</g, '\\u003c') %></script>
+            <% } %>
+          </section>
+
+          <section class="walkin-section walkin-section--notes">
+            <div class="walkin-field">
+              <label class="walkin-label" for="walkin_notes">Clinical notes (optional)</label>
+              <textarea id="walkin_notes" name="notes" class="walkin-input walkin-textarea" rows="2" placeholder="e.g. fasting sample, bring previous results…"></textarea>
+            </div>
+          </section>
+
+          <div class="walkin-form__actions">
+            <button type="submit" class="walkin-btn walkin-btn--primary">
+              <i class="fa fa-check-circle" aria-hidden="true"></i>
+              <%= submitLabel || 'Register & queue for cashier' %>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <aside class="walkin-layout__side">
+      <div class="walkin-card walkin-card--queue">
+        <div class="walkin-card__head walkin-card__head--queue">
+          <h2 class="walkin-card__title">Awaiting cashier</h2>
+          <span class="walkin-queue-count"><%= _pending.length %></span>
+        </div>
+        <p class="walkin-queue-hint">Patients registered here appear below until payment is collected at the cashier.</p>
+        <div class="walkin-queue-list">
+          <% if (!_pending.length) { %>
+          <div class="walkin-queue-empty">
+            <i class="fa fa-inbox" aria-hidden="true"></i>
+            <p>No walk-ins waiting.</p>
+          </div>
+          <% } %>
+          <% _pending.forEach(function (w) { %>
+          <article class="walkin-queue-item">
+            <div class="walkin-queue-item__top">
+              <span class="walkin-queue-item__reg"><%= w.registration_no %></span>
+              <span class="walkin-queue-item__badge<%= w.status === 'billed' ? ' is-cashier' : '' %>"><%= w.status === 'billed' ? 'At cashier' : 'Registered' %></span>
+            </div>
+            <div class="walkin-queue-item__name"><%= w.first_name %> <%= w.last_name %></div>
+            <% if (w.tests_summary) { %><div class="walkin-queue-item__tests"><%= w.tests_summary %></div><% } %>
+            <div class="walkin-queue-item__total"><%= fmtMoney(w.total_amount || 0) %></div>
+          </article>
+          <% }); %>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>

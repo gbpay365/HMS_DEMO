@@ -1,111 +1,28 @@
 <%- include('partials/header') %>
-<link rel="stylesheet" href="/css/lims-walk-in.css?v=2">
+<link rel="stylesheet" href="/css/lims-walk-in.css?v=4">
 <%- include('partials/laboratory-odoo-start', {
   labOdooMenu: 'operations',
   labOdooTitle: 'Walk-in registration'
 }) %>
 <div class="o_content">
 <%- include('partials/lims-ops-nav', { limsOpsMenu: 'walkin' }) %>
-<% if (flash) { %><div class="alert alert-success small mb-3"><%= flash %></div><% } %>
-<% if (error) { %><div class="alert alert-danger small mb-3"><%= error %></div><% } %>
-<div class="row">
- <div class="col-lg-7 mb-4">
-  <div class="hms-surface-card p-4">
-   <p class="text-muted small">Register a lab walk-in here. The patient is queued for cashier — not added to the main patient registration desk. Tests and prices come from <strong>Service Catalog → Laboratory</strong>.</p>
-   <form method="post" action="/lims/ops/walk-in" id="walkinForm">
-    <div class="form-row">
-     <div class="form-group col-md-6"><label>First name *</label><input name="first_name" required class="form-control"></div>
-     <div class="form-group col-md-6"><label>Last name</label><input name="last_name" class="form-control"></div>
-    </div>
-    <div class="form-row">
-     <div class="form-group col-md-6"><label>Mobile *</label><input name="mobile" required class="form-control" placeholder="080…"></div>
-     <div class="form-group col-md-6"><label>Visit type</label>
-      <select name="visit_type" class="form-control"><option value="OP">OP</option><option value="IP">IP</option></select>
-     </div>
-    </div>
-    <div class="form-row">
-     <div class="form-group col-md-6">
-      <label>Referrer</label>
-      <input type="search" id="walkinReferrerSearch" class="form-control form-control-sm mb-1" placeholder="Search referrer…" autocomplete="off">
-      <select name="referrer_id" class="form-control">
-       <option value="">— None —</option>
-       <% (referrers || []).forEach(function(r){ %>
-       <option value="<%= r.id %>"><%= r.name %><% if (r.referrer_type) { %> (<%= r.referrer_type %>)<% } %></option>
-       <% }); %>
-      </select>
-     </div>
-     <div class="form-group col-md-6">
-      <label>Credit provider</label>
-      <input type="search" id="walkinProviderSearch" class="form-control form-control-sm mb-1" placeholder="Search provider…" autocomplete="off">
-      <select name="credit_provider_id" class="form-control">
-       <% (providers || []).forEach(function(p){ %>
-       <option value="<%= p.id %>"<% if (p.code === 'CP-SELF') { %> selected<% } %>><%= p.name %><% if (p.provider_type) { %> (<%= p.provider_type %>)<% } %></option>
-       <% }); %>
-       <% if (!providers || !providers.length) { %>
-       <option value="" selected>Walk-in (self pay)</option>
-       <% } %>
-      </select>
-     </div>
-    </div>
-    <div class="form-group">
-     <label>Priority</label>
-     <select name="priority" class="form-control" style="max-width:200px">
-      <option value="normal">Normal</option>
-      <option value="emergency">Emergency</option>
-     </select>
-    </div>
-    <div class="form-group">
-     <label>Tests * <span class="text-muted font-weight-normal">(search &amp; select from Service catalog — Laboratory)</span></label>
-     <% if (!catalog || !catalog.length) { %>
-     <p class="text-muted small mb-0">No laboratory services in catalog. Add tests under Settings → Service Catalog → Laboratory.</p>
-     <% } else { %>
-     <div class="walkin-test-search-wrap">
-      <i class="fa fa-search" aria-hidden="true"></i>
-      <input type="search" id="walkinTestSearch" class="form-control form-control-sm" placeholder="Type test name, e.g. FBC, malaria, lipid…" autocomplete="off">
-     </div>
-     <div class="hms-chip-row flex-wrap mb-2" id="walkinDeptFilter"></div>
-     <div id="walkinSelectedTests" class="walkin-selected-tests"></div>
-     <div id="walkinTestList" class="walkin-test-list"></div>
-     <div class="walkin-test-total">Selected total: <span id="walkinSelectedTotal"><%= fmtMoney(0) %></span></div>
-     <div id="walkinTestHiddenInputs"></div>
-     <script type="application/json" id="walkinCatalogJson"><%- JSON.stringify(catalog || []).replace(/</g, '\\u003c') %></script>
-     <script type="application/json" id="walkinMoneyConfig"><%- JSON.stringify({
-       symbol: currencySymbol || '',
-       locale: (hmsCountry && hmsCountry.currencyLocale) || 'en-NG',
-       code: currencyCode || 'NGN'
-     }).replace(/</g, '\\u003c') %></script>
-     <% } %>
-    </div>
-    <div class="form-group"><label>Notes</label><textarea name="notes" class="form-control" rows="2"></textarea></div>
-    <button type="submit" class="btn btn-primary">Register &amp; go to cashier</button>
-   </form>
-  </div>
- </div>
- <div class="col-lg-5 mb-4">
-  <div class="hms-surface-card">
-   <h6 class="font-weight-bold p-3 mb-0 border-bottom">Walk-in queue (awaiting cashier)</h6>
-   <div class="table-responsive">
-    <table class="table table-sm mb-0">
-     <thead class="thead-light"><tr><th>Reg #</th><th>Patient</th><th>Total</th><th>Status</th></tr></thead>
-     <tbody>
-     <% if (!pendingWalkins || !pendingWalkins.length) { %>
-     <tr><td colspan="4" class="text-muted text-center py-3">No walk-ins waiting.</td></tr>
-     <% } %>
-     <% (pendingWalkins || []).forEach(function(w){ %>
-     <tr>
-      <td class="small font-weight-bold"><%= w.registration_no %></td>
-      <td><%= w.first_name %> <%= w.last_name %><br><span class="small text-muted"><%= w.tests_summary %></span></td>
-      <td class="small"><%= fmtMoney(w.total_amount || 0) %></td>
-      <td><span class="badge badge-light border"><%= w.status === 'billed' ? 'At cashier' : 'Registered' %></span></td>
-     </tr>
-     <% }); %>
-     </tbody>
-    </table>
-   </div>
-  </div>
- </div>
+<%- include('partials/walkin-register-body', {
+  formAction: '/lims/ops/walk-in',
+  walkinKind: 'laboratory',
+  introHtml: 'Register a lab walk-in here. The patient is <strong>queued for cashier</strong> — not added to the main patient registration desk. Tests and prices come from <strong>Service Catalog → Laboratory</strong>.',
+  catalogLabel: 'Laboratory tests',
+  catalogHint: 'Search and select from Service catalog — Laboratory',
+  searchPlaceholder: 'Type test name, e.g. FBC, malaria, lipid…',
+  emptyCatalogMsg: 'No laboratory services in catalog. Add tests under Settings → Service Catalog → Laboratory.',
+  submitLabel: 'Register & queue for cashier',
+  catalog: catalog,
+  providers: providers,
+  referrers: referrers,
+  pendingWalkins: pendingWalkins,
+  flash: flash,
+  error: error
+}) %>
 </div>
-</div>
-<script src="/js/lims-walk-in-form.js?v=3"></script>
+<script src="/js/lims-walk-in-form.js?v=4"></script>
 <%- include('partials/laboratory-odoo-end') %>
 <%- include('partials/footer') %>

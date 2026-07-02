@@ -31,26 +31,106 @@
     return formatted;
   }
 
-  function initSelectFilter(inputId, selectName) {
+  function initSelectFilter(inputId, selectId) {
     var input = document.getElementById(inputId);
-    var sel = document.querySelector('select[name="' + selectName + '"]');
+    var sel = document.getElementById(selectId) || document.querySelector('select[name="' + selectId + '"]');
     if (!input || !sel) return;
-    var options = Array.prototype.map.call(sel.options, function (opt) {
-      return { value: opt.value, text: opt.textContent, el: opt.cloneNode(true) };
+
+    var stored = [];
+    Array.prototype.forEach.call(sel.children, function (child) {
+      if (child.tagName === 'OPTGROUP') {
+        Array.prototype.forEach.call(child.children, function (opt) {
+          stored.push({ group: child.label, opt: opt.cloneNode(true) });
+        });
+      } else if (child.tagName === 'OPTION') {
+        stored.push({ group: null, opt: opt.cloneNode(true) });
+      }
     });
+
     function rebuild() {
       var q = String(input.value || '').trim().toLowerCase();
       var current = sel.value;
       sel.innerHTML = '';
-      options.forEach(function (o) {
-        var text = String(o.text || '').toLowerCase();
-        if (!q || text.indexOf(q) >= 0 || o.value === '' || o.value === current) {
-          sel.appendChild(o.el.cloneNode(true));
+      var groups = {};
+      stored.forEach(function (item) {
+        var text = String(item.opt.textContent || '').toLowerCase();
+        if (q && text.indexOf(q) < 0 && item.opt.value !== current && item.opt.value !== '') return;
+        if (item.group) {
+          if (!groups[item.group]) {
+            groups[item.group] = document.createElement('optgroup');
+            groups[item.group].label = item.group;
+            sel.appendChild(groups[item.group]);
+          }
+          groups[item.group].appendChild(item.opt.cloneNode(true));
+        } else {
+          sel.appendChild(item.opt.cloneNode(true));
         }
       });
       if (current) sel.value = current;
+      if (selectId === 'walkinCreditProvider' || sel.id === 'walkinCreditProvider') syncProviderChips(sel);
     }
+
     input.addEventListener('input', rebuild);
+    sel.addEventListener('change', function () {
+      if (selectId === 'walkinCreditProvider' || sel.id === 'walkinCreditProvider') syncProviderChips(sel);
+    });
+    return sel;
+  }
+
+  function syncProviderChips(sel) {
+    var chipsEl = document.getElementById('walkinProviderChips');
+    if (!chipsEl || !sel) return;
+    chipsEl.querySelectorAll('.walkin-provider-chip:not(.walkin-provider-chip--type)').forEach(function (btn) {
+      var active = String(btn.getAttribute('data-value')) === String(sel.value);
+      btn.classList.toggle('is-active', active);
+    });
+  }
+
+  function initProviderChips(sel) {
+    var chipsEl = document.getElementById('walkinProviderChips');
+    if (!chipsEl || !sel) return;
+
+    var byType = {};
+    Array.prototype.forEach.call(sel.options, function (opt) {
+      if (!opt.value) return;
+      var t = opt.getAttribute('data-type') || 'other';
+      if (!byType[t]) byType[t] = [];
+      byType[t].push(opt);
+    });
+
+    var typeLabels = {
+      walkin: 'Self pay',
+      hmo: 'HMO',
+      social: 'Social',
+      mutual: 'Mutual',
+      insurance: 'Insurance',
+      corporate: 'Corporate',
+      other: 'Other',
+    };
+
+    chipsEl.innerHTML = '';
+    ['walkin', 'social', 'hmo', 'mutual', 'insurance', 'corporate'].forEach(function (t) {
+      var list = byType[t];
+      if (!list || !list.length) return;
+      var label = document.createElement('span');
+      label.className = 'walkin-provider-chip walkin-provider-chip--type';
+      label.textContent = typeLabels[t] || t;
+      chipsEl.appendChild(label);
+      list.slice(0, t === 'insurance' ? 8 : 4).forEach(function (opt) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'walkin-provider-chip';
+        btn.setAttribute('data-value', opt.value);
+        btn.textContent = opt.textContent.replace(/\s*\([^)]*\)\s*$/, '').trim();
+        btn.title = opt.textContent;
+        btn.addEventListener('click', function () {
+          sel.value = opt.value;
+          syncProviderChips(sel);
+        });
+        chipsEl.appendChild(btn);
+      });
+    });
+    syncProviderChips(sel);
   }
 
   function initTestPicker(catalog) {
@@ -222,8 +302,9 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    initSelectFilter('walkinReferrerSearch', 'referrer_id');
-    initSelectFilter('walkinProviderSearch', 'credit_provider_id');
+    var providerSel = initSelectFilter('walkinProviderSearch', 'walkinCreditProvider');
+    initSelectFilter('walkinReferrerSearch', 'walkinReferrerSelect');
+    initProviderChips(providerSel);
     initTestPicker(parseCatalog());
   });
 })();
