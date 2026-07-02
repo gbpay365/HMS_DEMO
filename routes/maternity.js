@@ -123,6 +123,21 @@ module.exports = function (app, pool, requireAuth, requirePerm) {
     }
   });
 
+  app.get('/maternity/deliveries-today', requireAuth, view, async (req, res) => {
+    try {
+      const { date, rows } = await mat.listDeliveriesForDate(pool, req.query.date);
+      res.render('maternity-deliveries-today', matPage({
+        title: 'Deliveries today — Maternity',
+        rows,
+        date,
+        flash: req.query.msg,
+        error: req.query.err,
+      }));
+    } catch (e) {
+      res.status(500).render('error', { title: 'Error', message: e.message, status: 500 });
+    }
+  });
+
   app.get('/maternity/patients', requireAuth, view, async (req, res) => {
     try {
       const search = String(req.query.q || '').trim();

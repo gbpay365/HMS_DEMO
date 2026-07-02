@@ -1090,6 +1090,25 @@
     "labor_ward_active": "Labor ward (active)",
     "no_in_labor": "No patients in active labor."
   },
+  "maternity_deliveries_today": {
+    "title": "Deliveries today",
+    "subtitle": "All deliveries recorded for the selected date.",
+    "back_dashboard": "Back to dashboard",
+    "date_label": "Date",
+    "show": "Show",
+    "today": "Today",
+    "th_time": "Time",
+    "th_anc": "ANC #",
+    "th_patient": "Mother",
+    "th_type": "Delivery type",
+    "th_outcome": "Outcome",
+    "th_blood_loss": "Blood loss (ml)",
+    "th_newborns": "Newborns",
+    "empty": "No deliveries recorded for this date.",
+    "chart": "Chart",
+    "register_newborn": "Newborn",
+    "total_on_date": "Total on this date"
+  },
   "maternity_register": {
     "title": "ANC registration",
     "link_hint": "Link an existing HMS patient. Find them in",

@@ -1,0 +1,82 @@
+<%- include('partials/hms-date-helpers') %>
+<%- include('partials/header') %>
+<% var _t = (typeof t === 'function' ? t : function (k, o) { return (o && o.defaultValue != null) ? o.defaultValue : k; }); %>
+<%- include('partials/maternity-odoo-start', {
+  matOdooMenu: 'dashboard',
+  matOdooTitle: _t('maternity_deliveries_today.title', { ns: 'legacy', defaultValue: 'Deliveries today' }),
+  matOdooActions: '<a href="/maternity" class="hms-btn hms-btn-secondary hms-btn-sm"><i class="fa fa-arrow-left mr-1"></i> ' + _t('maternity_deliveries_today.back_dashboard', { ns: 'legacy', defaultValue: 'Back to dashboard' }) + '</a>'
+}) %>
+<div class="o_content">
+
+<p class="small text-muted mb-3">
+ <%= _t('maternity_deliveries_today.subtitle', { ns: 'legacy', defaultValue: 'All deliveries recorded for the selected date.' }) %>
+</p>
+
+<form method="get" class="hms-filter-bar mb-3">
+ <label class="small font-weight-bold mb-0 mr-2" for="matDelivDate"><%= _t('maternity_deliveries_today.date_label', { ns: 'legacy', defaultValue: 'Date' }) %></label>
+ <input type="date" id="matDelivDate" name="date" class="hms-input" style="max-width:180px" value="<%= date || '' %>">
+ <button type="submit" class="hms-btn hms-btn-secondary"><%= _t('maternity_deliveries_today.show', { ns: 'legacy', defaultValue: 'Show' }) %></button>
+ <a href="/maternity/deliveries-today" class="hms-btn hms-btn-link btn-sm"><%= _t('maternity_deliveries_today.today', { ns: 'legacy', defaultValue: 'Today' }) %></a>
+</form>
+
+<div class="mat-card">
+ <div class="table-responsive">
+  <table class="table table-hover mb-0">
+   <thead class="thead-light">
+    <tr>
+     <th><%= _t('maternity_deliveries_today.th_time', { ns: 'legacy', defaultValue: 'Time' }) %></th>
+     <th><%= _t('maternity_deliveries_today.th_anc', { ns: 'legacy', defaultValue: 'ANC #' }) %></th>
+     <th><%= _t('maternity_deliveries_today.th_patient', { ns: 'legacy', defaultValue: 'Mother' }) %></th>
+     <th><%= _t('maternity_deliveries_today.th_type', { ns: 'legacy', defaultValue: 'Delivery type' }) %></th>
+     <th><%= _t('maternity_deliveries_today.th_outcome', { ns: 'legacy', defaultValue: 'Outcome' }) %></th>
+     <th><%= _t('maternity_deliveries_today.th_blood_loss', { ns: 'legacy', defaultValue: 'Blood loss (ml)' }) %></th>
+     <th><%= _t('maternity_deliveries_today.th_newborns', { ns: 'legacy', defaultValue: 'Newborns' }) %></th>
+     <th></th>
+    </tr>
+   </thead>
+   <tbody>
+    <% if (!rows || !rows.length) { %>
+    <tr>
+     <td colspan="8" class="text-muted text-center py-4">
+      <%= _t('maternity_deliveries_today.empty', { ns: 'legacy', defaultValue: 'No deliveries recorded for this date.' }) %>
+     </td>
+    </tr>
+    <% } %>
+    <% (rows || []).forEach(function (r) { %>
+    <tr>
+     <td class="text-nowrap"><%= fmtDateTime(r.delivery_date_time) %></td>
+     <td class="font-weight-bold"><%= r.antenatal_number %></td>
+     <td>
+      <%= r.first_name %> <%= r.last_name %>
+      <% if (r.phone) { %><br><span class="small text-muted"><%= r.phone %></span><% } %>
+     </td>
+     <td><%= r.delivery_type || '—' %></td>
+     <td><%= r.outcome || '—' %></td>
+     <td><%= r.blood_loss_estimated != null ? r.blood_loss_estimated : '—' %></td>
+     <td><%= parseInt(r.newborn_count, 10) || 0 %></td>
+     <td class="text-nowrap">
+      <a href="/maternity/chart/<%= r.maternity_patient_id %>?tab=delivery" class="btn btn-sm btn-outline-primary">
+        <%= _t('maternity_deliveries_today.chart', { ns: 'legacy', defaultValue: 'Chart' }) %>
+      </a>
+      <% if ((parseInt(r.newborn_count, 10) || 0) < 1 && r.outcome === 'live_birth') { %>
+      <a href="/maternity/chart/<%= r.maternity_patient_id %>?tab=newborn&delivery_id=<%= r.id %>" class="btn btn-sm btn-outline-success ml-1">
+        <%= _t('maternity_deliveries_today.register_newborn', { ns: 'legacy', defaultValue: 'Newborn' }) %>
+      </a>
+      <% } %>
+     </td>
+    </tr>
+    <% }) %>
+   </tbody>
+  </table>
+ </div>
+</div>
+
+<p class="small text-muted mt-2 mb-0">
+ <strong><%= (rows || []).length %></strong>
+ <%= _t('maternity_deliveries_today.total_on_date', { ns: 'legacy', defaultValue: 'Total on this date' }) %>
+ · <%= fmtDate(date) %>
+</p>
+
+</div>
+<%- include('partials/maternity-odoo-end') %>
+<%- include('partials/footer') %>

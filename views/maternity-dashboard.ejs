@@ -15,7 +15,7 @@
   <%- include('partials/hms-stat-link', { href: '/maternity/patients', label: _t('maternity_dashboard.stat_registered', { ns: 'legacy', defaultValue: 'Registered' }), value: s.total_registered || 0, icon: 'fa-users', color: '#ec4899', compact: true }) %>
   <%- include('partials/hms-stat-link', { href: '/maternity/patients?filter=active', label: _t('maternity_dashboard.stat_active_anc', { ns: 'legacy', defaultValue: 'Active ANC' }), value: s.active_anc || 0, icon: 'fa-female', color: '#9d174d', compact: true }) %>
   <%- include('partials/hms-stat-link', { href: '/maternity/labor', label: _t('maternity_dashboard.stat_in_labor', { ns: 'legacy', defaultValue: 'In labor' }), value: s.currently_in_labor || 0, icon: 'fa-heartbeat', color: '#ef4444', compact: true }) %>
-  <%- include('partials/hms-stat-link', { href: '/maternity/register', label: _t('maternity_dashboard.stat_deliveries_today', { ns: 'legacy', defaultValue: 'Deliveries today' }), value: s.deliveries_today || 0, icon: 'fa-child', color: '#10b981', compact: true }) %>
+  <%- include('partials/hms-stat-link', { href: '/maternity/deliveries-today', label: _t('maternity_dashboard.stat_deliveries_today', { ns: 'legacy', defaultValue: 'Deliveries today' }), value: s.deliveries_today || 0, icon: 'fa-child', color: '#10b981', compact: true }) %>
  </div>
 </section>
 

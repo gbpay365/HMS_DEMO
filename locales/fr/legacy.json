@@ -1079,6 +1079,25 @@
     "labor_ward_active": "Salle de travail (actives)",
     "no_in_labor": "Aucune patiente en travail actif."
   },
+  "maternity_deliveries_today": {
+    "title": "Accouchements du jour",
+    "subtitle": "Tous les accouchements enregistrés pour la date sélectionnée.",
+    "back_dashboard": "Retour au tableau de bord",
+    "date_label": "Date",
+    "show": "Afficher",
+    "today": "Aujourd'hui",
+    "th_time": "Heure",
+    "th_anc": "N° CPN",
+    "th_patient": "Mère",
+    "th_type": "Type d'accouchement",
+    "th_outcome": "Issue",
+    "th_blood_loss": "Perte de sang (ml)",
+    "th_newborns": "Nouveau-nés",
+    "empty": "Aucun accouchement enregistré pour cette date.",
+    "chart": "Dossier",
+    "register_newborn": "Nouveau-né",
+    "total_on_date": "Total pour cette date"
+  },
   "maternity_register": {
     "title": "Inscription CPN",
     "link_hint": "Lier un patient HMS existant. Trouvez-le dans l'",
